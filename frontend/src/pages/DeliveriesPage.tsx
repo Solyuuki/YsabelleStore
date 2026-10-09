@@ -488,13 +488,13 @@ export function DeliveriesPage() {
         }}
       >
         {selected ? (
-          <DialogContent className="max-h-[90vh] max-w-[900px] overflow-y-auto">
+          <DialogContent className="max-h-[90vh] max-w-[900px] overflow-y-auto dark:text-slate-100">
             <DialogHeader>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant={operationalStatusTone(selected)}>
                   {operationalStatusLabel(selected)}
                 </Badge>
-                <Badge>{paymentLabel(selected.paymentMethod)}</Badge>
+                <Badge className="dark:border-slate-500 dark:bg-slate-700/60 dark:text-slate-100">{paymentLabel(selected.paymentMethod)}</Badge>
               </div>
               <DialogTitle>{selected.deliveryTicketNumber}</DialogTitle>
               <DialogDescription>
@@ -533,40 +533,40 @@ export function DeliveriesPage() {
                 />
               </div>
 
-              <section className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
-                <div className="mb-2 flex items-center gap-2 font-semibold text-slate-900">
-                  <MapPin className="h-4 w-4 text-indigo-600" aria-hidden="true" />
+              <section className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-600 dark:bg-slate-800/70">
+                <div className="mb-2 flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-100">
+                  <MapPin className="h-4 w-4 text-indigo-600 dark:text-indigo-300" aria-hidden="true" />
                   Delivery address
                 </div>
-                <p className="text-sm leading-6 text-slate-600">{addressText(selected)}</p>
+                <p className="text-sm leading-6 text-slate-600 dark:text-slate-200">{addressText(selected)}</p>
               </section>
 
               {selected.notes ? (
-                <section className="rounded-xl border border-amber-200 bg-amber-50/70 p-4">
-                  <div className="mb-2 flex items-center gap-2 font-semibold text-slate-900">
-                    <MessageSquareText className="h-4 w-4 text-amber-600" aria-hidden="true" />
+                <section className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 dark:border-amber-500/40 dark:bg-amber-950/30">
+                  <div className="mb-2 flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-100">
+                    <MessageSquareText className="h-4 w-4 text-amber-600 dark:text-amber-300" aria-hidden="true" />
                     Customer delivery note
                   </div>
-                  <p className="text-sm leading-6 text-slate-700">{selected.notes}</p>
+                  <p className="text-sm leading-6 text-slate-700 dark:text-slate-200">{selected.notes}</p>
                 </section>
               ) : null}
 
-              <section className="rounded-xl border border-slate-200 bg-white p-4">
+              <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-600 dark:bg-slate-800/60">
                 <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-slate-950">Delivery progress</h3>
-                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                  <h3 className="text-sm font-semibold text-slate-950 dark:text-slate-100">Delivery progress</h3>
+                  <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-300">
                     Track the primary delivery handoff stages and their recorded timestamps.
                   </p>
                 </div>
                 {isPaymongoAwaitingPayment(selected) ? (
-                  <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                  <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/40 dark:bg-amber-950/40">
                     <CreditCard
-                      className="mt-0.5 h-5 w-5 shrink-0 text-amber-700"
+                      className="mt-0.5 h-5 w-5 shrink-0 text-amber-700 dark:text-amber-300"
                       aria-hidden="true"
                     />
                     <div>
-                      <strong className="text-sm text-amber-950">Awaiting PayMongo payment</strong>
-                      <p className="mt-1 text-xs leading-5 text-amber-800">
+                      <strong className="text-sm text-amber-950 dark:text-amber-100">Awaiting PayMongo payment</strong>
+                      <p className="mt-1 text-xs leading-5 text-amber-800 dark:text-amber-200">
                         Delivery processing is locked until PayMongo confirms this order as paid.
                       </p>
                     </div>
@@ -577,22 +577,22 @@ export function DeliveriesPage() {
               </section>
 
               <section>
-                <h3 className="mb-3 text-sm font-semibold text-slate-900">Order items</h3>
+                <h3 className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">Order items</h3>
                 <ScrollArea
-                  className="rounded-xl border border-slate-200"
+                  className="rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-800/40"
                   style={{ height: Math.min(300, Math.max(92, selected.items.length * 46)) }}
                   viewportClassName="pr-3"
                 >
-                  <div className="divide-y divide-slate-100">
+                  <div className="divide-y divide-slate-100 dark:divide-slate-600">
                     {selected.items.map((item) => (
                       <div
                         className="flex items-start justify-between gap-4 px-4 py-3"
                         key={item.productId}
                       >
-                        <span className="text-sm text-slate-700">
+                        <span className="text-sm text-slate-700 dark:text-slate-100">
                           {item.quantity} × {item.productName}
                         </span>
-                        <strong className="shrink-0 text-sm text-slate-950">
+                        <strong className="shrink-0 text-sm text-slate-950 dark:text-slate-50">
                           {currencyFormatter.format(Number(item.totalAmount))}
                         </strong>
                       </div>
@@ -602,17 +602,17 @@ export function DeliveriesPage() {
               </section>
 
               {!["DELIVERED", "CANCELLED"].includes(selected.deliveryStatus) ? (
-                <section className="grid gap-4 rounded-xl border border-indigo-200 bg-indigo-50/40 p-4">
+                <section className="grid gap-4 rounded-xl border border-indigo-200 bg-indigo-50/40 p-4 dark:border-indigo-400/30 dark:bg-indigo-950/30">
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-950">Delivery operations</h3>
-                    <p className="mt-1 text-xs leading-5 text-slate-600">
+                    <h3 className="text-sm font-semibold text-slate-950 dark:text-slate-100">Delivery operations</h3>
+                    <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-300">
                       Courier booking stays manual. Record enough information for an auditable
                       handoff.
                     </p>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="grid gap-3">
-                      <label className="grid gap-1.5 text-sm font-medium text-slate-700">
+                      <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
                         Courier / service
                         <Select
                           onChange={(event) => {
@@ -629,7 +629,7 @@ export function DeliveriesPage() {
                         </Select>
                       </label>
                       {courierProvider === "Other" ? (
-                        <label className="grid gap-1.5 text-sm font-medium text-slate-700">
+                        <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
                           Other courier / service name
                           <Input
                             maxLength={80}
@@ -641,7 +641,7 @@ export function DeliveriesPage() {
                       ) : null}
                     </div>
 
-                    <label className="grid content-start gap-1.5 text-sm font-medium text-slate-700">
+                    <label className="grid content-start gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
                       Rider / booking reference
                       <Input
                         maxLength={120}
@@ -649,13 +649,13 @@ export function DeliveriesPage() {
                         placeholder="e.g. rider mobile, booking ID, plate number"
                         value={courierReference}
                       />
-                      <span className="text-xs font-normal leading-5 text-slate-500">
+                      <span className="text-xs font-normal leading-5 text-slate-500 dark:text-slate-300">
                         Add the rider phone number or app booking ID when available so the handoff
                         can be verified.
                       </span>
                     </label>
                   </div>
-                  <label className="grid gap-1.5 text-sm font-medium text-slate-700">
+                  <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
                     Internal staff note
                     <Input
                       maxLength={255}
@@ -663,7 +663,7 @@ export function DeliveriesPage() {
                       placeholder="Internal handoff note for owner/staff only"
                       value={staffNote}
                     />
-                    <span className="text-xs font-normal leading-5 text-slate-500">
+                    <span className="text-xs font-normal leading-5 text-slate-500 dark:text-slate-300">
                       This operational note is not shown to the customer.
                     </span>
                   </label>
@@ -671,12 +671,12 @@ export function DeliveriesPage() {
               ) : null}
 
               {selected.customerConfirmedAt ? (
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-400/30 dark:bg-emerald-500/10 dark:text-emerald-100">
                   Customer confirmed receipt on{" "}
                   {dateTimeFormatter.format(new Date(selected.customerConfirmedAt))}.
                 </div>
               ) : selected.deliveryStatus === "OUT_FOR_DELIVERY" ? (
-                <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-400/30 dark:bg-blue-500/10 dark:text-blue-100">
                   Waiting for the customer to confirm physical receipt from My Account.
                 </div>
               ) : null}
@@ -778,8 +778,8 @@ function StaffDeliveryProgress({ ticket }: { ticket: DeliveryTicket }) {
                     "grid h-7 w-7 flex-none place-items-center rounded-full border text-xs font-semibold",
                     event
                       ? "border-transparent bg-indigo-600 text-white"
-                      : "border-slate-200 bg-white text-slate-500",
-                    isCurrent ? "ring-4 ring-indigo-100" : ""
+                      : "border-slate-200 bg-white text-slate-500 dark:border-slate-500 dark:bg-slate-700 dark:text-slate-100",
+                    isCurrent ? "ring-4 ring-indigo-100 dark:ring-indigo-400/30" : ""
                   ]
                     .filter(Boolean)
                     .join(" ")}
@@ -788,14 +788,14 @@ function StaffDeliveryProgress({ ticket }: { ticket: DeliveryTicket }) {
                 </span>
                 {index < DELIVERY_PROGRESS_STEPS.length - 1 ? (
                   <span
-                    className={`mx-2 h-px flex-1 ${event ? "bg-indigo-300" : "bg-slate-200"}`}
+                    className={`mx-2 h-px flex-1 ${event ? "bg-indigo-300 dark:bg-indigo-400/70" : "bg-slate-200 dark:bg-slate-600"}`}
                     aria-hidden="true"
                   />
                 ) : null}
               </div>
               <div className="mt-2 pr-3">
-                <strong className="block text-xs font-semibold text-slate-900">{step.label}</strong>
-                <span className="mt-1 block text-[11px] leading-4 text-slate-500">
+                <strong className="block text-xs font-semibold text-slate-900 dark:text-slate-100">{step.label}</strong>
+                <span className="mt-1 block text-[11px] leading-4 text-slate-500 dark:text-slate-300">
                   {event ? dateTimeFormatter.format(new Date(event.createdAt)) : "Pending"}
                 </span>
               </div>
@@ -845,14 +845,14 @@ function TicketFact({
   value: string;
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-slate-200 p-3">
-      <span className="grid h-8 w-8 flex-none place-items-center rounded-lg bg-slate-100 text-slate-600">
+    <div className="flex items-start gap-3 rounded-xl border border-slate-200 p-3 dark:border-slate-600 dark:bg-slate-800/40">
+      <span className="grid h-8 w-8 flex-none place-items-center rounded-lg bg-slate-100 text-slate-600 dark:bg-indigo-400/15 dark:text-indigo-200">
         <Icon className="h-4 w-4" aria-hidden="true" />
       </span>
       <div className="min-w-0">
-        <p className="text-xs text-slate-500">{label}</p>
-        <p className="truncate text-sm font-semibold text-slate-950">{value}</p>
-        <p className="truncate text-xs text-slate-500">{detail}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-300">{label}</p>
+        <p className="truncate text-sm font-semibold text-slate-950 dark:text-slate-50">{value}</p>
+        <p className="truncate text-xs text-slate-500 dark:text-slate-300">{detail}</p>
       </div>
     </div>
   );
