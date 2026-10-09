@@ -299,14 +299,14 @@ export function CategoriesPage() {
         }
       />
 
-      <section className="space-y-6">
+      <section className="ys-category-page space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Category directory</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 px-4 pb-4 pt-2 lg:px-5">
             <div className="grid gap-3 xl:grid-cols-[minmax(240px,1fr)_180px_180px_170px_210px]">
-              <label className="relative flex h-11 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3">
+              <label className="ys-category-search relative flex h-11 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3">
                 <Search className="h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
                 <input
                   aria-label="Search categories"
@@ -575,7 +575,7 @@ export function CategoriesPage() {
 
 function FilterSelect({ children, label }: { children: ReactNode; label: string }) {
   return (
-    <label className="relative block h-11">
+    <label className="ys-category-filter relative block h-11">
       <Filter
         className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-500"
         aria-hidden="true"
@@ -665,7 +665,7 @@ function CreateCategoryDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && !saving && onClose()}>
-      <DialogContent className="flex max-h-[90vh] max-w-[560px] flex-col gap-0 p-0">
+      <DialogContent className="ys-category-modal flex max-h-[90vh] max-w-[560px] flex-col gap-0 p-0">
         <DialogHeader className="border-b border-slate-200 px-6 py-5">
           <DialogTitle>Add Category</DialogTitle>
           <DialogDescription>
@@ -830,7 +830,7 @@ function EditCategoryDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && !saving && onClose()}>
-      <DialogContent className="flex max-h-[92vh] max-w-[900px] flex-col gap-0 p-0">
+      <DialogContent className="ys-category-modal flex max-h-[92vh] max-w-[900px] flex-col gap-0 p-0">
         <DialogHeader className="border-b border-slate-200 px-6 py-5">
           <DialogTitle>Edit Category</DialogTitle>
           <DialogDescription>
@@ -906,7 +906,7 @@ function EditCategoryDialog({
               </div>
             </div>
 
-            <aside className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+            <aside className="ys-category-presentation space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-slate-950">Storefront presentation</p>
@@ -1133,7 +1133,7 @@ function CategoryCoverPreview({
   const productLabel = `${category.productCount} ${category.productCount === 1 ? "product" : "products"}`;
 
   return (
-    <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-3">
+    <div className="ys-category-live-preview space-y-3 rounded-xl border border-slate-200 bg-white p-3">
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           Live crop preview
@@ -1169,7 +1169,7 @@ function CategoryCoverPreview({
       </div>
 
       <div className={previewMode === "MOBILE" ? "mx-auto w-full max-w-[18rem]" : "w-full"}>
-        <div className="overflow-hidden rounded-[1.15rem] border border-slate-200 bg-white shadow-sm">
+        <div className="ys-category-preview-card overflow-hidden rounded-[1.15rem] border border-slate-200 bg-white shadow-sm">
           <div
             className={
               previewMode === "MOBILE"
@@ -1196,7 +1196,7 @@ function CategoryCoverPreview({
                 }}
               />
             ) : (
-              <div className="grid h-full place-items-center px-6 text-center">
+              <div className="ys-category-empty-cover grid h-full place-items-center px-6 text-center">
                 <div>
                   <span className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-white text-slate-400 shadow-sm">
                     <ImageIcon className="h-5 w-5" aria-hidden="true" />
