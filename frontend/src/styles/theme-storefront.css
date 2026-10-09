@@ -246,6 +246,39 @@
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 86%, transparent 100%);
   mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 86%, transparent 100%);
 }
+/* Section 3 → Section 4 seamless bridge.
+   A solid navy top edge alone cannot match Section 3's violet-left/navy-right
+   galaxy finish. Both adjacent sections now use the SAME horizontal palette,
+   with opposite vertical masks. This eliminates the cut without bitmap scaling,
+   artificial overlap, or opaque bars covering the shopping content. */
+:root.dark .customer-app .home-merchandising-canvas::after,
+:root.dark .customer-app .customer-home .home-next-step::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: clamp(104px, 12vw, 180px);
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    90deg,
+    #252844 0%,
+    #212945 36%,
+    #1b2943 70%,
+    #17243c 100%
+  );
+}
+:root.dark .customer-app .home-merchandising-canvas::after {
+  bottom: 0;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 100%);
+}
+:root.dark .customer-app .customer-home .home-next-step::before {
+  top: 0;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
+}
+
 @media (max-width: 920px) {
   :root.dark .customer-app .home-next-step__dark-backdrop-svg {
     right: -18%;
