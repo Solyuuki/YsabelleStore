@@ -80,8 +80,10 @@
   color: var(--store-contrast-body);
 }
 
-/* Reviews: review overview, composer, published reviews, filters, and
-   text inputs previously retained #fff and disappeared in Dark Mode. */
+/* Reviews use the identical graphite-frost vector as the dark product
+   card body. Cover maintains the SVG aspect ratio (cropping, never stretching);
+   one non-repeating image is rendered per review surface, with a safe color
+   fallback if the asset is unavailable. */
 :root.dark
   .customer-app
   :is(
@@ -90,10 +92,14 @@
     .customer-review,
     .customer-review-empty
   ) {
-  background: linear-gradient(145deg, #233149, #1b2638);
+  background:
+    url("/textures/ys-dark-graphite-glass.svg") center / cover no-repeat,
+    #24334a;
   color: var(--store-contrast-ink);
   border-color: var(--store-contrast-stroke);
-  box-shadow: 0 16px 34px rgb(0 0 0 / 10%);
+  box-shadow:
+    0 12px 28px rgb(2 8 23 / 14%),
+    inset 0 1px 0 rgb(171 190 239 / 4%);
 }
 :root.dark
   .customer-app
