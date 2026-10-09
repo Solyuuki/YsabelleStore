@@ -123,7 +123,7 @@ assert.match(
 );
 assert.match(
   footerSource,
-  /className="customer-footer__description"[\s\S]*?Your neighborhood grocery in Pasig City\.[\s\S]*?pantry staples[\s\S]*?household essentials/,
+  /className="customer-footer__description"[\s\S]*?Your Pasig City grocery for pantry staples, snacks, and more\./,
   "Footer brand must include the approved neighborhood grocery description."
 );
 assert.match(
@@ -133,7 +133,7 @@ assert.match(
 );
 assert.match(
   customerCss,
-  /\.customer-footer__brand-column > \.customer-footer__description\s*\{[^}]*max-width:\s*35ch;[^}]*line-height:\s*1\.65;/,
+  /\.customer-footer__brand-column > \.customer-footer__description\s*\{[^}]*max-width:\s*35ch;[^}]*line-height:\s*1\.55;/,
   "Footer supporting copy must wrap within the brand column."
 );
 
