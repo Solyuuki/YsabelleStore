@@ -872,6 +872,21 @@
   background-repeat: no-repeat;
 }
 
+/* Shop hero must fill the ENTIRE viewport width, including screens wider
+   than 1600px. The general capped background-size above left hard vertical
+   seams at both edges. Cover crops proportionally; never distort the SVG. */
+:root.dark .customer-app .customer-shop-page .customer-shop-heading {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+/* The light-mode decor uses preserveAspectRatio="none" and its long wave
+   paths create distracting, distorted lines in dark mode. Keep it for light
+   mode; show the approved indigo-silk backdrop by itself in dark mode. */
+:root.dark .customer-app .customer-shop-page .customer-shop-heading__backdrop svg {
+  display: none;
+}
+
 /* Clear section boundaries, readable bodies and tidy focal outlines. */
 :root.dark
   .customer-app
