@@ -206,7 +206,15 @@ function assertDraft(
   }
 }
 
-export async function createRestockOrder(input: CreateRestockOrderRequest, createdById: string) {
+export async function createRestockOrder(
+  input: CreateRestockOrderRequest,
+  createdById: string,
+  automatedMonthlyOrderNumber?: string
+) {
+  // Only the trusted automation caller supplies this deterministic monthly identity.
+  if (automatedMonthlyOrderNumber && !/^RO-[A-Z]{3}-\\d{4}$/.test(automatedMonthlyOrderNumber)) {
+    throw new Error("Invalid monthly restock identity.");
+  }
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
       const orderId = await prisma.$transaction(async (tx) => {
@@ -215,7 +223,7 @@ export async function createRestockOrder(input: CreateRestockOrderRequest, creat
           data: {
             createdById,
             notes: input.notes ?? null,
-            orderNumber: generateRestockOrderNumber(),
+            orderNumber: automatedMonthlyOrderNumber ?? generateRestockOrderNumber(),
             status: RestockOrderStatus.DRAFT
           },
           select: { id: true }
@@ -232,7 +240,12 @@ export async function createRestockOrder(input: CreateRestockOrderRequest, creat
 
       return await loadRestockOrder(orderId);
     } catch (error) {
-      if (isKnownPrismaError(error) && error.code === "P2002" && attempt < 2) {
+      if (
+        !automatedMonthlyOrderNumber &&
+        isKnownPrismaError(error) &&
+        error.code === "P2002" &&
+        attempt < 2
+      ) {
         continue;
       }
       throw error;
