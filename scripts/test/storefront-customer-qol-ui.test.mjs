@@ -46,4 +46,24 @@ assert.match(storefrontImagesSource, /sarima-p219-b7553e591e41/);
 assert.match(storefrontImagesSource, /edge-artifact-20260928/);
 assert.doesNotMatch(customerCss, /data-image-cleanup="trim-top-edge"/);
 
+
+/* Cart dark-only styling must not inherit the old background shader or white
+   pagination panel; existing AppPagination/QuantityControl behavior is retained. */
+const cartCss = await readFile(
+  new URL("../../frontend/src/styles/customer-cart-premium.css", import.meta.url),
+  "utf8"
+);
+const cartSource = await readFile(
+  new URL("../../frontend/src/pages/customer/CartPage.tsx", import.meta.url),
+  "utf8"
+);
+assert.match(cartCss, /:root\.dark \.customer-app \.customer-cart-page\s*\{[^}]*background:\s*#101827 !important;[^}]*background-image:\s*none !important;/);
+assert.match(cartCss, /\.customer-cart-pagination\s*\{[^}]*background:\s*#202d44 !important;/);
+assert.match(cartCss, /\.customer-cart-pagination nav button\[aria-current="page"\]\s*\{[^}]*background:\s*#473c73 !important;/);
+assert.match(cartCss, /\.customer-cart-pagination nav button:disabled:not\(\[aria-current="page"\]\)\s*\{[^}]*opacity:\s*0\.55;/);
+assert.match(cartCss, /\.customer-cart-page \.customer-quantity > input\[type="number"\]\s*\{[^}]*background:\s*transparent !important;/);
+assert.match(cartSource, /<AppPagination[\s\S]*?className="customer-cart-pagination"/);
+assert.match(cartSource, /pageSize=\{CART_PAGE_SIZE\}/);
+assert.match(cartSource, /<QuantityControl[\s\S]*?updateQuantity\(product\.id, value\)/);
+
 console.log("storefront customer QoL UI contract passed");
