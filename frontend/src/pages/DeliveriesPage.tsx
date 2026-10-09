@@ -494,7 +494,9 @@ export function DeliveriesPage() {
                 <Badge variant={operationalStatusTone(selected)}>
                   {operationalStatusLabel(selected)}
                 </Badge>
-                <Badge className="dark:border-slate-500 dark:bg-slate-700/60 dark:text-slate-100">{paymentLabel(selected.paymentMethod)}</Badge>
+                <Badge className="dark:border-slate-500 dark:bg-slate-700/60 dark:text-slate-100">
+                  {paymentLabel(selected.paymentMethod)}
+                </Badge>
               </div>
               <DialogTitle>{selected.deliveryTicketNumber}</DialogTitle>
               <DialogDescription>
