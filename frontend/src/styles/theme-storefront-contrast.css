@@ -551,6 +551,14 @@
   outline: 2px solid #aca0ef;
   outline-offset: 3px;
 }
+
+/* Header search owns its accessible focus ring on the rounded outer shell.
+   Never draw the global rectangular input outline inside the pill. */
+:root.dark .customer-app .customer-global-search__shell input:focus-visible {
+  outline: none;
+  outline-offset: 0;
+}
+
 /* Respect deliberate, branded light canvases: text contrast is local. */
 :root.dark
   .customer-app
