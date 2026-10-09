@@ -684,6 +684,50 @@
   color: #b8c6d8;
 }
 
+/* The Driver.js guide is portaled outside .customer-app. Theme its progress
+   and navigation with :root.dark, including disabled/hover states. */
+:root.dark .ysabelle-guide.driver-popover .driver-popover-footer {
+  border-top-color: rgb(151 167 209 / 19%);
+}
+:root.dark .ysabelle-guide.driver-popover .driver-popover-progress-text {
+  background: #263650;
+  border-color: #485e80;
+  color: #c3d0e8;
+  box-shadow: none;
+}
+:root.dark .ysabelle-guide.driver-popover .driver-popover-prev-btn {
+  background: #293851 !important;
+  border-color: #65799c !important;
+  color: #dce5f8 !important;
+  box-shadow: none;
+}
+:root.dark .ysabelle-guide.driver-popover .driver-popover-prev-btn:not(:disabled):is(:hover, :focus-visible) {
+  background: #344765 !important;
+  border-color: #afa4ee !important;
+  color: #f3f0ff !important;
+}
+:root.dark .ysabelle-guide.driver-popover .driver-popover-footer button:disabled {
+  opacity: 1;
+  cursor: default;
+  box-shadow: none;
+  transform: none;
+}
+:root.dark .ysabelle-guide.driver-popover .driver-popover-prev-btn:disabled,
+:root.dark .ysabelle-guide.driver-popover .driver-popover-prev-btn:disabled:is(:hover, :focus-visible),
+:root.dark .ysabelle-guide.driver-popover .driver-popover-next-btn:disabled,
+:root.dark .ysabelle-guide.driver-popover .driver-popover-next-btn:disabled:is(:hover, :focus-visible) {
+  background: #192438 !important;
+  border-color: #344259 !important;
+  color: #74839a !important;
+  box-shadow: none;
+  transform: none;
+}
+:root.dark .ysabelle-guide.driver-popover .driver-popover-footer button:not(:disabled):focus-visible {
+  outline: 3px solid #b8abff;
+  outline-offset: 2px;
+}
+
+
 /* Forms and checkout remain opaque and readable above textured backgrounds. */
 :root.dark .customer-app :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]) {
   color: #d4deec;
