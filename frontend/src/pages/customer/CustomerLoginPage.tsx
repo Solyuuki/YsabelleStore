@@ -46,6 +46,12 @@ export function CustomerLoginPage({ navigate }: { navigate: (path: string) => vo
     getCustomerSocialAuthNotice(globalThis.location?.search ?? "")
   );
 
+  // Navigating from a long storefront page must not restore its scroll position
+  // underneath the sticky header on the Sign In route.
+  useEffect(() => {
+    globalThis.scrollTo?.({ top: 0, left: 0, behavior: "auto" });
+  }, []);
+
   useEffect(() => {
     function restoreInteractiveState() {
       setSubmitting(false);

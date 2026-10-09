@@ -1262,6 +1262,23 @@
   animation: none;
 }
 
+/* Login dark-mode cleanup: the old crystal facet layer crosses the
+   new galaxy backdrop and creates distracting diagonal bands INSIDE the card.
+   Keep the original card, fields, actions and focus treatment unchanged. */
+:root.dark .customer-app .customer-auth-page--login
+  .customer-auth-stage__panel.ys-material-surface::before {
+  display: none;
+  content: none;
+}
+/* The pre-galaxy rotating conic glow behind the stage is obsolete as well.
+   This rule is login-only; Register / Recovery keep their existing motion. */
+:root.dark .customer-app .customer-auth-page--login
+  .customer-auth-stage::before {
+  display: none;
+  content: none;
+  animation: none;
+}
+
 /* Avoid global control styling overriding intentional product photo backgrounds. */
 :root.dark .customer-app .customer-product-card__media,
 :root.dark .customer-app .customer-product-detail__media {

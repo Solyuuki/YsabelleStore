@@ -351,4 +351,23 @@ assert.match(
   "Old animated login backdrop glows must be removed instead of overlaying the galaxy."
 );
 
+/* A dark-mode login entered from Account must not inherit the previous page
+   scroll offset or show the pre-galaxy faceted card overlay. */
+const loginPageSource = readFileSync(resolve(process.cwd(), "src/pages/customer/CustomerLoginPage.tsx"), "utf8");
+assert.match(
+  loginPageSource,
+  /useEffect\(\(\) => \{\s*globalThis\.scrollTo\?\.\(\{ top: 0, left: 0, behavior: "auto" \}\);\s*\}, \[\]\)/,
+  "Sign In must start at the top instead of opening with its card under the sticky header."
+);
+assert.match(
+  storefrontContrast,
+  /:root\.dark \.customer-app \.customer-auth-page--login\s+\.customer-auth-stage__panel\.ys-material-surface::before\s*\{[^}]*content:\s*none/,
+  "The login card should not display the legacy material facet texture over the galaxy."
+);
+assert.match(
+  storefrontContrast,
+  /:root\.dark \.customer-app \.customer-auth-page--login\s+\.customer-auth-stage::before\s*\{[^}]*animation:\s*none/,
+  "Only the login stage should stop its obsolete orbital glow animation."
+);
+
 console.log("Storefront Shop/Catalog background contract passed.");
