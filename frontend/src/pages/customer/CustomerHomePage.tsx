@@ -339,108 +339,67 @@ function MerchandisingBackdrop() {
           <circle cx="1434" cy="2260" r="10" />
         </g>
       </svg>
-      {/* Right-side editorial accents: vector geometry is not stretched to the section height. */}
+      {/* Galaxy-style editorial backdrop for the ONE shared merchandising canvas.
+          This viewBox preserves proportion; the CSS supplies full-bleed color continuity. */}
       <svg
-        className="home-merchandising-canvas__dark-art home-merchandising-canvas__dark-art--top"
+        className="home-merchandising-canvas__cosmos"
         focusable="false"
-        preserveAspectRatio="xMidYMin meet"
-        viewBox="0 0 1600 900"
+        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 1024 1536"
       >
         <defs>
-          <linearGradient id="merchTopRightCurve" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stopColor="#8E74E6" stopOpacity="0.10" />
-            <stop offset="100%" stopColor="#C07AF1" stopOpacity="0.42" />
-          </linearGradient>
+          <radialGradient id="ysCosmicTopNebula">
+            <stop offset="0%" stopColor="#4E60B9" stopOpacity="0.34" />
+            <stop offset="50%" stopColor="#6D52BA" stopOpacity="0.12" />
+            <stop offset="100%" stopColor="#423D89" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="ysCosmicLowerNebula">
+            <stop offset="0%" stopColor="#8551C1" stopOpacity="0.33" />
+            <stop offset="58%" stopColor="#51459C" stopOpacity="0.12" />
+            <stop offset="100%" stopColor="#353780" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="ysCosmicBlueNebula">
+            <stop offset="0%" stopColor="#3B6ABF" stopOpacity="0.23" />
+            <stop offset="100%" stopColor="#254486" stopOpacity="0" />
+          </radialGradient>
         </defs>
+        <ellipse cx="835" cy="135" rx="440" ry="325" fill="url(#ysCosmicTopNebula)" />
+        <ellipse cx="825" cy="1350" rx="450" ry="410" fill="url(#ysCosmicLowerNebula)" />
+        <ellipse cx="66" cy="1090" rx="300" ry="445" fill="url(#ysCosmicBlueNebula)" />
+        {/* Decorative pinpoints are deterministic so the constellation never re-shuffles. */}
+        {Array.from({ length: 156 }, (_, index) => {
+          const a = (index * 3187 + index * index * 73 + 61) % 1009;
+          const b = (index * 2269 + index * index * 131 + 257) % 1531;
+          const x = index % 4 === 0 ? 650 + (a % 350) : index % 4 === 1 ? 20 + (a % 970) : index % 4 === 2 ? 750 + (a % 260) : a;
+          const y = index % 4 === 0 ? b % 340 : index % 4 === 2 ? 1000 + (b % 530) : b;
+          const centerQuiet = x > 170 && x < 740 && y > 310 && y < 1130;
+          return (
+            <circle
+              key={index}
+              cx={x}
+              cy={y}
+              r={index % 17 === 0 ? 2.25 : index % 7 === 0 ? 1.35 : 0.75}
+              fill={index % 3 === 0 ? "#AABFFF" : index % 3 === 1 ? "#C5A6FF" : "#D7E4FF"}
+              opacity={centerQuiet ? 0.13 : index % 9 === 0 ? 0.63 : 0.32}
+            />
+          );
+        })}
+
         <g fill="none" strokeLinecap="round">
-          <path
-            d="M775 960C996 797 1208 755 1459 526C1598 398 1700 358 1790 337"
-            stroke="url(#merchTopRightCurve)"
-            strokeWidth="1.5"
-          />
-          <path
-            d="M910 970C1138 829 1358 757 1522 593C1646 470 1725 446 1790 427"
-            stroke="#A785EF"
-            strokeOpacity="0.14"
-            strokeWidth="1"
-          />
+          <circle cx="1030" cy="-105" r="258" stroke="#A28CEB" strokeOpacity="0.32" strokeWidth="1.1" />
+          <circle cx="1030" cy="-105" r="327" stroke="#8899EA" strokeOpacity="0.12" strokeWidth="0.9" />
+          <circle cx="1090" cy="1494" r="372" stroke="#B18CEB" strokeOpacity="0.39" strokeWidth="1.2" />
+          <circle cx="1090" cy="1494" r="455" stroke="#8E7ED4" strokeOpacity="0.15" strokeWidth="0.85" />
         </g>
-        <g fill="#B689EF">
-          <circle cx="1412" cy="305" r="5.5" opacity="0.42" />
-          <circle cx="1336" cy="362" r="3.8" opacity="0.22" />
+        <g fill="#A88DE9" opacity="0.66">
+          <circle cx="940" cy="182" r="7" />
+          <circle cx="780" cy="1265" r="7" />
+          <circle cx="861" cy="109" r="3.6" />
+          <circle cx="995" cy="1304" r="3.2" />
         </g>
-      </svg>
-      <svg
-        className="home-merchandising-canvas__dark-art home-merchandising-canvas__dark-art--middle"
-        focusable="false"
-        preserveAspectRatio="xMidYMin meet"
-        viewBox="0 0 1600 900"
-      >
-        <defs>
-          <linearGradient id="merchMidMainCurve" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stopColor="#6FA7F4" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="#C179F0" stopOpacity="0.58" />
-          </linearGradient>
-          <linearGradient id="merchMidInnerCurve" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stopColor="#7E83E8" stopOpacity="0.10" />
-            <stop offset="100%" stopColor="#A16BE0" stopOpacity="0.20" />
-          </linearGradient>
-        </defs>
-        <g fill="none" strokeLinecap="round">
-          <path
-            d="M817 965C1050 807 1284 716 1467 540C1604 410 1715 354 1800 340"
-            stroke="url(#merchMidMainCurve)"
-            strokeWidth="1.7"
-          />
-          <path
-            d="M952 970C1158 832 1361 741 1517 611C1667 485 1734 458 1800 438"
-            stroke="url(#merchMidInnerCurve)"
-            strokeWidth="1"
-          />
-          <path
-            d="M1080 945C1270 812 1500 676 1790 522"
-            stroke="#B773ED"
-            strokeOpacity="0.22"
-            strokeWidth="1.4"
-          />
-        </g>
-        <g fill="#B784EE">
-          <circle cx="1268" cy="705" r="5.5" opacity="0.48" />
-          <circle cx="1460" cy="635" r="4.2" opacity="0.28" />
-          <circle cx="1365" cy="756" r="6" opacity="0.44" />
-        </g>
-      </svg>
-      <svg
-        className="home-merchandising-canvas__dark-art home-merchandising-canvas__dark-art--bottom"
-        focusable="false"
-        preserveAspectRatio="xMidYMin meet"
-        viewBox="0 0 1600 900"
-      >
-        <defs>
-          <linearGradient id="merchBottomOuter" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stopColor="#7A93EA" stopOpacity="0.12" />
-            <stop offset="100%" stopColor="#C078EE" stopOpacity="0.54" />
-          </linearGradient>
-          <linearGradient id="merchBottomInner" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stopColor="#7D7FE3" stopOpacity="0.08" />
-            <stop offset="100%" stopColor="#A56DE4" stopOpacity="0.18" />
-          </linearGradient>
-        </defs>
-        <g fill="none" strokeLinecap="round">
-          <path
-            d="M766 957C984 843 1254 695 1436 524C1594 373 1718 321 1800 304"
-            stroke="url(#merchBottomOuter)"
-            strokeWidth="1.6"
-          />
-          <path
-            d="M959 969C1157 859 1372 736 1529 603C1665 486 1737 440 1800 423"
-            stroke="url(#merchBottomInner)"
-            strokeWidth="1"
-          />
-        </g>
-        <g fill="#B587EE">
-          <circle cx="1428" cy="238" r="5.5" opacity="0.42" />
-          <circle cx="1350" cy="338" r="4" opacity="0.24" />
+        <g fill="none" stroke="#B3C9FF" strokeLinecap="round" strokeOpacity="0.6">
+          <path d="M678 101v16M670 109h16M816 238v12M810 244h12" strokeWidth="1.1" />
+          <path d="M573 1374v16M565 1382h16M899 1380v12M893 1386h12" strokeWidth="0.9" />
         </g>
       </svg>
     </div>
