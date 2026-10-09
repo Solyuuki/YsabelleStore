@@ -6,6 +6,7 @@ import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import { buildPaginationMeta } from "../utils/pagination.js";
 import { requiresAutomatedQuantityReview } from "./restockDraftReconciliation.js";
+import { assessProcurementSafety, exceedsRestockOrderBudget } from "./restockProcurementSafety.js";
 import type {
   ApproveRestockOrderRequest,
   CreateRestockOrderRequest,
@@ -372,8 +373,11 @@ export async function replaceRestockOrderLines(
 }
 
 /**
- * Quarantine inflated monthly automated orders both before Owner approval and
- * before the first physical receipt of an already approved legacy order.
+ * Fail closed for every selected restock line, including MANUAL lines.
+ * Recorded Owner reasons are audit evidence and cannot override the independent
+ * POS coverage / physical stock / cost checks.
+ *
+ * This is an approval/receiving gate. Draft edits alone never authorize buying.
  */
 export async function assertAutomatedRestockQuantitySafe(
   orderId: string,
@@ -399,52 +403,54 @@ export async function assertAutomatedRestockQuantitySafe(
     },
     where: { id: orderId }
   });
+
+  if (!snapshot || snapshot.version !== expectedVersion) {
+    throw new HttpError(409, "Restock ticket changed. Refresh before proceeding.", {
+      code: "RESTOCK_ORDER_VERSION_CONFLICT"
+    });
+  }
   if (
-    !snapshot ||
-    snapshot.version !== expectedVersion ||
-    !snapshot.notes?.includes("[AutomatedRestockMonth:") ||
     (stage === "APPROVAL" && snapshot.status !== RestockOrderStatus.DRAFT) ||
     (stage === "RECEIPT" &&
       snapshot.status !== RestockOrderStatus.APPROVED &&
       snapshot.status !== RestockOrderStatus.AWAITING_DELIVERY &&
       snapshot.status !== RestockOrderStatus.PARTIALLY_RECEIVED)
   ) {
-    return;
+    throw new HttpError(409, "Restock ticket is not valid for this lifecycle action.", {
+      code: "RESTOCK_ORDER_INVALID_STATUS"
+    });
   }
 
-  const automatedLines = snapshot.lines.filter(
-    (line) => line.isSelected && line.recommendationSource !== "MANUAL"
-  );
-  if (automatedLines.length === 0) return;
+  const selectedLines = snapshot.lines.filter((line) => line.isSelected);
+  if (selectedLines.length === 0) return;
 
-  // A lazy import avoids the circular module initialization between planning
-  // (which reads approved incoming stock) and restock services.
+  // Lazy import avoids a circular dependency with restockPlanningService.
+  // Critically, this ticket is excluded from its own incoming-stock calculation.
   const { listRestockPlanningCandidates } = await import("./restockPlanningService.js");
   const result = await listRestockPlanningCandidates(
-    { includeZero: true, page: 1, pageSize: automatedLines.length },
-    automatedLines.map((line) => line.productId),
+    { includeZero: true, page: 1, pageSize: selectedLines.length },
+    selectedLines.map((line) => line.productId),
     orderId
   );
-  const latestByProduct = new Map(
-    result.items.map((candidate) => [candidate.product.id, candidate.recommendedQuantity])
+  const currentByProduct = new Map(
+    result.items.map((candidate) => [candidate.product.id, candidate])
   );
+  const costsPHP: number[] = [];
 
-  for (const line of automatedLines) {
-    const latest = latestByProduct.get(line.productId);
-    if (latest === undefined) {
-      throw new HttpError(422, "An automated product has no current restock forecast. Review this ticket.", {
+  for (const line of selectedLines) {
+    const candidate = currentByProduct.get(line.productId);
+    if (!candidate) {
+      throw new HttpError(422, "This product has no eligible current restock planning data.", {
         code: "RESTOCK_FORECAST_UNAVAILABLE",
         details: { productId: line.productId }
       });
     }
+    const latest = candidate.recommendedQuantity;
 
     if (
-      requiresAutomatedQuantityReview(line.recommendedQuantity, latest, null) ||
-      requiresAutomatedQuantityReview(
-        line.requestedQuantity,
-        latest,
-        line.ownerOverrideReason
-      )
+      line.recommendationSource !== "MANUAL" &&
+      (requiresAutomatedQuantityReview(line.recommendedQuantity, latest, null) ||
+        requiresAutomatedQuantityReview(line.requestedQuantity, latest, line.ownerOverrideReason))
     ) {
       throw new HttpError(
         422,
@@ -460,6 +466,38 @@ export async function assertAutomatedRestockQuantitySafe(
         }
       );
     }
+
+    const verdict = assessProcurementSafety({
+      requestedQuantity: line.requestedQuantity,
+      monthlyPosDemand: candidate.stockHealth.monthlyDemand,
+      posConfidence: candidate.stockHealth.confidence,
+      sellableStock: candidate.sellableStock,
+      incomingStock: candidate.incomingStock,
+      expiryRiskQuantity: candidate.expiryRiskQuantity,
+      unitCost: candidate.product.unitCost
+    });
+    if (!verdict.safe) {
+      throw new HttpError(
+        422,
+        "Restock purchase blocked by independent POS, stock coverage or cost safety limits.",
+        {
+          code: "RESTOCK_PURCHASE_SAFETY_BLOCKED",
+          details: {
+            productId: line.productId,
+            reason: verdict.reason,
+            requestedQuantity: line.requestedQuantity,
+            maxAllowedQuantity: verdict.maxAllowedQuantity
+          }
+        }
+      );
+    }
+    costsPHP.push(verdict.lineCostPHP);
+  }
+
+  if (exceedsRestockOrderBudget(costsPHP)) {
+    throw new HttpError(422, "This restock exceeds the configured order purchasing limit.", {
+      code: "RESTOCK_ORDER_BUDGET_EXCEEDED"
+    });
   }
 }
 
