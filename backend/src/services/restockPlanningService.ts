@@ -220,9 +220,12 @@ export async function listRestockPlanningCandidates(
         reorderLevel: product.reorderLevel,
         sku: product.sku,
         targetStockLevel: product.targetStockLevel,
-        unitCost: product.costPrice === null
-          ? (product.inventoryBatches.find((batch) => batch.unitCost !== null)?.unitCost.toNumber() ?? null)
-          : product.costPrice.toNumber()
+        unitCost:
+          product.costPrice?.toNumber() ??
+          product.inventoryBatches
+            .map((batch) => batch.unitCost?.toNumber() ?? null)
+            .find((cost) => cost !== null) ??
+          null
       },
       quarantinedStock: stockTruth.quarantinedStock,
       rationale,
