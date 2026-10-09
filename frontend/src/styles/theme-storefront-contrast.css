@@ -1587,26 +1587,16 @@
   z-index: 1;
 }
 
-/* Hero: use the approved Shop/storefront orbital artwork, not the old
-   separate indigo-silk banner or oversized legacy white curved outlines.
-   Transparent fading lets the shared galaxy continue underneath. */
+/* The first Support section uses the exact Shop by Category dark backdrop:
+   shared CSS gradients plus the proportional SVG lines/dots in the page markup.
+   No independent orbital bitmap or stretched shader layer. */
 :root.dark .customer-app .customer-support-hero {
-  background: transparent !important;
+  background: var(--storefront-category-background) !important;
   border-bottom-color: transparent;
 }
-:root.dark .customer-app .customer-support-hero::before {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  border-radius: 0;
-  background: url("/textures/ys-dark-shop-orbital-hero.svg") center 52% / cover no-repeat;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 100%);
-  transform: none;
-}
+:root.dark .customer-app .customer-support-hero::before,
 :root.dark .customer-app .customer-support-hero::after {
+  content: none;
   display: none;
 }
 :root.dark .customer-app .customer-support-hero__grid {
