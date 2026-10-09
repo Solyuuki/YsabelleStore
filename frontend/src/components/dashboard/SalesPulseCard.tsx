@@ -168,7 +168,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
               Past actuals, today's progress, future targets, and monthly forecast context.
             </p>
           </div>
-          <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
+          <div className="ys-sales-view-tabs inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
             <button
               className={tabClass(view === "calendar")}
               onClick={() => setView("calendar")}
@@ -247,7 +247,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
             </div>
 
             <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(260px,0.55fr)]">
-              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+              <div className="ys-sales-calendar overflow-hidden rounded-xl border border-slate-200 bg-white">
                 <div className="flex items-center justify-between border-b border-slate-100 px-3 py-3 sm:px-4">
                   <div className="flex items-center gap-2">
                     <Button
@@ -261,7 +261,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <label className="relative flex min-w-[164px] items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 shadow-sm">
+                    <label className="ys-sales-month-picker relative flex min-w-[164px] items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 shadow-sm">
                       <span className="sr-only">Choose month and year</span>
                       <input
                         aria-label="Choose month and year"
@@ -300,7 +300,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                   </Button>
                 </div>
 
-                <div className="grid grid-cols-7 border-b border-slate-100 bg-slate-50/80">
+                <div className="ys-sales-weekdays grid grid-cols-7 border-b border-slate-100 bg-slate-50/80">
                   {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((weekday) => (
                     <div
                       className="px-1 py-2 text-center text-[10px] font-semibold uppercase tracking-wide text-slate-400 sm:text-xs"
@@ -314,7 +314,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                 <div className="grid grid-cols-7">
                   {Array.from({ length: firstWeekday }).map((_, index) => (
                     <div
-                      className="min-h-[78px] border-b border-r border-slate-100 bg-slate-50/30 sm:min-h-[96px]"
+                      className="ys-sales-empty-day min-h-[78px] border-b border-r border-slate-100 bg-slate-50/30 sm:min-h-[96px]"
                       key={`empty-${index}`}
                     />
                   ))}
@@ -324,7 +324,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                       <button
                         aria-label={`Open sales for ${day.date}`}
                         className={[
-                          "group min-h-[78px] border-b border-r border-slate-100 p-1.5 text-left transition sm:min-h-[96px] sm:p-2.5",
+                          "ys-sales-day group min-h-[78px] border-b border-r border-slate-100 p-1.5 text-left transition sm:min-h-[96px] sm:p-2.5",
                           selected
                             ? "bg-violet-50 ring-2 ring-inset ring-[#625bff]"
                             : "hover:bg-slate-50",
@@ -365,14 +365,14 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                   })}
                   {Array.from({ length: trailingDays }).map((_, index) => (
                     <div
-                      className="min-h-[78px] border-b border-r border-slate-100 bg-slate-50/30 sm:min-h-[96px]"
+                      className="ys-sales-empty-day min-h-[78px] border-b border-r border-slate-100 bg-slate-50/30 sm:min-h-[96px]"
                       key={`trailing-empty-${index}`}
                     />
                   ))}
                 </div>
               </div>
 
-              <div className="self-start rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+              <div className="ys-sales-selected-day self-start rounded-xl border border-slate-200 bg-slate-50/60 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#625bff]">
                   Selected day
                 </p>
@@ -447,7 +447,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
               </div>
             </div>
 
-            <div className="h-64 rounded-xl border border-slate-200 bg-slate-50/40 p-3">
+            <div className="ys-sales-chart h-64 rounded-xl border border-slate-200 bg-slate-50/40 p-3">
               <ResponsiveContainer height="100%" width="100%">
                 <ComposedChart
                   data={monthlyPerformanceData}
@@ -489,7 +489,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
             </div>
 
             <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(260px,0.55fr)]">
-              <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <div className="ys-sales-detail-chart rounded-xl border border-slate-200 bg-white p-4">
                 <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-slate-900">
@@ -605,7 +605,7 @@ function PerformanceSignal({ detail }: { detail: DashboardSalesDayDetail | null 
   const belowTarget = achievement !== null && achievement < 100;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+    <div className="ys-sales-performance-signal rounded-xl border border-slate-200 bg-slate-50/70 p-4">
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#625bff]">
         Recommender signal
       </p>
@@ -647,7 +647,7 @@ function PerformanceSignal({ detail }: { detail: DashboardSalesDayDetail | null 
 
 function SummaryTile({ helper, label, value }: { helper?: string; label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-3">
+    <div className="ys-sales-summary-tile rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-3">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
       <p className="mt-1 truncate text-lg font-semibold tracking-tight text-slate-950">{value}</p>
       {helper ? <p className="mt-1 text-[11px] text-slate-500">{helper}</p> : null}
@@ -657,7 +657,7 @@ function SummaryTile({ helper, label, value }: { helper?: string; label: string;
 
 function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3">
+    <div className="ys-sales-mini-metric rounded-lg border border-slate-200 bg-white p-3">
       <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
       <p className="mt-1 break-words text-sm font-semibold leading-5 text-slate-900">{value}</p>
     </div>
@@ -666,7 +666,7 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
 
 function tabClass(active: boolean) {
   return [
-    "inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-semibold transition",
+    "ys-sales-view-tab inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-semibold transition",
     active
       ? "bg-white text-[#625bff] shadow-sm ring-1 ring-slate-200"
       : "text-slate-500 hover:text-slate-900"
