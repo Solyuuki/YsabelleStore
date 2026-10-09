@@ -321,16 +321,19 @@ export async function receiveRestockOrder(
       }
 
       const remaining = Math.max(0, orderLine.requestedQuantity - orderLine.receivedQuantity);
-      if (receiptLine.acceptedQuantity > remaining && !receiptLine.confirmOverDelivery) {
+      // Confirmation alone cannot increase the authorized purchase quantity.
+      // An excess delivery needs a separately approved order before stocking.
+      if (receiptLine.acceptedQuantity > remaining) {
         throw new HttpError(
           422,
-          "Accepted quantity exceeds the remaining order quantity. Confirm the over-delivery before receiving it.",
+          "Accepted quantity exceeds approved remaining units. Create a separately approved restock order for any extra stock.",
           {
-            code: "RESTOCK_OVER_DELIVERY_CONFIRMATION_REQUIRED",
+            code: "RESTOCK_OVER_DELIVERY_NOT_AUTHORIZED",
             details: {
               acceptedQuantity: receiptLine.acceptedQuantity,
               lineId: receiptLine.lineId,
-              remainingQuantity: remaining
+              remainingQuantity: remaining,
+              confirmOverDelivery: receiptLine.confirmOverDelivery ?? false
             }
           }
         );
