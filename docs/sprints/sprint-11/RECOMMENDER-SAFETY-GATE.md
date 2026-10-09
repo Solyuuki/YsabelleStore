@@ -33,11 +33,13 @@ without reliable cost evidence. It does not certify SARIMA forecast accuracy.
    - No authorized purchase on missing POS evidence or unknown/invalid unit cost.
    - No Owner-reason bypass for inflated automated recommendations.
 5. All selected approved/restock receipt lines (including manual lines)
-   are checked. Version/CAS guards protect order edits; receiving uses
-   outstanding units for partial deliveries and rejects accepted quantities
-   **above the remaining approved order**, regardless of confirmation flag.
-6. Automatic generation skips unsafe candidates. There is **no silent
-   substitution** of flagged order quantities.
+   are checked inside read-committed transactions, using ordered product-row
+   locks and version/CAS guards. Receiving uses outstanding units for partial
+   deliveries and rejects accepted quantities **above the remaining approved
+   order**, regardless of confirmation flag.
+6. Automatic generation skips unsafe candidates. Price checks conservatively
+   use the highest available positive catalog/inventory unit cost. There is
+   **no silent substitution** of flagged order quantities.
 
 ## Verified evidence
 
@@ -46,9 +48,9 @@ without reliable cost evidence. It does not certify SARIMA forecast accuracy.
   followed by the backend build.
 - Initial workflow result for commit `6ef19c4`: **31/31 tests passed,
   0 failures; backend build passed**.
-- Subsequent commits (over-delivery, read-only operational audit) require
-  the workflow to pass again before the implementation can be considered
-  regression-validated. Do not infer pass status from older runs.
+- Dedicated workflow for commit `c16cdc6` passed **33/33 tests, zero failures**,
+  with a successful backend compile. The later unit-cost improvement requires a
+  fresh check; successful earlier jobs do not automatically validate new commits.
 - Read-only audit (requires the local development MySQL URL)
   `npx tsx backend/src/scripts/restockSafetyAudit.ts --order RO-OCT-2026`.
   Never run generation, seed or schema synchronization during this audit.
@@ -56,9 +58,10 @@ without reliable cost evidence. It does not certify SARIMA forecast accuracy.
 ## Remaining release blockers
 
 - Actual multi-process MySQL race test of monthly creation and reconciliation.
-- Approve/receive workflow tested with controlled transaction concurrency; risk
-  checks run immediately before the order-version claim but do not yet lock
-  underlying inventory/POS rows as one serializable procurement snapshot.
+- Approval and receipt transactions now lock product rows in deterministic order
+  and use read-committed snapshots, but a controlled full transaction-concurrency
+  test is still required. Product-row locking does not automatically serialize
+  every independent POS or inventory write path.
 - Budget limits and supplier lead time must be agreed by the actual Owner.
   The defaults deliberately block large/unverified purchases and could also
   block legitimate large orders. No exception bypass is implemented yet.
