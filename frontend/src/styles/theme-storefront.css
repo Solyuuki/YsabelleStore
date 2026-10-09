@@ -355,15 +355,22 @@
   color: #c5d0e4;
 }
 
-/* Sprint 11: unified dark editorial hierarchy for the four home shelves. */
+/* Sprint 11: consistent home-heading hierarchy with section-specific accent ink. */
 :root.dark .customer-app .customer-home
-  :is(
-    .home-section-heading--categories,
-    .home-section-heading--trending,
-    .home-section-heading--best-seller,
-    .home-section-heading--essentials
-  ) .home-section-heading__eyebrow {
-  color: #bbaaff;
+  .home-section-heading--categories .home-section-heading__eyebrow {
+  color: #a99cff;
+}
+:root.dark .customer-app .customer-home
+  .home-section-heading--trending .home-section-heading__eyebrow {
+  color: #d4a5f5;
+}
+:root.dark .customer-app .customer-home
+  .home-section-heading--best-seller .home-section-heading__eyebrow {
+  color: #9fb9ff;
+}
+:root.dark .customer-app .customer-home
+  .home-section-heading--essentials .home-section-heading__eyebrow {
+  color: #e4afd6;
 }
 :root.dark .customer-app .customer-home
   :is(
