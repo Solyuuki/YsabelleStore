@@ -141,3 +141,22 @@ test("staff Support conversation surfaces preserve dark-mode contrast", () => {
     );
   }
 });
+
+test("forecast detail chart has an unobstructed dark grid surface", () => {
+  const forecast = read("frontend/src/pages/ForecastPage.tsx");
+  const retail = read("frontend/src/styles/theme-retail.css");
+
+  assert.match(forecast, /className="ys-forecast-chart min-h-\[20rem\] flex-1"/);
+  assert.match(
+    retail,
+    /:root\.dark \.app-shell-ambient \.ys-forecast-chart \{\s*background-color: #1c2b43;\s*background-image: none;/
+  );
+  assert.match(
+    retail,
+    /\.ys-forecast-chart \.recharts-cartesian-grid line \{\s*stroke: #526580;/
+  );
+  assert.ok(
+    contrastRatio("#526580", "#1c2b43") >= 2.2,
+    "Forecast grid should remain visible without competing with the plotted series"
+  );
+});
