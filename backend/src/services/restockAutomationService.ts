@@ -2,6 +2,7 @@ import { RestockOrderStatus, RestockRecommendationSource } from "@prisma/client"
 
 import { prisma } from "../database/prismaClient.js";
 import { listRestockPlanningCandidates } from "./restockPlanningService.js";
+import { reconcileDraftRestockLine } from "./restockDraftReconciliation.js";
 import { createRestockOrder } from "./restockService.js";
 
 const AUTOMATION_PAGE_SIZE = 100;
@@ -197,18 +198,20 @@ function findMonthlyBatch(orders: RestockTicketIdentity[], batch: MonthlyBatchId
 async function appendActionLinesToMonthlyBatch(
   batchOrder: RestockTicketIdentity,
   actionLines: RestockActionLine[]
-) {
+): Promise<boolean> {
   if (!EXTENDABLE_BATCH_STATUSES.has(batchOrder.status) || actionLines.length === 0) {
-    return batchOrder;
+    return false;
   }
 
-  const updated = await prisma.$transaction(async (tx) => {
+  return await prisma.$transaction(async (tx) => {
     const current = await tx.restockOrder.findUnique({
       select: {
         id: true,
         lines: {
           select: {
             id: true,
+            isSelected: true,
+            ownerOverrideReason: true,
             productId: true,
             receivedQuantity: true,
             recommendationId: true,
@@ -223,25 +226,42 @@ async function appendActionLinesToMonthlyBatch(
       where: { id: batchOrder.id }
     });
 
-    if (!current || !EXTENDABLE_BATCH_STATUSES.has(current.status)) return null;
-    if (current.lines.some((line) => line.receivedQuantity > 0)) return null;
+    if (!current || current.status !== RestockOrderStatus.DRAFT) return false;
+    if (current.lines.some((line) => line.receivedQuantity > 0)) return false;
 
     const existingByProduct = new Map(current.lines.map((line) => [line.productId, line]));
-    const recommendationIds: string[] = [];
-
-    for (const line of actionLines) {
+    const changes = actionLines.map((line) => {
       const existing = existingByProduct.get(line.productId);
-      if (line.recommendationId) recommendationIds.push(line.recommendationId);
+      return {
+        existing,
+        line,
+        next: existing ? reconcileDraftRestockLine(existing, line) : null
+      };
+    });
 
+    // No version bump or noisy UI conflict when recommendations did not change.
+    if (changes.every(({ existing, next }) => existing && !next)) return false;
+
+    // Claim the observed draft version BEFORE changing any lines. An Owner edit,
+    // approval, or competing worker cannot be overwritten by this reconciliation.
+    const claimed = await tx.restockOrder.updateMany({
+      data: { version: { increment: 1 } },
+      where: {
+        id: current.id,
+        status: RestockOrderStatus.DRAFT,
+        version: current.version
+      }
+    });
+    if (claimed.count !== 1) return false;
+
+    for (const { existing, line, next } of changes) {
       if (existing) {
-        await tx.restockOrderLine.update({
-          data: {
-            recommendationId: line.recommendationId ?? existing.recommendationId,
-            recommendedQuantity: { increment: line.quantity },
-            requestedQuantity: { increment: line.quantity }
-          },
-          where: { id: existing.id }
-        });
+        if (next) {
+          await tx.restockOrderLine.update({
+            data: next,
+            where: { id: existing.id }
+          });
+        }
         continue;
       }
 
@@ -261,44 +281,8 @@ async function appendActionLinesToMonthlyBatch(
       });
     }
 
-    if (recommendationIds.length > 0 && current.status !== RestockOrderStatus.DRAFT) {
-      await tx.recommendationRecord.updateMany({
-        data: { status: "ACKNOWLEDGED" },
-        where: {
-          id: { in: recommendationIds },
-          status: "OPEN"
-        }
-      });
-    }
-
-    const order = await tx.restockOrder.update({
-      data: { version: { increment: 1 } },
-      select: {
-        createdAt: true,
-        id: true,
-        lines: {
-          select: {
-            id: true,
-            productId: true,
-            receivedQuantity: true,
-            recommendationId: true,
-            recommendationSource: true,
-            recommendedQuantity: true,
-            requestedQuantity: true
-          }
-        },
-        notes: true,
-        orderNumber: true,
-        status: true,
-        version: true
-      },
-      where: { id: current.id }
-    });
-
-    return order;
+    return true;
   });
-
-  return updated ?? batchOrder;
 }
 
 async function runRestockAutomation(): Promise<RestockAutomationResult> {
@@ -349,11 +333,17 @@ async function runRestockAutomation(): Promise<RestockAutomationResult> {
       };
     }
 
-    const merged = await appendActionLinesToMonthlyBatch(monthlyOrder, actionLines);
-    console.info(
-      `[restock] Updated owner-review draft ${merged.orderNumber} with the latest ${actionLines.length} recommendation line(s).`
-    );
-    return { orderId: merged.id, orderNumber: merged.orderNumber, status: "UPDATED" };
+    const changed = await appendActionLinesToMonthlyBatch(monthlyOrder, actionLines);
+    if (changed) {
+      console.info(
+        `[restock] Reconciled owner-review draft ${monthlyOrder.orderNumber} against ${actionLines.length} latest recommendation line(s).`
+      );
+    }
+    return {
+      orderId: monthlyOrder.id,
+      orderNumber: monthlyOrder.orderNumber,
+      status: changed ? "UPDATED" : "EXISTING"
+    };
   }
 
   const legacyOrders = monthOrders.filter(isLegacyAutomatedTicket);
