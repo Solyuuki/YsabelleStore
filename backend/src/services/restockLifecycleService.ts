@@ -137,6 +137,9 @@ export async function markRestockOrderAwaitingDelivery(
   // mutating supplier-facing notes. The status/version transition remains the persisted audit fact.
   void actorId;
 
+  // Block legacy inflated tickets before they advance to supplier delivery.
+  await assertAutomatedRestockQuantitySafe(orderId, input.expectedVersion, "RECEIPT");
+
   await prisma.$transaction(async (tx) => {
     const existing = await tx.restockOrder.findUnique({
       select: { id: true, status: true, version: true },
