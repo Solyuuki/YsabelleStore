@@ -417,21 +417,26 @@
 .customer-app .home-merchandising-canvas__dark-art {
   display: none;
 }
-:root.dark .customer-app .home-category-merch-handoff {
-  background: linear-gradient(180deg, rgb(23 36 60 / 0%), rgb(23 36 60 / 76%) 60%, #17243c 100%);
+/* The first section already resolves to #17243c at its bottom.
+   Do not insert a translucent spacer above Trending: it exposes the page backing
+   and produces visible horizontal bands where its negative margins overlap. */
+:root.dark .customer-app .home-merchandising-stage {
+  background: #17243c;
 }
-:root.dark .customer-app .home-category-merch-handoff::after {
-  background: linear-gradient(180deg, rgb(23 36 60 / 0%), #17243c 100%);
+:root.dark .customer-app .home-category-merch-handoff {
+  display: none;
 }
 :root.dark .customer-app .home-merchandising-canvas {
   --merch-bg-top: #17243c;
   --merch-bg-mid: #192541;
   --merch-bg-bottom: #201e3b;
+  /* Opaque exact-match entrance, dissolved into the continuous canvas surface. */
   background:
-    radial-gradient(ellipse 52% 22% at 0% 14%, rgb(54 109 184 / 18%), transparent 86%),
+    linear-gradient(180deg, #17243c 0%, rgb(23 36 60 / 0%) 12%),
+    radial-gradient(ellipse 52% 22% at 0% 21%, rgb(54 109 184 / 18%), transparent 86%),
     radial-gradient(ellipse 52% 24% at 99% 64%, rgb(120 71 178 / 17%), transparent 88%),
     linear-gradient(180deg, #17243c 0%, #17243c 9%, #192641 38%, #201e3e 72%, #17243c 100%);
-  box-shadow: inset 0 1px 0 rgb(142 156 220 / 9%);
+  box-shadow: none;
 }
 :root.dark .customer-app .home-merchandising-canvas__scene {
   display: none;
@@ -450,6 +455,9 @@
 :root.dark .customer-app .home-merchandising-canvas__dark-art--top {
   top: 0;
   transform: translateX(-50%);
+  /* Fade the start of the ornament, rather than drawing an abrupt edge. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 88%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 88%, transparent);
 }
 :root.dark .customer-app .home-merchandising-canvas__dark-art--middle {
   top: 50%;
