@@ -370,4 +370,36 @@ assert.match(
   "Only the login stage should stop its obsolete orbital glow animation."
 );
 
+/* Login-only orbital balance must never modify the shared artwork. */
+assert.match(
+  customerAuthFrameSource,
+  /className="customer-auth-page--login__balanced-orbits"[\s\S]*?preserveAspectRatio="xMidYMid slice"/,
+  "Sign In orbital accents should use their own proportional SVG, not a stretched image."
+);
+assert.match(
+  customerAuthFrameSource,
+  /<circle cx="1560" cy="155" r="365"/,
+  "Primary Sign In orbit should be anchored on the right edge."
+);
+assert.match(
+  customerAuthFrameSource,
+  /<circle cx="76" cy="1065" r="322"/,
+  "Counterbalancing Sign In orbit should remain faint on the lower left."
+);
+assert.match(
+  storefrontContrast,
+  /\.customer-auth-page--login__cosmos g\[fill="none"\]:not\(\[stroke\]\)\s*\{[^}]*opacity:\s*0\.28/,
+  "The inherited left orbital rings should be toned down in Sign In only."
+);
+assert.match(
+  storefrontContrast,
+  /\.customer-app \.customer-auth-page--login__balanced-orbits\s*\{[^}]*display:\s*none/,
+  "The added orbit design must remain hidden in light mode."
+);
+assert.match(
+  storefrontContrast,
+  /:root\.dark \.customer-app \.customer-auth-page--login__balanced-orbits\s*\{[^}]*pointer-events:\s*none/,
+  "Decorative orbits should never block login buttons or text fields."
+);
+
 console.log("Storefront Shop/Catalog background contract passed.");

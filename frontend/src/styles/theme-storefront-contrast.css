@@ -1250,6 +1250,37 @@
     transparent 100%
   );
 }
+/* Login-only orbital composition: deliberately asymmetric rather than
+   left-heavy. Leave the approved shared SVG unchanged for all other pages. */
+.customer-app .customer-auth-page--login__balanced-orbits {
+  display: none;
+}
+:root.dark .customer-app .customer-auth-page--login__cosmos g[fill="none"]:not([stroke]) {
+  opacity: 0.28;
+}
+:root.dark .customer-app .customer-auth-page--login__balanced-orbits {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+}
 :root.dark .customer-app .customer-auth-page--login > .customer-auth-stage {
   position: relative;
   z-index: 1;
