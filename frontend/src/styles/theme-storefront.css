@@ -635,3 +635,119 @@
     transition: none;
   }
 }
+
+
+/* About/Discover chrome-only dark mode; preserve the approved scene palette. */
+:root[data-about-chrome-theme="dark"] .customer-app .customer-header {
+  --customer-primary: #aea1e9;
+  --customer-primary-strong: #c3b6f0;
+  --customer-info: #9bbbd9;
+  --customer-dark: #d4deec;
+  --customer-muted: #b8c6d8;
+  --customer-line: #687995;
+  --customer-hover: #2d3a50;
+  --customer-focus: rgb(171 156 241 / 72%);
+  --customer-primary-soft: #323352;
+  background: linear-gradient(100deg, #141d32, #19233a 48%, #241d3b);
+  box-shadow: 0 6px 24px rgb(0 0 0 / 16%);
+  color-scheme: dark;
+}
+:root[data-about-chrome-theme="dark"] .customer-app .customer-header::before {
+  opacity: 0.08;
+}
+:root[data-about-chrome-theme="dark"] .customer-app .customer-header::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(117 133 185 / 20%) 20%,
+    rgb(117 133 185 / 24%) 80%,
+    transparent
+  );
+}
+:root[data-about-chrome-theme="dark"] .customer-app .customer-header :is(
+  .customer-nav a,
+  .customer-brand,
+  .customer-account-link,
+  .customer-help-button,
+  .customer-menu-button
+) {
+  color: #d4deec;
+}
+:root[data-about-chrome-theme="dark"] .customer-app .customer-header :is(
+  .customer-cart-link,
+  .customer-global-search__shell,
+  .customer-mobile-panel
+) {
+  background: #202c45;
+  color: #d4deec;
+  border-color: #455579;
+}
+:root[data-about-chrome-theme="dark"] .customer-app .customer-header__action-divider {
+  background: rgb(185 200 232 / 23%);
+}
+:root[data-about-chrome-theme="dark"] .customer-app .customer-header :is(
+  .customer-cart-link:hover,
+  .customer-account-link:hover,
+  .customer-nav a:hover
+) {
+  background: #303957;
+  color: #fff;
+}
+:root[data-about-chrome-theme="dark"] .customer-app .customer-theme-toggle {
+  background: #263452;
+  border-color: #687995;
+  color: #c3b6f0;
+}
+:root[data-about-chrome-theme="dark"] .customer-app .customer-theme-toggle:hover {
+  background: #343d67;
+}
+:root[data-about-chrome-theme="dark"] .customer-app .customer-theme-toggle:focus-visible {
+  outline-color: #bbb0ff;
+}
+:root[data-about-chrome-theme="dark"] .customer-app .customer-global-search__shell input {
+  background: transparent;
+  border: 0;
+  color: #d4deec;
+}
+:root[data-about-chrome-theme="dark"] .customer-app .customer-global-search__shell input::placeholder {
+  color: #a9b7cf;
+}
+:root[data-about-chrome-theme="dark"] .customer-app .customer-global-search__shell input:focus-visible {
+  outline: none;
+  outline-offset: 0;
+}
+:root[data-about-chrome-theme="dark"] .customer-app .customer-mobile-panel nav :is(a, button) {
+  background: #263450;
+  color: #d4deec;
+}
+/* Autocomplete suggestions may be portaled outside the header and customer app. */
+:root[data-about-chrome-theme="dark"] .customer-global-search__popup {
+  --customer-dark: #d4deec;
+  --customer-muted: #b8c6d8;
+  --customer-primary-strong: #c3b6f0;
+  --customer-hover: #2d3a50;
+  background: #202c45;
+  border-color: #455579;
+  color: #d4deec;
+  color-scheme: dark;
+}
+:root[data-about-chrome-theme="dark"] .customer-global-search__popup :is(
+  .customer-global-search__popup-header,
+  .customer-global-search__recent-query,
+  .customer-global-search__product-copy strong
+) {
+  color: #d4deec;
+}
+:root[data-about-chrome-theme="dark"] .customer-global-search__popup .customer-global-search__product-copy span {
+  color: #bac7dd;
+}
+/* Footer body was already dark; only its light-mode wave needed retheming. */
+:root[data-about-chrome-theme="dark"] .customer-app .customer-footer {
+  --footer-transition-surface: #101827;
+  --footer-transition-blue: #1c3559;
+  --footer-transition-center: #24244a;
+  --footer-transition-violet: #37254f;
+  --footer-accent-blue: #315f9d;
+  --footer-accent-indigo: #635ab1;
+  --footer-accent-violet: #8555ad;
+}
