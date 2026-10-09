@@ -30,7 +30,8 @@ function latestByProduct<T extends { productId: string }>(rows: T[]) {
 
 export async function listRestockPlanningCandidates(
   query: RestockPlanningQuery,
-  productIds?: readonly string[]
+  productIds?: readonly string[],
+  excludeOrderId?: string
 ) {
   const products = await prisma.product.findMany({
     orderBy: [{ name: "asc" }, { id: "asc" }],
@@ -69,7 +70,7 @@ export async function listRestockPlanningCandidates(
   const productIds = products.map((product) => product.id);
   const now = new Date();
   const [incomingByProduct, operationalSalesByProduct, activeForecasts] = await Promise.all([
-    getIncomingRestockStock(productIds),
+    getIncomingRestockStock(productIds, excludeOrderId),
     loadOperationalPosSales(productIds, now),
     loadActiveInventoryForecasts(productIds)
   ]);
