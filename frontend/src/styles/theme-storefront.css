@@ -282,6 +282,10 @@
 :root.dark .customer-app .home-categories__portal-scene {
   display: none;
 }
+/* Hide the alternate vector in light mode; reveal it only for dark mode. */
+.customer-app .home-categories__dark-ornament {
+  display: none;
+}
 /* Native vector strokes and dots remain sharp; no bitmap or image scaling. */
 :root.dark .customer-app .home-categories__dark-ornament {
   position: absolute;
