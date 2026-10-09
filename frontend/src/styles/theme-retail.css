@@ -1172,7 +1172,7 @@
   box-shadow: none !important;
   outline: none !important;
   color: #ecf2ff !important;
-  color-scheme: dark;
+  color-scheme: dark !important;
 }
 :root.dark .app-shell-ambient :is(.ys-inventory-search, .ys-inventory-filter):focus-within {
   border-color: #a89aff !important;
