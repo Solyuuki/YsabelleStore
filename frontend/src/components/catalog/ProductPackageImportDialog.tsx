@@ -237,7 +237,7 @@ export function ProductPackageImportDialog({
     >
       <DialogContent
         aria-describedby="product-package-import-description"
-        className="flex max-h-[88vh] w-[calc(100vw-40px)] max-w-[760px] flex-col overflow-hidden p-0"
+        className="ys-product-modal ys-product-package-modal flex max-h-[88vh] w-[calc(100vw-40px)] max-w-[760px] flex-col overflow-hidden p-0"
         onEscapeKeyDown={(event) => {
           if (isBusy) event.preventDefault();
         }}
