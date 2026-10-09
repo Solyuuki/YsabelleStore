@@ -74,6 +74,17 @@
   }
 }
 
+/* Shared storefront galaxy palette: original Trending → Everyday Essentials canvas.
+   Available to both the customer storefront and the retail workstation in dark mode. */
+:root.dark {
+  --storefront-galaxy-background:
+    linear-gradient(180deg, #17243c 0%, rgb(23 36 60 / 0%) 9%, rgb(23 36 60 / 0%) 87%, #17243c 100%),
+    radial-gradient(ellipse 50% 30% at 13% 13%, rgb(90 64 159 / 29%), transparent 87%),
+    radial-gradient(ellipse 52% 38% at 17% 82%, rgb(105 57 166 / 32%), transparent 90%),
+    radial-gradient(ellipse 34% 26% at 88% 79%, rgb(46 89 158 / 15%), transparent 92%),
+    linear-gradient(145deg, #17243c 0%, #141e3b 36%, #201d43 74%, #17243c 100%);
+}
+
 :root.dark {
   --background: 221 47% 8%;
   --foreground: 221 42% 95%;
