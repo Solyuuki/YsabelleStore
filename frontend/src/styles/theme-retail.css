@@ -322,7 +322,7 @@
   box-shadow: inset 0 0 0 1px rgb(138 159 191 / 18%);
 }
 :root.dark .app-shell-ambient .ys-forecast-chart .recharts-cartesian-grid line {
-  stroke: #60758f;
+  stroke: #526580;
 }
 @media print {
   :root.dark .receipt-print-page,
