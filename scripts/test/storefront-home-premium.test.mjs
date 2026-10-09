@@ -160,19 +160,44 @@ assert.match(
   "Dark footer gradient must start with the shared #101827 boundary color."
 );
 assert.match(
-  themeCss,
-  /:root\.dark \.customer-app \.customer-footer__transition svg,[\s\S]*?display:\s*none/,
-  "The old footer SVG must not leave an abrupt band in dark mode."
+  footerSource,
+  /className="customer-footer__transition-outline"[\s\S]*?preserveAspectRatio="xMidYMid slice"/,
+  "The dark footer should restore the approved outline using a non-stretched vector."
+);
+assert.match(
+  footerSource,
+  /d="M0 18C250 42 520 51 810 31C1110 10 1335 49 1600 20"[\s\S]*?fill="none"/,
+  "The original first footer curve must be restored without an opaque fill."
+);
+assert.match(
+  footerSource,
+  /d="M0 35C300 56 600 62 900 44C1180 27 1390 64 1600 39"[\s\S]*?fill="none"/,
+  "The original second footer curve must be restored without an opaque fill."
 );
 assert.match(
   themeCss,
-  /:root\[data-about-chrome-theme="dark"\] \.customer-app \.customer-footer__transition svg/,
-  "The special dark-chrome footer must receive the same seam-free handoff."
+  /\.customer-footer__transition-outline\s*\{\s*display:\s*none;/,
+  "Light mode must hide the dark-only outline and keep its existing waves."
 );
 assert.match(
   themeCss,
-  /mask-image:\s*linear-gradient\(180deg, transparent 0%, #000 46%, transparent 100%\)/,
-  "Dark footer glow must fade completely at both ends."
+  /:root\.dark \.customer-app \.customer-footer__transition svg:not\(\.customer-footer__transition-outline\)/,
+  "Only the filled original SVG should be hidden in dark mode."
+);
+assert.match(
+  themeCss,
+  /:root\.dark \.customer-app \.customer-footer__transition \.customer-footer__transition-outline,[\s\S]*?display:\s*block;/,
+  "The approved blue-violet footer outlines must remain visible in dark mode."
+);
+assert.match(
+  themeCss,
+  /:root\[data-about-chrome-theme="dark"\] \.customer-app \.customer-footer__transition \.customer-footer__transition-outline/,
+  "Dark About chrome should also use the restored outlines."
+);
+assert.match(
+  themeCss,
+  /mask-image:\s*linear-gradient\(180deg, transparent 0%, #000 20%, #000 62%, transparent 100%\)/,
+  "Restored outlines must feather out without an abrupt strip boundary."
 );
 assert.match(
   customerCss,

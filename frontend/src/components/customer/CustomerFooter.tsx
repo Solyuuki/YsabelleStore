@@ -45,6 +45,51 @@ export function CustomerFooter({
             fill="var(--footer-bg)"
           />
         </svg>
+        {/* The original light-mode ribbon above stays untouched. In dark mode
+            render its approved curved outlines without opaque fills or stretching. */}
+        <svg
+          className="customer-footer__transition-outline"
+          focusable="false"
+          preserveAspectRatio="xMidYMid slice"
+          viewBox="0 0 1600 72"
+        >
+          <defs>
+            <linearGradient id="footerDarkOutline" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0%" stopColor="#376aa5" />
+              <stop offset="52%" stopColor="#7566c6" />
+              <stop offset="100%" stopColor="#9f6ac8" />
+            </linearGradient>
+          </defs>
+          {/* These are the same two wave contours as the original ribbon. */}
+          <path
+            d="M0 18C250 42 520 51 810 31C1110 10 1335 49 1600 20"
+            fill="none"
+            stroke="url(#footerDarkOutline)"
+            strokeWidth="10"
+            strokeOpacity="0.30"
+          />
+          <path
+            d="M0 18C250 42 520 51 810 31C1110 10 1335 49 1600 20"
+            fill="none"
+            stroke="url(#footerDarkOutline)"
+            strokeWidth="2"
+            strokeOpacity="0.82"
+          />
+          <path
+            d="M0 35C300 56 600 62 900 44C1180 27 1390 64 1600 39"
+            fill="none"
+            stroke="url(#footerDarkOutline)"
+            strokeWidth="6"
+            strokeOpacity="0.26"
+          />
+          <path
+            d="M0 35C300 56 600 62 900 44C1180 27 1390 64 1600 39"
+            fill="none"
+            stroke="url(#footerDarkOutline)"
+            strokeWidth="1.5"
+            strokeOpacity="0.55"
+          />
+        </svg>
       </div>
       <div className="customer-container customer-footer__grid">
         <div className="customer-footer__brand-column">

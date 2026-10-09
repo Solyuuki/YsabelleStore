@@ -1175,28 +1175,33 @@
   --footer-accent-violet: #8555ad;
 }
 
-/* Shared dark-footer handoff. All approved customer page backdrops end in
-   #101827. The old SVG ended in #101426 while the footer body started
-   elsewhere, producing the hard black stripe seen above footer content.
-   Keep light-mode artwork untouched; replace dark-mode waves with one
-   feathered transition owned by the footer itself. */
+/* Shared dark-footer handoff: the background's first pixel matches the
+   approved #101827 page end. Keep the original blue-violet curves, but draw
+   them as transparent outlines instead of stacking opaque wave rectangles. */
 :root.dark .customer-app .customer-footer,
 :root[data-about-chrome-theme="dark"] .customer-app .customer-footer {
   --footer-bg: #101827;
-  /* First pixel is exactly the page handoff color. Color glows live only
-     in the separately feather-masked transition below, never at this seam. */
   background: linear-gradient(180deg, #101827 0%, #101827 15%, #11192d 55%, #0d1222 100%);
+}
+/* Only the original fill-based SVG is hidden in dark mode. The separate
+   proportional outline fades gently at its top and bottom edges. */
+.customer-app .customer-footer__transition-outline {
+  display: none;
 }
 :root.dark .customer-app .customer-footer__transition,
 :root[data-about-chrome-theme="dark"] .customer-app .customer-footer__transition {
-  background:
-    radial-gradient(ellipse 48% 95% at 12% 48%, rgb(75 120 188 / 14%), transparent 94%),
-    radial-gradient(ellipse 48% 95% at 88% 48%, rgb(139 94 193 / 16%), transparent 94%);
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 46%, transparent 100%);
-  mask-image: linear-gradient(180deg, transparent 0%, #000 46%, transparent 100%);
+  background: transparent;
+  -webkit-mask-image: none;
+  mask-image: none;
 }
-:root.dark .customer-app .customer-footer__transition svg,
-:root[data-about-chrome-theme="dark"] .customer-app .customer-footer__transition svg {
+:root.dark .customer-app .customer-footer__transition svg:not(.customer-footer__transition-outline),
+:root[data-about-chrome-theme="dark"] .customer-app .customer-footer__transition svg:not(.customer-footer__transition-outline) {
   display: none;
+}
+:root.dark .customer-app .customer-footer__transition .customer-footer__transition-outline,
+:root[data-about-chrome-theme="dark"] .customer-app .customer-footer__transition .customer-footer__transition-outline {
+  display: block;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 20%, #000 62%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 20%, #000 62%, transparent 100%);
 }
 
