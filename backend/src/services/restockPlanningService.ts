@@ -53,12 +53,14 @@ export async function listRestockPlanningCandidates(
     },
     select: {
       barcode: true,
+      costPrice: true,
       id: true,
       inventoryBatches: {
         select: {
           expiresAt: true,
           quantityRemaining: true,
-          status: true
+          status: true,
+          unitCost: true
         }
       },
       name: true,
@@ -217,7 +219,10 @@ export async function listRestockPlanningCandidates(
         name: product.name,
         reorderLevel: product.reorderLevel,
         sku: product.sku,
-        targetStockLevel: product.targetStockLevel
+        targetStockLevel: product.targetStockLevel,
+        unitCost: product.costPrice === null
+          ? (product.inventoryBatches.find((batch) => batch.unitCost !== null)?.unitCost.toNumber() ?? null)
+          : product.costPrice.toNumber()
       },
       quarantinedStock: stockTruth.quarantinedStock,
       rationale,
