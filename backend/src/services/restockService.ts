@@ -212,7 +212,7 @@ export async function createRestockOrder(
   automatedMonthlyOrderNumber?: string
 ) {
   // Only the trusted automation caller supplies this deterministic monthly identity.
-  if (automatedMonthlyOrderNumber && !/^RO-[A-Z]{3}-\\d{4}$/.test(automatedMonthlyOrderNumber)) {
+  if (automatedMonthlyOrderNumber && !/^RO-[A-Z]{3}-\d{4}$/.test(automatedMonthlyOrderNumber)) {
     throw new Error("Invalid monthly restock identity.");
   }
   for (let attempt = 0; attempt < 3; attempt += 1) {
