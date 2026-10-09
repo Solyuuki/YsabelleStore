@@ -1,3 +1,5 @@
+import type { Prisma } from "@prisma/client";
+
 import { prisma } from "../database/prismaClient.js";
 import type { ProductForecastDetail } from "../modules/forecasting/forecast.types.js";
 
@@ -15,12 +17,15 @@ export type ActiveInventoryForecast = {
   }>;
 };
 
-export async function loadActiveInventoryForecasts(productIds: string[]) {
+export async function loadActiveInventoryForecasts(
+  productIds: string[],
+  db: Prisma.TransactionClient = prisma
+) {
   const uniqueProductIds = [...new Set(productIds)];
   const forecasts = new Map<string, ActiveInventoryForecast>();
   if (uniqueProductIds.length === 0) return forecasts;
 
-  const batch = await prisma.forecastBatchCache.findFirst({
+  const batch = await db.forecastBatchCache.findFirst({
     orderBy: { generatedAt: "desc" },
     select: {
       forecastStartMonth: true,
@@ -31,7 +36,7 @@ export async function loadActiveInventoryForecasts(productIds: string[]) {
   });
   if (!batch) return forecasts;
 
-  const rows = await prisma.forecastProductResult.findMany({
+  const rows = await db.forecastProductResult.findMany({
     select: {
       detailPayload: true,
       sourceProductId: true
