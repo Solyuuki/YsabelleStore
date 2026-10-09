@@ -273,41 +273,37 @@
   --category-portal-violet: #9270b9;
   --category-portal-line: #a8b8e8;
   border-top-color: rgb(166 185 237 / 16%);
-  /* Midnight Luxe: soft satin illumination on a continuous, full-width surface. */
-  background:
-    linear-gradient(180deg, rgb(6 12 27 / 14%), transparent 20%, transparent 72%, rgb(8 12 27 / 28%)),
-    radial-gradient(ellipse 54% 66% at 2% 4%, rgb(83 133 195 / 25%), transparent 83%),
-    radial-gradient(ellipse 55% 70% at 100% 8%, rgb(142 105 188 / 22%), transparent 84%),
-    radial-gradient(ellipse 62% 64% at 51% 57%, rgb(64 92 145 / 11%), transparent 82%),
-    linear-gradient(113deg, #14243b 0%, #1d2b47 37%, #20283f 66%, #2b2341 100%);
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
+  /* A matching continuous gradient sits behind the approved artwork. */
+  background: linear-gradient(112deg, #102541 0%, #152344 42%, #211c41 77%, #30204e 100%);
   color: #d4deec;
   box-shadow:
-    inset 0 1px 0 rgb(188 202 246 / 18%),
-    inset 0 22px 40px rgb(171 188 230 / 4%),
-    inset 0 -1px 0 rgb(171 154 220 / 15%),
-    inset 0 -48px 74px rgb(5 10 24 / 11%);
+    inset 0 1px 0 rgb(188 202 246 / 16%),
+    inset 0 -1px 0 rgb(171 154 220 / 13%);
 }
-/* Light mode retains the original illustration; dark mode never stretches its SVG. */
+/* The light-mode SVG portal remains intact; its shapes are hidden only in dark mode. */
 :root.dark .customer-app .home-categories__portal-scene {
   display: none;
 }
-/* Diffuse editorial highlights, fading naturally without a framed rectangle. */
+/* Approved 1672:941 artwork: uniform scaling, no stretching, no hard image seam.
+   The pseudo-element follows the image aspect ratio, not the section height. */
 :root.dark .customer-app .home-categories__backdrop::before {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 50%;
   z-index: 0;
-  background:
-    radial-gradient(ellipse 38% 34% at 30% 17%, rgb(153 182 246 / 14%), transparent 86%),
-    radial-gradient(ellipse 43% 52% at 98% 64%, rgb(146 108 202 / 11%), transparent 88%),
-    linear-gradient(112deg, transparent 10%, rgb(171 189 237 / 4%) 27%, transparent 55%);
-  background-size: 100% 100%;
+  width: max(100%, 700px);
+  height: auto;
+  aspect-ratio: 1672 / 941;
+  transform: translateX(-50%);
+  background-image: url("/textures/storefront-home-categories-dark-hero.avif");
   background-repeat: no-repeat;
+  background-size: 100% auto;
+  background-position: center top;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 67%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 67%, transparent 100%);
   content: "";
   pointer-events: none;
 }
-/* Fixed-scale matte grain adds texture without cropping, pixelation or stretching. */
 :root.dark .customer-app .home-categories__backdrop::after {
   position: absolute;
   inset: 0;
@@ -316,14 +312,17 @@
   background-size: 150px 150px;
   background-repeat: repeat;
   mix-blend-mode: soft-light;
-  opacity: 0.22;
+  opacity: 0.07;
   content: "";
   pointer-events: none;
 }
 :root.dark .customer-app .home-categories__center-light {
-  background:
-    radial-gradient(ellipse 43% 38% at 33% 16%, rgb(155 178 228 / 8%), transparent 85%),
-    radial-gradient(ellipse 47% 66% at 96% 42%, rgb(121 92 172 / 6%), transparent 84%);
+  background: transparent;
+}
+@media (max-width: 700px) {
+  :root.dark .customer-app .home-categories__backdrop::before {
+    width: max(100%, 540px);
+  }
 }
 :root.dark .customer-app .home-categories__portal-glows {
   opacity: 0.55;
