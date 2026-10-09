@@ -1524,3 +1524,76 @@
 :root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-cancel-panel button[class~="text-red-700"]:hover:not(:disabled) {
   background-color: #5a3749 !important;
 }
+
+
+/* POS Cash Payment: readable portal controls in dark mode (Sprint 11). */
+/* The POS payment modal is portaled outside .app-shell-ambient. Its secondary
+   buttons and slate labels otherwise inherit light-mode dark text. */
+:root.dark [role="dialog"].ys-pos-cash-dialog {
+  --cash-modal-text: #edf3ff;
+  --cash-modal-body: #c8d6eb;
+  --cash-modal-outline: #7386a5;
+  background-color: #1c2b42 !important;
+  border-color: #607595 !important;
+  color: var(--cash-modal-text) !important;
+  color-scheme: dark;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-card {
+  background-color: #293a55 !important;
+  background-image: none !important;
+  border-color: var(--cash-modal-outline) !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-card::before {
+  content: none !important;
+  display: none !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog :is(
+  [class~="text-slate-950"],
+  [class~="text-slate-900"],
+  [class~="text-slate-800"],
+  [class~="text-slate-700"]
+) {
+  color: var(--cash-modal-text) !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog :is(
+  [class~="text-slate-600"],
+  [class~="text-slate-500"],
+  [class~="text-slate-400"]
+) {
+  color: var(--cash-modal-body) !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-entry label {
+  color: #e8efff !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-entry input {
+  background-color: #23344f !important;
+  border-color: #778aae !important;
+  color: var(--cash-modal-text) !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-entry input::placeholder {
+  color: #aebed9 !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-presets button,
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-footer button[class~="bg-white"] {
+  background-color: #304360 !important;
+  border-color: #8195b5 !important;
+  color: #edf3ff !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-presets button:hover:not(:disabled),
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-footer button[class~="bg-white"]:hover:not(:disabled) {
+  background-color: #425878 !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-footer {
+  border-color: #607595 !important;
+  background-color: #21314a !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-footer button[class~="bg-indigo-600"] {
+  color: #ffffff !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog button:disabled {
+  opacity: 0.72;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog button:focus-visible {
+  outline: 2px solid #b1a4ff;
+  outline-offset: 2px;
+}
