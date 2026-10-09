@@ -443,7 +443,8 @@
 }
 :root.dark .customer-app .home-merchandising-canvas__dark-art {
   position: absolute;
-  left: 50%;
+  /* Shift all three ornament layers left without changing their dimensions. */
+  left: calc(50% - clamp(48px, 9vw, 150px));
   display: block;
   width: max(100%, 1200px);
   height: auto;
@@ -472,7 +473,8 @@
 @media (max-width: 1024px) {
   :root.dark .customer-app .home-merchandising-canvas__dark-art {
     left: auto;
-    right: 0;
+    /* Positive right inset moves the vector LEFT (negative would move it right). */
+    right: clamp(32px, 9vw, 92px);
     transform: none;
   }
   :root.dark .customer-app .home-merchandising-canvas__dark-art--middle {
