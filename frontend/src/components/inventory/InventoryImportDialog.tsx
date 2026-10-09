@@ -631,7 +631,7 @@ export function InventoryImportDialog({
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && close()}>
       <DialogContent
         aria-describedby="inventory-bulk-delivery-description"
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[1000px] flex-col overflow-hidden p-0"
+        className="ys-inventory-modal ys-inventory-import-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[1000px] flex-col overflow-hidden p-0"
         onCloseAutoFocus={(event) => {
           event.preventDefault();
           triggerRef?.current?.focus();
