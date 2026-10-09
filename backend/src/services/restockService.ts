@@ -518,7 +518,10 @@ export async function approveRestockOrder(
   return await loadRestockOrder(orderId);
 }
 
-export async function getIncomingRestockStock(productIds?: string[]) {
+export async function getIncomingRestockStock(
+  productIds?: string[],
+  excludeOrderId?: string
+) {
   const lines = await prisma.restockOrderLine.findMany({
     select: {
       productId: true,
@@ -528,6 +531,7 @@ export async function getIncomingRestockStock(productIds?: string[]) {
     where: {
       isSelected: true,
       ...(productIds?.length ? { productId: { in: [...new Set(productIds)] } } : {}),
+      ...(excludeOrderId ? { restockOrderId: { not: excludeOrderId } } : {}),
       order: {
         status: {
           in: [
