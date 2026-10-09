@@ -392,9 +392,8 @@ export async function assertAutomatedRestockQuantitySafe(
     !snapshot.notes?.includes("[AutomatedRestockMonth:") ||
     (stage === "APPROVAL" && snapshot.status !== RestockOrderStatus.DRAFT) ||
     (stage === "RECEIPT" &&
-      ![RestockOrderStatus.APPROVED, RestockOrderStatus.AWAITING_DELIVERY].includes(
-        snapshot.status
-      )) ||
+      snapshot.status !== RestockOrderStatus.APPROVED &&
+      snapshot.status !== RestockOrderStatus.AWAITING_DELIVERY) ||
     snapshot.lines.some((line) => line.receivedQuantity > 0)
   ) {
     return;
