@@ -105,3 +105,39 @@ test("dark storefront outlines and remaining light panels are explicitly address
   assert.match(retail, /background-size:\s*min\(1600px, 100%\) auto !important/);
   assert.doesNotMatch(contrast, /\.about-experience|\.discover-story|\.story-welcome/);
 });
+
+test("staff Support conversation surfaces preserve dark-mode contrast", () => {
+  const retail = read("frontend/src/styles/theme-retail.css");
+  const inbox = read("frontend/src/pages/CustomerSupportInboxPage.tsx");
+
+  for (const target of [
+    "ys-support-inbox",
+    "ys-support-ticket",
+    "ys-support-thread",
+    "ys-support-automated-email",
+    "ys-support-customer-message",
+    "ys-support-system-event",
+    "ys-support-fact",
+    "ys-support-reply-form",
+    "ys-support-reply-trigger"
+  ]) {
+    assert.ok(inbox.includes(target), `Missing scoped Support component: ${target}`);
+    assert.ok(retail.includes(`.${target}`), `Missing Support dark theme target: ${target}`);
+  }
+  assert.match(inbox, /data-active=\{active\}/);
+  assert.match(retail, /:root\.dark \.app-shell-ambient \.ys-support-inbox/);
+  assert.match(retail, /\.ys-support-ticket\[data-active="true"\]/);
+
+  for (const [name, foreground, background] of [
+    ["selected ticket", "#f3f6ff", "#354665"],
+    ["automated email", "#eef3ff", "#293854"],
+    ["email metadata", "#d2c6ff", "#293854"],
+    ["customer message", "#ecf1ff", "#22334c"],
+    ["system event", "#d7e2f5", "#2a3b56"]
+  ]) {
+    assert.ok(
+      contrastRatio(foreground, background) >= 4.5,
+      `${name} text does not meet AA contrast`
+    );
+  }
+});
