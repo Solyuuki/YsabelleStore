@@ -529,3 +529,53 @@
     box-shadow: none !important;
   }
 }
+
+
+/* Sprint 11: unified retail workstation background, Dashboard through Settings.
+   Use the exact shared Trending → Everyday Essentials palette and SVG, without
+   stretching/tiling the former 1600px midnight texture. All module panels,
+   sidebar, inputs, and print views keep their own existing surfaces. */
+.retail-workspace__artwork {
+  display: none;
+}
+:root.dark .app-shell-ambient.ys-glass-flow-background {
+  background-color: #17243c !important;
+  background-image: none !important;
+  background-size: auto !important;
+  background-repeat: no-repeat !important;
+}
+:root.dark .app-shell-ambient .retail-workspace {
+  isolation: isolate;
+  background-color: #17243c;
+  background-image: var(--storefront-galaxy-background);
+  background-size: auto;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+:root.dark .app-shell-ambient .retail-workspace__artwork {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 12%,
+    #000 88%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 12%,
+    #000 88%,
+    transparent 100%
+  );
+}
+:root.dark .app-shell-ambient .retail-workspace__cosmos {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
