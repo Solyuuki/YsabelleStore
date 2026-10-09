@@ -1148,3 +1148,186 @@
   outline: 2px solid #b2a4ff;
   outline-offset: 2px;
 }
+
+
+/* Sprint 11: Inventory modal and filter dark-mode contrast convergence. */
+/* FilterSelect uses the shared Select's own chevron; outer labels handle
+   focus while the inner control remains transparent. */
+:root.dark .app-shell-ambient .ys-inventory-search,
+:root.dark .app-shell-ambient .ys-inventory-filter {
+  background: #263852 !important;
+  border-color: #607795 !important;
+  color: #e9f0fc !important;
+}
+:root.dark .app-shell-ambient .ys-inventory-search > input {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: #ecf2ff !important;
+}
+:root.dark .app-shell-ambient .ys-inventory-filter > select {
+  background-color: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: #ecf2ff !important;
+  color-scheme: dark;
+}
+:root.dark .app-shell-ambient :is(.ys-inventory-search, .ys-inventory-filter):focus-within {
+  border-color: #a89aff !important;
+  box-shadow: 0 0 0 1px rgb(168 154 255 / 20%);
+}
+
+/* Inventory stock details, receiving, adjustment, activity and bulk-import
+   dialogs are Radix portals and do not inherit app-shell scoped CSS. */
+:root.dark [role="dialog"].ys-inventory-modal {
+  --inventory-modal-panel: #263752;
+  --inventory-modal-raised: #2d405d;
+  --inventory-modal-border: #637895;
+  --inventory-modal-ink: #edf3ff;
+  --inventory-modal-copy: #c7d5e8;
+  background: #1b293f !important;
+  border-color: #596f8f !important;
+  color: var(--inventory-modal-ink) !important;
+  color-scheme: dark;
+}
+:root.dark [role="dialog"].ys-inventory-modal :is(
+  [class~="bg-white"],
+  [class~="bg-white/95"],
+  [class~="bg-white/90"],
+  [class~="bg-slate-50"],
+  [class~="bg-slate-50/60"],
+  [class~="bg-slate-50/70"],
+  [class~="bg-slate-50/80"],
+  [class~="bg-slate-100"],
+  [class~="bg-violet-50/70"],
+  [class~="bg-violet-100"],
+  [class~="bg-indigo-50/60"]
+) {
+  background-color: var(--inventory-modal-panel) !important;
+  border-color: var(--inventory-modal-border) !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal :is(
+  [class~="text-slate-950"],
+  [class~="text-slate-900"],
+  [class~="text-slate-800"],
+  [class~="text-slate-700"]
+) {
+  color: var(--inventory-modal-ink) !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal :is(
+  [class~="text-slate-600"],
+  [class~="text-slate-500"],
+  [class~="text-slate-400"],
+  [class~="text-slate-300"]
+) {
+  color: var(--inventory-modal-copy) !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal :is(
+  [class~="border-slate-100"],
+  [class~="border-slate-200"],
+  [class~="border-slate-300"],
+  [class~="border-violet-200"],
+  [class~="border-violet-300"]
+) {
+  border-color: var(--inventory-modal-border) !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal :is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  select,
+  textarea
+) {
+  background: #243550 !important;
+  border-color: #687e9e !important;
+  color: var(--inventory-modal-ink) !important;
+  color-scheme: dark;
+}
+:root.dark [role="dialog"].ys-inventory-modal :is(input, textarea)::placeholder {
+  color: #b5c4dc !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal :is(input, select, textarea):focus-visible {
+  border-color: #aa9dff !important;
+  outline-color: #aa9dff;
+}
+/* Native expiry date field uses the dark calendar indicator and popup. */
+:root.dark [role="dialog"].ys-inventory-modal input[type="date"] {
+  color-scheme: dark;
+}
+:root.dark [role="dialog"].ys-inventory-modal button[class~="bg-white"],
+:root.dark [role="dialog"].ys-inventory-modal button[class~="text-slate-600"] {
+  background: #324663 !important;
+  border-color: #8093b0 !important;
+  color: #edf3ff !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal button[class~="bg-white"]:hover:not(:disabled),
+:root.dark [role="dialog"].ys-inventory-modal button[class~="text-slate-600"]:hover:not(:disabled) {
+  background: #425979 !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal button:disabled {
+  opacity: 0.68;
+}
+:root.dark [role="dialog"].ys-inventory-modal button[aria-pressed="true"]:not(:disabled) {
+  background: #4f46e5 !important;
+  color: #fff !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal button[aria-pressed="false"] {
+  background: #2e405b !important;
+  color: #d7e3f6 !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal button[aria-pressed="false"]:hover:not(:disabled) {
+  background: #3e526f !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal [class~="text-violet-700"],
+:root.dark [role="dialog"].ys-inventory-modal [class~="text-violet-800"] {
+  color: #c9baff !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal [class~="text-emerald-700"],
+:root.dark [role="dialog"].ys-inventory-modal [class~="text-emerald-800"] {
+  color: #a4f0d5 !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal :is(
+  [class~="bg-emerald-50"],
+  [class~="bg-emerald-50/70"]
+) {
+  background-color: #204139 !important;
+  border-color: #5a9c83 !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal :is(
+  [class~="bg-amber-50"],
+  [class~="bg-amber-50/70"]
+) {
+  background-color: #413820 !important;
+  border-color: #bca069 !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal [class~="text-amber-700"],
+:root.dark [role="dialog"].ys-inventory-modal [class~="text-amber-900"] {
+  color: #ffe0a0 !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal :is(
+  [class~="bg-rose-50"],
+  [class~="bg-rose-50/70"]
+) {
+  background-color: #462b3a !important;
+  border-color: #b87691 !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal :is(
+  [class~="text-rose-800"],
+  [class~="text-rose-900"]
+) {
+  color: #ffd2df !important;
+}
+/* Uploaded documents, guide and dropzone share the same premium dark surface. */
+:root.dark [role="dialog"].ys-inventory-import-modal [role="button"][class~="bg-violet-50/70"],
+:root.dark [role="dialog"].ys-inventory-import-modal [role="button"][class~="bg-violet-100"] {
+  background: #2b3d5b !important;
+  border-color: #8a7de0 !important;
+  color: #eaf0ff !important;
+}
+:root.dark [role="dialog"].ys-inventory-import-modal [role="button"]:hover {
+  background-color: #354968 !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal :is(button, [role="button"]):focus-visible {
+  outline: 2px solid #aa9dff;
+  outline-offset: 2px;
+}
