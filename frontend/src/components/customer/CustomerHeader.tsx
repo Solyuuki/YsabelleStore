@@ -77,24 +77,6 @@ export function CustomerHeader({
 
         <div className="customer-header__actions">
           <button
-            aria-label={
-              storefrontTheme === "dark"
-                ? "Switch storefront to light mode"
-                : "Switch storefront to dark mode"
-            }
-            aria-pressed={storefrontTheme === "dark"}
-            className="customer-theme-toggle"
-            onClick={() => setStorefrontTheme(storefrontTheme === "dark" ? "light" : "dark")}
-            title={storefrontTheme === "dark" ? "Light mode" : "Dark mode"}
-            type="button"
-          >
-            {storefrontTheme === "dark" ? (
-              <Sun aria-hidden="true" size={19} />
-            ) : (
-              <MoonStar aria-hidden="true" size={19} />
-            )}
-          </button>
-          <button
             aria-label="Open shopping guide"
             className="customer-icon-button customer-help-button"
             onClick={onStartGuide}
@@ -127,6 +109,24 @@ export function CustomerHeader({
             <span>Cart</span>
             {itemCount > 0 ? <strong>{itemCount > 99 ? "99+" : itemCount}</strong> : null}
           </CustomerLink>
+          <button
+            aria-label={
+              storefrontTheme === "dark"
+                ? "Switch storefront to light mode"
+                : "Switch storefront to dark mode"
+            }
+            aria-pressed={storefrontTheme === "dark"}
+            className="customer-theme-toggle"
+            onClick={() => setStorefrontTheme(storefrontTheme === "dark" ? "light" : "dark")}
+            title={storefrontTheme === "dark" ? "Light mode" : "Dark mode"}
+            type="button"
+          >
+            {storefrontTheme === "dark" ? (
+              <Sun aria-hidden="true" size={19} />
+            ) : (
+              <MoonStar aria-hidden="true" size={19} />
+            )}
+          </button>
           <button
             aria-expanded={menuOpen}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
