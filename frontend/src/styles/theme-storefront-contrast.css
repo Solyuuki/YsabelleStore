@@ -1587,6 +1587,15 @@
   z-index: 1;
 }
 
+/* Keep the existing light-mode Support hero untouched. The shared category
+   backdrop is visible only when the storefront dark theme is selected. */
+.customer-app .customer-support-hero > .home-categories__backdrop {
+  display: none;
+}
+:root.dark .customer-app .customer-support-hero > .home-categories__backdrop {
+  display: block;
+}
+
 /* The first Support section uses the exact Shop by Category dark backdrop:
    shared CSS gradients plus the proportional SVG lines/dots in the page markup.
    No independent orbital bitmap or stretched shader layer. */
