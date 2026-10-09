@@ -409,3 +409,112 @@
   background-position: center top !important;
   background-repeat: no-repeat !important;
 }
+
+
+/* Sprint 11 dark-mode surface convergence: 2026-10-09 */
+:root.dark .app-shell-ambient {
+  --retail-surface-base: #172337;
+  --retail-surface-raised: #202e45;
+  --retail-surface-inset: #142034;
+  --retail-outline-strong: #62738f;
+  --retail-text-primary: #e4eaf6;
+  --retail-text-body: #bbc8dd;
+}
+
+/* Scope replacement to the workstation, preserving status hues and printed receipts. */
+:root.dark .app-shell-ambient :is(
+  [class~="bg-white"],
+  [class~="bg-white/95"],
+  [class~="bg-white/90"],
+  [class~="bg-white/85"],
+  [class~="bg-white/80"],
+  [class~="bg-white/75"],
+  [class~="bg-white/70"],
+  [class~="bg-slate-50"],
+  [class~="bg-slate-50/80"],
+  [class~="bg-slate-50/90"],
+  [class~="bg-gray-50"],
+  [class~="bg-gray-100"],
+  [class~="bg-neutral-50"],
+  [class~="bg-zinc-50"]
+) {
+  background-color: var(--retail-surface-raised) !important;
+}
+:root.dark .app-shell-ambient :is(
+  [class~="bg-slate-100"],
+  [class~="bg-slate-200"],
+  [class~="bg-gray-200"],
+  [class~="bg-violet-50"],
+  [class~="bg-violet-50/80"]
+) {
+  background-color: var(--retail-surface-base) !important;
+}
+:root.dark .app-shell-ambient :is(
+  [class~="text-gray-900"],
+  [class~="text-gray-800"],
+  [class~="text-gray-700"],
+  [class~="text-neutral-900"],
+  [class~="text-zinc-900"]
+) {
+  color: var(--retail-text-primary) !important;
+}
+:root.dark .app-shell-ambient :is(
+  [class~="text-gray-600"],
+  [class~="text-gray-500"],
+  [class~="text-zinc-500"],
+  [class~="text-neutral-500"]
+) {
+  color: var(--retail-text-body) !important;
+}
+:root.dark .app-shell-ambient :is(
+  [class~="border-white"],
+  [class~="border-white/70"],
+  [class~="border-gray-100"],
+  [class~="border-gray-200"],
+  [class~="border-violet-100"],
+  [class~="border-slate-50"]
+) {
+  border-color: var(--retail-outline-strong) !important;
+}
+:root.dark .app-shell-ambient :is(
+  .ys-dashboard-panel-surface,
+  .ys-kpi-card-surface,
+  .ys-appearance-card
+) {
+  background-color: var(--retail-surface-raised) !important;
+  border: 1px solid var(--retail-outline-strong) !important;
+  box-shadow: inset 0 1px 0 rgb(231 236 255 / 5%), 0 12px 28px rgb(3 8 20 / 16%);
+}
+/* The decorative material has a fixed natural scale; it must never use cover. */
+:root.dark .app-shell-ambient :is(
+  .ys-dashboard-panel-surface,
+  .ys-kpi-card-surface
+)::before {
+  background-size: 900px auto !important;
+  background-repeat: repeat !important;
+  background-position: left top !important;
+}
+:root.dark .app-shell-ambient :is(
+  [role="dialog"],
+  [role="menu"],
+  [role="listbox"]
+) {
+  color: var(--retail-text-primary);
+  border-color: var(--retail-outline-strong);
+}
+:root.dark .app-shell-ambient :is(
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select
+) {
+  background-color: var(--retail-surface-inset);
+  border-color: var(--retail-outline-strong);
+  color: var(--retail-text-primary);
+}
+@media print {
+  :root.dark .app-shell-ambient :is(.receipt-print-page, .receipt-paper) {
+    background: #fff !important;
+    color: #020617 !important;
+    box-shadow: none !important;
+  }
+}
