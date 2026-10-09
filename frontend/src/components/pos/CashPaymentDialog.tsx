@@ -76,7 +76,7 @@ export function CashPaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !isSubmitting && onOpenChange(nextOpen)}>
-      <DialogContent className="w-[calc(100vw-32px)] max-w-[480px] p-0">
+      <DialogContent className="ys-pos-cash-dialog w-[calc(100vw-32px)] max-w-[480px] p-0">
         <DialogHeader className="border-b border-slate-200 px-6 py-5">
           <DialogTitle>Cash payment</DialogTitle>
           <DialogDescription>
@@ -85,7 +85,7 @@ export function CashPaymentDialog({
         </DialogHeader>
 
         <div className="space-y-5 px-6 py-5">
-          <Card>
+          <Card className="ys-pos-cash-card">
             <CardContent className="flex items-center justify-between gap-4 p-4">
               <div>
                 <p className="type-body-sm font-medium text-slate-500">Amount due</p>
@@ -97,7 +97,7 @@ export function CashPaymentDialog({
             </CardContent>
           </Card>
 
-          <div className="space-y-2">
+          <div className="ys-pos-cash-entry space-y-2">
             <Label htmlFor="cash-received">Cash received</Label>
             <Input
               ref={inputRef}
@@ -124,7 +124,7 @@ export function CashPaymentDialog({
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2" aria-label="Quick cash amounts">
+          <div className="ys-pos-cash-presets flex flex-wrap gap-2" aria-label="Quick cash amounts">
             <Button
               disabled={isSubmitting}
               size="sm"
@@ -148,7 +148,7 @@ export function CashPaymentDialog({
             ))}
           </div>
 
-          <Card>
+          <Card className="ys-pos-cash-card">
             <CardContent className="space-y-3 p-4">
               <div className="flex items-center justify-between gap-4 text-sm">
                 <span className="text-slate-500">Cash received</span>
@@ -174,7 +174,7 @@ export function CashPaymentDialog({
           {error ? <Alert variant="destructive">{error}</Alert> : null}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="ys-pos-cash-footer">
           <Button
             disabled={isSubmitting}
             type="button"
