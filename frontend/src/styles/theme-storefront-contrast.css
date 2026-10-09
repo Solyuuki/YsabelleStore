@@ -101,6 +101,16 @@
   :is(h3, strong, label) {
   color: var(--store-contrast-ink);
 }
+
+/* Review initials were inheriting light-mode ink over a dark token background.
+   Keep avatar contrast independent from theme tokens and no other surfaces. */
+:root.dark .customer-app .customer-product-page .customer-review__avatar {
+  background: #46487e;
+  border: 1px solid #aa9de8;
+  color: #f4f1ff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 13%);
+}
+
 :root.dark .customer-app .customer-review-score > strong {
   color: #c9bdff;
 }
