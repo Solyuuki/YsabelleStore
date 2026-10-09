@@ -972,3 +972,179 @@
   outline: 2px solid #a99bff;
   outline-offset: 2px;
 }
+
+
+/* Sprint 11: Categories dark-mode surface convergence (page and portal dialogs). */
+/* Keep styling inside Categories. Radix dialogs render outside .app-shell-ambient,
+   so page-scoped retail input overrides alone cannot style them. */
+:root.dark .app-shell-ambient .ys-category-page .ys-category-search {
+  background: #263752 !important;
+  border-color: #657895 !important;
+  color: #e9effb;
+}
+:root.dark .app-shell-ambient .ys-category-page .ys-category-search > input {
+  min-width: 0;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: #edf3ff !important;
+  color-scheme: dark;
+}
+:root.dark .app-shell-ambient .ys-category-page .ys-category-search > input:focus-visible {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+:root.dark .app-shell-ambient .ys-category-page .ys-category-search:focus-within {
+  border-color: #ad9cff !important;
+  box-shadow: 0 0 0 1px rgb(173 156 255 / 22%);
+}
+:root.dark .app-shell-ambient .ys-category-page .ys-category-filter select {
+  background: #263752 !important;
+  border-color: #657895 !important;
+  color: #edf3ff !important;
+  color-scheme: dark;
+}
+
+:root.dark [role="dialog"].ys-category-modal {
+  --category-panel: #253750;
+  --category-raised: #2d415e;
+  --category-border: #657a99;
+  --category-text: #edf3ff;
+  --category-body: #c9d7ec;
+  background: #1b293f !important;
+  border-color: #5d7291 !important;
+  color: var(--category-text) !important;
+  color-scheme: dark;
+}
+:root.dark [role="dialog"].ys-category-modal :is(
+  [class~="bg-white"],
+  [class~="bg-white/80"],
+  [class~="bg-white/90"],
+  [class~="bg-slate-50"],
+  [class~="bg-slate-50/70"],
+  [class~="bg-slate-50/80"],
+  [class~="bg-slate-100"],
+  [class~="bg-violet-50"],
+  [class~="bg-violet-50/70"],
+  [class~="bg-violet-100"]
+) {
+  background-color: var(--category-panel) !important;
+  border-color: var(--category-border) !important;
+}
+:root.dark [role="dialog"].ys-category-modal :is(
+  [class~="text-slate-950"],
+  [class~="text-slate-900"],
+  [class~="text-slate-800"],
+  [class~="text-slate-700"]
+) {
+  color: var(--category-text) !important;
+}
+:root.dark [role="dialog"].ys-category-modal :is(
+  [class~="text-slate-600"],
+  [class~="text-slate-500"],
+  [class~="text-slate-400"]
+) {
+  color: var(--category-body) !important;
+}
+:root.dark [role="dialog"].ys-category-modal :is(
+  [class~="border-slate-100"],
+  [class~="border-slate-200"],
+  [class~="border-slate-300"],
+  [class~="border-violet-100"],
+  [class~="border-violet-200"]
+) {
+  border-color: var(--category-border) !important;
+}
+:root.dark [role="dialog"].ys-category-modal :is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  select,
+  textarea
+) {
+  background: #23344e !important;
+  border-color: #657b9d !important;
+  color: var(--category-text) !important;
+  color-scheme: dark;
+}
+:root.dark [role="dialog"].ys-category-modal :is(input, textarea)::placeholder {
+  color: #aebed6 !important;
+}
+:root.dark [role="dialog"].ys-category-modal :is(input, select, textarea):focus-visible {
+  border-color: #b2a4ff !important;
+  outline-color: #b2a4ff;
+}
+:root.dark [role="dialog"].ys-category-modal :is(input, select):disabled {
+  opacity: 0.78;
+  color: #cbd7eb !important;
+}
+/* Keep button actions legible even where the light secondary and ghost
+   variants otherwise render slate text on a dark filled background. */
+:root.dark [role="dialog"].ys-category-modal button[class~="bg-white"],
+:root.dark [role="dialog"].ys-category-modal button[class~="text-slate-600"] {
+  background: #314461 !important;
+  border-color: #7589a6 !important;
+  color: #edf3ff !important;
+}
+:root.dark [role="dialog"].ys-category-modal button[class~="bg-white"]:hover:not(:disabled),
+:root.dark [role="dialog"].ys-category-modal button[class~="text-slate-600"]:hover:not(:disabled) {
+  background: #405777 !important;
+}
+:root.dark [role="dialog"].ys-category-modal button:disabled {
+  opacity: 0.72;
+}
+/* The preview frame is UI, not the category cover itself: darken placeholders
+   and side panels but never apply a filter to the real uploaded imagery. */
+:root.dark [role="dialog"].ys-category-modal .ys-category-presentation,
+:root.dark [role="dialog"].ys-category-modal .ys-category-cover-panel {
+  background: #283b55 !important;
+  border-color: #6d819d !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-live-preview,
+:root.dark [role="dialog"].ys-category-modal .ys-category-preview-card,
+:root.dark [role="dialog"].ys-category-modal .ys-category-image-preview {
+  background: #203149 !important;
+  border-color: #69809e !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-preview-card > div:first-child,
+:root.dark [role="dialog"].ys-category-modal .ys-category-image-canvas {
+  background: #1d2e46 !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-empty-cover {
+  background: #1d2e46 !important;
+  color: #e6effe !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-empty-cover [class~="bg-white"],
+:root.dark [role="dialog"].ys-category-modal .ys-category-empty-cover [class~="bg-slate-100"] {
+  background: #334867 !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-live-preview button[aria-pressed="true"] {
+  background: #49426e !important;
+  border-color: #a69bfa !important;
+  color: #f0eaff !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-live-preview button[aria-pressed="false"] {
+  background: transparent !important;
+  color: #cedbf0 !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-live-preview button[aria-pressed="false"]:hover {
+  background: #344863 !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-cover-panel > button[class~="bg-white"] {
+  background: #20314a !important;
+  border-color: #8294ad !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-cover-panel [class~="bg-emerald-50"] {
+  background: #20453d !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-cover-panel [class~="text-emerald-800"] {
+  color: #c8f5e0 !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-cover-panel [class~="text-violet-700"] {
+  color: #cbbaff !important;
+}
+:root.dark [role="dialog"].ys-category-modal :is(button, [role="button"]):focus-visible {
+  outline: 2px solid #b2a4ff;
+  outline-offset: 2px;
+}
