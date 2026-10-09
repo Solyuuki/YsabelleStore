@@ -382,7 +382,7 @@ export function CategoryCoverUploadPanel({
 
   return (
     <>
-      <section className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+      <section className="ys-category-cover-panel space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-slate-950">Category cover</p>
@@ -562,7 +562,7 @@ export function CategoryCoverUploadPanel({
         open={removeConfirmOpen}
         onOpenChange={(open) => !isBusy && setRemoveConfirmOpen(open)}
       >
-        <DialogContent className="max-w-[460px] gap-0 p-0">
+        <DialogContent className="ys-category-modal max-w-[460px] gap-0 p-0">
           <DialogHeader className="border-b border-slate-200 px-6 py-5">
             <DialogTitle>Remove category cover?</DialogTitle>
             <DialogDescription>
@@ -609,11 +609,11 @@ function ImagePreview({
   url: string | null;
 }) {
   return (
-    <figure className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <figure className="ys-category-image-preview overflow-hidden rounded-xl border border-slate-200 bg-white">
       <figcaption className="border-b border-slate-200 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
         {title}
       </figcaption>
-      <div className="grid aspect-video place-items-center bg-slate-100">
+      <div className="ys-category-image-canvas grid aspect-video place-items-center bg-slate-100">
         {url ? (
           <img alt="" className="h-full w-full object-cover" src={url} />
         ) : loading ? (
