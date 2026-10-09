@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { CategoryRetailBackdrop } from "@/components/customer/CategoryRetailBackdrop";
+import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import {
   PRIVACY_DATA_GROUPS,
@@ -89,7 +90,11 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
         </div>
       </div>
 
-      <div className="customer-container customer-privacy-layout">
+      <div className="customer-privacy-body">
+        <div aria-hidden="true" className="customer-privacy-body__artwork">
+          <StorefrontGalaxyArtwork className="customer-privacy-body__cosmos" />
+        </div>
+        <div className="customer-container customer-privacy-layout">
         <aside className="customer-privacy-toc" aria-label="Privacy policy sections">
           <span>On this page</span>
           <nav>
@@ -355,6 +360,7 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
             </p>
           </PolicySection>
         </article>
+        </div>
       </div>
     </section>
   );
