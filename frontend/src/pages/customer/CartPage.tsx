@@ -5,6 +5,7 @@ import { CustomerLink } from "@/components/customer/CustomerLink";
 import { formatCurrency, formatUnit } from "@/components/customer/ProductCard";
 import { ProductVisual } from "@/components/customer/ProductVisual";
 import { QuantityControl } from "@/components/customer/QuantityControl";
+import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { useCart } from "@/context/CartContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
@@ -45,6 +46,9 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
 
   return (
     <div className="customer-page customer-cart-page">
+      <div aria-hidden="true" className="customer-cart-page__artwork">
+        <StorefrontGalaxyArtwork className="customer-cart-page__cosmos" />
+      </div>
       <div className="customer-container">
         <div className="customer-page-heading">
           <p className="customer-kicker">Your grocery list</p>
