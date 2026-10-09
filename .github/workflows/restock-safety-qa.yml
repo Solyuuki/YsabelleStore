@@ -7,12 +7,14 @@ on:
     paths:
       - "backend/src/services/restock*"
       - "backend/test/restock*"
+      - "backend/src/scripts/restockSafetyAudit.ts"
       - "backend/src/services/stockHealthService.ts"
       - ".github/workflows/restock-safety-qa.yml"
   pull_request:
     paths:
       - "backend/src/services/restock*"
       - "backend/test/restock*"
+      - "backend/src/scripts/restockSafetyAudit.ts"
       - "backend/src/services/stockHealthService.ts"
 
 permissions:
