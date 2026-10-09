@@ -9,7 +9,7 @@ import type {
   SaveRestockReturnReportRequest
 } from "../validators/restock.validators.js";
 import { receiveStockInTransaction } from "./receivingStockService.js";
-import { getRestockOrder } from "./restockService.js";
+import { assertAutomatedRestockQuantitySafe, getRestockOrder } from "./restockService.js";
 
 const RECEIVABLE_STATUSES = [
   RestockOrderStatus.APPROVED,
@@ -242,6 +242,9 @@ export async function receiveRestockOrder(
   input: ReceiveRestockOrderRequest,
   actorId: string
 ) {
+  // Block legacy inflated automated tickets before any stock mutation.
+  await assertAutomatedRestockQuantitySafe(orderId, input.expectedVersion, "RECEIPT");
+
   await prisma.$transaction(async (tx) => {
     const order = await tx.restockOrder.findUnique({
       include: {
