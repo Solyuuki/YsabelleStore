@@ -52,8 +52,8 @@ assert.ok(premiumLabelBody, "Premium social label rule should exist.");
 assert.match(premiumLabelBody, /font-weight:\s*900;/);
 assert.match(premiumLabelBody, /color:\s*#171a2b;/);
 
-// The two pale login provider buttons need dark, legible helper text,
-// overriding the general dark-auth `small` color without changing Register.
+// Pale Google / Email OTP provider buttons need dark helper text on both
+// Login and Register, without affecting their light mode or functionality.
 const storefrontContrast = readFileSync(
   new URL("../frontend/src/styles/theme-storefront-contrast.css", import.meta.url),
   "utf8"
@@ -63,10 +63,49 @@ assert.match(
   /:root\.dark \.customer-app \.customer-auth-page--login\s+\.customer-social-auth__button > span:last-child small\s*\{[^}]*color:\s*#475569;[^}]*font-size:\s*0\.75rem;/,
   "Login provider descriptions must use readable dark slate on the light branded surfaces."
 );
-assert.doesNotMatch(
+assert.match(
   storefrontContrast,
-  /:root\.dark \.customer-app \.customer-auth-page--register\s+\.customer-social-auth__button > span:last-child small/,
-  "Do not accidentally change Register styles in the Sign In contrast fix."
+  /:root\.dark \.customer-app \.customer-auth-page--register\s+\.customer-social-auth__button > span:last-child small\s*\{[^}]*color:\s*#475569;[^}]*font-size:\s*0\.75rem;[^}]*opacity:\s*1;/,
+  "Register provider descriptions must have sufficient contrast on light buttons."
+);
+const authFrameSource = readFileSync(
+  new URL("../frontend/src/components/customer/CustomerAuthFrame.tsx", import.meta.url),
+  "utf8"
+);
+assert.match(
+  authFrameSource,
+  /mode === "register" \? \([\s\S]*?className="customer-auth-page--register__artwork"[\s\S]*?<StorefrontGalaxyArtwork className="customer-auth-page--register__cosmos" \/>/,
+  "Register must reuse the existing shared galaxy SVG, not a decorative bitmap."
+);
+assert.match(
+  storefrontContrast,
+  /:root\.dark \.customer-app \.customer-auth-page--register\.ys-glass-flow-background\s*\{[^}]*background-image:[\s\S]*?var\(--storefront-galaxy-background\) !important;/,
+  "Register dark mode must share the approved storefront gradient."
+);
+assert.match(
+  storefrontContrast,
+  /\.customer-auth-page--register\.ys-glass-flow-background\s*\{[^}]*#101827 100%/,
+  "Register must blend into the shared footer at the lower edge."
+);
+assert.match(
+  storefrontContrast,
+  /\.customer-auth-page--register\.ys-glass-flow-background\s*\{[^}]*background-repeat:\s*no-repeat !important;/,
+  "Register must never tile the old background image."
+);
+assert.match(
+  storefrontContrast,
+  /\.customer-app \.customer-auth-page--register__artwork\s*\{[^}]*display:\s*none;/,
+  "Register constellation artwork must remain hidden in light mode."
+);
+assert.match(
+  storefrontContrast,
+  /\.customer-auth-page--register__artwork\s*\{[^}]*pointer-events:\s*none;/,
+  "Decorative constellation must not intercept registration inputs."
+);
+assert.match(
+  storefrontContrast,
+  /\.customer-auth-page--register \.customer-auth-stage__panel\.ys-material-surface::before\s*\{[^}]*content:\s*none;/,
+  "Old crystal facets should not overlay the registration form in dark mode."
 );
 
 const registerSource = readFileSync(

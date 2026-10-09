@@ -1455,3 +1455,79 @@
   background: #3b4470;
   color: #c7bcff;
 }
+
+
+/* Register uses the exact same approved Trending → Essentials, Shop and
+   Recovery galaxy background. Override the legacy !important silk wallpaper
+   only for Register dark mode: no repeated bitmap, cropping or stretching. */
+.customer-app .customer-auth-page--register__artwork {
+  display: none;
+}
+:root.dark .customer-app .customer-auth-page--register.ys-glass-flow-background {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #101827 !important;
+  background-image:
+    linear-gradient(
+      to bottom,
+      #101827 0,
+      transparent 145px,
+      transparent calc(100% - 220px),
+      #101827 100%
+    ),
+    var(--storefront-galaxy-background) !important;
+  background-size: auto !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+  background-blend-mode: normal !important;
+}
+:root.dark .customer-app .customer-auth-page--register__artwork {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+}
+:root.dark .customer-app .customer-auth-page--register__cosmos {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+:root.dark .customer-app .customer-auth-page--register > .customer-auth-stage {
+  position: relative;
+  z-index: 1;
+}
+/* Suppress only Register's old shader blobs, inner crystal facets and
+   oversized stage glow. Keep the form, frosted panel and light mode intact. */
+:root.dark .customer-app .customer-auth-page--register::before,
+:root.dark .customer-app .customer-auth-page--register::after,
+:root.dark .customer-app .customer-auth-page--register .customer-auth-stage::before,
+:root.dark .customer-app .customer-auth-page--register .customer-auth-stage__panel.ys-material-surface::before {
+  content: none;
+  display: none;
+  animation: none;
+}
+/* The provider buttons are intentionally near-white. The generic dark-auth
+   helper text colors are too pale against them; use slate, not lavender-white. */
+:root.dark .customer-app .customer-auth-page--register
+  .customer-social-auth__button > span:last-child small {
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 700;
+  opacity: 1;
+}
