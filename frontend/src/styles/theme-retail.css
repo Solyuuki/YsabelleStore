@@ -736,3 +736,24 @@
   border-color: #9b91e7 !important;
   box-shadow: 0 0 0 1px rgb(155 145 231 / 17%);
 }
+
+
+/* Dashboard calendar: the native month input must not draw a second dark box. */
+:root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-month-picker > input[type="month"] {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: #e8effb !important;
+  color-scheme: dark;
+}
+:root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-month-picker > input[type="month"]:focus-visible {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+:root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-month-picker:focus-within {
+  border-color: #9b91e7 !important;
+  box-shadow: 0 0 0 1px rgb(155 145 231 / 17%);
+}
