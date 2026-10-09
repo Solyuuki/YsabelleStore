@@ -717,3 +717,22 @@
   border-color: #586b8a !important;
   color: #c3d0e4 !important;
 }
+
+
+/* POS scanner: focus remains on the outer search field, never a second inner box. */
+:root.dark .app-shell-ambient .pos-scanner-field > .pos-scanner-input {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+:root.dark .app-shell-ambient .pos-scanner-field > .pos-scanner-input:focus-visible {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+:root.dark .app-shell-ambient .pos-scanner-field:focus-within {
+  border-color: #9b91e7 !important;
+  box-shadow: 0 0 0 1px rgb(155 145 231 / 17%);
+}
