@@ -245,9 +245,7 @@ export async function receiveRestockOrder(
   input: ReceiveRestockOrderRequest,
   actorId: string
 ) {
-  // Block legacy inflated automated tickets before any stock mutation.
-  await assertAutomatedRestockQuantitySafe(orderId, input.expectedVersion, "RECEIPT");
-
+  // Safety validation and the stock mutation must share the same transaction.
   await prisma.$transaction(async (tx) => {
     const order = await tx.restockOrder.findUnique({
       include: {
@@ -284,6 +282,13 @@ export async function receiveRestockOrder(
         details: { orderId, status: order.status }
       });
     }
+
+    // Serialized with approval: product locks stop two incoming shipments from
+    // independently authorizing the same available stock position.
+    for (const productId of [...new Set(order.lines.filter((line) => line.isSelected).map((line) => line.productId))].sort()) {
+      await tx.$queryRaw`SELECT id FROM products WHERE id = ${productId} FOR UPDATE`;
+    }
+    await assertAutomatedRestockQuantitySafe(orderId, input.expectedVersion, "RECEIPT", tx);
 
     // Claim the expected version before physical stock mutation. Duplicate/concurrent submissions
     // using the same version fail here, so the transaction exits without changing inventory.
@@ -437,7 +442,7 @@ export async function receiveRestockOrder(
       },
       where: { id: orderId }
     });
-  });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
 
   return getRestockOrder(orderId);
 }
