@@ -2,7 +2,6 @@ import {
   ArrowUpDown,
   Boxes,
   CalendarDays,
-  ChevronDown,
   CircleCheck,
   ClipboardList,
   FileUp,
@@ -569,7 +568,7 @@ export function InventoryPage() {
       <Card>
         <CardContent className="space-y-4 p-4 lg:p-5">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <label className="relative flex h-10 min-w-[260px] flex-1 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3">
+            <label className="ys-inventory-search relative flex h-10 min-w-[260px] flex-1 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3">
               <Search className="h-4 w-4 text-slate-500" aria-hidden="true" />
               <input
                 aria-label="Search inventory"
@@ -809,7 +808,7 @@ function FilterSelect({
 }) {
   return (
     <label
-      className={`relative flex h-10 shrink-0 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-600 ${minWidthClassName ?? "w-auto"}`}
+      className={`ys-inventory-filter relative flex h-10 shrink-0 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-600 ${minWidthClassName ?? "w-auto"}`}
     >
       <span className="sr-only">{label}</span>
       <Icon className="h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
@@ -821,10 +820,6 @@ function FilterSelect({
       >
         {children}
       </Select>
-      <ChevronDown
-        className="pointer-events-none absolute right-3 h-4 w-4 shrink-0 text-slate-400"
-        aria-hidden="true"
-      />
     </label>
   );
 }
@@ -979,7 +974,7 @@ function InventoryDetailsDialog({
     >
       <DialogContent
         aria-describedby="inventory-details-description"
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[860px] flex-col gap-0 p-0"
+        className="ys-inventory-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[860px] flex-col gap-0 p-0"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
           <DialogClose asChild>
@@ -1223,7 +1218,7 @@ function StockInDialog({
     >
       <DialogContent
         aria-describedby="stock-in-description"
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
+        className="ys-inventory-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
           <DialogClose asChild>
@@ -1544,7 +1539,7 @@ function StockAdjustmentDialog({
     >
       <DialogContent
         aria-describedby="stock-adjustment-description"
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
+        className="ys-inventory-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
           <DialogClose asChild>
@@ -1871,7 +1866,7 @@ function StockActivityDialog({
     >
       <DialogContent
         aria-describedby="stock-activity-description"
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[1040px] flex-col gap-0 p-0"
+        className="ys-inventory-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[1040px] flex-col gap-0 p-0"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
           <DialogClose asChild>
