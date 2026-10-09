@@ -354,12 +354,12 @@ function MerchandisingBackdrop() {
         </defs>
         <g fill="none" strokeLinecap="round">
           <path
-            d="M1475 -60C1435 120 1415 250 1398 430"
+            d="M775 960C996 797 1208 755 1459 526C1598 398 1700 358 1790 337"
             stroke="url(#merchTopRightCurve)"
             strokeWidth="1.5"
           />
           <path
-            d="M1545 -80C1498 110 1478 245 1465 420"
+            d="M910 970C1138 829 1358 757 1522 593C1646 470 1725 446 1790 427"
             stroke="#A785EF"
             strokeOpacity="0.14"
             strokeWidth="1"
@@ -388,19 +388,19 @@ function MerchandisingBackdrop() {
         </defs>
         <g fill="none" strokeLinecap="round">
           <path
-            d="M1705 210C1515 280 1385 425 1295 760"
+            d="M817 965C1050 807 1284 716 1467 540C1604 410 1715 354 1800 340"
             stroke="url(#merchMidMainCurve)"
             strokeWidth="1.7"
           />
           <path
-            d="M1688 284C1530 338 1436 455 1360 760"
+            d="M952 970C1158 832 1361 741 1517 611C1667 485 1734 458 1800 438"
             stroke="url(#merchMidInnerCurve)"
             strokeWidth="1"
           />
           <path
-            d="M980 735C1150 676 1330 608 1685 520"
+            d="M1080 945C1270 812 1500 676 1790 522"
             stroke="#B773ED"
-            strokeOpacity="0.48"
+            strokeOpacity="0.22"
             strokeWidth="1.4"
           />
         </g>
@@ -428,12 +428,12 @@ function MerchandisingBackdrop() {
         </defs>
         <g fill="none" strokeLinecap="round">
           <path
-            d="M1710 110C1498 210 1362 390 1248 870"
+            d="M766 957C984 843 1254 695 1436 524C1594 373 1718 321 1800 304"
             stroke="url(#merchBottomOuter)"
             strokeWidth="1.6"
           />
           <path
-            d="M1688 188C1518 268 1416 426 1332 870"
+            d="M959 969C1157 859 1372 736 1529 603C1665 486 1737 440 1800 423"
             stroke="url(#merchBottomInner)"
             strokeWidth="1"
           />
