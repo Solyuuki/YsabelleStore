@@ -238,4 +238,37 @@ assert.match(
   "Trending, Best Sellers, and Everyday Essentials must share one canvas while the next-step CTA stays outside it."
 );
 
+
+/* Shop catalog and the homepage merchandising shelves share the SAME dark galaxy. */
+const storefrontTheme = readFileSync(resolve(process.cwd(), "src/styles/theme-storefront.css"), "utf8");
+const shopCatalogBackdrop = readFileSync(resolve(process.cwd(), "src/components/customer/ShopCatalogBackdrop.tsx"), "utf8");
+const galaxyArtwork = readFileSync(resolve(process.cwd(), "src/components/customer/StorefrontGalaxyArtwork.tsx"), "utf8");
+
+assert.match(
+  storefrontTheme,
+  /:root\.dark \.customer-app \.home-merchandising-canvas\s*\{[^}]*background:\s*var\(--storefront-galaxy-background\)/,
+  "Approved Trending through Essentials background must remain the source of truth."
+);
+assert.match(
+  storefrontTheme,
+  /:root\.dark \.customer-app \.customer-shop-page \.customer-shop-catalog-backdrop\s*\{[\s\S]*?var\(--storefront-galaxy-background\)/,
+  "Shop catalog should use the approved single shared galaxy palette."
+);
+assert.match(
+  shopCatalogBackdrop,
+  /<StorefrontGalaxyArtwork className="customer-shop-catalog-backdrop__cosmos" \/>/,
+  "Shop catalog should reuse the original SVG constellation rather than a raster imitation."
+);
+assert.match(galaxyArtwork, /preserveAspectRatio="xMidYMid meet"/, "SVG must not stretch to the catalog's variable height.");
+assert.match(
+  storefrontTheme,
+  /\.customer-shop-catalog-backdrop__cosmos\s*\{[^}]*display:\s*none/,
+  "Artwork must stay hidden in light mode."
+);
+assert.match(
+  storefrontTheme,
+  /\.customer-shop-page \.customer-shop-catalog-backdrop\s*\{[\s\S]*?#101827 100%/,
+  "Last Shop backdrop pixel must match the existing footer transition surface."
+);
+
 console.log("Storefront Shop/Catalog background contract passed.");
