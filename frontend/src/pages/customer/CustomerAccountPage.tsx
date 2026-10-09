@@ -20,6 +20,7 @@ import {
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 
 import { ProductCard, formatCurrency } from "@/components/customer/ProductCard";
+import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { useCustomerFavorites } from "@/context/CustomerFavoritesContext";
@@ -758,6 +759,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
 
   return (
     <section className="customer-account-page-v2 ys-glass-flow-background">
+      <StorefrontGalaxyArtwork className="customer-account-page-v2__cosmos" />
       <div className="customer-account-layout-v2">
         <aside className="customer-account-rail ys-material-surface" aria-label="Account sections">
           <div className="customer-account-identity-card">

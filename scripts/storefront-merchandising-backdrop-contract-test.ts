@@ -271,4 +271,44 @@ assert.match(
   "Last Shop backdrop pixel must match the existing footer transition surface."
 );
 
+
+/* Account Orders/Favorites/Profile/Security share the one approved galaxy. */
+const accountPageSource = readFileSync(resolve(process.cwd(), "src/pages/customer/CustomerAccountPage.tsx"), "utf8");
+
+assert.match(
+  accountPageSource,
+  /<StorefrontGalaxyArtwork className="customer-account-page-v2__cosmos" \/>/,
+  "Account must reuse the same SVG constellation component as Shop and Home."
+);
+assert.match(
+  storefrontTheme,
+  /:root\.dark \.customer-app \.customer-account-page-v2\.ys-glass-flow-background\s*\{[\s\S]*?var\(--storefront-galaxy-background\) !important/,
+  "Account dark-mode background must reuse the approved shared palette over legacy material image."
+);
+assert.match(
+  storefrontTheme,
+  /\.customer-account-page-v2\.ys-glass-flow-background\s*\{[\s\S]*?background-repeat:\s*no-repeat !important/,
+  "Account page must never vertically repeat the galaxy texture."
+);
+assert.match(
+  storefrontTheme,
+  /\.customer-account-page-v2\.ys-glass-flow-background\s*\{[\s\S]*?#101827 100%/,
+  "Account background must fade into the unchanged footer surface."
+);
+assert.match(
+  storefrontTheme,
+  /\.customer-account-page-v2__cosmos\s*\{[^}]*display:\s*none/,
+  "Account constellation must not appear in light mode."
+);
+assert.match(
+  storefrontTheme,
+  /\.customer-account-page-v2 > \.customer-account-layout-v2\s*\{[^}]*z-index:\s*1/,
+  "Account content must remain in front of decorative SVG."
+);
+assert.doesNotMatch(
+  storefrontTheme,
+  /\.customer-account-page-v2__cosmos\s*\{[^}]*background-size:\s*100% 100%/,
+  "Do not stretch artwork to fill long account pages."
+);
+
 console.log("Storefront Shop/Catalog background contract passed.");

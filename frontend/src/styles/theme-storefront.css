@@ -639,6 +639,59 @@
   background: var(--storefront-galaxy-background);
   box-shadow: none;
 }
+/* Account page reuses the EXACT shared galaxy from Trending → Essentials
+   and Shop. Override the legacy .ys-glass-flow-background !important image
+   and repeat-y behavior only on this route, never on account cards. */
+.customer-app .customer-account-page-v2__cosmos {
+  display: none;
+}
+:root.dark .customer-app .customer-account-page-v2.ys-glass-flow-background {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #101827 !important;
+  background-image:
+    linear-gradient(
+      to bottom,
+      #101827 0,
+      transparent 145px,
+      transparent calc(100% - 220px),
+      #101827 100%
+    ),
+    var(--storefront-galaxy-background) !important;
+  background-size: auto !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+}
+:root.dark .customer-app .customer-account-page-v2__cosmos {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* Original illustration is proportional: no stretched constellation. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+}
+:root.dark .customer-app .customer-account-page-v2 > .customer-account-layout-v2 {
+  position: relative;
+  z-index: 1;
+}
+
 /* The product page now shares the exact same navy-violet galaxy surface
    and artwork as Trending / Best Sellers / Everyday Essentials. */
 .customer-app .customer-product-page__cosmos {
