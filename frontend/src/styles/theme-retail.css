@@ -1331,3 +1331,185 @@
   outline: 2px solid #aa9dff;
   outline-offset: 2px;
 }
+
+
+/* Sprint 11: receiving delivery dialogs — consistent dark contrast. */
+/* Radix portals live under document.body, outside the retail app shell.
+   Only the receiving dialogs are affected; light mode and workflow logic stay unchanged. */
+:root.dark [role="dialog"].ys-receiving-dialog {
+  --receiving-panel: #263752;
+  --receiving-raised: #2d415e;
+  --receiving-border: #647a99;
+  --receiving-ink: #edf3ff;
+  --receiving-body: #cbd8ec;
+  --receiving-muted: #b3c3da;
+  background-color: #1b293f !important;
+  border-color: #536b8b !important;
+  color: var(--receiving-ink) !important;
+  color-scheme: dark;
+}
+:root.dark [role="dialog"].ys-receiving-dialog :is(
+  [class~="bg-white"],
+  [class~="bg-slate-50"],
+  [class~="bg-slate-50/80"],
+  [class~="bg-slate-100"],
+  [class~="bg-indigo-50/70"]
+) {
+  background-color: var(--receiving-panel) !important;
+  border-color: var(--receiving-border) !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog :is(
+  [class~="text-slate-950"],
+  [class~="text-slate-900"],
+  [class~="text-slate-800"],
+  [class~="text-slate-700"]
+) {
+  color: var(--receiving-ink) !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog :is(
+  [class~="text-slate-600"],
+  [class~="text-slate-500"],
+  [class~="text-slate-400"]
+) {
+  color: var(--receiving-body) !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog :is(
+  [class~="border-slate-100"],
+  [class~="border-slate-200"],
+  [class~="border-slate-300"]
+) {
+  border-color: var(--receiving-border) !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog :is(
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select
+) {
+  background-color: #243650 !important;
+  border-color: #687f9d !important;
+  color: var(--receiving-ink) !important;
+  color-scheme: dark !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog :is(input, textarea)::placeholder {
+  color: #acbed8 !important;
+  opacity: 1;
+}
+:root.dark [role="dialog"].ys-receiving-dialog :is(input, textarea, select):focus-visible {
+  outline-color: #ab9cff;
+  border-color: #ab9cff !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog input:disabled {
+  color: #d2def0 !important;
+  opacity: 0.78;
+}
+:root.dark [role="dialog"].ys-receiving-dialog select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23c2b7ff%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22m6 9 6 6 6-6%22/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.875rem center !important;
+  background-size: 1rem 1rem !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog button[class~="bg-white"],
+:root.dark [role="dialog"].ys-receiving-dialog button[class~="text-slate-600"] {
+  background-color: #30445f !important;
+  border-color: #8395b0 !important;
+  color: #edf3ff !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog button[class~="bg-white"]:hover:not(:disabled),
+:root.dark [role="dialog"].ys-receiving-dialog button[class~="text-slate-600"]:hover:not(:disabled) {
+  background-color: #415777 !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog button:disabled {
+  opacity: 0.76;
+}
+:root.dark [role="dialog"].ys-receiving-dialog button:focus-visible {
+  outline: 2px solid #ab9cff;
+  outline-offset: 2px;
+}
+/* The receipt footer belongs to the dialog's dark chrome, never a white bar. */
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-dialog-footer {
+  background-color: #253650 !important;
+  border-color: #617592 !important;
+}
+/* Arrival modes and issue selection must remain dark even when selected. */
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-arrival-option:hover {
+  background-color: #344966 !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-arrival-option:focus-visible {
+  background-color: #374968 !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-exception-option {
+  background-color: #253752 !important;
+  border-color: #607796 !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-exception-option[data-selected="true"] {
+  background-color: #373860 !important;
+  border-color: #a699ff !important;
+  box-shadow: inset 0 0 0 1px rgb(166 153 255 / 35%);
+}
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-exception-option:hover {
+  background-color: #374962 !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog [data-checked][class~="bg-white"] {
+  background-color: #5b50d7 !important;
+  border-color: #afa4ff !important;
+  color: #fff !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-exception-row {
+  background-color: #263852 !important;
+  border-color: #637a99 !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog :is(
+  .ys-receiving-cancel-panel,
+  .ys-receiving-lot-summary
+) {
+  background-color: #283a55 !important;
+  border-color: #667c9b !important;
+}
+/* Warnings are amber-tinted slate, not dirty-white overlays. */
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-damage-panel {
+  background-color: #403828 !important;
+  border-color: #be9d61 !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-damage-panel label {
+  color: #ffe3a3 !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-damage-panel [class~="text-amber-800"],
+:root.dark [role="dialog"].ys-receiving-dialog [class~="text-amber-800"] {
+  color: #ffd49a !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog [class~="text-amber-700"] {
+  color: #ffdda0 !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog :is(
+  [class~="bg-emerald-50"],
+  [class~="bg-emerald-50/70"]
+) {
+  background-color: #20423b !important;
+  border-color: #609c88 !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog :is(
+  [class~="text-emerald-600"],
+  [class~="text-emerald-700"],
+  [class~="text-emerald-800"],
+  [class~="text-emerald-950"]
+) {
+  color: #b8f4de !important;
+}
+/* When disabled, secondary/back/add-details actions must still have legible
+   labels. The disabled attribute still prevents interaction. */
+:root.dark [role="dialog"].ys-receiving-dialog button:disabled:is(
+  [class~="text-slate-700"],
+  [class~="text-slate-600"]
+) {
+  background-color: #2b3c55 !important;
+  border-color: #556987 !important;
+  color: #c0cce0 !important;
+}
+/* Maintain the actual values and logic of batch/lot/expiry fields. */
+:root.dark [role="dialog"].ys-receiving-lot-dialog label {
+  color: #dce7f8 !important;
+}
+:root.dark [role="dialog"].ys-receiving-lot-dialog [data-checked] {
+  background-color: #5b50d7 !important;
+  border-color: #afa4ff !important;
+}
