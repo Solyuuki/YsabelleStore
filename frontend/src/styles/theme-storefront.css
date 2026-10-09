@@ -220,10 +220,38 @@
 }
 :root.dark .customer-app .customer-home .home-next-step {
   isolation: isolate;
+  /* Section 4 inherits the merch surface at its entrance and dissolves into
+     the existing footer transition surface (#101827), without editing the footer. */
   background:
-    linear-gradient(180deg, #17243c 0%, rgb(23 36 60 / 0%) 13%, rgb(23 36 60 / 0%) 84%, #17243c 100%),
+    linear-gradient(
+      180deg,
+      #17243c 0%,
+      rgb(23 36 60 / 0%) 13%,
+      rgb(23 36 60 / 0%) 68%,
+      rgb(16 24 39 / 22%) 80%,
+      rgb(16 24 39 / 68%) 92%,
+      #101827 100%
+    ),
     radial-gradient(ellipse 52% 82% at 80% 48%, rgb(105 75 179 / 16%), transparent 88%),
     linear-gradient(110deg, #17243c 0%, #182541 44%, #231d45 100%);
+}
+/* The portal art can extend below its SVG mask on some viewports; this section-
+   contained veil guarantees that its LAST pixel meets the footer's SVG base.
+   Keep z-index below content and above the decorative portal. */
+:root.dark .customer-app .customer-home .home-next-step::after {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 0;
+  height: clamp(140px, 20vw, 270px);
+  content: "";
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgb(16 24 39 / 0%) 0%,
+    rgb(16 24 39 / 12%) 30%,
+    rgb(16 24 39 / 58%) 70%,
+    #101827 100%
+  );
 }
 :root.dark .customer-app .home-next-step__dark-backdrop {
   position: absolute;
