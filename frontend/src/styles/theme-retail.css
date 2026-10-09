@@ -757,3 +757,16 @@
   border-color: #9b91e7 !important;
   box-shadow: 0 0 0 1px rgb(155 145 231 / 17%);
 }
+
+
+/* Dashboard panels: eliminate the 900px material tile seam in dark mode. */
+/* Full-width operational cards should use one uninterrupted dark surface.
+   The inherited ::before graphic repeats every 900px and leaves a vertical
+   edge in Sales Pulse / Restock / Monthly Recommendation panels. */
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  .ys-dashboard-panel-surface:not(.ys-kpi-card-surface)::before {
+  content: none !important;
+  display: none !important;
+}
