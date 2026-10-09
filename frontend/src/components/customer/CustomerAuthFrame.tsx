@@ -47,6 +47,11 @@ export function CustomerAuthFrame({ children, mode }: CustomerAuthFrameProps) {
           </svg>
         </>
       ) : null}
+      {mode === "recovery" ? (
+        <div aria-hidden="true" className="customer-auth-page--recovery__artwork">
+          <StorefrontGalaxyArtwork className="customer-auth-page--recovery__cosmos" />
+        </div>
+      ) : null}
       <div className="customer-auth-stage">
         <div
           className={`customer-auth-stage__panel${mode === "recovery" ? "" : " ys-material-surface"}`}

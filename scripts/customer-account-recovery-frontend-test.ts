@@ -44,6 +44,59 @@ async function main() {
   assert.match(recoverySource, /role="status"/);
   assert.match(recoveryCss, /linear-gradient/);
   assert.match(recoveryCss, /@media/);
+  const authFrameSource = await readFile(
+    "frontend/src/components/customer/CustomerAuthFrame.tsx",
+    "utf8"
+  );
+  const storefrontContrast = await readFile(
+    "frontend/src/styles/theme-storefront-contrast.css",
+    "utf8"
+  );
+  const sharedGalaxyArtwork = await readFile(
+    "frontend/src/components/customer/StorefrontGalaxyArtwork.tsx",
+    "utf8"
+  );
+  assert.match(
+    authFrameSource,
+    /mode === "recovery" \? \([\s\S]*?aria-hidden="true" className="customer-auth-page--recovery__artwork"[\s\S]*?<StorefrontGalaxyArtwork className="customer-auth-page--recovery__cosmos" \/>/,
+    "All Identify, Verify, Secure and complete steps must share one recovery backdrop."
+  );
+  assert.match(
+    storefrontContrast,
+    /:root\.dark \.customer-app \.customer-auth-page--recovery\.ys-glass-flow-background\s*\{[^}]*background-image:[\s\S]*?var\(--storefront-galaxy-background\) !important;/,
+    "Dark Recovery must use the approved storefront galaxy palette, overriding the pastel wallpaper."
+  );
+  assert.match(
+    storefrontContrast,
+    /\.customer-auth-page--recovery\.ys-glass-flow-background\s*\{[^}]*#101827 100%/,
+    "Recovery's last pixel must blend into the shared footer."
+  );
+  assert.match(
+    storefrontContrast,
+    /\.customer-auth-page--recovery\.ys-glass-flow-background\s*\{[^}]*background-repeat:\s*no-repeat !important;/,
+    "Recovery background must never tile or stretch a bitmap texture."
+  );
+  assert.match(
+    storefrontContrast,
+    /\.customer-app \.customer-auth-page--recovery__artwork\s*\{[^}]*display:\s*none;/,
+    "Galaxy artwork must remain hidden in recovery light mode."
+  );
+  assert.match(
+    storefrontContrast,
+    /:root\.dark \.customer-app \.customer-auth-page--recovery::before,[\s\S]*?\.customer-auth-page--recovery::after\s*\{[^}]*content:\s*none;/,
+    "Remove the old animated recovery blobs instead of overlaying the new galaxy."
+  );
+  assert.match(
+    storefrontContrast,
+    /\.customer-auth-page--recovery > \.customer-auth-stage\s*\{[^}]*z-index:\s*1;/,
+    "Recovery forms must stay above the decorative SVG."
+  );
+  assert.match(
+    sharedGalaxyArtwork,
+    /preserveAspectRatio="xMidYMid meet"/,
+    "Shared constellation must stay proportional at every recovery stage height."
+  );
+
   assert.match(
     recoveryCss,
     /\.customer-auth-page--recovery\s+\.customer-auth-stage\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/s,
