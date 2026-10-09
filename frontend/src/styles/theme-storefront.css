@@ -451,17 +451,21 @@
 
 /* Home category portal and merchandising SVG use Light Mode-specific pastel
    gradient stops. Retheme their actual backing layers, not merely the text. */
+/* A single background definition for Shop by Category and the Support hero.
+   Both routes render the same responsive SVG backdrop component above it. */
+:root.dark .customer-app {
+  --storefront-category-background:
+    radial-gradient(ellipse 51% 46% at 4% 7%, rgb(51 111 190 / 40%), transparent 85%),
+    radial-gradient(ellipse 54% 48% at 99% 16%, rgb(112 63 171 / 34%), transparent 86%),
+    linear-gradient(180deg, transparent 0%, transparent 70%, #17243c 100%),
+    linear-gradient(108deg, #102441 0%, #152449 49%, #291d48 100%);
+}
 :root.dark .customer-app .home-categories {
   --retail-bg-a: #10213a;
   --retail-bg-b: #141f37;
   --retail-bg-c: #201a33;
   border-top-color: rgb(166 185 237 / 16%);
-  /* Native CSS gradients: seamless surface with a matching merchandising edge. */
-  background:
-    radial-gradient(ellipse 51% 46% at 4% 7%, rgb(51 111 190 / 40%), transparent 85%),
-    radial-gradient(ellipse 54% 48% at 99% 16%, rgb(112 63 171 / 34%), transparent 86%),
-    linear-gradient(180deg, transparent 0%, transparent 70%, #17243c 100%),
-    linear-gradient(108deg, #102441 0%, #152449 49%, #291d48 100%);
+  background: var(--storefront-category-background);
   color: #d4deec;
   box-shadow: inset 0 1px 0 rgb(188 202 246 / 16%);
 }
