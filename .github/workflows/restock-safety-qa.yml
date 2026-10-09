@@ -1,0 +1,43 @@
+name: Restock safety QA
+
+on:
+  push:
+    branches:
+      - sprint/v0.11/sprint-11
+    paths:
+      - "backend/src/services/restock*"
+      - "backend/test/restock*"
+      - "backend/src/services/stockHealthService.ts"
+      - ".github/workflows/restock-safety-qa.yml"
+  pull_request:
+    paths:
+      - "backend/src/services/restock*"
+      - "backend/test/restock*"
+      - "backend/src/services/stockHealthService.ts"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: restock-safety-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-and-build:
+    name: Restock safety unit and backend build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+      - name: Restock safety regressions (no DB writes)
+        run: npx tsx --test --test-concurrency=1 backend/test/restock-phase11-decision.test.ts backend/test/restock-phase7-9-contract.test.ts
+      - name: Backend compile
+        run: npm run build --workspace backend
