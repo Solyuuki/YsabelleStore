@@ -313,6 +313,17 @@
 :root.dark .recharts-cartesian-grid line {
   stroke: rgb(180 192 225 / 15%);
 }
+/* Forecast detail plot: opaque dark canvas blocks material facets from
+   competing with the 1px dashed grid, without changing data or light mode. */
+:root.dark .app-shell-ambient .ys-forecast-chart {
+  background-color: #1c2b43;
+  background-image: none;
+  border-radius: 0.75rem;
+  box-shadow: inset 0 0 0 1px rgb(138 159 191 / 18%);
+}
+:root.dark .app-shell-ambient .ys-forecast-chart .recharts-cartesian-grid line {
+  stroke: #60758f;
+}
 @media print {
   :root.dark .receipt-print-page,
   :root.dark .receipt-paper {
