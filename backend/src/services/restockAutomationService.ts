@@ -1,8 +1,9 @@
-import { RestockOrderStatus, RestockRecommendationSource } from "@prisma/client";
+import { Prisma, RestockOrderStatus, RestockRecommendationSource } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import { listRestockPlanningCandidates } from "./restockPlanningService.js";
 import { reconcileDraftRestockLine } from "./restockDraftReconciliation.js";
+import { assessProcurementSafety, exceedsRestockOrderBudget } from "./restockProcurementSafety.js";
 import { createRestockOrder } from "./restockService.js";
 
 const AUTOMATION_PAGE_SIZE = 100;
@@ -122,6 +123,7 @@ async function findAutomationActorId() {
 async function loadOperationalActionLines() {
   const lines: RestockActionLine[] = [];
   let page = 1;
+  const lineCosts: number[] = [];
 
   while (true) {
     const result = await listRestockPlanningCandidates({
@@ -141,6 +143,22 @@ async function loadOperationalActionLines() {
         continue;
       }
 
+      const verdict = assessProcurementSafety({
+        requestedQuantity: quantity,
+        monthlyPosDemand: candidate.stockHealth.monthlyDemand,
+        posConfidence: candidate.stockHealth.confidence,
+        sellableStock: candidate.sellableStock,
+        incomingStock: candidate.incomingStock,
+        expiryRiskQuantity: candidate.expiryRiskQuantity,
+        unitCost: candidate.product.unitCost
+      });
+      if (!verdict.safe) {
+        console.warn(
+          `[restock] Holding automated recommendation for ${candidate.product.sku}: ${verdict.reason}. Owner review required.`
+        );
+        continue;
+      }
+      lineCosts.push(verdict.lineCostPHP);
       lines.push({
         productId: candidate.product.id,
         quantity,
@@ -149,7 +167,13 @@ async function loadOperationalActionLines() {
       });
     }
 
-    if (page >= result.meta.totalPages) return lines;
+    if (page >= result.meta.totalPages) {
+      if (exceedsRestockOrderBudget(lineCosts)) {
+        console.warn("[restock] Monthly automated recommendations exceed the purchase budget. No draft was created or updated.");
+        return [];
+      }
+      return lines;
+    }
     page += 1;
   }
 }
@@ -368,36 +392,51 @@ async function runRestockAutomation(): Promise<RestockAutomationResult> {
   }
 
   const totalUnits = actionLines.reduce((sum, line) => sum + line.quantity, 0);
-  const order = await createRestockOrder(
-    {
-      notes: `${batch.marker} Forecast-driven recommended inventory plan. Owner approval is required before Receiving.`,
-      lines: actionLines.map((line) => ({
-        isSelected: true,
-        notes: "Inventory Recommender generated this forecast-driven replenishment line.",
-        ownerOverrideReason: null,
-        productId: line.productId,
-        recommendationId: line.recommendationId,
-        recommendationSource: line.recommendationSource,
-        recommendedQuantity: line.quantity,
-        requestedQuantity: line.quantity
-      }))
-    },
-    actorId
-  );
-
-  const renamed = await prisma.restockOrder.update({
-    data: { orderNumber: batch.orderNumber },
-    select: { id: true, orderNumber: true },
-    where: { id: order.id }
-  });
+  let order: Awaited<ReturnType<typeof createRestockOrder>>;
+  try {
+    // Unique orderNumber is claimed in the create transaction, not by a later rename.
+    order = await createRestockOrder(
+      {
+        notes: `${batch.marker} Forecast-driven recommended inventory plan. Owner approval is required before Receiving.`,
+        lines: actionLines.map((line) => ({
+          isSelected: true,
+          notes: "Inventory Recommender generated this forecast-driven replenishment line.",
+          ownerOverrideReason: null,
+          productId: line.productId,
+          recommendationId: line.recommendationId,
+          recommendationSource: line.recommendationSource,
+          recommendedQuantity: line.quantity,
+          requestedQuantity: line.quantity
+        }))
+      },
+      actorId,
+      batch.orderNumber
+    );
+  } catch (error) {
+    // Multi-process race: one server already created the uniquely named batch.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      const competing = await prisma.restockOrder.findUnique({
+        select: { id: true, orderNumber: true, status: true },
+        where: { orderNumber: batch.orderNumber }
+      });
+      if (competing) {
+        return {
+          orderId: competing.id,
+          orderNumber: competing.orderNumber,
+          status: competing.status === RestockOrderStatus.CANCELLED ? "CANCELLED" : "EXISTING"
+        };
+      }
+    }
+    throw error;
+  }
 
   console.info(
-    `[restock] Created owner-review monthly plan ${renamed.orderNumber} with ${actionLines.length} product(s) and ${totalUnits} recommended unit(s). Approval is required before Receiving.`
+    `[restock] Created owner-review monthly plan ${order.orderNumber} with ${actionLines.length} product(s) and ${totalUnits} recommended unit(s). Approval is required before Receiving.`
   );
 
   return {
-    orderId: renamed.id,
-    orderNumber: renamed.orderNumber,
+    orderId: order.id,
+    orderNumber: order.orderNumber,
     status: "CREATED"
   };
 }
