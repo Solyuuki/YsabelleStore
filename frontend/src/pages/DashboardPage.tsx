@@ -198,7 +198,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
     : null;
 
   return (
-    <div className="space-y-5">
+    <div className="retail-dashboard-page space-y-5">
       <PageHeader
         actions={
           summary ? (
@@ -473,7 +473,7 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
             </div>
 
             {topPriority ? (
-              <div className="rounded-xl border border-violet-100 bg-gradient-to-br from-violet-50/65 to-white p-4">
+              <div className="ys-dashboard-priority rounded-xl border border-violet-100 bg-gradient-to-br from-violet-50/65 to-white p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#625bff]">
@@ -484,7 +484,7 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
                     </p>
                     <p className="mt-1 text-xs leading-5 text-slate-600">{topPriority.rationale}</p>
                   </div>
-                  <div className="shrink-0 rounded-lg bg-white px-3 py-2 text-right ring-1 ring-violet-100">
+                  <div className="ys-dashboard-priority__action shrink-0 rounded-lg bg-white px-3 py-2 text-right ring-1 ring-violet-100">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#625bff]">
                       {topPriority.riskLevel} priority
                     </p>
@@ -495,7 +495,7 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
                 </div>
               </div>
             ) : (
-              <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
+              <div className="ys-dashboard-all-clear flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
                 <BrandIcon icon={Sparkles} />
                 <div>
                   <p className="font-semibold text-emerald-950">
@@ -531,7 +531,7 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
 
 function MonthlyReportStat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-xl border border-violet-100 bg-violet-50/35 px-4 py-3">
+    <div className="ys-dashboard-report-stat rounded-xl border border-violet-100 bg-violet-50/35 px-4 py-3">
       <p className="text-[11px] font-medium text-slate-500">{label}</p>
       <p className="mt-1 text-xl font-semibold tracking-tight text-slate-950">
         {value.toLocaleString()}
@@ -580,7 +580,7 @@ function RestockPipelineCard({
             {operations.restock.latestOpenOrder ? (
               <LatestRestockOrder order={operations.restock.latestOpenOrder} />
             ) : (
-              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-6 text-center text-xs text-slate-500">
+              <div className="ys-dashboard-empty rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-6 text-center text-xs text-slate-500">
                 No open restock orders.
               </div>
             )}
@@ -621,7 +621,7 @@ function LatestRestockOrder({ order }: LatestRestockOrderProps) {
       : 0;
 
   return (
-    <div className="rounded-xl border border-violet-100 bg-gradient-to-br from-violet-50/60 to-white p-4">
+    <div className="ys-dashboard-order rounded-xl border border-violet-100 bg-gradient-to-br from-violet-50/60 to-white p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#625bff]">
@@ -633,7 +633,7 @@ function LatestRestockOrder({ order }: LatestRestockOrderProps) {
           {orderStatusLabel(order.status)}
         </StatusBadge>
       </div>
-      <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-violet-100">
+      <div className="ys-dashboard-progress mt-4 h-1.5 overflow-hidden rounded-full bg-violet-100">
         <div
           className="h-full rounded-full bg-gradient-to-r from-[#008cff] via-[#625bff] to-[#f43f8c] transition-[width]"
           style={{ width: `${completion}%` }}
@@ -672,7 +672,7 @@ function PipelineStat({
 
   return (
     <div
-      className={`rounded-xl border px-3 py-3 ${
+      className={`ys-dashboard-pipeline-stat rounded-xl border px-3 py-3 ${
         warning ? "border-amber-200 bg-amber-50/70" : "border-violet-100 bg-violet-50/40"
       }`}
     >
@@ -690,7 +690,7 @@ function PipelineStat({
 
 function DashboardPanelLoading({ label }: { label: string }) {
   return (
-    <div className="flex min-h-36 items-center justify-center rounded-xl border border-dashed border-violet-200 bg-violet-50/35 px-4 py-8 text-center text-sm text-slate-500">
+    <div className="ys-dashboard-placeholder flex min-h-36 items-center justify-center rounded-xl border border-dashed border-violet-200 bg-violet-50/35 px-4 py-8 text-center text-sm text-slate-500">
       <span className="flex items-center gap-2">
         <Clock3 className="h-4 w-4 animate-pulse text-[#625bff]" aria-hidden="true" />
         {label}
