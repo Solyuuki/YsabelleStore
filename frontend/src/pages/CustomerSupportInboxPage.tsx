@@ -354,7 +354,7 @@ export function CustomerSupportInboxPage() {
         </div>
       ) : null}
 
-      <section className="grid h-[clamp(740px,calc(100dvh-13.5rem),880px)] min-h-[680px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:grid-cols-[390px_minmax(0,1fr)]">
+      <section className="ys-support-inbox grid h-[clamp(740px,calc(100dvh-13.5rem),880px)] min-h-[680px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:grid-cols-[390px_minmax(0,1fr)]">
         <aside className="flex min-h-0 flex-col border-b border-slate-200 xl:border-b-0 xl:border-r">
           <div className="space-y-3 border-b border-slate-200 p-4">
             <div className="relative">
@@ -529,9 +529,11 @@ function TicketListItem({
   return (
     <button
       className={[
-        "w-full px-4 py-4 text-left transition-colors",
+        "ys-support-ticket w-full px-4 py-4 text-left transition-colors",
         active ? "bg-indigo-50/80" : "bg-white hover:bg-slate-50"
       ].join(" ")}
+      aria-pressed={active}
+      data-active={active}
       onClick={onClick}
       type="button"
     >
@@ -647,7 +649,7 @@ function SupportConversation({
         </div>
       </header>
 
-      <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain bg-slate-50/70 p-5">
+      <div className="ys-support-thread min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain bg-slate-50/70 p-5">
         <div className="mx-auto max-w-4xl space-y-3">
           {detail.messages.map((message) => (
             <ConversationMessage
@@ -661,7 +663,7 @@ function SupportConversation({
       </div>
 
       <form
-        className="shrink-0 border-t border-slate-200 bg-white px-4 py-3"
+        className="ys-support-reply-form shrink-0 border-t border-slate-200 bg-white px-4 py-3"
         onSubmit={onReplySubmit}
       >
         <div className="mx-auto max-w-4xl">
@@ -731,7 +733,7 @@ function SupportConversation({
             <button
               aria-expanded={false}
               aria-label="Open staff reply editor"
-              className="group flex min-h-11 w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-left shadow-sm transition-colors hover:border-indigo-300 hover:bg-indigo-50/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="ys-support-reply-trigger group flex min-h-11 w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-left shadow-sm transition-colors hover:border-indigo-300 hover:bg-indigo-50/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               onClick={() => setReplyComposerExpanded(true)}
               type="button"
             >
@@ -778,7 +780,7 @@ function ConversationMessage({
   if (message.senderType === "SYSTEM" && !automatedEmail) {
     return (
       <div className="flex justify-center py-1">
-        <div className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-500 shadow-sm">
+        <div className="ys-support-system-event rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-500 shadow-sm">
           {systemText}
         </div>
       </div>
@@ -788,7 +790,7 @@ function ConversationMessage({
   if (automatedEmail) {
     return (
       <div className="flex justify-center py-1">
-        <article className="min-w-0 max-w-[82%] rounded-2xl border border-indigo-200 bg-indigo-50/80 px-4 py-3 text-slate-800 shadow-sm">
+        <article className="ys-support-automated-email min-w-0 max-w-[82%] rounded-2xl border border-indigo-200 bg-indigo-50/80 px-4 py-3 text-slate-800 shadow-sm">
           <div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-indigo-700">
             <strong>
               {message.senderName === "Ysabelle Store Support Lifecycle"
@@ -842,7 +844,7 @@ function ConversationMessage({
           "min-w-0 max-w-[82%] rounded-2xl px-4 py-3 shadow-sm",
           staff
             ? "rounded-br-md bg-indigo-600 text-white"
-            : "rounded-bl-md border border-slate-200 bg-white text-slate-800"
+            : "ys-support-customer-message rounded-bl-md border border-slate-200 bg-white text-slate-800"
         ].join(" ")}
       >
         <div
@@ -896,7 +898,7 @@ function SupportFact({
   value: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+    <div className="ys-support-fact rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
       <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
         <Icon className="h-3.5 w-3.5" aria-hidden="true" />
         {label}
