@@ -30,7 +30,7 @@ function latestByProduct<T extends { productId: string }>(rows: T[]) {
 
 export async function listRestockPlanningCandidates(
   query: RestockPlanningQuery,
-  productIds?: readonly string[],
+  requestedProductIds?: readonly string[],
   excludeOrderId?: string
 ) {
   const products = await prisma.product.findMany({
@@ -39,7 +39,7 @@ export async function listRestockPlanningCandidates(
       dataQualityStatus: { not: "REJECTED" },
       recordSource: { not: "TEST_FIXTURE" },
       status: { not: "DISCONTINUED" },
-      ...(productIds ? { id: { in: [...new Set(productIds)] } } : {}),
+      ...(requestedProductIds ? { id: { in: [...new Set(requestedProductIds)] } } : {}),
       ...(query.search
         ? {
             OR: [
