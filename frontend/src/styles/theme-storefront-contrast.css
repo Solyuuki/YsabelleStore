@@ -1399,3 +1399,59 @@
   content: none;
   animation: none;
 }
+
+
+/* Recovery contrast guards: Verify cooldown and Secure completion.
+   The generic dark auth button text is dark (#10192d), and the recovery
+   stylesheet applies 0.48 opacity to disabled resend buttons. Both become
+   unreadable on dark surfaces. Do not change the cooldown/verification logic. */
+:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-resend > span {
+  color: #d4deec;
+  opacity: 1;
+}
+:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-resend .customer-recovery-secondary {
+  color: #e7dfff;
+  background: #303d60;
+  border-color: #8878ce;
+  opacity: 1;
+  text-shadow: none;
+}
+:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-resend .customer-recovery-secondary:disabled {
+  color: #b8c6dc;
+  background: #25344d;
+  border-color: #526483;
+  opacity: 1;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-resend .customer-recovery-secondary:hover:not(:disabled) {
+  color: #fff0ff;
+  background: #3d4673;
+  border-color: #b0a1ec;
+}
+:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-resend .customer-recovery-secondary:focus-visible {
+  outline: 2px solid #b8a9fa;
+  outline-offset: 3px;
+}
+
+/* Completion is a dark frosted status card, not an opaque pastel strip.
+   Use explicit accessible colors for its title and supporting explanation;
+   leave the light-mode confirmation appearance and all stage logic untouched. */
+:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-status--success {
+  background: linear-gradient(135deg, #293a56 0%, #24334b 100%);
+  border: 1px solid #6982a3;
+  color: #eff3ff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%);
+}
+:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-status--success > div > strong {
+  color: #f2f5ff;
+  opacity: 1;
+}
+:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-status--success > div > span {
+  color: #cbd8ec;
+  opacity: 1;
+}
+:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-status--success > .customer-recovery-status__icon {
+  background: #3b4470;
+  color: #c7bcff;
+}

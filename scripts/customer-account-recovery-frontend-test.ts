@@ -97,6 +97,43 @@ async function main() {
     "Shared constellation must stay proportional at every recovery stage height."
   );
 
+
+  /* Verify cooldown remains readable despite disabled state, and the
+     post-reset Secure confirmation uses light text on a dark surface. */
+  assert.match(
+    storefrontContrast,
+    /\.customer-auth-page--recovery \.customer-recovery-resend > span\s*\{[^}]*color:\s*#d4deec;/,
+    "Recovery resend prompt must be legible against the dark verification panel."
+  );
+  assert.match(
+    storefrontContrast,
+    /\.customer-auth-page--recovery \.customer-recovery-resend \.customer-recovery-secondary\s*\{[^}]*color:\s*#e7dfff;/,
+    "Enabled recovery resend button must override the generic dark-on-dark auth text."
+  );
+  assert.match(
+    storefrontContrast,
+    /\.customer-recovery-resend \.customer-recovery-secondary:disabled\s*\{[^}]*color:\s*#b8c6dc;[^}]*opacity:\s*1;/,
+    "Resend cooldown must remain visibly disabled, without dimming its text to illegibility."
+  );
+  assert.match(
+    storefrontContrast,
+    /\.customer-auth-page--recovery \.customer-recovery-status--success\s*\{[^}]*background:\s*linear-gradient\(135deg, #293a56 0%, #24334b 100%\)/,
+    "Secure completion must use a dark panel instead of a pale contrasting rectangle."
+  );
+  assert.match(
+    storefrontContrast,
+    /\.customer-recovery-status--success > div > strong\s*\{[^}]*color:\s*#f2f5ff;/,
+    "Recovery success title must be readable in dark mode."
+  );
+  assert.match(
+    storefrontContrast,
+    /\.customer-recovery-status--success > div > span\s*\{[^}]*color:\s*#cbd8ec;/,
+    "Recovery success details must be readable in dark mode."
+  );
+  assert.match(recoverySource, /disabled=\{submitting \|\| resendCooldown > 0\}/);
+  assert.match(recoverySource, /resendCooldown > 0 \? `Resend code in \$\{resendCooldown\}s` : "Resend code"/);
+  assert.match(recoverySource, /customer-recovery-status--success" role="status"/);
+
   assert.match(
     recoveryCss,
     /\.customer-auth-page--recovery\s+\.customer-auth-stage\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/s,
