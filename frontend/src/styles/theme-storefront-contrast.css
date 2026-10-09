@@ -1686,8 +1686,20 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 112px, #000 90%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0, #000 112px, #000 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 112px,
+    #000 90%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 112px,
+    #000 90%,
+    transparent 100%
+  );
 }
 :root.dark .customer-app .customer-privacy-body__cosmos {
   display: block;
