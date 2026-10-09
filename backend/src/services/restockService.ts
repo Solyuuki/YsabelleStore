@@ -393,8 +393,8 @@ export async function assertAutomatedRestockQuantitySafe(
     (stage === "APPROVAL" && snapshot.status !== RestockOrderStatus.DRAFT) ||
     (stage === "RECEIPT" &&
       snapshot.status !== RestockOrderStatus.APPROVED &&
-      snapshot.status !== RestockOrderStatus.AWAITING_DELIVERY) ||
-    snapshot.lines.some((line) => line.receivedQuantity > 0)
+      snapshot.status !== RestockOrderStatus.AWAITING_DELIVERY &&
+      snapshot.status !== RestockOrderStatus.PARTIALLY_RECEIVED)
   ) {
     return;
   }
