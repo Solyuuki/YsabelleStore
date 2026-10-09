@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 380" width="1800" height="380" preserveAspectRatio="xMidYMid slice">
+  <!-- Dark-mode SHOP headline art: a text-free vector adaptation of the approved
+       navy-violet orbital composition. Geometry scales uniformly and never repeats. -->
+  <defs>
+    <linearGradient id="shopOrbitalBase" x1="0" y1="0" x2="1" y2=".62">
+      <stop stop-color="#0d1d38"/>
+      <stop offset=".52" stop-color="#142043"/>
+      <stop offset="1" stop-color="#252051"/>
+    </linearGradient>
+    <radialGradient id="shopOrbitalGlow">
+      <stop stop-color="#7856dc" stop-opacity=".48"/>
+      <stop offset=".36" stop-color="#624fbe" stop-opacity=".27"/>
+      <stop offset=".72" stop-color="#4b3f97" stop-opacity=".09"/>
+      <stop offset="1" stop-color="#4b3f97" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="shopOrbitalRing" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#737bdc" stop-opacity=".04"/>
+      <stop offset=".42" stop-color="#9388f3" stop-opacity=".43"/>
+      <stop offset=".76" stop-color="#ae8bff" stop-opacity=".58"/>
+      <stop offset="1" stop-color="#8971d0" stop-opacity=".1"/>
+    </linearGradient>
+    <linearGradient id="shopOrbitalDome" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#2b4a8a" stop-opacity=".43"/>
+      <stop offset=".38" stop-color="#202d64" stop-opacity=".27"/>
+      <stop offset=".68" stop-color="#403689" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#1b1f42" stop-opacity=".08"/>
+    </linearGradient>
+    <linearGradient id="shopOrbitalDomeEdge" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#5275c5" stop-opacity=".24"/>
+      <stop offset=".47" stop-color="#7b83db" stop-opacity=".35"/>
+      <stop offset=".78" stop-color="#a38bf8" stop-opacity=".5"/>
+      <stop offset="1" stop-color="#8774d3" stop-opacity=".12"/>
+    </linearGradient>
+  </defs>
+  <rect width="1800" height="380" fill="url(#shopOrbitalBase)"/>
+  <ellipse cx="1526" cy="189" rx="560" ry="390" fill="url(#shopOrbitalGlow)"/>
+  <!-- The low arcing foreground gives the approved hero its clear visual base. -->
+  <path d="M-120 379C260 265 584 222 850 232C1187 245 1503 312 1930 499V540H-120Z" fill="url(#shopOrbitalDome)"/>
+  <path d="M-120 379C260 265 584 222 850 232C1187 245 1503 312 1930 499" fill="none" stroke="url(#shopOrbitalDomeEdge)" stroke-width="2"/>
+  <path d="M-100 409C360 312 578 282 850 288C1177 295 1500 348 1900 510" fill="none" stroke="#8f8fe2" stroke-opacity=".075" stroke-width="1.1"/>
+  <!-- Orbital accents sit away from the live text and are never distorted. -->
+  <g fill="none" stroke-linecap="round">
+    <path d="M1084 -85C1308 -80 1574 22 1698 188C1793 317 1830 446 1801 578" stroke="url(#shopOrbitalRing)" stroke-width="1.65"/>
+    <path d="M1213 -91C1454 -68 1684 58 1774 217C1842 334 1856 458 1813 535" stroke="#8e86e6" stroke-opacity=".24" stroke-width="1.25"/>
+  </g>
+  <g fill="#a28df7">
+    <circle cx="1451" cy="40" r="6" opacity=".7"/>
+    <circle cx="1679" cy="184" r="11" opacity=".75"/>
+    <circle cx="1744" cy="161" r="4.5" opacity=".39"/>
+    <circle cx="1532" cy="71" r="2.8" opacity=".27"/>
+  </g>
+  <g fill="#c9b8ff">
+    <circle cx="1339" cy="68" r="1.8" opacity=".28"/>
+    <circle cx="1591" cy="128" r="1.9" opacity=".41"/>
+    <circle cx="1738" cy="271" r="2.1" opacity=".38"/>
+  </g>
+</svg>

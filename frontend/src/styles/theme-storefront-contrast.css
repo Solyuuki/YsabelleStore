@@ -168,16 +168,16 @@
 }
 
 /* Shop: remove white wash from hero, and restore readable filter labels. */
+/* The approved Shop hero is vector art without baked-in text.
+   The heading remains accessible HTML and the SVG preserves aspect ratio. */
 :root.dark .customer-app .customer-shop-heading {
   background:
-    url("/textures/ys-dark-indigo-silk.svg") center / cover no-repeat,
-    #1b2638;
+    url("/textures/ys-dark-shop-orbital-hero.svg") center / cover no-repeat,
+    #111f3d;
 }
-:root.dark .customer-app .customer-shop-heading__backdrop::before {
-  background: linear-gradient(180deg, rgb(10 22 41 / 44%), transparent 64%);
-}
-:root.dark .customer-app .customer-shop-heading__backdrop svg {
-  opacity: 0.32;
+/* Only dark mode hides the original stretched light-mode wave overlay. */
+:root.dark .customer-app .customer-shop-heading__backdrop {
+  display: none;
 }
 :root.dark .customer-app .customer-shop-heading :is(h1, .shop-motion-intro__title) {
   color: #d4deec;
@@ -872,19 +872,48 @@
   background-repeat: no-repeat;
 }
 
-/* Shop hero must fill the ENTIRE viewport width, including screens wider
-   than 1600px. The general capped background-size above left hard vertical
-   seams at both edges. Cover crops proportionally; never distort the SVG. */
+/* Wide and narrow screens crop the proportional vector rather than stretch
+   it; the final lower pixels fade into the existing midnight catalog surface. */
 :root.dark .customer-app .customer-shop-page .customer-shop-heading {
   background-size: cover;
-  background-position: center;
+  background-position: center 52%;
   background-repeat: no-repeat;
 }
-/* The light-mode decor uses preserveAspectRatio="none" and its long wave
-   paths create distracting, distorted lines in dark mode. Keep it for light
-   mode; show the approved indigo-silk backdrop by itself in dark mode. */
-:root.dark .customer-app .customer-shop-page .customer-shop-heading__backdrop svg {
-  display: none;
+:root.dark .customer-app .customer-shop-page .customer-shop-heading::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: clamp(40px, 5.5vw, 78px);
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgb(16 24 39 / 0%) 0%,
+    rgb(16 24 39 / 18%) 40%,
+    #101827 100%
+  );
+}
+/* The SHOP quantity field previously picked up the global dark input surface,
+   producing a rectangle inside the rounded +/- group. Keep one unified surface. */
+:root.dark .customer-app .customer-shop-page .customer-quantity > input[type="number"] {
+  background: transparent;
+  background-color: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  outline: none;
+  color: #e2e9fb;
+}
+:root.dark .customer-app .customer-shop-page .customer-quantity:focus-within {
+  outline: 2px solid #b1a3f5;
+  outline-offset: 2px;
+}
+:root.dark .customer-app .customer-shop-page .customer-quantity button:disabled,
+:root.dark .customer-app .customer-shop-page .customer-quantity button:disabled:hover {
+  background: transparent;
+  color: #91a1bf;
+  opacity: 0.35;
+  cursor: default;
 }
 
 /* Clear section boundaries, readable bodies and tidy focal outlines. */
