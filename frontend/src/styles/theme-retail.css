@@ -1513,3 +1513,14 @@
   background-color: #5b50d7 !important;
   border-color: #afa4ff !important;
 }
+
+
+/* Preserve the distinct destructive action without reverting to red-on-dark. */
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-cancel-panel button[class~="text-red-700"] {
+  background-color: #492f40 !important;
+  border-color: #b2798d !important;
+  color: #ffcbd7 !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-cancel-panel button[class~="text-red-700"]:hover:not(:disabled) {
+  background-color: #5a3749 !important;
+}
