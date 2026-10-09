@@ -28,13 +28,17 @@ function latestByProduct<T extends { productId: string }>(rows: T[]) {
   return byProduct;
 }
 
-export async function listRestockPlanningCandidates(query: RestockPlanningQuery) {
+export async function listRestockPlanningCandidates(
+  query: RestockPlanningQuery,
+  productIds?: readonly string[]
+) {
   const products = await prisma.product.findMany({
     orderBy: [{ name: "asc" }, { id: "asc" }],
     where: {
       dataQualityStatus: { not: "REJECTED" },
       recordSource: { not: "TEST_FIXTURE" },
       status: { not: "DISCONTINUED" },
+      ...(productIds ? { id: { in: [...new Set(productIds)] } } : {}),
       ...(query.search
         ? {
             OR: [
