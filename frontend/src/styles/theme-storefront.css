@@ -355,6 +355,35 @@
   color: #c5d0e4;
 }
 
+/* Sprint 11: unified dark editorial hierarchy for the four home shelves. */
+:root.dark .customer-app .customer-home
+  :is(
+    .home-section-heading--categories,
+    .home-section-heading--trending,
+    .home-section-heading--best-seller,
+    .home-section-heading--essentials
+  ) .home-section-heading__eyebrow {
+  color: #bbaaff;
+}
+:root.dark .customer-app .customer-home
+  :is(
+    .home-section-heading--categories,
+    .home-section-heading--trending,
+    .home-section-heading--best-seller,
+    .home-section-heading--essentials
+  ) .home-section-heading__title {
+  color: #e7edfa;
+}
+:root.dark .customer-app .customer-home
+  :is(
+    .home-section-heading--categories,
+    .home-section-heading--trending,
+    .home-section-heading--best-seller,
+    .home-section-heading--essentials
+  ) .home-section-heading__description {
+  color: #b9c6da;
+}
+
 /* Match the handoff and embedded merchandising SVG to the same dark palette.
    These variables also drive the Trending, Best Seller and Essentials canvas. */
 :root.dark .customer-app .home-category-merch-handoff {
