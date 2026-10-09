@@ -50,6 +50,13 @@ export function applyAppearanceForPath(
     (scope === "storefront" ? storefrontTheme : retailTheme) === "dark";
   const root = document.documentElement;
   root.classList.toggle("dark", dark);
+  // About/Discover scenes retain their approved palette, but the shared
+  // storefront header and footer still follow the customer preference.
+  if (preserveAbout && !isReceiptPrint && storefrontTheme === "dark") {
+    root.dataset.aboutChromeTheme = "dark";
+  } else {
+    delete root.dataset.aboutChromeTheme;
+  }
   root.dataset.appearanceScope = scope;
   root.style.colorScheme = dark ? "dark" : "light";
   document
