@@ -1660,3 +1660,41 @@
   content: none;
   display: none;
 }
+
+
+/* Privacy main content: reuse the exact Trending-to-Essentials galaxy */
+/* Original SVG is preserved proportionally; no raster cover/stretch or tiling.
+   Header/hero stays on the Shop by Category background above this body. */
+.customer-app .customer-privacy-body__artwork {
+  display: none;
+}
+:root.dark .customer-app .customer-privacy-body {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #17243c;
+  background-image: var(--storefront-galaxy-background);
+  background-size: auto;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+:root.dark .customer-app .customer-privacy-body__artwork {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 112px, #000 90%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 112px, #000 90%, transparent 100%);
+}
+:root.dark .customer-app .customer-privacy-body__cosmos {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+:root.dark .customer-app .customer-privacy-body > .customer-privacy-layout {
+  position: relative;
+  z-index: 1;
+}
