@@ -139,6 +139,49 @@
   opacity: 0.38;
 }
 
+/* Sprint 11 dark storefront: rail navigation must follow the midnight-violet
+   surface, including the real disabled state, without changing light mode.
+   Full-opacity dark disabled buttons avoid the washed-out translucent gray disc. */
+:root.dark .customer-app .home-product-rail__control {
+  background: #24334f;
+  border-color: #6579a0;
+  color: #e0e8fa;
+  box-shadow:
+    0 8px 20px rgb(4 10 26 / 25%),
+    inset 0 1px 0 rgb(205 215 255 / 8%);
+}
+
+:root.dark .customer-app .home-product-rail__control:not(:disabled):hover,
+:root.dark .customer-app .home-product-rail__control:not(:disabled):focus-visible {
+  background: linear-gradient(135deg, #4e55a6 0%, #6948bd 100%);
+  border-color: #b2a4fa;
+  color: #fff;
+  box-shadow:
+    0 10px 24px rgb(20 14 57 / 34%),
+    0 0 0 2px rgb(156 146 247 / 20%);
+}
+
+:root.dark .customer-app .home-product-rail__control:not(:disabled):focus-visible {
+  outline: 3px solid #b5a7fa;
+  outline-offset: 3px;
+}
+
+:root.dark .customer-app .home-product-rail__control:not(:disabled):active {
+  background: #4b4195;
+  border-color: #a99bea;
+  color: #fff;
+  box-shadow: 0 5px 14px rgb(10 12 34 / 30%);
+}
+
+:root.dark .customer-app .home-product-rail__control:disabled {
+  background: #202b41;
+  border-color: #465674;
+  color: #8292ae;
+  opacity: 1;
+  box-shadow: inset 0 1px 0 rgb(189 206 245 / 4%);
+  cursor: default;
+}
+
 .home-product-rail__status {
   position: absolute;
   width: 1px;
