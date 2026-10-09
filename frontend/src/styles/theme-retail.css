@@ -770,3 +770,205 @@
   content: none !important;
   display: none !important;
 }
+
+
+/* Sprint 11: Products workspace dark-mode surface and contrast convergence. */
+/* Scoped to Products only. Modal elements are portaled outside the app shell;
+   background-color alone cannot remove light gradient backgrounds. */
+:root.dark .app-shell-ambient .products-page-no-actions .ys-product-toolbar-filter {
+  background: #25354e !important;
+  border-color: #617493 !important;
+  color: #e9f0fc;
+}
+:root.dark .app-shell-ambient .products-page-no-actions .ys-product-toolbar-filter > :is(input, select) {
+  min-width: 0;
+  background: transparent !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: #e9f0fc !important;
+  color-scheme: dark;
+}
+:root.dark .app-shell-ambient .products-page-no-actions .ys-product-toolbar-filter > :is(input, select):focus-visible {
+  background: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+:root.dark .app-shell-ambient .products-page-no-actions .ys-product-toolbar-filter:focus-within {
+  border-color: #a497ff !important;
+  box-shadow: 0 0 0 1px rgb(164 151 255 / 22%);
+}
+:root.dark [role="dialog"].ys-product-modal {
+  --product-modal-bg: #1b293f;
+  --product-modal-surface: #253650;
+  --product-modal-surface-raised: #2b3d59;
+  --product-modal-border: #607491;
+  --product-modal-text: #eaf0fb;
+  --product-modal-secondary: #c5d2e7;
+  --product-modal-muted: #b7c6dc;
+  background: var(--product-modal-bg) !important;
+  border-color: #617391 !important;
+  color: var(--product-modal-text) !important;
+  color-scheme: dark;
+}
+/* Convert stale light-mode panels to dark surfaces, including slash-opacity
+   Tailwind variants omitted by the shared dialog theme. */
+:root.dark [role="dialog"].ys-product-modal :is(
+  [class~="bg-white"],
+  [class~="bg-white/80"],
+  [class~="bg-white/90"],
+  [class~="bg-white/95"],
+  [class~="bg-slate-50"],
+  [class~="bg-slate-50/30"],
+  [class~="bg-slate-50/60"],
+  [class~="bg-slate-50/70"],
+  [class~="bg-slate-50/80"],
+  [class~="bg-slate-100"],
+  [class~="bg-violet-50"],
+  [class~="bg-violet-50/30"],
+  [class~="bg-violet-50/35"],
+  [class~="bg-violet-50/40"],
+  [class~="bg-violet-50/60"],
+  [class~="bg-violet-50/65"],
+  [class~="bg-violet-50/70"],
+  [class~="bg-violet-100"]
+) {
+  background-color: var(--product-modal-surface) !important;
+  border-color: var(--product-modal-border) !important;
+}
+:root.dark [role="dialog"].ys-product-modal :is(
+  [class~="bg-gradient-to-br"],
+  [class~="bg-gradient-to-r"]
+) {
+  background-image: none !important;
+  background-color: var(--product-modal-surface) !important;
+}
+:root.dark [role="dialog"].ys-product-modal :is(
+  [class~="text-slate-950"],
+  [class~="text-slate-900"],
+  [class~="text-slate-800"],
+  [class~="text-slate-700"],
+  [class~="text-violet-950"]
+) {
+  color: var(--product-modal-text) !important;
+}
+:root.dark [role="dialog"].ys-product-modal :is(
+  [class~="text-slate-600"],
+  [class~="text-slate-500"],
+  [class~="text-slate-400"]
+) {
+  color: var(--product-modal-secondary) !important;
+}
+:root.dark [role="dialog"].ys-product-modal :is(
+  [class~="text-violet-700"],
+  [class~="text-violet-800"],
+  [class~="text-[#625bff]"]
+) {
+  color: #c5b7ff !important;
+}
+:root.dark [role="dialog"].ys-product-modal :is(
+  [class~="border-slate-200"],
+  [class~="border-slate-100"],
+  [class~="border-violet-100"],
+  [class~="border-violet-200"],
+  [class~="border-violet-300"]
+) {
+  border-color: var(--product-modal-border) !important;
+}
+:root.dark [role="dialog"].ys-product-modal :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  background: #22324c !important;
+  border-color: #687b9a !important;
+  color: var(--product-modal-text) !important;
+  color-scheme: dark;
+}
+:root.dark [role="dialog"].ys-product-modal :is(input, textarea)::placeholder {
+  color: #aabbd4 !important;
+}
+:root.dark [role="dialog"].ys-product-modal :is(input, select, textarea):focus-visible {
+  outline-color: #a99bff;
+  border-color: #a99bff !important;
+}
+/* Light-mode-style secondary/ghost actions were dark ink on dark buttons. */
+:root.dark [role="dialog"].ys-product-modal button[class~="bg-white"],
+:root.dark [role="dialog"].ys-product-modal button[class~="text-slate-600"] {
+  background: #31435e !important;
+  border-color: #7184a6 !important;
+  color: #e6edfa !important;
+}
+:root.dark [role="dialog"].ys-product-modal button[class~="bg-white"]:hover:not(:disabled),
+:root.dark [role="dialog"].ys-product-modal button[class~="text-slate-600"]:hover:not(:disabled) {
+  background: #405576 !important;
+}
+:root.dark [role="dialog"].ys-product-modal button:disabled {
+  opacity: 0.7;
+}
+/* Status colors retain their meanings instead of becoming bright white slabs. */
+:root.dark [role="dialog"].ys-product-modal [class~="bg-emerald-50"] {
+  background-color: #1d403c !important;
+  border-color: #5b9a88 !important;
+}
+:root.dark [role="dialog"].ys-product-modal [class~="text-emerald-800"],
+:root.dark [role="dialog"].ys-product-modal [class~="text-emerald-950"] {
+  color: #c6f4e0 !important;
+}
+:root.dark [role="dialog"].ys-product-modal [class~="bg-amber-50"] {
+  background-color: #433923 !important;
+  border-color: #b8a16b !important;
+}
+:root.dark [role="dialog"].ys-product-modal [class~="text-amber-800"],
+:root.dark [role="dialog"].ys-product-modal [class~="text-amber-900"] {
+  color: #ffe4a5 !important;
+}
+:root.dark [role="dialog"].ys-product-modal [class~="bg-red-50"] {
+  background-color: #482b37 !important;
+  border-color: #b96d83 !important;
+}
+:root.dark [role="dialog"].ys-product-modal [class~="text-red-700"],
+:root.dark [role="dialog"].ys-product-modal [class~="text-red-800"],
+:root.dark [role="dialog"].ys-product-modal [class~="text-red-900"] {
+  color: #ffcbd6 !important;
+}
+/* Image quality and preview: render UI panels dark, but never recolor product
+   images or apply filters to actual photography. */
+:root.dark [role="dialog"].ys-product-modal .ys-product-image-panel {
+  background: #2a3c57 !important;
+  border-color: #6b7e9b !important;
+}
+:root.dark [role="dialog"].ys-product-modal .ys-product-image-panel > button[class~="bg-white"] {
+  background: #20334e !important;
+  border-color: #8c9db8 !important;
+}
+:root.dark [role="dialog"].ys-product-modal .ys-product-image-preview {
+  background: #263650 !important;
+  border-color: #657994 !important;
+}
+:root.dark [role="dialog"].ys-product-modal .ys-product-preview-canvas {
+  background: #1d2a40 !important;
+}
+/* Keep file tabs and upload/drop targets consistent, including the injected
+   selected-file state styles from ProductCatalogQoLEnhancements. */
+:root.dark [role="dialog"].ys-product-package-modal [class~="bg-slate-100"] {
+  background: #1d2d45 !important;
+}
+:root.dark [role="dialog"].ys-product-package-modal [aria-label="Upload product package"],
+:root.dark [role="dialog"].ys-product-package-modal [data-package-file-card="true"],
+:root.dark [role="dialog"].ys-product-package-modal [data-package-dropzone="selected"] {
+  background: #293c59 !important;
+  border-color: #8a80d5 !important;
+  color: #eaf0fb !important;
+}
+:root.dark [role="dialog"].ys-product-package-modal [aria-label="Upload product package"]:hover {
+  background: #324665 !important;
+}
+:root.dark [role="dialog"].ys-product-package-modal [class~="bg-violet-100"] {
+  background-color: #354263 !important;
+}
+:root.dark [role="dialog"].ys-product-modal :is([class~="bg-slate-50/90"], [class~="bg-white/80"]) {
+  background-color: #24344f !important;
+}
+/* Focus visibility remains accessible on outer controls; no light-mode flash
+   in import modal scroll regions or sticky action footers. */
+:root.dark [role="dialog"].ys-product-modal :is(button, [role="button"]):focus-visible {
+  outline: 2px solid #a99bff;
+  outline-offset: 2px;
+}
