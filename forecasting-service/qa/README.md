@@ -41,3 +41,23 @@ identified as an isolated QA target.
 
 This QA harness is designed only for `qa/recommender-oct16`.
 Do not merge synthetic test fixtures or results into Sprint 11.
+
+## Diagnose the underforecast before changing production logic
+
+After the baseline run, execute this separate **read-only** comparison:
+
+```powershell
+npx tsx backend/src/scripts/qaRecommenderExportHistory.ts |
+  python forecasting-service/qa/diagnose_workbook_bias.py --months 6 --max-products 10000 |
+  Tee-Object -FilePath forecasting-service/outputs/qa-bias-diagnostics.json
+```
+
+This shows month-by-month WAPE, signed bias and underforecast share for:
+- Existing seasonal-naive fallback
+- Three-month moving-average comparator
+- A bounded year-over-year growth-adjusted seasonal comparator (QA-only)
+
+These comparators use exclusively months before the held-out target, but
+**are not approved replacement production formulas**. The input workbooks
+are syntactically validated, not independently proven to contain original
+real POS transactions. Nothing from this report is a purchasing authorization.
