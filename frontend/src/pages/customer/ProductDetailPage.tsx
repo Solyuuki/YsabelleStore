@@ -19,6 +19,7 @@ import { CustomerLink } from "@/components/customer/CustomerLink";
 import { ProductCard, formatCurrency, formatUnit } from "@/components/customer/ProductCard";
 import { ProductSizeSelector } from "@/components/customer/ProductSizeSelector";
 import { ProductVisual } from "@/components/customer/ProductVisual";
+import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
 import { QuantityControl } from "@/components/customer/QuantityControl";
 import { useCart } from "@/context/CartContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
@@ -240,6 +241,7 @@ export function ProductDetailPage({
       className="customer-page customer-product-page"
       data-product-transitioning={isProductTransitioning || undefined}
     >
+      <StorefrontGalaxyArtwork className="customer-product-page__cosmos" />
       <div className="customer-container">
         <CustomerLink
           className="customer-back-link"

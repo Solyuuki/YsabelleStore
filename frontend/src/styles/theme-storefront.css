@@ -546,18 +546,62 @@
 :root.dark .customer-app .home-category-merch-handoff {
   display: none;
 }
-:root.dark .customer-app .home-merchandising-canvas {
-  --merch-bg-top: #17243c;
-  --merch-bg-mid: #182441;
-  --merch-bg-bottom: #17243c;
-  background:
+:root.dark .customer-app {
+  --storefront-galaxy-background:
     linear-gradient(180deg, #17243c 0%, rgb(23 36 60 / 0%) 9%, rgb(23 36 60 / 0%) 87%, #17243c 100%),
     radial-gradient(ellipse 50% 30% at 13% 13%, rgb(90 64 159 / 29%), transparent 87%),
     radial-gradient(ellipse 52% 38% at 17% 82%, rgb(105 57 166 / 32%), transparent 90%),
     radial-gradient(ellipse 34% 26% at 88% 79%, rgb(46 89 158 / 15%), transparent 92%),
     linear-gradient(145deg, #17243c 0%, #141e3b 36%, #201d43 74%, #17243c 100%);
+}
+:root.dark .customer-app .home-merchandising-canvas {
+  --merch-bg-top: #17243c;
+  --merch-bg-mid: #182441;
+  --merch-bg-bottom: #17243c;
+  background: var(--storefront-galaxy-background);
   box-shadow: none;
 }
+/* The product page now shares the exact same navy-violet galaxy surface
+   and artwork as Trending / Best Sellers / Everyday Essentials. */
+.customer-app .customer-product-page__cosmos {
+  display: none;
+}
+:root.dark .customer-app .customer-product-page {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  background: var(--storefront-galaxy-background);
+}
+:root.dark .customer-app .customer-product-page > .customer-container {
+  position: relative;
+  z-index: 1;
+}
+:root.dark .customer-app .customer-product-page__cosmos {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 0;
+  display: block;
+  width: max(100%, 1024px);
+  height: auto;
+  aspect-ratio: 1024 / 1536;
+  transform: translateX(-50%);
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 112px, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 112px, #000 88%, transparent 100%);
+}
+/* Fade only the page's last edge toward the existing footer transition. */
+:root.dark .customer-app .customer-product-page::after {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 0;
+  height: clamp(120px, 16vw, 220px);
+  content: "";
+  background: linear-gradient(180deg, transparent, rgb(16 24 39 / 30%) 42%, #101827 100%);
+  pointer-events: none;
+}
+
 :root.dark .customer-app .home-merchandising-canvas__scene {
   display: none;
 }
