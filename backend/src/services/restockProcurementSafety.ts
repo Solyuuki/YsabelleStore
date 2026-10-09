@@ -9,6 +9,7 @@
  * Pure functions: no persistence, no test fixtures, no database access.
  */
 export const RESTOCK_SAFETY_MONTHS_OF_COVER = 3;
+export const RESTOCK_SAFETY_ABSOLUTE_MAX_LINE_UNITS = 1_000;
 export const RESTOCK_SAFETY_MAX_LINE_COST_PHP = 5_000;
 export const RESTOCK_SAFETY_MAX_ORDER_COST_PHP = 20_000;
 
@@ -31,6 +32,7 @@ export type ProcurementSafetyResult =
         | "POS_HISTORY_UNVERIFIED"
         | "INVALID_STOCK_POSITION"
         | "COST_UNAVAILABLE"
+        | "ABSOLUTE_UNIT_LIMIT_EXCEEDED"
         | "COVERAGE_LIMIT_EXCEEDED"
         | "LINE_BUDGET_EXCEEDED";
       maxAllowedQuantity: number | null;
@@ -55,6 +57,9 @@ export function assessProcurementSafety(input: ProcurementSafetyInput): Procurem
 
   if (!validUnits(input.requestedQuantity) || input.requestedQuantity < 1) {
     return reject("INVALID_QUANTITY");
+  }
+  if (input.requestedQuantity > RESTOCK_SAFETY_ABSOLUTE_MAX_LINE_UNITS) {
+    return reject("ABSOLUTE_UNIT_LIMIT_EXCEEDED", RESTOCK_SAFETY_ABSOLUTE_MAX_LINE_UNITS);
   }
   if (
     input.posConfidence === "LOW" ||
