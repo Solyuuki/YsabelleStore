@@ -180,59 +180,50 @@
   border-color: var(--store-border);
   color: var(--store-text-body);
 }
-/* Product Details — midnight showcase.
-   The product grid must never become one hard-edged navy slab. The isolated,
-   proportionally rendered galaxy page background remains visible behind it. */
+/* Product Details: match the unboxed light-mode composition in DARK mode.
+   The product image itself may contain opaque white pixels. A neutral matching
+   photo canvas removes the visible white-square-within-dark-card artifact
+   without tinting or filtering the original product photography. */
 :root.dark .customer-app .customer-product-page .customer-product-detail {
   background: transparent;
   border: 0;
+  box-shadow: none;
   color: var(--store-text-body);
-  gap: clamp(1.5rem, 4.6vw, 4.25rem);
+  /* Keep the original responsive two-column layout/spacing from customer.css. */
 }
 
-/* Neutral dark photographic stage: only the large DETAIL image changes.
-   Catalog grid media, the image URL, intrinsic dimensions and color remain intact. */
+/* One clean media canvas — no extra navy frame surrounding the image. */
 :root.dark .customer-app .customer-product-page
   .customer-product-detail__media > .customer-product-visual--large {
-  --product-media-surface: #222e4a;
-  --product-media-border: rgb(129 152 202 / 48%);
-  background:
-    radial-gradient(ellipse 64% 62% at 50% 42%, rgb(91 116 180 / 34%), transparent 88%),
-    radial-gradient(ellipse 45% 55% at 88% 93%, rgb(114 73 169 / 18%), transparent 92%),
-    linear-gradient(145deg, #293a5b 0%, #202c48 60%, #20243e 100%);
+  --product-media-surface: #fff;
+  --product-media-border: rgb(168 180 217 / 55%);
+  background: var(--product-media-surface);
   border: 1px solid var(--product-media-border);
-  border-radius: clamp(1.2rem, 2.3vw, 1.85rem);
-  color: #dbe6fa;
-  box-shadow:
-    0 16px 32px rgb(6 12 31 / 18%),
-    inset 0 1px 0 rgb(212 224 255 / 13%);
+  border-radius: 2rem 2rem 2rem 0.65rem;
+  box-shadow: 0 14px 32px rgb(5 10 30 / 16%);
+  color: #253046;
 }
-/* The fallback must also stay dark; do not let a light-only fallback selector
-   restore the large white rectangle when an image is unavailable. */
 :root.dark .customer-app .customer-product-page
   .customer-product-detail__media > .customer-product-visual--large[data-image-kind="fallback"] {
-  background: linear-gradient(150deg, #293a5b 0%, #202b46 100%);
+  background: #253451;
+  color: #dce5f5;
 }
 :root.dark .customer-app .customer-product-page
   .customer-product-visual--large .customer-product-visual__category {
-  background: #2c3d5e;
-  border-color: #637aa7;
-  color: #e4ecfb;
+  background: #273753;
+  border-color: #596c90;
+  color: #edf0fd;
 }
 
-/* Gentle tonal wash instead of a flat, rectangular information panel.
-   No backdrop-filter or full-size blur: preserve scroll performance. */
+/* The product's details float directly over the approved galaxy background,
+   just as they do over the light-mode background: no right-hand card. */
 :root.dark .customer-app .customer-product-page .customer-product-detail__copy {
   min-width: 0;
-  padding: clamp(0.75rem, 2.4vw, 1.7rem);
-  border-inline-start: 1px solid rgb(173 170 237 / 25%);
-  border-radius: 1.1rem;
-  background: linear-gradient(
-    105deg,
-    rgb(32 44 72 / 36%) 0%,
-    rgb(32 44 72 / 12%) 61%,
-    transparent 100%
-  );
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 :root.dark .customer-app .customer-product-card__body,
