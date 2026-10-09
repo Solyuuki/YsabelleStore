@@ -465,6 +465,17 @@
   color: #19233b;
 }
 
+/* Google and Email Quick Sign keep their intentionally pale branded surfaces.
+   A broad dark-mode :is(p, small) rule would otherwise paint their helper
+   copy pale blue, making it unreadable on these light buttons. */
+:root.dark .customer-app .customer-auth-page--login
+  .customer-social-auth__button > span:last-child small {
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+
 /* Support and privacy: labels, hero chips, callouts, and notices. */
 :root.dark .customer-app .customer-support-hero__signals span {
   background: #293852;

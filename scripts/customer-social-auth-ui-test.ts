@@ -52,6 +52,23 @@ assert.ok(premiumLabelBody, "Premium social label rule should exist.");
 assert.match(premiumLabelBody, /font-weight:\s*900;/);
 assert.match(premiumLabelBody, /color:\s*#171a2b;/);
 
+// The two pale login provider buttons need dark, legible helper text,
+// overriding the general dark-auth `small` color without changing Register.
+const storefrontContrast = readFileSync(
+  new URL("../frontend/src/styles/theme-storefront-contrast.css", import.meta.url),
+  "utf8"
+);
+assert.match(
+  storefrontContrast,
+  /:root\.dark \.customer-app \.customer-auth-page--login\s+\.customer-social-auth__button > span:last-child small\s*\{[^}]*color:\s*#475569;[^}]*font-size:\s*0\.75rem;/,
+  "Login provider descriptions must use readable dark slate on the light branded surfaces."
+);
+assert.doesNotMatch(
+  storefrontContrast,
+  /:root\.dark \.customer-app \.customer-auth-page--register\s+\.customer-social-auth__button > span:last-child small/,
+  "Do not accidentally change Register styles in the Sign In contrast fix."
+);
+
 const registerSource = readFileSync(
   new URL("../frontend/src/pages/customer/CustomerRegisterPage.tsx", import.meta.url),
   "utf8"
