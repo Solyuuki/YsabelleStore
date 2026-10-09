@@ -672,6 +672,7 @@ function PipelineStat({
 
   return (
     <div
+      data-tone={warning ? "warning" : "neutral"}
       className={`ys-dashboard-pipeline-stat rounded-xl border px-3 py-3 ${
         warning ? "border-amber-200 bg-amber-50/70" : "border-violet-100 bg-violet-50/40"
       }`}
