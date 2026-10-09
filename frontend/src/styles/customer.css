@@ -8283,9 +8283,19 @@
   flex-direction: column;
 }
 
-.customer-footer__brand-column > p {
+/* Brand information is concise but no longer just a lone tagline. */
+.customer-footer__brand-column > .customer-footer__tagline {
   max-width: 24rem;
-  margin-top: 1rem;
+  margin: 1rem 0 0;
+  color: #dfe5fa;
+  font-weight: 700;
+}
+.customer-footer__brand-column > .customer-footer__description {
+  max-width: 35ch;
+  margin: 0.55rem 0 0;
+  color: #b8c5dc;
+  font-size: var(--customer-type-body-sm);
+  line-height: 1.65;
 }
 
 .customer-footer__explore-column {

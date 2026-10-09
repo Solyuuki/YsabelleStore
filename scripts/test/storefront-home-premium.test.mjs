@@ -116,6 +116,27 @@ assert.match(
   customerCss,
   /\.customer-footer--shop\s*\{[\s\S]*?--footer-transition-surface:\s*#e5e9f7[\s\S]*?--footer-transition-blue:\s*#d2e2f5[\s\S]*?--footer-transition-violet:\s*#ddd5ef/
 );
+assert.match(
+  footerSource,
+  /className="customer-footer__tagline">Everyday essentials, closer to home\./,
+  "Footer brand should keep its approved tagline."
+);
+assert.match(
+  footerSource,
+  /className="customer-footer__description"[\s\S]*?Your neighborhood grocery in Pasig City\.[\s\S]*?pantry staples[\s\S]*?household essentials/,
+  "Footer brand must include the approved neighborhood grocery description."
+);
+assert.match(
+  customerCss,
+  /\.customer-footer__brand-column > \.customer-footer__tagline\s*\{[^}]*font-weight:\s*700;/,
+  "Footer tagline must be emphasized without altering the layout."
+);
+assert.match(
+  customerCss,
+  /\.customer-footer__brand-column > \.customer-footer__description\s*\{[^}]*max-width:\s*35ch;[^}]*line-height:\s*1\.65;/,
+  "Footer supporting copy must wrap within the brand column."
+);
+
 assert.match(footerSource, /customer-footer__transition/);
 assert.match(footerSource, /footerTransitionLight/);
 assert.match(footerSource, /footerTransitionAccent/);
