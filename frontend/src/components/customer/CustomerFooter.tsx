@@ -57,8 +57,7 @@ export function CustomerFooter({
           </div>
           <p className="customer-footer__tagline">Everyday essentials, closer to home.</p>
           <p className="customer-footer__description">
-            Your neighborhood grocery in Pasig City. From pantry staples and refreshing drinks to
-            snacks and household essentials, find the things you need in one convenient online store.
+            Your Pasig City grocery for pantry staples, snacks, and more.
           </p>
         </div>
         <div className="customer-footer__explore-column">

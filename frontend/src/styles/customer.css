@@ -8292,10 +8292,10 @@
 }
 .customer-footer__brand-column > .customer-footer__description {
   max-width: 35ch;
-  margin: 0.55rem 0 0;
+  margin: 0.48rem 0 0;
   color: #b8c5dc;
   font-size: var(--customer-type-body-sm);
-  line-height: 1.65;
+  line-height: 1.55;
 }
 
 .customer-footer__explore-column {

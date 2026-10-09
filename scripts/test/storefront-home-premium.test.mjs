@@ -137,6 +137,49 @@ assert.match(
   "Footer supporting copy must wrap within the brand column."
 );
 
+/* The footer transition must belong to the shared footer. It must not
+   show the legacy horizontal SVG strip in dark mode, and its first pixel
+   must match the approved #101827 storefront/Shop/Account/Login handoff. */
+const themeCss = await readFile(
+  new URL("../../frontend/src/styles/theme-storefront.css", import.meta.url),
+  "utf8"
+);
+assert.match(
+  footerSource,
+  /Your Pasig City grocery for pantry staples, snacks, and more\./,
+  "Footer brand description must be concise."
+);
+assert.doesNotMatch(
+  footerSource,
+  /find the things you need in one convenient online store/,
+  "Do not restore the oversized footer description."
+);
+assert.match(
+  themeCss,
+  /:root\.dark \.customer-app \.customer-footer,[\s\S]*?linear-gradient\(180deg, #101827 0%, #101827 15%, #11192d 55%, #0d1222 100%\)/,
+  "Dark footer gradient must start with the shared #101827 boundary color."
+);
+assert.match(
+  themeCss,
+  /:root\.dark \.customer-app \.customer-footer__transition svg,[\s\S]*?display:\s*none/,
+  "The old footer SVG must not leave an abrupt band in dark mode."
+);
+assert.match(
+  themeCss,
+  /:root\[data-about-chrome-theme="dark"\] \.customer-app \.customer-footer__transition svg/,
+  "The special dark-chrome footer must receive the same seam-free handoff."
+);
+assert.match(
+  themeCss,
+  /mask-image:\s*linear-gradient\(180deg, transparent 0%, #000 46%, transparent 100%\)/,
+  "Dark footer glow must fade completely at both ends."
+);
+assert.match(
+  customerCss,
+  /\.customer-footer__brand-column > \.customer-footer__description\s*\{[^}]*line-height:\s*1\.55;/,
+  "Concise footer copy should keep comfortable, compact line spacing."
+);
+
 assert.match(footerSource, /customer-footer__transition/);
 assert.match(footerSource, /footerTransitionLight/);
 assert.match(footerSource, /footerTransitionAccent/);
