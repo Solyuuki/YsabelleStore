@@ -1183,10 +1183,9 @@
 :root.dark .customer-app .customer-footer,
 :root[data-about-chrome-theme="dark"] .customer-app .customer-footer {
   --footer-bg: #101827;
-  background:
-    radial-gradient(ellipse 52% 65% at 10% 42%, rgb(52 83 142 / 8%), transparent 95%),
-    radial-gradient(ellipse 55% 65% at 90% 42%, rgb(110 70 157 / 9%), transparent 95%),
-    linear-gradient(180deg, #101827 0%, #101827 15%, #11192d 55%, #0d1222 100%);
+  /* First pixel is exactly the page handoff color. Color glows live only
+     in the separately feather-masked transition below, never at this seam. */
+  background: linear-gradient(180deg, #101827 0%, #101827 15%, #11192d 55%, #0d1222 100%);
 }
 :root.dark .customer-app .customer-footer__transition,
 :root[data-about-chrome-theme="dark"] .customer-app .customer-footer__transition {
