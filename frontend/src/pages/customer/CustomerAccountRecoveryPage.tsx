@@ -21,6 +21,8 @@ import "@/styles/customer-auth-recovery.css";
 type RecoveryStage = "identify" | "verify" | "reset" | "complete";
 
 const RESEND_COOLDOWN_SECONDS = 30;
+const RECOVERY_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const RECOVERY_EMAIL_MAX_LENGTH = 191;
 
 function errorMessage(reason: unknown, fallback: string) {
   return reason instanceof Error && reason.message ? reason.message : fallback;
@@ -104,15 +106,23 @@ export function CustomerAccountRecoveryPage({
     event.preventDefault();
     setError(null);
 
-    const normalizedIdentifier = identifier.trim();
-    if (!normalizedIdentifier) {
-      setError("Enter your username, email, or mobile number.");
+    const normalizedEmail = identifier.trim().toLowerCase();
+    if (!normalizedEmail) {
+      setError("Enter your email address.");
+      return;
+    }
+    if (
+      normalizedEmail.length > RECOVERY_EMAIL_MAX_LENGTH ||
+      !RECOVERY_EMAIL_PATTERN.test(normalizedEmail)
+    ) {
+      setError("Enter a valid email address.");
       return;
     }
 
+    setIdentifier(normalizedEmail);
     setSubmitting(true);
     try {
-      await sendRecoveryCode(normalizedIdentifier);
+      await sendRecoveryCode(normalizedEmail);
     } catch (reason) {
       setError(errorMessage(reason, "A verification code could not be requested right now."));
     } finally {
@@ -217,7 +227,7 @@ export function CustomerAccountRecoveryPage({
           {stage === "identify" ? (
             <>
               <h1>Recover your account</h1>
-              <p>Enter the username, email, or mobile number connected to your customer account.</p>
+              <p>Enter the email address associated with your customer account.</p>
             </>
           ) : stage === "verify" ? (
             <>
@@ -254,14 +264,17 @@ export function CustomerAccountRecoveryPage({
             noValidate
           >
             <label className="customer-auth-field" htmlFor="customer-recovery-identifier">
-              <span>Username, email or mobile number</span>
+              <span>Email address</span>
               <input
                 aria-invalid={Boolean(error)}
-                autoComplete="section-customer username"
+                autoComplete="section-customer email"
                 id="customer-recovery-identifier"
+                inputMode="email"
+                maxLength={RECOVERY_EMAIL_MAX_LENGTH}
                 onChange={(event) => setIdentifier(event.target.value)}
-                placeholder="Username, email, or 09XXXXXXXXX"
-                type="text"
+                placeholder="name@example.com"
+                required
+                type="email"
                 value={identifier}
               />
             </label>

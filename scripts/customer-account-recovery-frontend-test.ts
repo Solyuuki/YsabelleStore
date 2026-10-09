@@ -40,6 +40,41 @@ async function main() {
   assert.match(recoverySource, /Set a new password/);
   assert.match(recoverySource, /Password reset complete/);
   assert.match(recoverySource, /confirmPassword/);
+  /* Email is the only account identifier accepted by the public recovery UI.
+     Keep the established backend JSON key for request/verify compatibility. */
+  assert.ok(
+    recoverySource.includes("const RECOVERY_EMAIL_PATTERN = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;"),
+    "Account recovery must use a valid email-only format check."
+  );
+  assert.match(
+    recoverySource,
+    /const normalizedEmail = identifier\.trim\(\)\.toLowerCase\(\)/,
+    "Recovery must trim and normalize email before sending a code."
+  );
+  assert.match(recoverySource, /setError\("Enter your email address\."\)/);
+  assert.match(recoverySource, /setError\("Enter a valid email address\."\)/);
+  assert.match(
+    recoverySource,
+    /Enter the email address associated with your customer account\./,
+    "Identify description should only ask for the registered email."
+  );
+  assert.match(
+    recoverySource,
+    /<span>Email address<\/span>\s*<input[\s\S]*?autoComplete="section-customer email"[\s\S]*?inputMode="email"[\s\S]*?placeholder="name@example\.com"[\s\S]*?required\s+type="email"/,
+    "Identify should have email label, keyboard, autofill, placeholder and semantic input type."
+  );
+  assert.doesNotMatch(
+    recoverySource,
+    /Enter the username, email, or mobile number|Username, email or mobile number|Username, email, or 09XXXXXXXXX/,
+    "Recovery UI must not suggest username or mobile input."
+  );
+  assert.match(recoverySource, /sendRecoveryCode\(normalizedEmail\)/);
+  assert.match(
+    recoverySource,
+    /verifyCustomerPasswordRecoveryCode\(\{\s*identifier,\s*verificationCode\s*\}\)/,
+    "Verify stage must retain the established recovery service contract."
+  );
+
   assert.match(recoverySource, /role="alert"/);
   assert.match(recoverySource, /role="status"/);
   assert.match(recoveryCss, /linear-gradient/);
