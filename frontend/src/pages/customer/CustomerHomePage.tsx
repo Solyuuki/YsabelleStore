@@ -363,16 +363,16 @@ function MerchandisingBackdrop() {
             <stop offset="100%" stopColor="#254486" stopOpacity="0" />
           </radialGradient>
         </defs>
-        <ellipse cx="835" cy="135" rx="440" ry="325" fill="url(#ysCosmicTopNebula)" />
-        <ellipse cx="825" cy="1350" rx="450" ry="410" fill="url(#ysCosmicLowerNebula)" />
-        <ellipse cx="66" cy="1090" rx="300" ry="445" fill="url(#ysCosmicBlueNebula)" />
+        <ellipse cx="205" cy="155" rx="430" ry="320" fill="url(#ysCosmicTopNebula)" />
+        <ellipse cx="240" cy="1325" rx="430" ry="400" fill="url(#ysCosmicLowerNebula)" />
+        <ellipse cx="920" cy="1110" rx="250" ry="390" fill="url(#ysCosmicBlueNebula)" />
         {/* Decorative pinpoints are deterministic so the constellation never re-shuffles. */}
         {Array.from({ length: 156 }, (_, index) => {
           const a = (index * 3187 + index * index * 73 + 61) % 1009;
           const b = (index * 2269 + index * index * 131 + 257) % 1531;
-          const x = index % 4 === 0 ? 650 + (a % 350) : index % 4 === 1 ? 20 + (a % 970) : index % 4 === 2 ? 750 + (a % 260) : a;
+          const x = 1024 - (index % 4 === 0 ? 650 + (a % 350) : index % 4 === 1 ? 20 + (a % 970) : index % 4 === 2 ? 750 + (a % 260) : a);
           const y = index % 4 === 0 ? b % 340 : index % 4 === 2 ? 1000 + (b % 530) : b;
-          const centerQuiet = x > 170 && x < 740 && y > 310 && y < 1130;
+          const centerQuiet = x > 255 && x < 845 && y > 310 && y < 1130;
           return (
             <circle
               key={index}
@@ -386,20 +386,20 @@ function MerchandisingBackdrop() {
         })}
 
         <g fill="none" strokeLinecap="round">
-          <circle cx="1030" cy="-105" r="258" stroke="#A28CEB" strokeOpacity="0.32" strokeWidth="1.1" />
-          <circle cx="1030" cy="-105" r="327" stroke="#8899EA" strokeOpacity="0.12" strokeWidth="0.9" />
-          <circle cx="1090" cy="1494" r="372" stroke="#B18CEB" strokeOpacity="0.39" strokeWidth="1.2" />
-          <circle cx="1090" cy="1494" r="455" stroke="#8E7ED4" strokeOpacity="0.15" strokeWidth="0.85" />
+          <circle cx="-120" cy="120" r="258" stroke="#A28CEB" strokeOpacity="0.32" strokeWidth="1.1" />
+          <circle cx="-120" cy="120" r="327" stroke="#8899EA" strokeOpacity="0.12" strokeWidth="0.9" />
+          <circle cx="-110" cy="1415" r="372" stroke="#B18CEB" strokeOpacity="0.39" strokeWidth="1.2" />
+          <circle cx="-110" cy="1415" r="455" stroke="#8E7ED4" strokeOpacity="0.15" strokeWidth="0.85" />
         </g>
         <g fill="#A88DE9" opacity="0.66">
-          <circle cx="940" cy="182" r="7" />
-          <circle cx="780" cy="1265" r="7" />
-          <circle cx="861" cy="109" r="3.6" />
-          <circle cx="995" cy="1304" r="3.2" />
+          <circle cx="165" cy="210" r="7" />
+          <circle cx="240" cy="1278" r="7" />
+          <circle cx="248" cy="132" r="3.6" />
+          <circle cx="318" cy="1326" r="3.2" />
         </g>
         <g fill="none" stroke="#B3C9FF" strokeLinecap="round" strokeOpacity="0.6">
-          <path d="M678 101v16M670 109h16M816 238v12M810 244h12" strokeWidth="1.1" />
-          <path d="M573 1374v16M565 1382h16M899 1380v12M893 1386h12" strokeWidth="0.9" />
+          <path d="M184 118v16M176 126h16M318 246v12M312 252h12" strokeWidth="1.1" />
+          <path d="M158 1362v16M150 1370h16M344 1390v12M338 1396h12" strokeWidth="0.9" />
         </g>
       </svg>
     </div>
