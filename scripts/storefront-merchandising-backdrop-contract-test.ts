@@ -311,4 +311,44 @@ assert.doesNotMatch(
   "Do not stretch artwork to fill long account pages."
 );
 
+/* Sign In reuses exactly the approved Account/Shop galaxy, not a stretched
+   auth silk image. This remains conditional on login: register/recovery intact. */
+const customerAuthFrameSource = readFileSync(resolve(process.cwd(), "src/components/customer/CustomerAuthFrame.tsx"), "utf8");
+const storefrontContrast = readFileSync(resolve(process.cwd(), "src/styles/theme-storefront-contrast.css"), "utf8");
+assert.match(
+  customerAuthFrameSource,
+  /mode === "login" \? \([\s\S]*?<StorefrontGalaxyArtwork className="customer-auth-page--login__cosmos" \/>/,
+  "Only Sign In should render the shared constellation inside the auth frame."
+);
+assert.match(
+  storefrontContrast,
+  /:root\.dark \.customer-app \.customer-auth-page--login\.ys-glass-flow-background\s*\{[\s\S]*?var\(--storefront-galaxy-background\) !important/,
+  "Sign In must use the shared midnight galaxy rather than the old auth silk texture."
+);
+assert.match(
+  storefrontContrast,
+  /\.customer-auth-page--login\.ys-glass-flow-background\s*\{[\s\S]*?background-repeat:\s*no-repeat !important/,
+  "Sign In should never vertically repeat or stretch a bitmap texture."
+);
+assert.match(
+  storefrontContrast,
+  /\.customer-auth-page--login\.ys-glass-flow-background\s*\{[\s\S]*?#101827 100%/,
+  "Sign In must fade into the existing footer background."
+);
+assert.match(
+  storefrontContrast,
+  /\.customer-auth-page--login__cosmos\s*\{[^}]*display:\s*none/,
+  "The Sign In galaxy must be hidden in light mode."
+);
+assert.match(
+  storefrontContrast,
+  /\.customer-auth-page--login > \.customer-auth-stage\s*\{[^}]*z-index:\s*1/,
+  "The sign-in card must remain above decorative artwork."
+);
+assert.match(
+  storefrontContrast,
+  /\.customer-auth-page--login::before,[\s\S]*?\.customer-auth-page--login::after\s*\{[^}]*content:\s*none/,
+  "Old animated login backdrop glows must be removed instead of overlaying the galaxy."
+);
+
 console.log("Storefront Shop/Catalog background contract passed.");

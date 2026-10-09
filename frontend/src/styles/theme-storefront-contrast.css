@@ -1202,6 +1202,66 @@
 :root.dark .customer-app .customer-recovery-progress__line {
   background: #64738b;
 }
+/* Sign In: use the SAME one-piece galaxy palette and shared constellation as
+   Trending → Essentials, Shop, and Account. Overrule the legacy auth silk
+   image/material background (which uses !important), scoped to login only. */
+.customer-app .customer-auth-page--login__cosmos {
+  display: none;
+}
+:root.dark .customer-app .customer-auth-page--login.ys-glass-flow-background {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #101827 !important;
+  background-image:
+    linear-gradient(
+      to bottom,
+      #101827 0,
+      transparent 145px,
+      transparent calc(100% - 220px),
+      #101827 100%
+    ),
+    var(--storefront-galaxy-background) !important;
+  background-size: auto !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+}
+:root.dark .customer-app .customer-auth-page--login__cosmos {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* The shared SVG's intrinsic viewBox uses xMidYMid meet, never stretching. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+}
+:root.dark .customer-app .customer-auth-page--login > .customer-auth-stage {
+  position: relative;
+  z-index: 1;
+}
+/* Suppress obsolete animated blurry backdrop blobs on Sign In only.
+   The panel's own styling and interactions remain unchanged. */
+:root.dark .customer-app .customer-auth-page--login::before,
+:root.dark .customer-app .customer-auth-page--login::after {
+  content: none;
+  animation: none;
+}
+
 /* Avoid global control styling overriding intentional product photo backgrounds. */
 :root.dark .customer-app .customer-product-card__media,
 :root.dark .customer-app .customer-product-detail__media {

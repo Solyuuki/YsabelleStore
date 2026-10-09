@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { StorefrontGalaxyArtwork } from "./StorefrontGalaxyArtwork";
+
 import "@/styles/customer-auth-phase3.css";
 import "@/styles/customer-auth-shaders.css";
 import "@/styles/customer-auth-interactions.css";
@@ -17,6 +19,9 @@ export function CustomerAuthFrame({ children, mode }: CustomerAuthFrameProps) {
     <section
       className={`customer-auth-page customer-auth-page--phase3 customer-auth-page--${mode} ys-glass-flow-background`}
     >
+      {mode === "login" ? (
+        <StorefrontGalaxyArtwork className="customer-auth-page--login__cosmos" />
+      ) : null}
       <div className="customer-auth-stage">
         <div
           className={`customer-auth-stage__panel${mode === "recovery" ? "" : " ys-material-surface"}`}
