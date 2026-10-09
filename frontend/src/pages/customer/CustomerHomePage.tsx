@@ -862,6 +862,65 @@ function HomeNextStep({ navigate }: { navigate: (path: string) => void }) {
 
   return (
     <section className="customer-section home-next-step">
+      {/* Vector rendition of the approved portal backdrop; never stretch the source ratio. */}
+      <div aria-hidden="true" className="home-next-step__dark-backdrop">
+        <svg className="home-next-step__dark-backdrop-svg"
+          focusable="false" preserveAspectRatio="xMaxYMid meet" viewBox="0 0 1983 793">
+          <defs>
+            <radialGradient id="ysPortalHalo">
+              <stop offset="0%" stopColor="#765BDB" stopOpacity="0.39" />
+              <stop offset="58%" stopColor="#5B4BB1" stopOpacity="0.12" />
+              <stop offset="100%" stopColor="#252A62" stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id="ysPortalInterior">
+              <stop offset="0%" stopColor="#1C295C" stopOpacity="0.94" />
+              <stop offset="76%" stopColor="#25236A" stopOpacity="0.76" />
+              <stop offset="100%" stopColor="#6B53B7" stopOpacity="0.13" />
+            </radialGradient>
+            <linearGradient id="ysPortalRim" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#7EA7F7" stopOpacity="0.12" />
+              <stop offset="42%" stopColor="#87A9F9" stopOpacity="0.48" />
+              <stop offset="78%" stopColor="#B18FF0" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#8568D9" stopOpacity="0.16" />
+            </linearGradient>
+            <linearGradient id="ysPortalSweep" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#527AC9" stopOpacity="0.06" />
+              <stop offset="48%" stopColor="#7B78D2" stopOpacity="0.21" />
+              <stop offset="100%" stopColor="#B17DE5" stopOpacity="0.43" />
+            </linearGradient>
+          </defs>
+          <ellipse cx="1520" cy="337" rx="600" ry="405" fill="url(#ysPortalHalo)" />
+          <ellipse cx="1554" cy="346" rx="397" ry="267"
+            transform="rotate(-13 1554 346)" fill="url(#ysPortalInterior)" opacity="0.68" />
+          <g fill="none" strokeLinecap="round">
+            <ellipse cx="1557" cy="343" rx="406" ry="260"
+              transform="rotate(-13 1557 343)" stroke="url(#ysPortalRim)" strokeWidth="2.1" />
+            <ellipse cx="1562" cy="338" rx="471" ry="305"
+              transform="rotate(-13 1562 338)" stroke="#91A0EF" strokeOpacity="0.19" />
+            <ellipse cx="1560" cy="350" rx="351" ry="220"
+              transform="rotate(-13 1560 350)" stroke="#BC98FF" strokeOpacity="0.25" />
+            <path d="M-96 470C270 276 530 344 833 505C1130 662 1374 717 1653 585C1813 510 1930 418 2100 353"
+              stroke="url(#ysPortalSweep)" strokeWidth="1.5" />
+            <path d="M-96 560C296 356 541 433 842 577C1170 728 1395 757 1706 618C1870 544 1961 475 2100 428"
+              stroke="#8391DB" strokeOpacity="0.12" />
+          </g>
+          <g fill="#A7AEFF">
+            <circle cx="1095" cy="291" r="5" opacity="0.63" />
+            <circle cx="1738" cy="140" r="5.5" opacity="0.71" />
+            <circle cx="1790" cy="572" r="8" opacity="0.78" />
+            <circle cx="1540" cy="607" r="4" opacity="0.38" />
+            <circle cx="1251" cy="120" r="2.7" opacity="0.53" />
+            <circle cx="1140" cy="420" r="2.5" opacity="0.49" />
+            <circle cx="1850" cy="280" r="2.7" opacity="0.57" />
+            <circle cx="1922" cy="630" r="3" opacity="0.41" />
+          </g>
+          <g fill="none" stroke="#C8B5FA" strokeOpacity="0.62" strokeLinecap="round">
+            <path d="M1280 145v15M1272.5 152.5h15" />
+            <path d="M1834 541v17M1825.5 549.5h17" />
+            <path d="M1775 87v11M1769.5 92.5h11" />
+          </g>
+        </svg>
+      </div>
       <div
         className={`customer-container home-next-step__shell ${reveal.isVisible ? "is-visible" : ""}`}
         ref={reveal.ref}

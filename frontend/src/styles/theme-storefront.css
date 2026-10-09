@@ -213,10 +213,51 @@
 :root.dark .customer-app .customer-shop-catalog-backdrop::after {
   opacity: 0.08;
 }
+/* Section 4 closing CTA: dark-only proportional orbital portal. The preceding
+   merchandising area ends at #17243c so the first edge matches exactly. */
+.customer-app .home-next-step__dark-backdrop {
+  display: none;
+}
 :root.dark .customer-app .customer-home .home-next-step {
+  isolation: isolate;
   background:
-    url("/media/ys-dark-delivery-closing.svg") center / cover no-repeat,
-    #17243a;
+    linear-gradient(180deg, #17243c 0%, rgb(23 36 60 / 0%) 13%, rgb(23 36 60 / 0%) 84%, #17243c 100%),
+    radial-gradient(ellipse 52% 82% at 80% 48%, rgb(105 75 179 / 16%), transparent 88%),
+    linear-gradient(110deg, #17243c 0%, #182541 44%, #231d45 100%);
+}
+:root.dark .customer-app .home-next-step__dark-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+}
+:root.dark .customer-app .home-next-step__dark-backdrop-svg {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: max(100%, 1260px);
+  height: auto;
+  max-width: none;
+  aspect-ratio: 1983 / 793;
+  transform: translateY(-50%);
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 86%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 86%, transparent 100%);
+}
+@media (max-width: 920px) {
+  :root.dark .customer-app .home-next-step__dark-backdrop-svg {
+    right: -18%;
+    opacity: 0.74;
+  }
+}
+@media (max-width: 520px) {
+  :root.dark .customer-app .home-next-step__dark-backdrop-svg {
+    width: 1050px;
+    right: -300px;
+    opacity: 0.48;
+  }
 }
 :root.dark
   .customer-app
