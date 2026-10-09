@@ -200,3 +200,17 @@ test("Return report details are validated and return history has a server-side f
   assert.match(restockServiceSource, /query\.hasReturns/);
   assert.match(restockServiceSource, /damage_reason=/);
 });
+
+
+test("receipt quarantines inflated monthly restock before any physical stock mutation", () => {
+  assert.match(
+    lifecycleSource,
+    /await assertAutomatedRestockQuantitySafe\(orderId, input\.expectedVersion, "RECEIPT"\)/
+  );
+  assert.match(
+    restockServiceSource,
+    /requiresAutomatedQuantityReview\(line\.recommendedQuantity, latest, null\)/
+  );
+  assert.match(restockServiceSource, /RESTOCK_QUANTITY_ANOMALY/);
+  assert.match(restockServiceSource, /excludeOrderId/);
+});
