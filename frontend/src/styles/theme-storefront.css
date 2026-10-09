@@ -278,6 +278,26 @@
   color: #d4deec;
   box-shadow: inset 0 1px 0 rgb(188 202 246 / 16%);
 }
+/* Premium headline finish: a soft fade and one tapered hairline, not a boxed frame.
+   Keep this BELOW the category content (z-index: 2) and inside the section. */
+:root.dark .customer-app .home-categories::after {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  height: clamp(48px, 6vw, 88px);
+  content: "";
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 3%,
+      rgb(122 159 237 / 10%) 20%,
+      rgb(172 153 245 / 24%) 52%,
+      rgb(122 159 237 / 10%) 80%,
+      transparent 97%
+    ) center bottom / 100% 1px no-repeat,
+    linear-gradient(180deg, transparent 0%, rgb(23 36 60 / 22%) 53%, #17243c 100%);
+}
 /* The light-mode SVG is unchanged and excluded from dark mode. */
 :root.dark .customer-app .home-categories__portal-scene {
   display: none;
@@ -446,6 +466,10 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
+  /* The starfield and orbit artwork appear gradually; no hard image edge at the
+     Section 1 → 2 boundary. Pixel-based fade is stable as shelf height changes. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 112px, #000 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 112px, #000 100%);
 }
 /* Avoid forcing an arbitrary new height when products change or mobile rails wrap. */
 /* Support, privacy and shopping-guide reading surfaces. */
