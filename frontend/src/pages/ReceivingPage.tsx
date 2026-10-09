@@ -693,7 +693,7 @@ export function ReceivingPage() {
         }}
         open={Boolean(selectedOrder)}
       >
-        <DialogContent className="max-h-[85vh] max-w-[960px] grid-rows-[auto_minmax(0,1fr)_auto] gap-0">
+        <DialogContent className="ys-receiving-dialog max-h-[85vh] max-w-[960px] grid-rows-[auto_minmax(0,1fr)_auto] gap-0">
           {selectedOrder && selectedTotals ? (
             <>
               <DialogHeader className="relative border-b border-slate-200 px-6 py-5 pr-16">
@@ -745,7 +745,7 @@ export function ReceivingPage() {
                       {(selectedOrder.status === "APPROVED" ||
                         selectedOrder.status === "AWAITING_DELIVERY") &&
                       selectedTotals.accepted === 0 ? (
-                        <section className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                        <section className="ys-receiving-cancel-panel rounded-lg border border-slate-200 bg-slate-50 p-4">
                           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                             <div className="min-w-0 flex-1">
                               <Label htmlFor="cancel-restock-reason">Cancel ticket</Label>
@@ -808,7 +808,7 @@ export function ReceivingPage() {
               </div>
 
               {selectedOrder.status !== "RECEIVED" && receiptMode ? (
-                <DialogFooter className="bg-white">
+                <DialogFooter className="ys-receiving-dialog-footer bg-white">
                   <Button
                     disabled={saving}
                     onClick={() => {
@@ -1041,12 +1041,12 @@ function ArrivalOptions({ onSelect }: { onSelect: (mode: ReceiptMode) => void })
           Choose one. Extra fields appear only for exceptions.
         </p>
       </div>
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="ys-receiving-arrival-options overflow-hidden rounded-lg border border-slate-200 bg-white">
         {choices.map((choice, index) => {
           const Icon = choice.icon;
           return (
             <button
-              className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 ${
+              className={`ys-receiving-arrival-option flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 ${
                 index > 0 ? "border-t border-slate-100" : ""
               }`}
               key={choice.mode}
@@ -1180,7 +1180,8 @@ function ReceiptEditor({
             const checked = exceptionLineIds.includes(line.id);
             return (
               <label
-                className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-3 transition-colors ${
+                data-selected={checked}
+                className={`ys-receiving-exception-option flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-3 transition-colors ${
                   checked
                     ? "border-indigo-300 bg-indigo-50/70"
                     : "border-slate-200 bg-white hover:bg-slate-50"
@@ -1227,7 +1228,7 @@ function ReceiptEditor({
               const accepted = acceptedQuantity(row);
               const missing = Math.max(0, remaining - asWholeNumber(row.deliveredQuantity));
               return (
-                <div className="rounded-lg border border-slate-200 bg-white p-4" key={line.id}>
+                <div className="ys-receiving-exception-row rounded-lg border border-slate-200 bg-white p-4" key={line.id}>
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-slate-950">{line.product.name}</p>
@@ -1301,7 +1302,7 @@ function ReceiptEditor({
       ) : null}
 
       {hasDamage ? (
-        <section className="rounded-lg border border-amber-200 bg-amber-50/70 p-4">
+        <section className="ys-receiving-damage-panel rounded-lg border border-amber-200 bg-amber-50/70 p-4">
           <Label htmlFor="damage-return-reason">Damage / return reason *</Label>
           <Input
             className="mt-1"
@@ -1318,7 +1319,7 @@ function ReceiptEditor({
         </section>
       ) : null}
 
-      <section className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <section className="ys-receiving-lot-summary flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-medium text-slate-800">Supplier lot / expiry details</p>
           <p className="mt-0.5 text-xs text-slate-500">
@@ -1379,7 +1380,7 @@ function LotExpiryDialog({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="max-w-[560px] gap-0">
+      <DialogContent className="ys-receiving-dialog ys-receiving-lot-dialog max-w-[560px] gap-0">
         <DialogHeader className="border-b border-slate-200 px-6 py-5">
           <DialogTitle>Supplier lot / expiry details</DialogTitle>
           <DialogDescription>
