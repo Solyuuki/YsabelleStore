@@ -423,16 +423,16 @@ export function ReceivingPage() {
         throw new Error(`${line.product.name}: choose an expiry date or mark no expiry printed.`);
       }
 
-      if (accepted > remaining && !row.confirmOverDelivery) {
+      if (accepted > remaining) {
         throw new Error(
-          `${line.product.name}: confirm the over-delivery before accepting extra units.`
+          `${line.product.name}: accepted units cannot exceed the remaining approved quantity. Record excess units for return or create a separately approved order.`
         );
       }
 
       lines.push({
         acceptedQuantity: accepted,
         batchCode: accepted > 0 ? row.batchCode.trim() : null,
-        confirmOverDelivery: row.confirmOverDelivery,
+        confirmOverDelivery: false,
         damagedQuantity: damaged,
         damageReason: damaged > 0 ? damageReason.trim() : null,
         deliveredQuantity: delivered,
@@ -1279,20 +1279,9 @@ function ReceiptEditor({
                     </div>
                   </div>
                   {accepted > remaining ? (
-                    <label className="mt-3 flex items-start gap-2 text-xs leading-5 text-amber-800">
-                      <input
-                        checked={row.confirmOverDelivery}
-                        className="mt-0.5"
-                        onChange={(event) =>
-                          onUpdateRow(line.id, (current) => ({
-                            ...current,
-                            confirmOverDelivery: event.target.checked
-                          }))
-                        }
-                        type="checkbox"
-                      />
-                      Confirm over-delivery
-                    </label>
+                    <p className="mt-3 text-xs leading-5 text-amber-800" role="alert">
+                      Excess units cannot be accepted without a separately approved restock order.
+                    </p>
                   ) : null}
                 </div>
               );
