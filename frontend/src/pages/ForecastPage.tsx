@@ -991,7 +991,7 @@ function MonthlyForecastCard({
               </div>
             ) : null}
 
-            <div className="min-h-[20rem] flex-1">
+            <div className="ys-forecast-chart min-h-[20rem] flex-1">
               <ResponsiveContainer height="100%" width="100%">
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
