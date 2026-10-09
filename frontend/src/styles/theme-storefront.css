@@ -467,6 +467,18 @@
   bottom: 0;
   transform: translateX(-50%);
 }
+/* At tablet/mobile widths, reveal the right-side details instead of
+   center-cropping them out of the visible area. Proportional scale is retained. */
+@media (max-width: 1024px) {
+  :root.dark .customer-app .home-merchandising-canvas__dark-art {
+    left: auto;
+    right: 0;
+    transform: none;
+  }
+  :root.dark .customer-app .home-merchandising-canvas__dark-art--middle {
+    transform: translateY(-50%);
+  }
+}
 @media (max-width: 700px) {
   :root.dark .customer-app .home-merchandising-canvas__dark-art {
     width: max(100%, 880px);
