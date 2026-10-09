@@ -348,6 +348,47 @@ function CategoryRetailBackdrop() {
     <div aria-hidden="true" className="home-categories__backdrop">
       <div className="home-categories__center-light" />
 
+      {/* Dark-mode-only vector ornaments. Geometry stays sharp at every viewport size. */}
+      <svg
+        className="home-categories__dark-ornament"
+        focusable="false"
+        preserveAspectRatio="xMidYMin meet"
+        viewBox="0 0 1600 900"
+      >
+        <defs>
+          <linearGradient id="categoryDarkBlueStroke" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stopColor="#75A9F4" stopOpacity="0.3" />
+            <stop offset="65%" stopColor="#5884DA" stopOpacity="0.65" />
+            <stop offset="100%" stopColor="#637FDB" stopOpacity="0.15" />
+          </linearGradient>
+          <linearGradient id="categoryDarkVioletStroke" x1="1" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#C084F6" stopOpacity="0.55" />
+            <stop offset="75%" stopColor="#8669D4" stopOpacity="0.46" />
+            <stop offset="100%" stopColor="#735DCE" stopOpacity="0.12" />
+          </linearGradient>
+          <linearGradient id="categoryDarkBottomStroke" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="#5991E2" stopOpacity="0.36" />
+            <stop offset="55%" stopColor="#6374DC" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#BD76E7" stopOpacity="0.48" />
+          </linearGradient>
+        </defs>
+        <g fill="none" strokeLinecap="round" vectorEffect="non-scaling-stroke">
+          <path d="M-85 322C164 274 281 117 334 -82" stroke="url(#categoryDarkBlueStroke)" strokeWidth="1.5" />
+          <path d="M-108 366C178 288 312 104 368 -84" stroke="#709EE9" strokeOpacity="0.11" strokeWidth="1" />
+          <path d="M1700 288C1508 354 1390 485 1366 846" stroke="url(#categoryDarkVioletStroke)" strokeWidth="1.5" />
+          <path d="M1740 339C1512 405 1455 531 1437 864" stroke="#AC8BE7" strokeOpacity="0.12" strokeWidth="1" />
+          <path d="M-80 700C228 724 428 839 806 829C1129 818 1364 760 1680 686" stroke="url(#categoryDarkBottomStroke)" strokeWidth="1.5" />
+          <path d="M-70 742C239 784 495 872 822 865C1137 856 1442 785 1670 733" stroke="#8092E6" strokeOpacity="0.09" strokeWidth="1" />
+        </g>
+        <g>
+          <circle cx="302" cy="177" r="6" fill="#95A3FF" fillOpacity="0.62" />
+          <circle cx="198" cy="245" r="4" fill="#618CE9" fillOpacity="0.28" />
+          <circle cx="111" cy="305" r="4" fill="#739FFF" fillOpacity="0.46" />
+          <circle cx="1494" cy="279" r="6" fill="#AE78EE" fillOpacity="0.62" />
+          <circle cx="1425" cy="345" r="4" fill="#926BE0" fillOpacity="0.28" />
+        </g>
+      </svg>
+
       <svg
         className="home-categories__portal-scene"
         focusable="false"
