@@ -1215,11 +1215,9 @@
    No route-specific shader, stretched texture, or light-mode icon tile. */
 :root.dark .customer-app .customer-privacy-page {
   isolation: isolate;
-  background-color: #17243c;
-  background-image: var(--storefront-galaxy-background);
-  background-size: auto !important;
-  background-position: center top !important;
-  background-repeat: no-repeat !important;
+  /* The actual shared galaxy belongs to the reading body, not behind the hero. */
+  background-color: #101827;
+  background-image: none;
 }
 :root.dark .customer-app .customer-privacy-hero {
   background: url("/textures/ys-dark-indigo-silk.svg") center / cover no-repeat, #1b2638;
