@@ -925,7 +925,7 @@ export function ProductsPage() {
           <CardContent className="px-4 pb-4 pt-2 lg:px-5">
             <div className="space-y-4">
               <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_180px]">
-                <label className="relative flex h-11 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3">
+                <label className="ys-product-toolbar-filter relative flex h-11 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3">
                   <Search className="h-4 w-4 text-slate-500" aria-hidden="true" />
                   <input
                     aria-busy={searchIsLoading}
@@ -943,7 +943,7 @@ export function ProductsPage() {
                     <LoaderCircle className="absolute right-3 h-4 w-4 animate-spin text-emerald-700" />
                   ) : null}
                 </label>
-                <label className="relative flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
+                <label className="ys-product-toolbar-filter relative flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
                   <Filter className="h-4 w-4 text-slate-500" aria-hidden="true" />
                   <select
                     aria-busy={filterIsLoading}
@@ -963,7 +963,7 @@ export function ProductsPage() {
                     <LoaderCircle className="pointer-events-none absolute right-3 h-4 w-4 animate-spin text-emerald-700" />
                   ) : null}
                 </label>
-                <label className="relative flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
+                <label className="ys-product-toolbar-filter relative flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
                   <Filter className="h-4 w-4 text-slate-500" aria-hidden="true" />
                   <select
                     aria-busy={filterIsLoading}
@@ -1397,7 +1397,7 @@ function ImportProductsDialog({
     >
       <DialogContent
         aria-describedby="import-products-description"
-        className="flex max-h-[88vh] w-[calc(100vw-40px)] max-w-[700px] flex-col overflow-hidden p-0"
+        className="ys-product-modal flex max-h-[88vh] w-[calc(100vw-40px)] max-w-[700px] flex-col overflow-hidden p-0"
         onEscapeKeyDown={(event) => {
           if (isImporting) {
             event.preventDefault();
@@ -2306,7 +2306,7 @@ function CreateProductDialog({
         }
       }}
     >
-      <DialogContent className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[760px] flex-col overflow-hidden p-0">
+      <DialogContent className="ys-product-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[760px] flex-col overflow-hidden p-0">
         <DialogHeader className="border-b border-slate-200 px-6 py-5">
           <DialogTitle>Add Product</DialogTitle>
           <DialogDescription>Create a catalog record for the product.</DialogDescription>
@@ -2799,7 +2799,7 @@ function ProductDetailsDialog({
     >
       <DialogContent
         aria-describedby="product-details-dialog"
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[820px] flex-col overflow-hidden p-0"
+        className="ys-product-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[820px] flex-col overflow-hidden p-0"
         onCloseAutoFocus={(event) => {
           event.preventDefault();
         }}
