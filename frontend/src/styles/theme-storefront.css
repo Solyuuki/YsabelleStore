@@ -1212,9 +1212,7 @@
 :root.dark .customer-app .customer-privacy-page {
   isolation: isolate;
   background-color: #17243c;
-  background-image:
-    linear-gradient(to bottom, transparent 0%, transparent 91%, #101827 100%),
-    var(--storefront-galaxy-background);
+  background-image: var(--storefront-galaxy-background);
   background-size: auto !important;
   background-position: center top !important;
   background-repeat: no-repeat !important;
