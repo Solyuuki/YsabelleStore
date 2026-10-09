@@ -105,4 +105,27 @@ assert.match(cartSource, /<AppPagination[\s\S]*?className="customer-cart-paginat
 assert.match(cartSource, /pageSize=\{CART_PAGE_SIZE\}/);
 assert.match(cartSource, /<QuantityControl[\s\S]*?updateQuantity\(product\.id, value\)/);
 
+/* A populated cart already exposes Shop through the global navigation.
+   Avoid a duplicate "Continue shopping" link and its empty spacing wrapper. */
+assert.doesNotMatch(
+  cartSource,
+  /Continue shopping|customer-continue-link|customer-cart-actions/,
+  "Populated Cart must not render redundant Continue shopping UI."
+);
+assert.doesNotMatch(
+  cartCss,
+  /\.customer-cart-actions\b/,
+  "Removed Cart action must not leave an empty reserved row."
+);
+assert.match(
+  cartSource,
+  /<CustomerLink className="customer-button" href="\/shop" navigate=\{navigate\}>\s*Start shopping/,
+  "Empty Cart must retain its useful Start shopping action."
+);
+assert.match(
+  cartSource,
+  /Proceed to checkout/,
+  "Cart checkout must remain available."
+);
+
 console.log("storefront customer QoL UI contract passed");

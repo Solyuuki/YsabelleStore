@@ -117,11 +117,6 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
                 />
               ) : null}
 
-              <div className="customer-cart-actions">
-                <CustomerLink className="customer-continue-link" href="/shop" navigate={navigate}>
-                  Continue shopping
-                </CustomerLink>
-              </div>
             </section>
             <aside className="customer-order-summary">
               <p className="customer-kicker">Order summary</p>

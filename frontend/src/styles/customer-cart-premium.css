@@ -91,19 +91,6 @@
   color: var(--customer-primary-strong);
 }
 
-.customer-cart-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 2.75rem;
-  padding-top: 0.35rem;
-}
-
-.customer-cart-actions .customer-continue-link {
-  margin: 0;
-  padding: 0.45rem 0;
-}
-
 .customer-order-summary {
   padding: 1.75rem;
   border-color: rgb(98 91 255 / 28%);
