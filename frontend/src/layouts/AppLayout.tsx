@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import type { AppRoutePath } from "@/app/routes";
 import { AppSidebar } from "@/components/app/AppSidebar";
+import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
 import type { AuthUser } from "@/types/auth";
 
 type AppLayoutProps = {
@@ -39,9 +40,12 @@ export function AppLayout({
         onToggleSidebar={onToggleSidebar}
         user={user}
       />
-      <div className="relative z-10 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="retail-workspace relative z-10 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <div aria-hidden="true" className="retail-workspace__artwork">
+          <StorefrontGalaxyArtwork className="retail-workspace__cosmos" />
+        </div>
         <main
-          className="min-h-0 flex-1 overflow-auto px-[clamp(1.25rem,2vw,1.5rem)] py-[clamp(1.25rem,2vw,1.5rem)]"
+          className="relative z-10 min-h-0 flex-1 overflow-auto px-[clamp(1.25rem,2vw,1.5rem)] py-[clamp(1.25rem,2vw,1.5rem)]"
           data-layout="app"
         >
           <div className="mx-auto max-w-[1540px] space-y-6">{children}</div>
