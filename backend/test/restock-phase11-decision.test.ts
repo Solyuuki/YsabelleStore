@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { buildRestockForecastDecision } from "../src/services/restockForecastDecisionService.js";
+import {
+  reconcileDraftRestockLine,
+  requiresAutomatedQuantityReview
+} from "../src/services/restockDraftReconciliation.js";
 import { classifyStockHealth } from "../src/services/stockHealthService.js";
 
 const NOW = new Date("2026-09-13T00:00:00.000Z");
@@ -213,4 +217,118 @@ test("automatic stock health marks positive stock with zero recent actual demand
   assert.equal(health.status, "OVERSTOCK");
   assert.equal(health.monthlyDemand, 0);
   assert.equal(health.demandSource, "RECENT_SALES");
+});
+
+
+test("monthly automated draft is idempotent across 10,000 identical worker runs", () => {
+  const action = {
+    quantity: 17,
+    recommendationId: "forecast-1",
+    recommendationSource: "SARIMA" as const
+  };
+  const existing = {
+    isSelected: true,
+    ownerOverrideReason: null,
+    recommendationId: "forecast-1",
+    recommendationSource: "SARIMA" as const,
+    recommendedQuantity: 17,
+    requestedQuantity: 17
+  };
+
+  for (let run = 0; run < 10_000; run += 1) {
+    assert.equal(reconcileDraftRestockLine(existing, action), null);
+  }
+  assert.equal(existing.requestedQuantity, 17);
+});
+
+test("reconciliation repairs an accumulated draft instead of incrementing it", () => {
+  const repaired = reconcileDraftRestockLine(
+    {
+      isSelected: true,
+      ownerOverrideReason: null,
+      recommendationId: "forecast-1",
+      recommendationSource: "SARIMA",
+      recommendedQuantity: 202_270,
+      requestedQuantity: 202_270
+    },
+    {
+      quantity: 17,
+      recommendationId: "forecast-1",
+      recommendationSource: "SARIMA"
+    }
+  );
+  assert.deepEqual(repaired, {
+    recommendationId: "forecast-1",
+    recommendationSource: "SARIMA",
+    recommendedQuantity: 17,
+    requestedQuantity: 17
+  });
+  assert.equal(
+    reconcileDraftRestockLine(
+      {
+        isSelected: true,
+        ownerOverrideReason: null,
+        ...repaired!
+      },
+      {
+        quantity: 17,
+        recommendationId: "forecast-1",
+        recommendationSource: "SARIMA"
+      }
+    ),
+    null
+  );
+});
+
+test("owner quantity overrides, deselections and manual lines survive worker reconciliation", () => {
+  const action = {
+    quantity: 22,
+    recommendationId: "forecast-2",
+    recommendationSource: "LOW_STOCK" as const
+  };
+  const baseline = {
+    isSelected: true,
+    ownerOverrideReason: "Confirmed supplier pallet.",
+    recommendationId: "forecast-1",
+    recommendationSource: "SARIMA" as const,
+    recommendedQuantity: 17,
+    requestedQuantity: 50
+  };
+  assert.deepEqual(reconcileDraftRestockLine(baseline, action), {
+    recommendationId: "forecast-2",
+    recommendationSource: "LOW_STOCK",
+    recommendedQuantity: 22,
+    requestedQuantity: 50
+  });
+  assert.equal(
+    reconcileDraftRestockLine(
+      { ...baseline, recommendationSource: "MANUAL" },
+      action
+    ),
+    null
+  );
+  assert.equal(
+    reconcileDraftRestockLine(
+      {
+        ...baseline,
+        isSelected: false,
+        ownerOverrideReason: null,
+        recommendedQuantity: 17,
+        requestedQuantity: 17
+      },
+      action
+    )?.requestedQuantity,
+    17
+  );
+});
+
+test("automated approval blocks inflated quantities while allowing normal recommendation drift", () => {
+  assert.equal(requiresAutomatedQuantityReview(202_270, 17, null), true);
+  assert.equal(requiresAutomatedQuantityReview(17, 17, null), false);
+  assert.equal(requiresAutomatedQuantityReview(22, 17, null), false);
+  assert.equal(requiresAutomatedQuantityReview(200, 0, null), true);
+  assert.equal(
+    requiresAutomatedQuantityReview(50, 17, "Owner documented a supplier pallet."),
+    false
+  );
 });
