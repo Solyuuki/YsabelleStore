@@ -1640,3 +1640,23 @@
 :root.dark .customer-app .customer-support-reference span {
   color: #b8c6dd;
 }
+
+
+/* Privacy & Cookies hero: reuse the Storefront category background and vector
+   from Shop by Category / Customer Support; leave the galaxy reading area and
+   existing light-mode Privacy page unchanged. */
+.customer-app .customer-privacy-hero > .home-categories__backdrop {
+  display: none;
+}
+:root.dark .customer-app .customer-privacy-hero > .home-categories__backdrop {
+  display: block;
+}
+:root.dark .customer-app .customer-privacy-hero {
+  background: var(--storefront-category-background) !important;
+  border-bottom-color: transparent;
+}
+:root.dark .customer-app .customer-privacy-hero::before,
+:root.dark .customer-app .customer-privacy-hero::after {
+  content: none;
+  display: none;
+}
