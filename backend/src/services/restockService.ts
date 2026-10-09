@@ -359,11 +359,14 @@ export async function replaceRestockOrderLines(
 }
 
 /**
- * A monthly automated ticket must agree with a fresh operational recommendation
- * before approval. This also quarantines inflated drafts created by earlier
- * repeated-increment workers. Owner-created/manual orders keep their own flow.
+ * Quarantine inflated monthly automated orders both before Owner approval and
+ * before the first physical receipt of an already approved legacy order.
  */
-async function assertAutomatedRestockApprovalSafe(orderId: string, expectedVersion: number) {
+export async function assertAutomatedRestockQuantitySafe(
+  orderId: string,
+  expectedVersion: number,
+  stage: "APPROVAL" | "RECEIPT" = "APPROVAL"
+) {
   const snapshot = await prisma.restockOrder.findUnique({
     select: {
       lines: {
@@ -373,7 +376,8 @@ async function assertAutomatedRestockApprovalSafe(orderId: string, expectedVersi
           productId: true,
           recommendationSource: true,
           recommendedQuantity: true,
-          requestedQuantity: true
+          requestedQuantity: true,
+          receivedQuantity: true
         }
       },
       notes: true,
@@ -384,9 +388,14 @@ async function assertAutomatedRestockApprovalSafe(orderId: string, expectedVersi
   });
   if (
     !snapshot ||
-    snapshot.status !== RestockOrderStatus.DRAFT ||
     snapshot.version !== expectedVersion ||
-    !snapshot.notes?.includes("[AutomatedRestockMonth:")
+    !snapshot.notes?.includes("[AutomatedRestockMonth:") ||
+    (stage === "APPROVAL" && snapshot.status !== RestockOrderStatus.DRAFT) ||
+    (stage === "RECEIPT" &&
+      ![RestockOrderStatus.APPROVED, RestockOrderStatus.AWAITING_DELIVERY].includes(
+        snapshot.status
+      )) ||
+    snapshot.lines.some((line) => line.receivedQuantity > 0)
   ) {
     return;
   }
@@ -401,7 +410,8 @@ async function assertAutomatedRestockApprovalSafe(orderId: string, expectedVersi
   const { listRestockPlanningCandidates } = await import("./restockPlanningService.js");
   const result = await listRestockPlanningCandidates(
     { includeZero: true, page: 1, pageSize: automatedLines.length },
-    automatedLines.map((line) => line.productId)
+    automatedLines.map((line) => line.productId),
+    orderId
   );
   const latestByProduct = new Map(
     result.items.map((candidate) => [candidate.product.id, candidate.recommendedQuantity])
@@ -410,8 +420,8 @@ async function assertAutomatedRestockApprovalSafe(orderId: string, expectedVersi
   for (const line of automatedLines) {
     const latest = latestByProduct.get(line.productId);
     if (latest === undefined) {
-      throw new HttpError(422, "An automated product is no longer eligible for restocking.", {
-        code: "RESTOCK_APPROVAL_FORECAST_UNAVAILABLE",
+      throw new HttpError(422, "An automated product has no current restock forecast. Review this ticket.", {
+        code: "RESTOCK_FORECAST_UNAVAILABLE",
         details: { productId: line.productId }
       });
     }
@@ -426,9 +436,9 @@ async function assertAutomatedRestockApprovalSafe(orderId: string, expectedVersi
     ) {
       throw new HttpError(
         422,
-        "The automated quantity exceeds the current forecast. Review the draft before approval.",
+        "The automated restock quantity is inconsistent with current demand. Review or cancel this ticket before proceeding.",
         {
-          code: "RESTOCK_APPROVAL_QUANTITY_ANOMALY",
+          code: "RESTOCK_QUANTITY_ANOMALY",
           details: {
             productId: line.productId,
             currentRecommendedQuantity: latest,
@@ -446,7 +456,7 @@ export async function approveRestockOrder(
   input: ApproveRestockOrderRequest,
   approvedById: string
 ) {
-  await assertAutomatedRestockApprovalSafe(orderId, input.expectedVersion);
+  await assertAutomatedRestockQuantitySafe(orderId, input.expectedVersion);
 
   await prisma.$transaction(async (tx) => {
     const existing = await tx.restockOrder.findUnique({
