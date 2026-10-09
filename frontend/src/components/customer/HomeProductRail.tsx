@@ -20,47 +20,74 @@ const initialRailState: RailState = {
 export function HomeProductRail({ children, label }: { children: ReactNode; label: string }) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const railLayoutRef = useRef({ itemStep: 1, visibleCount: 1 });
   const [state, setState] = useState<RailState>(initialRailState);
   const items = Children.toArray(children);
+
+  // Reading offsets on every smooth-scroll frame forces layout. Measure only
+  // when the rail is mounted, its contents change, or an observed size changes.
+  const measureRailLayout = useCallback(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const firstItem = viewport.querySelector<HTMLElement>("[data-home-product-rail-item]");
+    if (!firstItem) {
+      railLayoutRef.current = { itemStep: 1, visibleCount: 1 };
+      return;
+    }
+
+    const sibling = firstItem.nextElementSibling as HTMLElement | null;
+    const secondItem = sibling?.hasAttribute("data-home-product-rail-item") ? sibling : null;
+    const itemStep = secondItem
+      ? Math.max(1, secondItem.offsetLeft - firstItem.offsetLeft)
+      : Math.max(1, firstItem.offsetWidth);
+
+    railLayoutRef.current = {
+      itemStep,
+      visibleCount: Math.max(1, Math.round(viewport.clientWidth / itemStep))
+    };
+  }, []);
 
   const syncRailState = useCallback(() => {
     const viewport = viewportRef.current;
     if (!viewport) return;
-
-    const railItems = Array.from(
-      viewport.querySelectorAll<HTMLElement>("[data-home-product-rail-item]")
-    );
-    const firstItem = railItems[0];
-
-    if (!firstItem) {
-      setState(initialRailState);
+    if (!items.length) {
+      setState((current) =>
+        current.canScrollNext || current.canScrollPrevious || current.firstVisible !== 0 ||
+        current.visibleCount !== 1 ? initialRailState : current
+      );
       return;
     }
 
+    const { itemStep, visibleCount } = railLayoutRef.current;
     const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
     const scrollLeft = Math.max(0, viewport.scrollLeft);
-    const secondItem = railItems[1];
-    const itemStep = secondItem
-      ? Math.max(1, secondItem.offsetLeft - firstItem.offsetLeft)
-      : Math.max(1, firstItem.offsetWidth);
-    const visibleCount = Math.max(1, Math.round(viewport.clientWidth / itemStep));
     const firstVisible = Math.min(
       Math.max(0, Math.round(scrollLeft / itemStep)),
-      Math.max(0, railItems.length - 1)
+      Math.max(0, items.length - 1)
     );
-
-    setState({
+    const nextState: RailState = {
       canScrollNext: scrollLeft < maxScrollLeft - 2,
       canScrollPrevious: scrollLeft > 2,
       firstVisible,
       visibleCount
-    });
-  }, []);
+    };
+
+    // Scroll may emit dozens of events while the same cards remain visible;
+    // avoid committing identical React state and repainting product cards.
+    setState((current) =>
+      current.canScrollNext === nextState.canScrollNext &&
+      current.canScrollPrevious === nextState.canScrollPrevious &&
+      current.firstVisible === nextState.firstVisible &&
+      current.visibleCount === nextState.visibleCount
+        ? current
+        : nextState
+    );
+  }, [items.length]);
 
   const scheduleSync = useCallback(() => {
-    if (animationFrameRef.current !== null) {
-      window.cancelAnimationFrame(animationFrameRef.current);
-    }
+    // One pending RAF is enough; repeatedly cancelling it can delay updates.
+    if (animationFrameRef.current !== null) return;
 
     animationFrameRef.current = window.requestAnimationFrame(() => {
       animationFrameRef.current = null;
@@ -72,9 +99,15 @@ export function HomeProductRail({ children, label }: { children: ReactNode; labe
     const viewport = viewportRef.current;
     if (!viewport) return;
 
-    const resizeObserver = new ResizeObserver(scheduleSync);
+    const resizeObserver = new ResizeObserver(() => {
+      measureRailLayout();
+      scheduleSync();
+    });
     resizeObserver.observe(viewport);
+    const firstItem = viewport.querySelector<HTMLElement>("[data-home-product-rail-item]");
+    if (firstItem) resizeObserver.observe(firstItem);
     viewport.addEventListener("scroll", scheduleSync, { passive: true });
+    measureRailLayout();
     scheduleSync();
 
     return () => {
@@ -85,23 +118,13 @@ export function HomeProductRail({ children, label }: { children: ReactNode; labe
         animationFrameRef.current = null;
       }
     };
-  }, [items.length, scheduleSync]);
+  }, [items.length, measureRailLayout, scheduleSync]);
 
   function scroll(direction: -1 | 1) {
     const viewport = viewportRef.current;
-    if (!viewport) return;
+    if (!viewport || !items.length) return;
 
-    const railItems = Array.from(
-      viewport.querySelectorAll<HTMLElement>("[data-home-product-rail-item]")
-    );
-    const firstItem = railItems[0];
-    if (!firstItem) return;
-
-    const secondItem = railItems[1];
-    const itemStep = secondItem
-      ? Math.max(1, secondItem.offsetLeft - firstItem.offsetLeft)
-      : Math.max(1, firstItem.offsetWidth);
-    const visibleCount = Math.max(1, Math.round(viewport.clientWidth / itemStep));
+    const { itemStep, visibleCount } = railLayoutRef.current;
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     viewport.scrollBy({

@@ -149,6 +149,14 @@
   box-shadow:
     0 8px 20px rgb(4 10 26 / 25%),
     inset 0 1px 0 rgb(205 215 255 / 8%);
+  /* Opaque controls do not need GPU-expensive backdrop sampling. */
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* Product favorite controls are also opaque in dark mode. */
+:root.dark .customer-app .home-product-rail .customer-product-card__favorite {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 :root.dark .customer-app .home-product-rail__control:not(:disabled):hover,
@@ -174,11 +182,11 @@
 }
 
 :root.dark .customer-app .home-product-rail__control:disabled {
-  background: #202b41;
-  border-color: #465674;
-  color: #8292ae;
-  opacity: 1;
-  box-shadow: inset 0 1px 0 rgb(189 206 245 / 4%);
+  background: #1b2538;
+  border-color: #354158;
+  color: #8793a9;
+  opacity: 0.48;
+  box-shadow: none;
   cursor: default;
 }
 
