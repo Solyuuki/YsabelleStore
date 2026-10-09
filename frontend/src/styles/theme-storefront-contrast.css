@@ -1531,3 +1531,114 @@
   font-weight: 700;
   opacity: 1;
 }
+
+
+/* Support uses the same continuous CSS galaxy and proportional vector as
+   the approved Trending -> Everyday Essentials canvas. Do not reuse a capped,
+   repeating bitmap or stretch the starfield over changing FAQ/form height. */
+.customer-app .customer-support-page__artwork {
+  display: none;
+}
+:root.dark .customer-app .customer-support-page {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #101827;
+  background-image:
+    linear-gradient(
+      to bottom,
+      #101827 0,
+      transparent 145px,
+      transparent calc(100% - 220px),
+      #101827 100%
+    ),
+    var(--storefront-galaxy-background) !important;
+  background-size: auto !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+}
+:root.dark .customer-app .customer-support-page__artwork {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+}
+:root.dark .customer-app .customer-support-page__cosmos {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+:root.dark .customer-app .customer-support-page > :not(.customer-support-page__artwork) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Hero: use the approved Shop/storefront orbital artwork, not the old
+   separate indigo-silk banner or oversized legacy white curved outlines.
+   Transparent fading lets the shared galaxy continue underneath. */
+:root.dark .customer-app .customer-support-hero {
+  background: transparent !important;
+  border-bottom-color: transparent;
+}
+:root.dark .customer-app .customer-support-hero::before {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: url("/textures/ys-dark-shop-orbital-hero.svg") center 52% / cover no-repeat;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 100%);
+  transform: none;
+}
+:root.dark .customer-app .customer-support-hero::after {
+  display: none;
+}
+:root.dark .customer-app .customer-support-hero__grid {
+  position: relative;
+  z-index: 1;
+}
+
+/* Text contrast: the original FAQ titles (#30384e) and operations chip
+   (#4e5a75) were dark-on-dark. Keep dark-mode focus/disabled controls legible. */
+:root.dark .customer-app .customer-support-section-heading > span {
+  border: 1px solid #667b9b;
+  background: #293a54;
+  color: #e5edfb;
+}
+:root.dark .customer-app .customer-support-section-heading > span svg {
+  color: #adbbf3;
+}
+:root.dark .customer-app .customer-support-faq summary {
+  color: #e3eaf9;
+}
+:root.dark .customer-app .customer-support-faq summary::after {
+  color: #c6b5ff;
+}
+:root.dark .customer-app .customer-support-faq details p {
+  color: #c5d2e6;
+}
+:root.dark .customer-app .customer-support-faq summary:focus-visible {
+  outline: 2px solid #b8a9fa;
+  outline-offset: 3px;
+  border-radius: 0.85rem;
+}
+:root.dark .customer-app .customer-support-reference span {
+  color: #b8c6dd;
+}

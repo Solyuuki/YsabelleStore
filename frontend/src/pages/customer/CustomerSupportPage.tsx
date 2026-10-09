@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 
+import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { submitCustomerSupportTicket } from "@/services/customerSupportService";
 import type {
@@ -140,6 +141,9 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
 
   return (
     <section className="customer-support-page">
+      <div aria-hidden="true" className="customer-support-page__artwork">
+        <StorefrontGalaxyArtwork className="customer-support-page__cosmos" />
+      </div>
       <div className="customer-support-hero">
         <div className="customer-container customer-support-hero__grid">
           <div>
