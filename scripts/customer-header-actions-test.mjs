@@ -58,4 +58,40 @@ assert.match(
   "Header action polish must preserve a deliberate mobile collapse rule."
 );
 
+/* Every storefront route shares CustomerHeader, including Sign In/Register.
+   Its three navigation links need underline-only hover/active states in dark mode. */
+const themeCss = fs.readFileSync(
+  new URL("../frontend/src/styles/theme-storefront.css", import.meta.url),
+  "utf8"
+);
+const baseCss = fs.readFileSync(
+  new URL("../frontend/src/styles/customer.css", import.meta.url),
+  "utf8"
+);
+assert.match(
+  baseCss,
+  /\.customer-nav a:hover::after,[\s\S]*?\.customer-nav a\[aria-current="page"\]::after\s*\{\s*transform:\s*scaleX\(1\)/,
+  "Home / Shop / About must retain their hover and active underlines."
+);
+assert.match(
+  themeCss,
+  /:root\.dark \.customer-app \.customer-nav a:is\(:hover, :focus-visible, \[aria-current="page"\]\)\s*\{\s*background:\s*transparent;/,
+  "Dark nav links must not show a rectangular hover or active fill."
+);
+assert.match(
+  themeCss,
+  /:root\[data-about-chrome-theme="dark"\] \.customer-app \.customer-header \.customer-nav a:is\([\s\S]*?\)\s*\{\s*background:\s*transparent;/,
+  "About chrome theme must use the same clean dark nav hover treatment."
+);
+assert.doesNotMatch(
+  themeCss,
+  /\.customer-account-link:hover,\s*:root\.dark \.customer-app \.customer-nav a:hover\s*\{\s*background:\s*#303957/,
+  "Old header nav box rule must not be restored."
+);
+assert.match(
+  themeCss,
+  /:root\.dark \.customer-app \.customer-cart-link:hover,\s*:root\.dark \.customer-app \.customer-account-link:hover\s*\{\s*background:\s*#303957/,
+  "Cart and account hover surfaces must remain unchanged."
+);
+
 console.log("Customer header action hierarchy contract passed.");

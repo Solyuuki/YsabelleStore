@@ -114,10 +114,17 @@
 :root.dark .customer-app .customer-global-search__product-copy span {
   color: #bac7dd;
 }
+/* Cart/account buttons retain their dark hover surfaces. Header links
+   (Home / Shop / About) use the underline only, never a rectangular fill. */
 :root.dark .customer-app .customer-cart-link:hover,
-:root.dark .customer-app .customer-account-link:hover,
-:root.dark .customer-app .customer-nav a:hover {
+:root.dark .customer-app .customer-account-link:hover {
   background: #303957;
+  color: #fff;
+}
+:root.dark .customer-app .customer-nav a:is(:hover, :focus-visible, [aria-current="page"]) {
+  background: transparent;
+}
+:root.dark .customer-app .customer-nav a:is(:hover, :focus-visible) {
   color: #fff;
 }
 
@@ -1088,10 +1095,24 @@
 }
 :root[data-about-chrome-theme="dark"] .customer-app .customer-header :is(
   .customer-cart-link:hover,
-  .customer-account-link:hover,
-  .customer-nav a:hover
+  .customer-account-link:hover
 ) {
   background: #303957;
+  color: #fff;
+}
+/* The About chrome theme may force dark header styling in light appearance.
+   Keep navigation link hover/active styles consistent on every route. */
+:root[data-about-chrome-theme="dark"] .customer-app .customer-header .customer-nav a:is(
+  :hover,
+  :focus-visible,
+  [aria-current="page"]
+) {
+  background: transparent;
+}
+:root[data-about-chrome-theme="dark"] .customer-app .customer-header .customer-nav a:is(
+  :hover,
+  :focus-visible
+) {
   color: #fff;
 }
 :root[data-about-chrome-theme="dark"] .customer-app .customer-theme-toggle {
