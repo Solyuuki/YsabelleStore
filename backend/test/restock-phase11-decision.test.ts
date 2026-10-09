@@ -351,7 +351,11 @@ test("independent POS coverage blocks inflated and low-evidence automated purcha
 
   const inflated = assessProcurementSafety({ ...baseline, requestedQuantity: 202_270 });
   assert.equal(inflated.safe, false);
-  if (!inflated.safe) assert.equal(inflated.reason, "COVERAGE_LIMIT_EXCEEDED");
+  if (!inflated.safe) assert.equal(inflated.reason, "ABSOLUTE_UNIT_LIMIT_EXCEEDED");
+
+  const excessCoverage = assessProcurementSafety({ ...baseline, requestedQuantity: 100 });
+  assert.equal(excessCoverage.safe, false);
+  if (!excessCoverage.safe) assert.equal(excessCoverage.reason, "COVERAGE_LIMIT_EXCEEDED");
 
   const noEvidence = assessProcurementSafety({
     ...baseline,
