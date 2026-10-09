@@ -18,6 +18,7 @@ import {
   type LucideIcon
 } from "lucide-react";
 
+import { CategoryRetailBackdrop } from "@/components/customer/CategoryRetailBackdrop";
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import {
   PRIVACY_DATA_GROUPS,
@@ -43,6 +44,7 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
   return (
     <section className="customer-privacy-page">
       <div className="customer-privacy-hero">
+        <CategoryRetailBackdrop />
         <div className="customer-container customer-privacy-hero__grid">
           <div>
             <div className="customer-privacy-hero__law">
