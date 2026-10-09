@@ -438,6 +438,10 @@ export async function assertAutomatedRestockQuantitySafe(
   const costsPHP: number[] = [];
 
   for (const line of selectedLines) {
+    const remainingQuantity = line.requestedQuantity - line.receivedQuantity;
+    // Previously accepted units are already represented in sellable stock.
+    // Check only outstanding units for a subsequent partial receipt.
+    if (stage === "RECEIPT" && remainingQuantity === 0) continue;
     const candidate = currentByProduct.get(line.productId);
     if (!candidate) {
       throw new HttpError(422, "This product has no eligible current restock planning data.", {
@@ -468,7 +472,7 @@ export async function assertAutomatedRestockQuantitySafe(
     }
 
     const verdict = assessProcurementSafety({
-      requestedQuantity: line.requestedQuantity,
+      requestedQuantity: stage === "RECEIPT" ? remainingQuantity : line.requestedQuantity,
       monthlyPosDemand: candidate.stockHealth.monthlyDemand,
       posConfidence: candidate.stockHealth.confidence,
       sellableStock: candidate.sellableStock,
