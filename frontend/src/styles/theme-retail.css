@@ -1597,3 +1597,78 @@
   outline: 2px solid #b1a4ff;
   outline-offset: 2px;
 }
+
+/* Staff Support inbox: dark-mode-only conversation surfaces (Sprint 11).
+   Light-theme translucent utility backgrounds were not normalized by the
+   shared appearance layer, leaving near-white messages with light text. */
+:root.dark .app-shell-ambient .ys-support-inbox {
+  background-color: #1d2b42 !important;
+  border-color: #52617f !important;
+  color: #eaf0ff;
+  color-scheme: dark;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-ticket {
+  border-color: #465773;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-ticket[data-active="true"] {
+  background-color: #354665 !important;
+  box-shadow: inset 3px 0 0 #b6a8ff;
+  color: #f3f6ff !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-ticket:not([data-active="true"]):hover,
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-ticket:not([data-active="true"]):focus-visible {
+  background-color: #2b3b57 !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-ticket:focus-visible {
+  outline: 2px solid #b6a8ff;
+  outline-offset: -3px;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-thread {
+  background-color: #162339 !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-automated-email {
+  background-color: #293854 !important;
+  border-color: #687ba4 !important;
+  color: #eef3ff !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-automated-email [class~="text-indigo-700"] {
+  color: #d2c6ff !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-automated-email button {
+  border-color: #a79cdb;
+  color: #eee9ff;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-automated-email button:hover:not(:disabled) {
+  background-color: #3b4b6c !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-customer-message {
+  background-color: #22334c !important;
+  border-color: #4e6180 !important;
+  color: #ecf1ff !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-system-event {
+  background-color: #2a3b56 !important;
+  border-color: #5b6c8a !important;
+  color: #d7e2f5 !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-fact {
+  background-color: #24344e !important;
+  border-color: #4c5e7c !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-fact svg {
+  color: #bcc9e6;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-reply-form {
+  background-color: #1d2b42 !important;
+  border-color: #4c5d7b !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-reply-trigger {
+  background-color: #23344e !important;
+  border-color: #4e607f !important;
+  color: #eaf0ff !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-reply-trigger:hover:not(:disabled),
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-reply-trigger:focus-visible {
+  background-color: #2e4060 !important;
+  border-color: #9387d5 !important;
+}
