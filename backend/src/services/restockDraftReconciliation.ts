@@ -49,14 +49,15 @@ export function reconcileDraftRestockLine(
 /**
  * A suspicious automated purchase order must not become an approved incoming
  * shipment just because a broken draft accumulated repeated recommendations.
- * Deliberate Owner changes require the existing explicit override reason.
+ * Owner override reasons are audit evidence, NEVER an exception to hard limits.
  */
 export function requiresAutomatedQuantityReview(
   requestedQuantity: number,
   latestRecommendedQuantity: number,
   ownerOverrideReason: string | null
 ) {
-  if (ownerOverrideReason?.trim()) return false;
+  // Reasons document intent; they never disable anomaly checks.
+  void ownerOverrideReason;
 
   const baseline = Math.max(0, Math.ceil(latestRecommendedQuantity));
   const reviewThreshold = Math.max(baseline + 10, Math.ceil(baseline * 1.5));
