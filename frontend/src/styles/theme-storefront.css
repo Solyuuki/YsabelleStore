@@ -412,8 +412,11 @@
   color: #b9c6da;
 }
 
-/* Match the handoff and embedded merchandising SVG to the same dark palette.
-   These variables also drive the Trending, Best Seller and Essentials canvas. */
+/* Dark merchandising: one seamless native gradient plus bounded 1600:900 vector details. 
+   Preserve the original height-filling merchandising SVG exclusively for light mode. */
+.customer-app .home-merchandising-canvas__dark-art {
+  display: none;
+}
 :root.dark .customer-app .home-category-merch-handoff {
   background: linear-gradient(180deg, rgb(23 36 60 / 0%), rgb(23 36 60 / 76%) 60%, #17243c 100%);
 }
@@ -422,30 +425,44 @@
 }
 :root.dark .customer-app .home-merchandising-canvas {
   --merch-bg-top: #17243c;
-  --merch-bg-mid: #15223a;
-  --merch-bg-bottom: #201b37;
-  --merch-wave-blue: #467db9;
-  --merch-wave-indigo: #7773c1;
-  --merch-wave-violet: #9476c5;
-  --merch-wave-white: #283b62;
+  --merch-bg-mid: #192541;
+  --merch-bg-bottom: #201e3b;
   background:
-    url("/textures/ys-dark-midnight-velvet.svg") center / cover no-repeat,
-    #17243a;
+    radial-gradient(ellipse 52% 22% at 0% 14%, rgb(54 109 184 / 18%), transparent 86%),
+    radial-gradient(ellipse 52% 24% at 99% 64%, rgb(120 71 178 / 17%), transparent 88%),
+    linear-gradient(180deg, #17243c 0%, #17243c 9%, #192641 38%, #201e3e 72%, #17243c 100%);
   box-shadow: inset 0 1px 0 rgb(142 156 220 / 9%);
 }
-:root.dark .customer-app .home-merchandising-canvas__waves--top,
-:root.dark .customer-app .home-merchandising-canvas__waves--bottom {
-  opacity: 0.45;
+:root.dark .customer-app .home-merchandising-canvas__scene {
+  display: none;
 }
-:root.dark .customer-app .home-merchandising-canvas__mid-glow {
-  opacity: 0.36;
+:root.dark .customer-app .home-merchandising-canvas__dark-art {
+  position: absolute;
+  left: 50%;
+  display: block;
+  width: max(100%, 1200px);
+  height: auto;
+  max-width: none;
+  aspect-ratio: 1600 / 900;
+  overflow: visible;
+  pointer-events: none;
 }
-:root.dark .customer-app .home-merchandising-canvas__highlight {
-  stroke: rgb(169 173 236 / 27%);
+:root.dark .customer-app .home-merchandising-canvas__dark-art--top {
+  top: 0;
+  transform: translateX(-50%);
 }
-:root.dark .customer-app .home-merchandising-canvas__sparkles {
-  fill: #a2aeeb;
-  opacity: 0.22;
+:root.dark .customer-app .home-merchandising-canvas__dark-art--middle {
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+:root.dark .customer-app .home-merchandising-canvas__dark-art--bottom {
+  bottom: 0;
+  transform: translateX(-50%);
+}
+@media (max-width: 700px) {
+  :root.dark .customer-app .home-merchandising-canvas__dark-art {
+    width: max(100%, 880px);
+  }
 }
 
 /* Support, privacy and shopping-guide reading surfaces. */

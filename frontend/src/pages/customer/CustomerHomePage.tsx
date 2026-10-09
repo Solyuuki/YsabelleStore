@@ -339,6 +339,80 @@ function MerchandisingBackdrop() {
           <circle cx="1434" cy="2260" r="10" />
         </g>
       </svg>
+      {/* Decorative SVGs are separate, proportional dark-mode layers rather than one stretched page-sized drawing. */}
+      <svg className="home-merchandising-canvas__dark-art home-merchandising-canvas__dark-art--top"
+        focusable="false" preserveAspectRatio="xMidYMin meet" viewBox="0 0 1600 900">
+        <defs>
+          <linearGradient id="merchPremiumOrbital" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stopColor="#72A9F4" stopOpacity="0.65" />
+            <stop offset="100%" stopColor="#7474D7" stopOpacity="0.2" />
+          </linearGradient>
+        </defs>
+        <g fill="none" strokeLinecap="round">
+          <path d="M-90 382C170 330 338 152 405 -90" stroke="url(#merchPremiumOrbital)" strokeWidth="1.7" />
+          <path d="M-96 418C205 349 371 151 440 -90" stroke="#6594E7" strokeOpacity="0.16" />
+          <path d="M1680 302C1491 347 1415 481 1374 714" stroke="#B081F1" strokeOpacity="0.27" strokeWidth="1.4" />
+        </g>
+        <g fill="#7DA7F5">
+          <circle cx="280" cy="179" r="6" opacity="0.55" />
+          <circle cx="191" cy="345" r="4" opacity="0.32" />
+          <circle cx="117" cy="285" r="4" opacity="0.47" />
+        </g>
+        <g fill="#B788EE">
+          <circle cx="1493" cy="366" r="6" opacity="0.43" />
+          <circle cx="1377" cy="430" r="4" opacity="0.2" />
+        </g>
+      </svg>
+      <svg className="home-merchandising-canvas__dark-art home-merchandising-canvas__dark-art--middle"
+        focusable="false" preserveAspectRatio="xMidYMin meet" viewBox="0 0 1600 900">
+        <defs>
+          <linearGradient id="merchPremiumBlueRibbon" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="#397CCF" stopOpacity="0.24" />
+            <stop offset="52%" stopColor="#4C6CD0" stopOpacity="0.09" />
+            <stop offset="100%" stopColor="#A05CDD" stopOpacity="0.07" />
+          </linearGradient>
+          <linearGradient id="merchPremiumVioletRibbon" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="#2D5AA8" stopOpacity="0.08" />
+            <stop offset="65%" stopColor="#645AC0" stopOpacity="0.14" />
+            <stop offset="100%" stopColor="#A760DF" stopOpacity="0.28" />
+          </linearGradient>
+          <linearGradient id="merchPremiumWaveLine" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="#6B9EED" stopOpacity="0.5" />
+            <stop offset="58%" stopColor="#8179DF" stopOpacity="0.31" />
+            <stop offset="100%" stopColor="#BF7BEC" stopOpacity="0.52" />
+          </linearGradient>
+        </defs>
+        <path d="M-80 363C191 308 407 442 614 538C884 662 1043 598 1262 478C1433 385 1551 376 1680 397V720C1376 615 1213 719 977 751C729 784 543 618 343 625C155 632 32 690 -80 737Z"
+          fill="url(#merchPremiumBlueRibbon)" />
+        <path d="M-80 493C194 414 412 533 672 622C911 705 1079 663 1282 566C1477 473 1554 466 1680 478V800C1398 699 1225 815 983 810C716 801 550 717 357 704C173 692 39 763 -80 825Z"
+          fill="url(#merchPremiumVioletRibbon)" />
+        <path d="M-80 447C195 413 409 528 635 635C870 744 1052 697 1262 599C1446 515 1563 491 1680 512"
+          fill="none" stroke="url(#merchPremiumWaveLine)" strokeWidth="1.7" strokeLinecap="round" />
+        <path d="M-80 506C203 472 422 579 650 662C887 753 1070 735 1295 653C1450 591 1562 569 1680 584"
+          fill="none" stroke="#8C87E8" strokeOpacity="0.15" strokeWidth="1" />
+        <g fill="#A783EC"><circle cx="153" cy="363" r="4.5" opacity="0.34" /><circle cx="1440" cy="532" r="6" opacity="0.37" /></g>
+      </svg>
+      <svg className="home-merchandising-canvas__dark-art home-merchandising-canvas__dark-art--bottom"
+        focusable="false" preserveAspectRatio="xMidYMin meet" viewBox="0 0 1600 900">
+        <defs>
+          <linearGradient id="merchPremiumLastRibbon" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="#3975CA" stopOpacity="0.16" />
+            <stop offset="56%" stopColor="#635ABA" stopOpacity="0.1" />
+            <stop offset="100%" stopColor="#A368DD" stopOpacity="0.25" />
+          </linearGradient>
+          <linearGradient id="merchPremiumLastLine" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="#74A1E9" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="#BD7AEE" stopOpacity="0.56" />
+          </linearGradient>
+        </defs>
+        <path d="M-80 512C195 555 410 715 665 710C943 706 1259 509 1690 401V793C1422 715 1119 868 782 867C484 864 225 739 -80 733Z"
+          fill="url(#merchPremiumLastRibbon)" />
+        <path d="M-80 569C215 634 418 770 701 755C990 742 1279 568 1690 461"
+          fill="none" stroke="url(#merchPremiumLastLine)" strokeWidth="1.6" />
+        <path d="M-80 668C220 731 463 829 749 818C1053 804 1312 659 1690 548"
+          fill="none" stroke="#8987D7" strokeOpacity="0.15" strokeWidth="1" />
+        <g fill="#B789ED"><circle cx="1283" cy="647" r="6" opacity="0.42" /><circle cx="1463" cy="523" r="4" opacity="0.27" /></g>
+      </svg>
     </div>
   );
 }
