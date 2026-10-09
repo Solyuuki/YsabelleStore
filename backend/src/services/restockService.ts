@@ -382,9 +382,10 @@ export async function replaceRestockOrderLines(
 export async function assertAutomatedRestockQuantitySafe(
   orderId: string,
   expectedVersion: number,
-  stage: "APPROVAL" | "RECEIPT" = "APPROVAL"
+  stage: "APPROVAL" | "RECEIPT" = "APPROVAL",
+  db: Prisma.TransactionClient = prisma
 ) {
-  const snapshot = await prisma.restockOrder.findUnique({
+  const snapshot = await db.restockOrder.findUnique({
     select: {
       lines: {
         select: {
@@ -430,7 +431,8 @@ export async function assertAutomatedRestockQuantitySafe(
   const result = await listRestockPlanningCandidates(
     { includeZero: true, page: 1, pageSize: selectedLines.length },
     selectedLines.map((line) => line.productId),
-    orderId
+    orderId,
+    db
   );
   const currentByProduct = new Map(
     result.items.map((candidate) => [candidate.product.id, candidate])
@@ -510,14 +512,13 @@ export async function approveRestockOrder(
   input: ApproveRestockOrderRequest,
   approvedById: string
 ) {
-  await assertAutomatedRestockQuantitySafe(orderId, input.expectedVersion);
-
   await prisma.$transaction(async (tx) => {
     const existing = await tx.restockOrder.findUnique({
       include: {
         lines: {
           select: {
             isSelected: true,
+            productId: true,
             recommendationId: true,
             requestedQuantity: true
           }
@@ -544,6 +545,13 @@ export async function approveRestockOrder(
         code: "RESTOCK_APPROVAL_INVALID_QUANTITY"
       });
     }
+
+    // Lock inventory product identities in deterministic order: competing
+    // approvals for the same product cannot both approve stale incoming stock.
+    for (const productId of [...new Set(selectedLines.map((line) => line.productId))].sort()) {
+      await tx.$queryRaw`SELECT id FROM products WHERE id = ${productId} FOR UPDATE`;
+    }
+    await assertAutomatedRestockQuantitySafe(orderId, input.expectedVersion, "APPROVAL", tx);
 
     const updated = await tx.restockOrder.updateMany({
       data: {
@@ -577,16 +585,17 @@ export async function approveRestockOrder(
         }
       });
     }
-  });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
 
   return await loadRestockOrder(orderId);
 }
 
 export async function getIncomingRestockStock(
   productIds?: string[],
-  excludeOrderId?: string
+  excludeOrderId?: string,
+  db: Prisma.TransactionClient = prisma
 ) {
-  const lines = await prisma.restockOrderLine.findMany({
+  const lines = await db.restockOrderLine.findMany({
     select: {
       productId: true,
       receivedQuantity: true,
