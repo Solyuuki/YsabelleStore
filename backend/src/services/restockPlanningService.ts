@@ -103,6 +103,13 @@ export async function listRestockPlanningCandidates(
 
   const candidates = products.map((product) => {
     const stockTruth = calculateStockTruth(product.inventoryBatches, now);
+    // Use the highest known unit cost so missing/stale catalog prices
+    // cannot silently understate the estimated purchase commitment.
+    const knownUnitCosts = [
+      product.costPrice?.toNumber(),
+      ...product.inventoryBatches.map((batch) => batch.unitCost?.toNumber())
+    ].filter((price): price is number => price !== undefined && Number.isFinite(price) && price > 0);
+    const conservativeUnitCost = knownUnitCosts.length > 0 ? Math.max(...knownUnitCosts) : null;
     const incomingStock = incomingByProduct.get(product.id) ?? 0;
     const salesSeries = operationalSalesByProduct.get(product.id) ?? [];
     const recommendation = latestRecommendation.get(product.id);
@@ -223,12 +230,7 @@ export async function listRestockPlanningCandidates(
         reorderLevel: product.reorderLevel,
         sku: product.sku,
         targetStockLevel: product.targetStockLevel,
-        unitCost:
-          product.costPrice?.toNumber() ??
-          product.inventoryBatches
-            .map((batch) => batch.unitCost?.toNumber() ?? null)
-            .find((cost) => cost !== null) ??
-          null
+        unitCost: conservativeUnitCost
       },
       quarantinedStock: stockTruth.quarantinedStock,
       rationale,
