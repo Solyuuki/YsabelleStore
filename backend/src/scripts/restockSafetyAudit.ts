@@ -36,8 +36,9 @@ function assertSafeLocalDatabase() {
 function requestedOrderNumber() {
   const args = process.argv.slice(2);
   if (args.length === 0) return "RO-OCT-2026";
-  if (args.length === 2 && args[0] === "--order" && /^RO-[A-Z0-9-]{3,35}$/.test(args[1])) {
-    return args[1];
+  const value = args[1];
+  if (args.length === 2 && args[0] === "--order" && value && /^RO-[A-Z0-9-]{3,35}$/.test(value)) {
+    return value;
   }
   throw new Error("Usage: npx tsx backend/src/scripts/restockSafetyAudit.ts [--order RO-OCT-2026]");
 }
