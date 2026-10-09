@@ -1,3 +1,5 @@
+import type { Prisma } from "@prisma/client";
+
 import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import { buildPaginationMeta } from "../utils/pagination.js";
@@ -31,9 +33,10 @@ function latestByProduct<T extends { productId: string }>(rows: T[]) {
 export async function listRestockPlanningCandidates(
   query: RestockPlanningQuery,
   requestedProductIds?: readonly string[],
-  excludeOrderId?: string
+  excludeOrderId?: string,
+  db: Prisma.TransactionClient = prisma
 ) {
-  const products = await prisma.product.findMany({
+  const products = await db.product.findMany({
     orderBy: [{ name: "asc" }, { id: "asc" }],
     where: {
       dataQualityStatus: { not: "REJECTED" },
@@ -72,13 +75,13 @@ export async function listRestockPlanningCandidates(
   const productIds = products.map((product) => product.id);
   const now = new Date();
   const [incomingByProduct, operationalSalesByProduct, activeForecasts] = await Promise.all([
-    getIncomingRestockStock(productIds, excludeOrderId),
-    loadOperationalPosSales(productIds, now),
-    loadActiveInventoryForecasts(productIds)
+    getIncomingRestockStock(productIds, excludeOrderId, db),
+    loadOperationalPosSales(productIds, now, db),
+    loadActiveInventoryForecasts(productIds, db)
   ]);
 
   const recommendations = productIds.length
-    ? await prisma.recommendationRecord.findMany({
+    ? await db.recommendationRecord.findMany({
         orderBy: [{ generatedAt: "desc" }, { id: "desc" }],
         select: {
           forecastRecordId: true,
