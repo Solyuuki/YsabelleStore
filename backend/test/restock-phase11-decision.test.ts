@@ -414,3 +414,60 @@ test("owner override reasons never disable automated anomaly review", () => {
   assert.equal(requiresAutomatedQuantityReview(17, 17, null), false);
   assert.equal(requiresAutomatedQuantityReview(25, 17, "Owner approved"), false);
 });
+
+test("Owner-signed TARGET_STOCK policy permits only current bounded inventory gaps", () => {
+  const approval = {
+    approvedTargetStockLevel: 30,
+    targetApprovalById: "verified-owner-id",
+    targetApprovedAt: new Date("2026-10-10T00:00:00.000Z")
+  };
+  const input = {
+    recommendationSource: "TARGET_STOCK" as const,
+    monthlyPosDemand: null,
+    posConfidence: "LOW" as const,
+    sellableStock: 20,
+    incomingStock: 0,
+    expiryRiskQuantity: 0,
+    requestedQuantity: 10,
+    targetStockLevel: 30,
+    unitCost: 8,
+    ...approval
+  };
+
+  const safe = assessProcurementSafety(input);
+  assert.equal(safe.safe, true);
+  assert.equal(safe.maxAllowedQuantity, 10);
+  if (safe.safe) assert.equal(safe.lineCostPHP, 80);
+
+  for (const [sellableStock, targetStockLevel, requestedQuantity, unitCost] of [
+    [15, 24, 9, 16.5],
+    [8, 10, 2, 88.5]
+  ]) {
+    const candidate = assessProcurementSafety({
+      ...input,
+      sellableStock,
+      targetStockLevel,
+      approvedTargetStockLevel: targetStockLevel,
+      requestedQuantity,
+      unitCost
+    });
+    assert.equal(candidate.safe, true);
+    assert.equal(candidate.maxAllowedQuantity, requestedQuantity);
+  }
+
+  const unsigned = assessProcurementSafety({ ...input, targetApprovalById: null });
+  assert.equal(unsigned.safe, false);
+  if (!unsigned.safe) assert.equal(unsigned.reason, "TARGET_POLICY_UNVERIFIED");
+
+  const drift = assessProcurementSafety({ ...input, targetStockLevel: 31 });
+  assert.equal(drift.safe, false);
+  if (!drift.safe) assert.equal(drift.reason, "TARGET_POLICY_UNVERIFIED");
+
+  const overTarget = assessProcurementSafety({ ...input, requestedQuantity: 11 });
+  assert.equal(overTarget.safe, false);
+  if (!overTarget.safe) assert.equal(overTarget.reason, "COVERAGE_LIMIT_EXCEEDED");
+
+  const bloated = assessProcurementSafety({ ...input, requestedQuantity: 202_270 });
+  assert.equal(bloated.safe, false);
+  if (!bloated.safe) assert.equal(bloated.reason, "ABSOLUTE_UNIT_LIMIT_EXCEEDED");
+});
