@@ -59,9 +59,10 @@ function checkoutIdempotencyKey(input: PosCheckoutRequest) {
     notes: input.notes ?? ""
   });
   try {
-    const previous = JSON.parse(sessionStorage.getItem(POS_CHECKOUT_RETRY_KEY) || "null") as
-      | { signature?: string; key?: string }
-      | null;
+    const previous = JSON.parse(sessionStorage.getItem(POS_CHECKOUT_RETRY_KEY) || "null") as {
+      signature?: string;
+      key?: string;
+    } | null;
     if (previous?.signature === signature && previous.key) return previous.key;
     const key = crypto.randomUUID();
     sessionStorage.setItem(POS_CHECKOUT_RETRY_KEY, JSON.stringify({ signature, key }));
@@ -75,11 +76,14 @@ export async function checkoutPosSale(
   input: PosCheckoutRequest
 ): Promise<ApiResponse<PosCheckoutResponse, PosErrorPayload>> {
   const key = checkoutIdempotencyKey(input);
-  const response = await apiClient.request<PosCheckoutResponse, PosErrorPayload>("/api/pos/checkout", {
-    headers: { ...getAuthHeaders(), "Idempotency-Key": key },
-    method: "POST",
-    json: input
-  });
+  const response = await apiClient.request<PosCheckoutResponse, PosErrorPayload>(
+    "/api/pos/checkout",
+    {
+      headers: { ...getAuthHeaders(), "Idempotency-Key": key },
+      method: "POST",
+      json: input
+    }
+  );
   if (response.success) {
     try {
       sessionStorage.removeItem(POS_CHECKOUT_RETRY_KEY);

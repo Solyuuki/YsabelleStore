@@ -612,7 +612,9 @@ async function reconcilePaidCheckoutSession(
     }
   });
   if (applied.count !== 1) {
-    console.error(`[paymongo] PAID_AFTER_CANCELLED_ORDER for ${orderNumber}; manual payment/refund review required.`);
+    console.error(
+      `[paymongo] PAID_AFTER_CANCELLED_ORDER for ${orderNumber}; manual payment/refund review required.`
+    );
     throw new HttpError(409, "A payment arrived after the order was cancelled. Contact support.", {
       code: "PAID_AFTER_CANCELLED_ORDER"
     });

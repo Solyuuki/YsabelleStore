@@ -32,10 +32,38 @@ export function CustomerAuthFrame({ children, mode }: CustomerAuthFrameProps) {
             viewBox="0 0 1600 1000"
           >
             <g fill="none" strokeLinecap="round">
-              <circle cx="1560" cy="155" r="365" stroke="#A68CFA" strokeOpacity="0.36" strokeWidth="1.5" />
-              <circle cx="1560" cy="155" r="452" stroke="#9A93EE" strokeOpacity="0.16" strokeWidth="1" />
-              <circle cx="76" cy="1065" r="322" stroke="#99A7EC" strokeOpacity="0.15" strokeWidth="1" />
-              <circle cx="76" cy="1065" r="405" stroke="#9D85DF" strokeOpacity="0.07" strokeWidth="0.9" />
+              <circle
+                cx="1560"
+                cy="155"
+                r="365"
+                stroke="#A68CFA"
+                strokeOpacity="0.36"
+                strokeWidth="1.5"
+              />
+              <circle
+                cx="1560"
+                cy="155"
+                r="452"
+                stroke="#9A93EE"
+                strokeOpacity="0.16"
+                strokeWidth="1"
+              />
+              <circle
+                cx="76"
+                cy="1065"
+                r="322"
+                stroke="#99A7EC"
+                strokeOpacity="0.15"
+                strokeWidth="1"
+              />
+              <circle
+                cx="76"
+                cy="1065"
+                r="405"
+                stroke="#9D85DF"
+                strokeOpacity="0.07"
+                strokeWidth="0.9"
+              />
             </g>
             <g fill="#B7A2FC">
               <circle cx="1302" cy="32" r="5.5" opacity="0.68" />

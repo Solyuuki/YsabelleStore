@@ -152,10 +152,7 @@ test("forecast detail chart has an unobstructed dark grid surface", () => {
     retail,
     /:root\.dark \.app-shell-ambient \.ys-forecast-chart \{\s*background-color: #1c2b43;\s*background-image: none;/
   );
-  assert.match(
-    retail,
-    /\.ys-forecast-chart \.recharts-cartesian-grid line \{\s*stroke: #526580;/
-  );
+  assert.match(retail, /\.ys-forecast-chart \.recharts-cartesian-grid line \{\s*stroke: #526580;/);
   assert.ok(
     contrastRatio("#526580", "#1c2b43") >= 2.2,
     "Forecast grid should remain visible without competing with the plotted series"
@@ -176,13 +173,13 @@ test("forecast selected rows, monthly preview and user management hovers stay re
   assert.match(users, /data-active=\{activeTab === "store"\}/);
 
   for (const selector of [
-    ".ys-restock-product-row[data-selected=\"true\"]",
-    ".ys-restock-product-row[data-selected=\"true\"]:hover",
+    '.ys-restock-product-row[data-selected="true"]',
+    '.ys-restock-product-row[data-selected="true"]:hover',
     ".ys-restock-month-preview",
     ".ys-restock-month-preview-title",
     ".ys-restock-month-preview-note",
     ".ys-user-management-tabs .ys-user-management-tab:hover",
-    ".ys-user-management-tabs .ys-user-management-tab[data-active=\"true\"]"
+    '.ys-user-management-tabs .ys-user-management-tab[data-active="true"]'
   ]) {
     assert.ok(retail.includes(selector), `Missing scoped dark contrast styling: ${selector}`);
   }

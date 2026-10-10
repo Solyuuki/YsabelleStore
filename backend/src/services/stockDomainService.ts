@@ -11,7 +11,11 @@ import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import { serializeInventory, type InventorySummaryRow } from "./catalogSerializers.js";
 import { calculateStockTruth, getDaysUntilExpiry, isBatchSellable } from "./stockTruth.js";
-import { activeReservationsByProduct, availableToPromise, lockProductStock } from "./stockReservationService.js";
+import {
+  activeReservationsByProduct,
+  availableToPromise,
+  lockProductStock
+} from "./stockReservationService.js";
 
 type TransactionClient = Prisma.TransactionClient | PrismaClient;
 
@@ -587,10 +591,7 @@ export async function allocateStockForSale(
     [input.productId],
     input.reservationOrderId
   );
-  const available = availableToPromise(
-    sellableStock,
-    reservations.get(input.productId) ?? 0
-  );
+  const available = availableToPromise(sellableStock, reservations.get(input.productId) ?? 0);
 
   if (input.quantity > available) {
     throw new HttpError(409, "Insufficient sellable stock for checkout.", {

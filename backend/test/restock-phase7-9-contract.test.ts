@@ -201,7 +201,6 @@ test("Return report details are validated and return history has a server-side f
   assert.match(restockServiceSource, /damage_reason=/);
 });
 
-
 test("receipt quarantines inflated monthly restock before any physical stock mutation", () => {
   assert.match(
     lifecycleSource,
@@ -218,7 +217,10 @@ test("receipt quarantines inflated monthly restock before any physical stock mut
 test("over-delivery confirmation cannot bypass approved receiving quantity", () => {
   assert.match(lifecycleSource, /if \(receiptLine\.acceptedQuantity > remaining\)/);
   assert.match(lifecycleSource, /RESTOCK_OVER_DELIVERY_NOT_AUTHORIZED/);
-  assert.doesNotMatch(lifecycleSource, /acceptedQuantity > remaining && !receiptLine\.confirmOverDelivery/);
+  assert.doesNotMatch(
+    lifecycleSource,
+    /acceptedQuantity > remaining && !receiptLine\.confirmOverDelivery/
+  );
 });
 
 test("receiving safety guard runs inside a product-locked read-committed transaction", () => {

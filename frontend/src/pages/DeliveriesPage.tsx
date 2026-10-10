@@ -537,25 +537,37 @@ export function DeliveriesPage() {
 
               <section className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-600 dark:bg-slate-800/70">
                 <div className="mb-2 flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-100">
-                  <MapPin className="h-4 w-4 text-indigo-600 dark:text-indigo-300" aria-hidden="true" />
+                  <MapPin
+                    className="h-4 w-4 text-indigo-600 dark:text-indigo-300"
+                    aria-hidden="true"
+                  />
                   Delivery address
                 </div>
-                <p className="text-sm leading-6 text-slate-600 dark:text-slate-200">{addressText(selected)}</p>
+                <p className="text-sm leading-6 text-slate-600 dark:text-slate-200">
+                  {addressText(selected)}
+                </p>
               </section>
 
               {selected.notes ? (
                 <section className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 dark:border-amber-500/40 dark:bg-amber-950/30">
                   <div className="mb-2 flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-100">
-                    <MessageSquareText className="h-4 w-4 text-amber-600 dark:text-amber-300" aria-hidden="true" />
+                    <MessageSquareText
+                      className="h-4 w-4 text-amber-600 dark:text-amber-300"
+                      aria-hidden="true"
+                    />
                     Customer delivery note
                   </div>
-                  <p className="text-sm leading-6 text-slate-700 dark:text-slate-200">{selected.notes}</p>
+                  <p className="text-sm leading-6 text-slate-700 dark:text-slate-200">
+                    {selected.notes}
+                  </p>
                 </section>
               ) : null}
 
               <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-600 dark:bg-slate-800/60">
                 <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-slate-950 dark:text-slate-100">Delivery progress</h3>
+                  <h3 className="text-sm font-semibold text-slate-950 dark:text-slate-100">
+                    Delivery progress
+                  </h3>
                   <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-300">
                     Track the primary delivery handoff stages and their recorded timestamps.
                   </p>
@@ -567,7 +579,9 @@ export function DeliveriesPage() {
                       aria-hidden="true"
                     />
                     <div>
-                      <strong className="text-sm text-amber-950 dark:text-amber-100">Awaiting PayMongo payment</strong>
+                      <strong className="text-sm text-amber-950 dark:text-amber-100">
+                        Awaiting PayMongo payment
+                      </strong>
                       <p className="mt-1 text-xs leading-5 text-amber-800 dark:text-amber-200">
                         Delivery processing is locked until PayMongo confirms this order as paid.
                       </p>
@@ -579,7 +593,9 @@ export function DeliveriesPage() {
               </section>
 
               <section>
-                <h3 className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">Order items</h3>
+                <h3 className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  Order items
+                </h3>
                 <ScrollArea
                   className="rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-800/40"
                   style={{ height: Math.min(300, Math.max(92, selected.items.length * 46)) }}
@@ -606,7 +622,9 @@ export function DeliveriesPage() {
               {!["DELIVERED", "CANCELLED"].includes(selected.deliveryStatus) ? (
                 <section className="grid gap-4 rounded-xl border border-indigo-200 bg-indigo-50/40 p-4 dark:border-indigo-400/30 dark:bg-indigo-950/30">
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-950 dark:text-slate-100">Delivery operations</h3>
+                    <h3 className="text-sm font-semibold text-slate-950 dark:text-slate-100">
+                      Delivery operations
+                    </h3>
                     <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-300">
                       Courier booking stays manual. Record enough information for an auditable
                       handoff.
@@ -796,7 +814,9 @@ function StaffDeliveryProgress({ ticket }: { ticket: DeliveryTicket }) {
                 ) : null}
               </div>
               <div className="mt-2 pr-3">
-                <strong className="block text-xs font-semibold text-slate-900 dark:text-slate-100">{step.label}</strong>
+                <strong className="block text-xs font-semibold text-slate-900 dark:text-slate-100">
+                  {step.label}
+                </strong>
                 <span className="mt-1 block text-[11px] leading-4 text-slate-500 dark:text-slate-300">
                   {event ? dateTimeFormatter.format(new Date(event.createdAt)) : "Pending"}
                 </span>

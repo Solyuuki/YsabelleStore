@@ -7,7 +7,10 @@ import {
   requiresAutomatedQuantityReview
 } from "../src/services/restockDraftReconciliation.js";
 import { classifyStockHealth } from "../src/services/stockHealthService.js";
-import { assessProcurementSafety, exceedsRestockOrderBudget } from "../src/services/restockProcurementSafety.js";
+import {
+  assessProcurementSafety,
+  exceedsRestockOrderBudget
+} from "../src/services/restockProcurementSafety.js";
 
 const NOW = new Date("2026-09-13T00:00:00.000Z");
 const STOCK_HEALTH_NOW = new Date("2026-09-14T12:00:00.000Z");
@@ -220,7 +223,6 @@ test("automatic stock health marks positive stock with zero recent actual demand
   assert.equal(health.demandSource, "RECENT_SALES");
 });
 
-
 test("monthly automated draft is idempotent across 10,000 identical worker runs", () => {
   const action = {
     quantity: 17,
@@ -302,10 +304,7 @@ test("owner quantity overrides, deselections and manual lines survive worker rec
     requestedQuantity: 50
   });
   assert.equal(
-    reconcileDraftRestockLine(
-      { ...baseline, recommendationSource: "MANUAL" },
-      action
-    ),
+    reconcileDraftRestockLine({ ...baseline, recommendationSource: "MANUAL" }, action),
     null
   );
   assert.equal(

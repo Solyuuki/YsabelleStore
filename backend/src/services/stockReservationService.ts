@@ -46,8 +46,12 @@ export async function activeReservationsByProduct(
 }
 
 export function availableToPromise(sellable: number, reserved: number) {
-  if (!Number.isSafeInteger(sellable) || !Number.isSafeInteger(reserved) ||
-      sellable < 0 || reserved < 0) {
+  if (
+    !Number.isSafeInteger(sellable) ||
+    !Number.isSafeInteger(reserved) ||
+    sellable < 0 ||
+    reserved < 0
+  ) {
     throw new HttpError(409, "Stock position requires reconciliation.", {
       code: "STOCK_POSITION_INVALID"
     });
@@ -136,8 +140,10 @@ export async function verifyFulfillmentReservation(
     select: { productId: true, quantity: true }
   });
   const byProduct = new Map(reservations.map((item) => [item.productId, item.quantity]));
-  if (reservations.length !== order.items.length ||
-      order.items.some((line) => byProduct.get(line.productId) !== line.quantity)) {
+  if (
+    reservations.length !== order.items.length ||
+    order.items.some((line) => byProduct.get(line.productId) !== line.quantity)
+  ) {
     throw new HttpError(409, "Order stock reservation needs Owner review.", {
       code: "ORDER_RESERVATION_UNAVAILABLE"
     });

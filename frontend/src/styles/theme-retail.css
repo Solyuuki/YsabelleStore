@@ -78,7 +78,13 @@
    Available to both the customer storefront and the retail workstation in dark mode. */
 :root.dark {
   --storefront-galaxy-background:
-    linear-gradient(180deg, #17243c 0%, rgb(23 36 60 / 0%) 9%, rgb(23 36 60 / 0%) 87%, #17243c 100%),
+    linear-gradient(
+      180deg,
+      #17243c 0%,
+      rgb(23 36 60 / 0%) 9%,
+      rgb(23 36 60 / 0%) 87%,
+      #17243c 100%
+    ),
     radial-gradient(ellipse 50% 30% at 13% 13%, rgb(90 64 159 / 29%), transparent 87%),
     radial-gradient(ellipse 52% 38% at 17% 82%, rgb(105 57 166 / 32%), transparent 90%),
     radial-gradient(ellipse 34% 26% at 88% 79%, rgb(46 89 158 / 15%), transparent 92%),
@@ -432,7 +438,6 @@
   background-repeat: no-repeat !important;
 }
 
-
 /* Sprint 11 dark-mode surface convergence: 2026-10-09 */
 :root.dark .app-shell-ambient {
   --retail-surface-base: #172337;
@@ -444,91 +449,92 @@
 }
 
 /* Scope replacement to the workstation, preserving status hues and printed receipts. */
-:root.dark .app-shell-ambient :is(
-  [class~="bg-white"],
-  [class~="bg-white/95"],
-  [class~="bg-white/90"],
-  [class~="bg-white/85"],
-  [class~="bg-white/80"],
-  [class~="bg-white/75"],
-  [class~="bg-white/70"],
-  [class~="bg-slate-50"],
-  [class~="bg-slate-50/80"],
-  [class~="bg-slate-50/90"],
-  [class~="bg-gray-50"],
-  [class~="bg-gray-100"],
-  [class~="bg-neutral-50"],
-  [class~="bg-zinc-50"]
-) {
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="bg-white"],
+    [class~="bg-white/95"],
+    [class~="bg-white/90"],
+    [class~="bg-white/85"],
+    [class~="bg-white/80"],
+    [class~="bg-white/75"],
+    [class~="bg-white/70"],
+    [class~="bg-slate-50"],
+    [class~="bg-slate-50/80"],
+    [class~="bg-slate-50/90"],
+    [class~="bg-gray-50"],
+    [class~="bg-gray-100"],
+    [class~="bg-neutral-50"],
+    [class~="bg-zinc-50"]
+  ) {
   background-color: var(--retail-surface-raised) !important;
 }
-:root.dark .app-shell-ambient :is(
-  [class~="bg-slate-100"],
-  [class~="bg-slate-200"],
-  [class~="bg-gray-200"],
-  [class~="bg-violet-50"],
-  [class~="bg-violet-50/80"]
-) {
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="bg-slate-100"],
+    [class~="bg-slate-200"],
+    [class~="bg-gray-200"],
+    [class~="bg-violet-50"],
+    [class~="bg-violet-50/80"]
+  ) {
   background-color: var(--retail-surface-base) !important;
 }
-:root.dark .app-shell-ambient :is(
-  [class~="text-gray-900"],
-  [class~="text-gray-800"],
-  [class~="text-gray-700"],
-  [class~="text-neutral-900"],
-  [class~="text-zinc-900"]
-) {
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="text-gray-900"],
+    [class~="text-gray-800"],
+    [class~="text-gray-700"],
+    [class~="text-neutral-900"],
+    [class~="text-zinc-900"]
+  ) {
   color: var(--retail-text-primary) !important;
 }
-:root.dark .app-shell-ambient :is(
-  [class~="text-gray-600"],
-  [class~="text-gray-500"],
-  [class~="text-zinc-500"],
-  [class~="text-neutral-500"]
-) {
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="text-gray-600"],
+    [class~="text-gray-500"],
+    [class~="text-zinc-500"],
+    [class~="text-neutral-500"]
+  ) {
   color: var(--retail-text-body) !important;
 }
-:root.dark .app-shell-ambient :is(
-  [class~="border-white"],
-  [class~="border-white/70"],
-  [class~="border-gray-100"],
-  [class~="border-gray-200"],
-  [class~="border-violet-100"],
-  [class~="border-slate-50"]
-) {
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="border-white"],
+    [class~="border-white/70"],
+    [class~="border-gray-100"],
+    [class~="border-gray-200"],
+    [class~="border-violet-100"],
+    [class~="border-slate-50"]
+  ) {
   border-color: var(--retail-outline-strong) !important;
 }
-:root.dark .app-shell-ambient :is(
-  .ys-dashboard-panel-surface,
-  .ys-kpi-card-surface,
-  .ys-appearance-card
-) {
+:root.dark
+  .app-shell-ambient
+  :is(.ys-dashboard-panel-surface, .ys-kpi-card-surface, .ys-appearance-card) {
   background-color: var(--retail-surface-raised) !important;
   border: 1px solid var(--retail-outline-strong) !important;
-  box-shadow: inset 0 1px 0 rgb(231 236 255 / 5%), 0 12px 28px rgb(3 8 20 / 16%);
+  box-shadow:
+    inset 0 1px 0 rgb(231 236 255 / 5%),
+    0 12px 28px rgb(3 8 20 / 16%);
 }
 /* The decorative material has a fixed natural scale; it must never use cover. */
-:root.dark .app-shell-ambient :is(
-  .ys-dashboard-panel-surface,
-  .ys-kpi-card-surface
-)::before {
+:root.dark .app-shell-ambient :is(.ys-dashboard-panel-surface, .ys-kpi-card-surface)::before {
   background-size: 900px auto !important;
   background-repeat: repeat !important;
   background-position: left top !important;
 }
-:root.dark .app-shell-ambient :is(
-  [role="dialog"],
-  [role="menu"],
-  [role="listbox"]
-) {
+:root.dark .app-shell-ambient :is([role="dialog"], [role="menu"], [role="listbox"]) {
   color: var(--retail-text-primary);
   border-color: var(--retail-outline-strong);
 }
-:root.dark .app-shell-ambient :is(
-  input:not([type="checkbox"]):not([type="radio"]),
-  textarea,
-  select
-) {
+:root.dark
+  .app-shell-ambient
+  :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) {
   background-color: var(--retail-surface-inset);
   border-color: var(--retail-outline-strong);
   color: var(--retail-text-primary);
@@ -540,7 +546,6 @@
     box-shadow: none !important;
   }
 }
-
 
 /* Sprint 11: unified retail workstation background, Dashboard through Settings.
    Use the exact shared Trending → Everyday Essentials palette and SVG, without
@@ -577,20 +582,13 @@
     #000 88%,
     transparent 100%
   );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0,
-    #000 12%,
-    #000 88%,
-    transparent 100%
-  );
+  mask-image: linear-gradient(to bottom, transparent 0, #000 12%, #000 88%, transparent 100%);
 }
 :root.dark .app-shell-ambient .retail-workspace__cosmos {
   display: block;
   width: 100%;
   height: 100%;
 }
-
 
 /* Dashboard dark-mode readability: scoped operational surfaces (Sprint 11). */
 /* The sales/calendar/restock widgets still use Light Mode Tailwind fills.
@@ -604,64 +602,72 @@
   --dashboard-tile-body: #c3d0e4;
   --dashboard-tile-muted: #afbed6;
 }
-:root.dark .app-shell-ambient .retail-dashboard-page :is(
-  .ys-sales-summary-tile,
-  .ys-sales-selected-day,
-  .ys-sales-mini-metric,
-  .ys-sales-performance-signal,
-  .ys-sales-chart,
-  .ys-sales-detail-chart,
-  .ys-dashboard-report-stat,
-  .ys-dashboard-pipeline-stat,
-  .ys-dashboard-priority,
-  .ys-dashboard-order,
-  .ys-dashboard-empty,
-  .ys-dashboard-placeholder
-) {
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  :is(
+    .ys-sales-summary-tile,
+    .ys-sales-selected-day,
+    .ys-sales-mini-metric,
+    .ys-sales-performance-signal,
+    .ys-sales-chart,
+    .ys-sales-detail-chart,
+    .ys-dashboard-report-stat,
+    .ys-dashboard-pipeline-stat,
+    .ys-dashboard-priority,
+    .ys-dashboard-order,
+    .ys-dashboard-empty,
+    .ys-dashboard-placeholder
+  ) {
   background-color: var(--dashboard-tile) !important;
   background-image: none !important;
   border-color: var(--dashboard-tile-border) !important;
   color: var(--dashboard-tile-body);
 }
-:root.dark .app-shell-ambient .retail-dashboard-page :is(
-  .ys-sales-summary-tile,
-  .ys-sales-selected-day,
-  .ys-dashboard-priority,
-  .ys-dashboard-order
-) {
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  :is(.ys-sales-summary-tile, .ys-sales-selected-day, .ys-dashboard-priority, .ys-dashboard-order) {
   background-color: var(--dashboard-tile-raised) !important;
 }
-:root.dark .app-shell-ambient .retail-dashboard-page :is(
-  .ys-sales-summary-tile,
-  .ys-sales-selected-day,
-  .ys-sales-mini-metric,
-  .ys-sales-performance-signal,
-  .ys-sales-detail-chart,
-  .ys-dashboard-report-stat,
-  .ys-dashboard-pipeline-stat,
-  .ys-dashboard-priority,
-  .ys-dashboard-priority__action,
-  .ys-dashboard-order
-) :is(h2, h3, h4, strong, [class~="text-slate-950"], [class~="text-slate-900"]) {
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  :is(
+    .ys-sales-summary-tile,
+    .ys-sales-selected-day,
+    .ys-sales-mini-metric,
+    .ys-sales-performance-signal,
+    .ys-sales-detail-chart,
+    .ys-dashboard-report-stat,
+    .ys-dashboard-pipeline-stat,
+    .ys-dashboard-priority,
+    .ys-dashboard-priority__action,
+    .ys-dashboard-order
+  )
+  :is(h2, h3, h4, strong, [class~="text-slate-950"], [class~="text-slate-900"]) {
   color: var(--dashboard-tile-ink) !important;
 }
-:root.dark .app-shell-ambient .retail-dashboard-page :is(
-  .ys-sales-summary-tile,
-  .ys-sales-selected-day,
-  .ys-sales-mini-metric,
-  .ys-sales-performance-signal,
-  .ys-dashboard-report-stat,
-  .ys-dashboard-pipeline-stat,
-  .ys-dashboard-priority,
-  .ys-dashboard-order
-) :is([class~="text-slate-400"], [class~="text-slate-500"], [class~="text-slate-600"]) {
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  :is(
+    .ys-sales-summary-tile,
+    .ys-sales-selected-day,
+    .ys-sales-mini-metric,
+    .ys-sales-performance-signal,
+    .ys-dashboard-report-stat,
+    .ys-dashboard-pipeline-stat,
+    .ys-dashboard-priority,
+    .ys-dashboard-order
+  )
+  :is([class~="text-slate-400"], [class~="text-slate-500"], [class~="text-slate-600"]) {
   color: var(--dashboard-tile-body) !important;
 }
-:root.dark .app-shell-ambient .retail-dashboard-page :is(
-  .ys-sales-view-tabs,
-  .ys-sales-month-picker,
-  .ys-dashboard-priority__action
-) {
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  :is(.ys-sales-view-tabs, .ys-sales-month-picker, .ys-dashboard-priority__action) {
   background-color: #202f49 !important;
   background-image: none !important;
   border-color: #536786 !important;
@@ -698,37 +704,60 @@
   background-color: #37345f !important;
   box-shadow: inset 0 0 0 1px #a396ff;
 }
-:root.dark .app-shell-ambient .retail-dashboard-page .ys-dashboard-pipeline-stat[data-tone="warning"] {
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  .ys-dashboard-pipeline-stat[data-tone="warning"] {
   background-color: #403824 !important;
   border-color: #bda36b !important;
 }
-:root.dark .app-shell-ambient .retail-dashboard-page .ys-dashboard-pipeline-stat[data-tone="warning"] > [class~="text-amber-700"] {
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  .ys-dashboard-pipeline-stat[data-tone="warning"]
+  > [class~="text-amber-700"] {
   color: #ffdc99 !important;
 }
 :root.dark .app-shell-ambient .retail-dashboard-page .ys-dashboard-all-clear {
   background-color: #1d3a38 !important;
   border-color: #4a9985 !important;
 }
-:root.dark .app-shell-ambient .retail-dashboard-page .ys-dashboard-all-clear :is([class~="text-emerald-950"], [class~="text-emerald-800"]) {
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  .ys-dashboard-all-clear
+  :is([class~="text-emerald-950"], [class~="text-emerald-800"]) {
   color: #c8f4e4 !important;
 }
 :root.dark .app-shell-ambient .retail-dashboard-page .ys-dashboard-progress {
   background-color: #435374 !important;
 }
-:root.dark .app-shell-ambient .retail-dashboard-page :is(.ys-dashboard-priority, .ys-dashboard-order) [class~="text-[#625bff]"],
-:root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-selected-day > [class~="text-[#625bff]"],
-:root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-performance-signal > [class~="text-[#625bff]"] {
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  :is(.ys-dashboard-priority, .ys-dashboard-order)
+  [class~="text-[#625bff]"],
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  .ys-sales-selected-day
+  > [class~="text-[#625bff]"],
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  .ys-sales-performance-signal
+  > [class~="text-[#625bff]"] {
   color: #c4b5ff !important;
 }
-:root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-detail-chart :is(
-  [class~="bg-slate-50/70"],
-  [class~="bg-slate-50/40"]
-) {
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  .ys-sales-detail-chart
+  :is([class~="bg-slate-50/70"], [class~="bg-slate-50/40"]) {
   background-color: #202e47 !important;
   border-color: #586b8a !important;
   color: #c3d0e4 !important;
 }
-
 
 /* POS scanner: focus remains on the outer search field, never a second inner box. */
 :root.dark .app-shell-ambient .pos-scanner-field > .pos-scanner-input {
@@ -748,7 +777,6 @@
   box-shadow: 0 0 0 1px rgb(155 145 231 / 17%);
 }
 
-
 /* Dashboard calendar: the native month input must not draw a second dark box. */
 :root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-month-picker > input[type="month"] {
   background: transparent !important;
@@ -758,7 +786,11 @@
   color: #e8effb !important;
   color-scheme: dark;
 }
-:root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-month-picker > input[type="month"]:focus-visible {
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  .ys-sales-month-picker
+  > input[type="month"]:focus-visible {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
@@ -768,7 +800,6 @@
   border-color: #9b91e7 !important;
   box-shadow: 0 0 0 1px rgb(155 145 231 / 17%);
 }
-
 
 /* Dashboard panels: eliminate the 900px material tile seam in dark mode. */
 /* Full-width operational cards should use one uninterrupted dark surface.
@@ -782,7 +813,6 @@
   display: none !important;
 }
 
-
 /* Sprint 11: Products workspace dark-mode surface and contrast convergence. */
 /* Scoped to Products only. Modal elements are portaled outside the app shell;
    background-color alone cannot remove light gradient backgrounds. */
@@ -791,7 +821,11 @@
   border-color: #617493 !important;
   color: #e9f0fc;
 }
-:root.dark .app-shell-ambient .products-page-no-actions .ys-product-toolbar-filter > :is(input, select) {
+:root.dark
+  .app-shell-ambient
+  .products-page-no-actions
+  .ys-product-toolbar-filter
+  > :is(input, select) {
   min-width: 0;
   background: transparent !important;
   border: 0 !important;
@@ -800,7 +834,11 @@
   color: #e9f0fc !important;
   color-scheme: dark;
 }
-:root.dark .app-shell-ambient .products-page-no-actions .ys-product-toolbar-filter > :is(input, select):focus-visible {
+:root.dark
+  .app-shell-ambient
+  .products-page-no-actions
+  .ys-product-toolbar-filter
+  > :is(input, select):focus-visible {
   background: transparent !important;
   outline: none !important;
   box-shadow: none !important;
@@ -824,69 +862,72 @@
 }
 /* Convert stale light-mode panels to dark surfaces, including slash-opacity
    Tailwind variants omitted by the shared dialog theme. */
-:root.dark [role="dialog"].ys-product-modal :is(
-  [class~="bg-white"],
-  [class~="bg-white/80"],
-  [class~="bg-white/90"],
-  [class~="bg-white/95"],
-  [class~="bg-slate-50"],
-  [class~="bg-slate-50/30"],
-  [class~="bg-slate-50/60"],
-  [class~="bg-slate-50/70"],
-  [class~="bg-slate-50/80"],
-  [class~="bg-slate-100"],
-  [class~="bg-violet-50"],
-  [class~="bg-violet-50/30"],
-  [class~="bg-violet-50/35"],
-  [class~="bg-violet-50/40"],
-  [class~="bg-violet-50/60"],
-  [class~="bg-violet-50/65"],
-  [class~="bg-violet-50/70"],
-  [class~="bg-violet-100"]
-) {
+:root.dark
+  [role="dialog"].ys-product-modal
+  :is(
+    [class~="bg-white"],
+    [class~="bg-white/80"],
+    [class~="bg-white/90"],
+    [class~="bg-white/95"],
+    [class~="bg-slate-50"],
+    [class~="bg-slate-50/30"],
+    [class~="bg-slate-50/60"],
+    [class~="bg-slate-50/70"],
+    [class~="bg-slate-50/80"],
+    [class~="bg-slate-100"],
+    [class~="bg-violet-50"],
+    [class~="bg-violet-50/30"],
+    [class~="bg-violet-50/35"],
+    [class~="bg-violet-50/40"],
+    [class~="bg-violet-50/60"],
+    [class~="bg-violet-50/65"],
+    [class~="bg-violet-50/70"],
+    [class~="bg-violet-100"]
+  ) {
   background-color: var(--product-modal-surface) !important;
   border-color: var(--product-modal-border) !important;
 }
-:root.dark [role="dialog"].ys-product-modal :is(
-  [class~="bg-gradient-to-br"],
-  [class~="bg-gradient-to-r"]
-) {
+:root.dark
+  [role="dialog"].ys-product-modal
+  :is([class~="bg-gradient-to-br"], [class~="bg-gradient-to-r"]) {
   background-image: none !important;
   background-color: var(--product-modal-surface) !important;
 }
-:root.dark [role="dialog"].ys-product-modal :is(
-  [class~="text-slate-950"],
-  [class~="text-slate-900"],
-  [class~="text-slate-800"],
-  [class~="text-slate-700"],
-  [class~="text-violet-950"]
-) {
+:root.dark
+  [role="dialog"].ys-product-modal
+  :is(
+    [class~="text-slate-950"],
+    [class~="text-slate-900"],
+    [class~="text-slate-800"],
+    [class~="text-slate-700"],
+    [class~="text-violet-950"]
+  ) {
   color: var(--product-modal-text) !important;
 }
-:root.dark [role="dialog"].ys-product-modal :is(
-  [class~="text-slate-600"],
-  [class~="text-slate-500"],
-  [class~="text-slate-400"]
-) {
+:root.dark
+  [role="dialog"].ys-product-modal
+  :is([class~="text-slate-600"], [class~="text-slate-500"], [class~="text-slate-400"]) {
   color: var(--product-modal-secondary) !important;
 }
-:root.dark [role="dialog"].ys-product-modal :is(
-  [class~="text-violet-700"],
-  [class~="text-violet-800"],
-  [class~="text-[#625bff]"]
-) {
+:root.dark
+  [role="dialog"].ys-product-modal
+  :is([class~="text-violet-700"], [class~="text-violet-800"], [class~="text-[#625bff]"]) {
   color: #c5b7ff !important;
 }
-:root.dark [role="dialog"].ys-product-modal :is(
-  [class~="border-slate-200"],
-  [class~="border-slate-100"],
-  [class~="border-violet-100"],
-  [class~="border-violet-200"],
-  [class~="border-violet-300"]
-) {
+:root.dark
+  [role="dialog"].ys-product-modal
+  :is(
+    [class~="border-slate-200"],
+    [class~="border-slate-100"],
+    [class~="border-violet-100"],
+    [class~="border-violet-200"],
+    [class~="border-violet-300"]
+  ) {
   border-color: var(--product-modal-border) !important;
 }
-:root.dark [role="dialog"].ys-product-modal :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+:root.dark
+  [role="dialog"].ys-product-modal
+  :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
   background: #22324c !important;
   border-color: #687b9a !important;
   color: var(--product-modal-text) !important;
@@ -984,7 +1025,6 @@
   outline-offset: 2px;
 }
 
-
 /* Sprint 11: Categories dark-mode surface convergence (page and portal dialogs). */
 /* Keep styling inside Categories. Radix dialogs render outside .app-shell-ambient,
    so page-scoped retail input overrides alone cannot style them. */
@@ -1030,50 +1070,52 @@
   color: var(--category-text) !important;
   color-scheme: dark;
 }
-:root.dark [role="dialog"].ys-category-modal :is(
-  [class~="bg-white"],
-  [class~="bg-white/80"],
-  [class~="bg-white/90"],
-  [class~="bg-slate-50"],
-  [class~="bg-slate-50/70"],
-  [class~="bg-slate-50/80"],
-  [class~="bg-slate-100"],
-  [class~="bg-violet-50"],
-  [class~="bg-violet-50/70"],
-  [class~="bg-violet-100"]
-) {
+:root.dark
+  [role="dialog"].ys-category-modal
+  :is(
+    [class~="bg-white"],
+    [class~="bg-white/80"],
+    [class~="bg-white/90"],
+    [class~="bg-slate-50"],
+    [class~="bg-slate-50/70"],
+    [class~="bg-slate-50/80"],
+    [class~="bg-slate-100"],
+    [class~="bg-violet-50"],
+    [class~="bg-violet-50/70"],
+    [class~="bg-violet-100"]
+  ) {
   background-color: var(--category-panel) !important;
   border-color: var(--category-border) !important;
 }
-:root.dark [role="dialog"].ys-category-modal :is(
-  [class~="text-slate-950"],
-  [class~="text-slate-900"],
-  [class~="text-slate-800"],
-  [class~="text-slate-700"]
-) {
+:root.dark
+  [role="dialog"].ys-category-modal
+  :is(
+    [class~="text-slate-950"],
+    [class~="text-slate-900"],
+    [class~="text-slate-800"],
+    [class~="text-slate-700"]
+  ) {
   color: var(--category-text) !important;
 }
-:root.dark [role="dialog"].ys-category-modal :is(
-  [class~="text-slate-600"],
-  [class~="text-slate-500"],
-  [class~="text-slate-400"]
-) {
+:root.dark
+  [role="dialog"].ys-category-modal
+  :is([class~="text-slate-600"], [class~="text-slate-500"], [class~="text-slate-400"]) {
   color: var(--category-body) !important;
 }
-:root.dark [role="dialog"].ys-category-modal :is(
-  [class~="border-slate-100"],
-  [class~="border-slate-200"],
-  [class~="border-slate-300"],
-  [class~="border-violet-100"],
-  [class~="border-violet-200"]
-) {
+:root.dark
+  [role="dialog"].ys-category-modal
+  :is(
+    [class~="border-slate-100"],
+    [class~="border-slate-200"],
+    [class~="border-slate-300"],
+    [class~="border-violet-100"],
+    [class~="border-violet-200"]
+  ) {
   border-color: var(--category-border) !important;
 }
-:root.dark [role="dialog"].ys-category-modal :is(
-  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
-  select,
-  textarea
-) {
+:root.dark
+  [role="dialog"].ys-category-modal
+  :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) {
   background: #23344e !important;
   border-color: #657b9d !important;
   color: var(--category-text) !important;
@@ -1135,11 +1177,17 @@
   border-color: #a69bfa !important;
   color: #f0eaff !important;
 }
-:root.dark [role="dialog"].ys-category-modal .ys-category-live-preview button[aria-pressed="false"] {
+:root.dark
+  [role="dialog"].ys-category-modal
+  .ys-category-live-preview
+  button[aria-pressed="false"] {
   background: transparent !important;
   color: #cedbf0 !important;
 }
-:root.dark [role="dialog"].ys-category-modal .ys-category-live-preview button[aria-pressed="false"]:hover {
+:root.dark
+  [role="dialog"].ys-category-modal
+  .ys-category-live-preview
+  button[aria-pressed="false"]:hover {
   background: #344863 !important;
 }
 :root.dark [role="dialog"].ys-category-modal .ys-category-cover-panel > button[class~="bg-white"] {
@@ -1159,7 +1207,6 @@
   outline: 2px solid #b2a4ff;
   outline-offset: 2px;
 }
-
 
 /* Sprint 11: Inventory modal and filter dark-mode contrast convergence. */
 /* FilterSelect uses the shared Select's own chevron; outer labels handle
@@ -1203,52 +1250,58 @@
   color: var(--inventory-modal-ink) !important;
   color-scheme: dark;
 }
-:root.dark [role="dialog"].ys-inventory-modal :is(
-  [class~="bg-white"],
-  [class~="bg-white/95"],
-  [class~="bg-white/90"],
-  [class~="bg-slate-50"],
-  [class~="bg-slate-50/60"],
-  [class~="bg-slate-50/70"],
-  [class~="bg-slate-50/80"],
-  [class~="bg-slate-100"],
-  [class~="bg-violet-50/70"],
-  [class~="bg-violet-100"],
-  [class~="bg-indigo-50/60"]
-) {
+:root.dark
+  [role="dialog"].ys-inventory-modal
+  :is(
+    [class~="bg-white"],
+    [class~="bg-white/95"],
+    [class~="bg-white/90"],
+    [class~="bg-slate-50"],
+    [class~="bg-slate-50/60"],
+    [class~="bg-slate-50/70"],
+    [class~="bg-slate-50/80"],
+    [class~="bg-slate-100"],
+    [class~="bg-violet-50/70"],
+    [class~="bg-violet-100"],
+    [class~="bg-indigo-50/60"]
+  ) {
   background-color: var(--inventory-modal-panel) !important;
   border-color: var(--inventory-modal-border) !important;
 }
-:root.dark [role="dialog"].ys-inventory-modal :is(
-  [class~="text-slate-950"],
-  [class~="text-slate-900"],
-  [class~="text-slate-800"],
-  [class~="text-slate-700"]
-) {
+:root.dark
+  [role="dialog"].ys-inventory-modal
+  :is(
+    [class~="text-slate-950"],
+    [class~="text-slate-900"],
+    [class~="text-slate-800"],
+    [class~="text-slate-700"]
+  ) {
   color: var(--inventory-modal-ink) !important;
 }
-:root.dark [role="dialog"].ys-inventory-modal :is(
-  [class~="text-slate-600"],
-  [class~="text-slate-500"],
-  [class~="text-slate-400"],
-  [class~="text-slate-300"]
-) {
+:root.dark
+  [role="dialog"].ys-inventory-modal
+  :is(
+    [class~="text-slate-600"],
+    [class~="text-slate-500"],
+    [class~="text-slate-400"],
+    [class~="text-slate-300"]
+  ) {
   color: var(--inventory-modal-copy) !important;
 }
-:root.dark [role="dialog"].ys-inventory-modal :is(
-  [class~="border-slate-100"],
-  [class~="border-slate-200"],
-  [class~="border-slate-300"],
-  [class~="border-violet-200"],
-  [class~="border-violet-300"]
-) {
+:root.dark
+  [role="dialog"].ys-inventory-modal
+  :is(
+    [class~="border-slate-100"],
+    [class~="border-slate-200"],
+    [class~="border-slate-300"],
+    [class~="border-violet-200"],
+    [class~="border-violet-300"]
+  ) {
   border-color: var(--inventory-modal-border) !important;
 }
-:root.dark [role="dialog"].ys-inventory-modal :is(
-  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
-  select,
-  textarea
-) {
+:root.dark
+  [role="dialog"].ys-inventory-modal
+  :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) {
   background: #243550 !important;
   border-color: #687e9e !important;
   color: var(--inventory-modal-ink) !important;
@@ -1297,17 +1350,15 @@
 :root.dark [role="dialog"].ys-inventory-modal [class~="text-emerald-800"] {
   color: #a4f0d5 !important;
 }
-:root.dark [role="dialog"].ys-inventory-modal :is(
-  [class~="bg-emerald-50"],
-  [class~="bg-emerald-50/70"]
-) {
+:root.dark
+  [role="dialog"].ys-inventory-modal
+  :is([class~="bg-emerald-50"], [class~="bg-emerald-50/70"]) {
   background-color: #204139 !important;
   border-color: #5a9c83 !important;
 }
-:root.dark [role="dialog"].ys-inventory-modal :is(
-  [class~="bg-amber-50"],
-  [class~="bg-amber-50/70"]
-) {
+:root.dark
+  [role="dialog"].ys-inventory-modal
+  :is([class~="bg-amber-50"], [class~="bg-amber-50/70"]) {
   background-color: #413820 !important;
   border-color: #bca069 !important;
 }
@@ -1315,17 +1366,13 @@
 :root.dark [role="dialog"].ys-inventory-modal [class~="text-amber-900"] {
   color: #ffe0a0 !important;
 }
-:root.dark [role="dialog"].ys-inventory-modal :is(
-  [class~="bg-rose-50"],
-  [class~="bg-rose-50/70"]
-) {
+:root.dark [role="dialog"].ys-inventory-modal :is([class~="bg-rose-50"], [class~="bg-rose-50/70"]) {
   background-color: #462b3a !important;
   border-color: #b87691 !important;
 }
-:root.dark [role="dialog"].ys-inventory-modal :is(
-  [class~="text-rose-800"],
-  [class~="text-rose-900"]
-) {
+:root.dark
+  [role="dialog"].ys-inventory-modal
+  :is([class~="text-rose-800"], [class~="text-rose-900"]) {
   color: #ffd2df !important;
 }
 /* Uploaded documents, guide and dropzone share the same premium dark surface. */
@@ -1343,7 +1390,6 @@
   outline-offset: 2px;
 }
 
-
 /* Sprint 11: receiving delivery dialogs — consistent dark contrast. */
 /* Radix portals live under document.body, outside the retail app shell.
    Only the receiving dialogs are affected; light mode and workflow logic stay unchanged. */
@@ -1359,43 +1405,41 @@
   color: var(--receiving-ink) !important;
   color-scheme: dark;
 }
-:root.dark [role="dialog"].ys-receiving-dialog :is(
-  [class~="bg-white"],
-  [class~="bg-slate-50"],
-  [class~="bg-slate-50/80"],
-  [class~="bg-slate-100"],
-  [class~="bg-indigo-50/70"]
-) {
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  :is(
+    [class~="bg-white"],
+    [class~="bg-slate-50"],
+    [class~="bg-slate-50/80"],
+    [class~="bg-slate-100"],
+    [class~="bg-indigo-50/70"]
+  ) {
   background-color: var(--receiving-panel) !important;
   border-color: var(--receiving-border) !important;
 }
-:root.dark [role="dialog"].ys-receiving-dialog :is(
-  [class~="text-slate-950"],
-  [class~="text-slate-900"],
-  [class~="text-slate-800"],
-  [class~="text-slate-700"]
-) {
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  :is(
+    [class~="text-slate-950"],
+    [class~="text-slate-900"],
+    [class~="text-slate-800"],
+    [class~="text-slate-700"]
+  ) {
   color: var(--receiving-ink) !important;
 }
-:root.dark [role="dialog"].ys-receiving-dialog :is(
-  [class~="text-slate-600"],
-  [class~="text-slate-500"],
-  [class~="text-slate-400"]
-) {
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  :is([class~="text-slate-600"], [class~="text-slate-500"], [class~="text-slate-400"]) {
   color: var(--receiving-body) !important;
 }
-:root.dark [role="dialog"].ys-receiving-dialog :is(
-  [class~="border-slate-100"],
-  [class~="border-slate-200"],
-  [class~="border-slate-300"]
-) {
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  :is([class~="border-slate-100"], [class~="border-slate-200"], [class~="border-slate-300"]) {
   border-color: var(--receiving-border) !important;
 }
-:root.dark [role="dialog"].ys-receiving-dialog :is(
-  input:not([type="checkbox"]):not([type="radio"]),
-  textarea,
-  select
-) {
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) {
   background-color: #243650 !important;
   border-color: #687f9d !important;
   color: var(--receiving-ink) !important;
@@ -1426,7 +1470,9 @@
   color: #edf3ff !important;
 }
 :root.dark [role="dialog"].ys-receiving-dialog button[class~="bg-white"]:hover:not(:disabled),
-:root.dark [role="dialog"].ys-receiving-dialog button[class~="text-slate-600"]:hover:not(:disabled) {
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  button[class~="text-slate-600"]:hover:not(:disabled) {
   background-color: #415777 !important;
 }
 :root.dark [role="dialog"].ys-receiving-dialog button:disabled {
@@ -1452,7 +1498,9 @@
   background-color: #253752 !important;
   border-color: #607796 !important;
 }
-:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-exception-option[data-selected="true"] {
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  .ys-receiving-exception-option[data-selected="true"] {
   background-color: #373860 !important;
   border-color: #a699ff !important;
   box-shadow: inset 0 0 0 1px rgb(166 153 255 / 35%);
@@ -1469,10 +1517,9 @@
   background-color: #263852 !important;
   border-color: #637a99 !important;
 }
-:root.dark [role="dialog"].ys-receiving-dialog :is(
-  .ys-receiving-cancel-panel,
-  .ys-receiving-lot-summary
-) {
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  :is(.ys-receiving-cancel-panel, .ys-receiving-lot-summary) {
   background-color: #283a55 !important;
   border-color: #667c9b !important;
 }
@@ -1491,27 +1538,27 @@
 :root.dark [role="dialog"].ys-receiving-dialog [class~="text-amber-700"] {
   color: #ffdda0 !important;
 }
-:root.dark [role="dialog"].ys-receiving-dialog :is(
-  [class~="bg-emerald-50"],
-  [class~="bg-emerald-50/70"]
-) {
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  :is([class~="bg-emerald-50"], [class~="bg-emerald-50/70"]) {
   background-color: #20423b !important;
   border-color: #609c88 !important;
 }
-:root.dark [role="dialog"].ys-receiving-dialog :is(
-  [class~="text-emerald-600"],
-  [class~="text-emerald-700"],
-  [class~="text-emerald-800"],
-  [class~="text-emerald-950"]
-) {
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  :is(
+    [class~="text-emerald-600"],
+    [class~="text-emerald-700"],
+    [class~="text-emerald-800"],
+    [class~="text-emerald-950"]
+  ) {
   color: #b8f4de !important;
 }
 /* When disabled, secondary/back/add-details actions must still have legible
    labels. The disabled attribute still prevents interaction. */
-:root.dark [role="dialog"].ys-receiving-dialog button:disabled:is(
-  [class~="text-slate-700"],
-  [class~="text-slate-600"]
-) {
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  button:disabled:is([class~="text-slate-700"], [class~="text-slate-600"]) {
   background-color: #2b3c55 !important;
   border-color: #556987 !important;
   color: #c0cce0 !important;
@@ -1525,17 +1572,21 @@
   border-color: #afa4ff !important;
 }
 
-
 /* Preserve the distinct destructive action without reverting to red-on-dark. */
-:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-cancel-panel button[class~="text-red-700"] {
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  .ys-receiving-cancel-panel
+  button[class~="text-red-700"] {
   background-color: #492f40 !important;
   border-color: #b2798d !important;
   color: #ffcbd7 !important;
 }
-:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-cancel-panel button[class~="text-red-700"]:hover:not(:disabled) {
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  .ys-receiving-cancel-panel
+  button[class~="text-red-700"]:hover:not(:disabled) {
   background-color: #5a3749 !important;
 }
-
 
 /* POS Cash Payment: readable portal controls in dark mode (Sprint 11). */
 /* The POS payment modal is portaled outside .app-shell-ambient. Its secondary
@@ -1558,19 +1609,19 @@
   content: none !important;
   display: none !important;
 }
-:root.dark [role="dialog"].ys-pos-cash-dialog :is(
-  [class~="text-slate-950"],
-  [class~="text-slate-900"],
-  [class~="text-slate-800"],
-  [class~="text-slate-700"]
-) {
+:root.dark
+  [role="dialog"].ys-pos-cash-dialog
+  :is(
+    [class~="text-slate-950"],
+    [class~="text-slate-900"],
+    [class~="text-slate-800"],
+    [class~="text-slate-700"]
+  ) {
   color: var(--cash-modal-text) !important;
 }
-:root.dark [role="dialog"].ys-pos-cash-dialog :is(
-  [class~="text-slate-600"],
-  [class~="text-slate-500"],
-  [class~="text-slate-400"]
-) {
+:root.dark
+  [role="dialog"].ys-pos-cash-dialog
+  :is([class~="text-slate-600"], [class~="text-slate-500"], [class~="text-slate-400"]) {
   color: var(--cash-modal-body) !important;
 }
 :root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-entry label {
@@ -1591,7 +1642,10 @@
   color: #edf3ff !important;
 }
 :root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-presets button:hover:not(:disabled),
-:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-footer button[class~="bg-white"]:hover:not(:disabled) {
+:root.dark
+  [role="dialog"].ys-pos-cash-dialog
+  .ys-pos-cash-footer
+  button[class~="bg-white"]:hover:not(:disabled) {
   background-color: #425878 !important;
 }
 :root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-footer {
@@ -1627,7 +1681,10 @@
   color: #f3f6ff !important;
 }
 :root.dark .app-shell-ambient .ys-support-inbox .ys-support-ticket:not([data-active="true"]):hover,
-:root.dark .app-shell-ambient .ys-support-inbox .ys-support-ticket:not([data-active="true"]):focus-visible {
+:root.dark
+  .app-shell-ambient
+  .ys-support-inbox
+  .ys-support-ticket:not([data-active="true"]):focus-visible {
   background-color: #2b3b57 !important;
 }
 :root.dark .app-shell-ambient .ys-support-inbox .ys-support-ticket:focus-visible {
@@ -1642,14 +1699,22 @@
   border-color: #687ba4 !important;
   color: #eef3ff !important;
 }
-:root.dark .app-shell-ambient .ys-support-inbox .ys-support-automated-email [class~="text-indigo-700"] {
+:root.dark
+  .app-shell-ambient
+  .ys-support-inbox
+  .ys-support-automated-email
+  [class~="text-indigo-700"] {
   color: #d2c6ff !important;
 }
 :root.dark .app-shell-ambient .ys-support-inbox .ys-support-automated-email button {
   border-color: #a79cdb;
   color: #eee9ff;
 }
-:root.dark .app-shell-ambient .ys-support-inbox .ys-support-automated-email button:hover:not(:disabled) {
+:root.dark
+  .app-shell-ambient
+  .ys-support-inbox
+  .ys-support-automated-email
+  button:hover:not(:disabled) {
   background-color: #3b4b6c !important;
 }
 :root.dark .app-shell-ambient .ys-support-inbox .ys-support-customer-message {
@@ -1702,7 +1767,10 @@
 :root.dark .app-shell-ambient .ys-restock-product-row[data-selected="true"]:focus-visible {
   background-color: #3c4d70 !important;
 }
-:root.dark .app-shell-ambient .ys-restock-product-row :is([class~="text-slate-950"], [class~="text-slate-900"]) {
+:root.dark
+  .app-shell-ambient
+  .ys-restock-product-row
+  :is([class~="text-slate-950"], [class~="text-slate-900"]) {
   color: #f2f5ff !important;
 }
 :root.dark .app-shell-ambient .ys-restock-product-row [class~="text-slate-500"] {
@@ -1743,8 +1811,14 @@
   color: #e7e0ff !important;
   box-shadow: inset 0 0 0 1px #8e84d6;
 }
-:root.dark .app-shell-ambient .ys-user-management-tabs .ys-user-management-tab[data-active="true"]:hover,
-:root.dark .app-shell-ambient .ys-user-management-tabs .ys-user-management-tab[data-active="true"]:focus-visible {
+:root.dark
+  .app-shell-ambient
+  .ys-user-management-tabs
+  .ys-user-management-tab[data-active="true"]:hover,
+:root.dark
+  .app-shell-ambient
+  .ys-user-management-tabs
+  .ys-user-management-tab[data-active="true"]:focus-visible {
   background-color: #454172 !important;
 }
 

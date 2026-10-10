@@ -49,11 +49,19 @@ test("customer storefront exposes the support page, form, FAQ and footer entry",
   assert.match(footer, /Customer Support/);
 });
 
-
 test("dark support reuses approved storefront art and keeps every support label legible", async () => {
   const [darkCss, sharedArt] = await Promise.all([
-    readFile(new URL("../../frontend/src/styles/theme-storefront-contrast.css", import.meta.url), "utf8"),
-    readFile(new URL("../../frontend/src/components/customer/StorefrontGalaxyArtwork.tsx", import.meta.url), "utf8")
+    readFile(
+      new URL("../../frontend/src/styles/theme-storefront-contrast.css", import.meta.url),
+      "utf8"
+    ),
+    readFile(
+      new URL(
+        "../../frontend/src/components/customer/StorefrontGalaxyArtwork.tsx",
+        import.meta.url
+      ),
+      "utf8"
+    )
   ]);
   const darkStyles = darkCss.replace(/\s+/g, " ");
   assert.match(

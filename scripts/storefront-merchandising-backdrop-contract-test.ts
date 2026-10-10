@@ -4,7 +4,10 @@ import { resolve } from "node:path";
 
 const cssPath = resolve(process.cwd(), "src/styles/customer-home-premium.css");
 const homePath = resolve(process.cwd(), "src/pages/customer/CustomerHomePage.tsx");
-const categoryBackdropPath = resolve(process.cwd(), "src/components/customer/CategoryRetailBackdrop.tsx");
+const categoryBackdropPath = resolve(
+  process.cwd(),
+  "src/components/customer/CategoryRetailBackdrop.tsx"
+);
 
 const css = readFileSync(cssPath, "utf8");
 const home = readFileSync(homePath, "utf8");
@@ -240,11 +243,19 @@ assert.match(
   "Trending, Best Sellers, and Everyday Essentials must share one canvas while the next-step CTA stays outside it."
 );
 
-
 /* Shop catalog and the homepage merchandising shelves share the SAME dark galaxy. */
-const storefrontTheme = readFileSync(resolve(process.cwd(), "src/styles/theme-storefront.css"), "utf8").replace(/\s+/g, " ");
-const shopCatalogBackdrop = readFileSync(resolve(process.cwd(), "src/components/customer/ShopCatalogBackdrop.tsx"), "utf8");
-const galaxyArtwork = readFileSync(resolve(process.cwd(), "src/components/customer/StorefrontGalaxyArtwork.tsx"), "utf8");
+const storefrontTheme = readFileSync(
+  resolve(process.cwd(), "src/styles/theme-storefront.css"),
+  "utf8"
+).replace(/\s+/g, " ");
+const shopCatalogBackdrop = readFileSync(
+  resolve(process.cwd(), "src/components/customer/ShopCatalogBackdrop.tsx"),
+  "utf8"
+);
+const galaxyArtwork = readFileSync(
+  resolve(process.cwd(), "src/components/customer/StorefrontGalaxyArtwork.tsx"),
+  "utf8"
+);
 
 assert.match(
   storefrontTheme,
@@ -261,7 +272,11 @@ assert.match(
   /<StorefrontGalaxyArtwork className="customer-shop-catalog-backdrop__cosmos" \/>/,
   "Shop catalog should reuse the original SVG constellation rather than a raster imitation."
 );
-assert.match(galaxyArtwork, /preserveAspectRatio="xMidYMid meet"/, "SVG must not stretch to the catalog's variable height.");
+assert.match(
+  galaxyArtwork,
+  /preserveAspectRatio="xMidYMid meet"/,
+  "SVG must not stretch to the catalog's variable height."
+);
 assert.match(
   storefrontTheme,
   /\.customer-shop-catalog-backdrop__cosmos\s*\{[^}]*display:\s*none/,
@@ -273,9 +288,11 @@ assert.match(
   "Last Shop backdrop pixel must match the existing footer transition surface."
 );
 
-
 /* Account Orders/Favorites/Profile/Security share the one approved galaxy. */
-const accountPageSource = readFileSync(resolve(process.cwd(), "src/pages/customer/CustomerAccountPage.tsx"), "utf8");
+const accountPageSource = readFileSync(
+  resolve(process.cwd(), "src/pages/customer/CustomerAccountPage.tsx"),
+  "utf8"
+);
 
 assert.match(
   accountPageSource,
@@ -315,8 +332,14 @@ assert.doesNotMatch(
 
 /* Sign In reuses exactly the approved Account/Shop galaxy, not a stretched
    auth silk image. This remains conditional on login: register/recovery intact. */
-const customerAuthFrameSource = readFileSync(resolve(process.cwd(), "src/components/customer/CustomerAuthFrame.tsx"), "utf8").replace(/\s+/g, " ");
-const storefrontContrast = readFileSync(resolve(process.cwd(), "src/styles/theme-storefront-contrast.css"), "utf8").replace(/\s+/g, " ");
+const customerAuthFrameSource = readFileSync(
+  resolve(process.cwd(), "src/components/customer/CustomerAuthFrame.tsx"),
+  "utf8"
+).replace(/\s+/g, " ");
+const storefrontContrast = readFileSync(
+  resolve(process.cwd(), "src/styles/theme-storefront-contrast.css"),
+  "utf8"
+).replace(/\s+/g, " ");
 assert.match(
   customerAuthFrameSource,
   /mode === "login" \? \([\s\S]*?<StorefrontGalaxyArtwork className="customer-auth-page--login__cosmos" \/>/,
@@ -355,7 +378,10 @@ assert.match(
 
 /* A dark-mode login entered from Account must not inherit the previous page
    scroll offset or show the pre-galaxy faceted card overlay. */
-const loginPageSource = readFileSync(resolve(process.cwd(), "src/pages/customer/CustomerLoginPage.tsx"), "utf8");
+const loginPageSource = readFileSync(
+  resolve(process.cwd(), "src/pages/customer/CustomerLoginPage.tsx"),
+  "utf8"
+);
 assert.match(
   loginPageSource,
   /useEffect\(\(\) => \{\s*globalThis\.scrollTo\?\.\(\{ top: 0, left: 0, behavior: "auto" \}\);\s*\}, \[\]\)/,

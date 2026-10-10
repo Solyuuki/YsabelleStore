@@ -24,7 +24,11 @@ import {
   createInventoryMovementAfterAllocation,
   synchronizeInventoryAggregate
 } from "./stockDomainService.js";
-import { changeOrderReservations, lockProductStock, verifyFulfillmentReservation } from "./stockReservationService.js";
+import {
+  changeOrderReservations,
+  lockProductStock,
+  verifyFulfillmentReservation
+} from "./stockReservationService.js";
 
 const deliveryOrderInclude = {
   addressSnapshot: true,
@@ -185,7 +189,10 @@ async function finalizeOrderSale(
   order: DeliveryOrderRecord,
   actorUserId?: string
 ) {
-  await lockProductStock(tx, order.items.map((item) => item.productId));
+  await lockProductStock(
+    tx,
+    order.items.map((item) => item.productId)
+  );
   order = await findDeliveryOrder(tx, order.id);
   if (order.saleId) {
     return { created: false, productIds: order.items.map((item) => item.productId) };
@@ -332,153 +339,166 @@ export async function updateDeliveryStatus(
   actorUserId: string,
   input: DeliveryTransitionInput
 ) {
-  return prisma.$transaction(async (tx) => {
-    let order = await findDeliveryOrder(tx, orderId);
-    await lockProductStock(tx, order.items.map((item) => item.productId));
-    order = await findDeliveryOrder(tx, orderId);
-    const target = input.targetStatus as CustomerDeliveryStatus;
-
-    if (!canTransitionDeliveryStatus(order.deliveryStatus, target)) {
-      throw new HttpError(409, "Delivery status transition is not allowed.", {
-        code: "INVALID_DELIVERY_STATUS_TRANSITION",
-        details: { current: order.deliveryStatus, target }
-      });
-    }
-
-    if (isPaymongoPaymentPending(order) && target !== CustomerDeliveryStatus.CANCELLED) {
-      throw new HttpError(
-        409,
-        "PayMongo payment must be confirmed before delivery processing starts.",
-        {
-          code: "PAYMONGO_PAYMENT_REQUIRED"
-        }
+  return prisma.$transaction(
+    async (tx) => {
+      let order = await findDeliveryOrder(tx, orderId);
+      await lockProductStock(
+        tx,
+        order.items.map((item) => item.productId)
       );
-    }
+      order = await findDeliveryOrder(tx, orderId);
+      const target = input.targetStatus as CustomerDeliveryStatus;
 
-    if (
-      target === CustomerDeliveryStatus.CANCELLED &&
-      order.paymentStatus === CustomerPaymentStatus.PAID
-    ) {
-      throw new HttpError(409, "Paid orders require a refund workflow before cancellation.", {
-        code: "PAID_DELIVERY_CANNOT_CANCEL"
-      });
-    }
-
-    if (
-      target === CustomerDeliveryStatus.CANCELLED &&
-      order.paymentMethod === CustomerPaymentMethod.PAYMONGO &&
-      order.paymongoCheckoutSessionId &&
-      order.paymentStatus === CustomerPaymentStatus.PENDING
-    ) {
-      throw new HttpError(
-        409,
-        "PayMongo checkout status must be reconciled before releasing reserved inventory.",
-        { code: "PAYMONGO_CANCELLATION_REQUIRES_RECONCILIATION" }
-      );
-    }
-
-    const courierProvider = input.courierProvider?.trim() || order.courierProvider;
-    if (target === CustomerDeliveryStatus.OUT_FOR_DELIVERY && !courierProvider) {
-      throw new HttpError(400, "Choose the courier or delivery service before dispatch.", {
-        code: "DELIVERY_COURIER_REQUIRED"
-      });
-    }
-
-    const now = new Date();
-    if (target === CustomerDeliveryStatus.CANCELLED) {
-      await changeOrderReservations(tx, order.id, "RELEASED");
-    }
-    await tx.customerOrder.update({
-      data: {
-        courierProvider: courierProvider ?? null,
-        courierReference: input.courierReference?.trim() || order.courierReference,
-        deliveryNotes: input.note?.trim() || order.deliveryNotes,
-        deliveryStatus: target,
-        dispatchedAt: target === CustomerDeliveryStatus.OUT_FOR_DELIVERY ? now : order.dispatchedAt,
-        status:
-          target === CustomerDeliveryStatus.CANCELLED
-            ? CustomerOrderStatus.CANCELLED
-            : CustomerOrderStatus.PROCESSING
-      },
-      where: { id: order.id }
-    });
-
-    await tx.customerDeliveryEvent.create({
-      data: {
-        actorType: CustomerDeliveryActorType.STAFF,
-        actorUserId,
-        note: input.note?.trim() || null,
-        orderId: order.id,
-        status: target
+      if (!canTransitionDeliveryStatus(order.deliveryStatus, target)) {
+        throw new HttpError(409, "Delivery status transition is not allowed.", {
+          code: "INVALID_DELIVERY_STATUS_TRANSITION",
+          details: { current: order.deliveryStatus, target }
+        });
       }
-    });
 
-    return serializeDeliveryOrder(await findDeliveryOrder(tx, order.id));
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
+      if (isPaymongoPaymentPending(order) && target !== CustomerDeliveryStatus.CANCELLED) {
+        throw new HttpError(
+          409,
+          "PayMongo payment must be confirmed before delivery processing starts.",
+          {
+            code: "PAYMONGO_PAYMENT_REQUIRED"
+          }
+        );
+      }
+
+      if (
+        target === CustomerDeliveryStatus.CANCELLED &&
+        order.paymentStatus === CustomerPaymentStatus.PAID
+      ) {
+        throw new HttpError(409, "Paid orders require a refund workflow before cancellation.", {
+          code: "PAID_DELIVERY_CANNOT_CANCEL"
+        });
+      }
+
+      if (
+        target === CustomerDeliveryStatus.CANCELLED &&
+        order.paymentMethod === CustomerPaymentMethod.PAYMONGO &&
+        order.paymongoCheckoutSessionId &&
+        order.paymentStatus === CustomerPaymentStatus.PENDING
+      ) {
+        throw new HttpError(
+          409,
+          "PayMongo checkout status must be reconciled before releasing reserved inventory.",
+          { code: "PAYMONGO_CANCELLATION_REQUIRES_RECONCILIATION" }
+        );
+      }
+
+      const courierProvider = input.courierProvider?.trim() || order.courierProvider;
+      if (target === CustomerDeliveryStatus.OUT_FOR_DELIVERY && !courierProvider) {
+        throw new HttpError(400, "Choose the courier or delivery service before dispatch.", {
+          code: "DELIVERY_COURIER_REQUIRED"
+        });
+      }
+
+      const now = new Date();
+      if (target === CustomerDeliveryStatus.CANCELLED) {
+        await changeOrderReservations(tx, order.id, "RELEASED");
+      }
+      await tx.customerOrder.update({
+        data: {
+          courierProvider: courierProvider ?? null,
+          courierReference: input.courierReference?.trim() || order.courierReference,
+          deliveryNotes: input.note?.trim() || order.deliveryNotes,
+          deliveryStatus: target,
+          dispatchedAt:
+            target === CustomerDeliveryStatus.OUT_FOR_DELIVERY ? now : order.dispatchedAt,
+          status:
+            target === CustomerDeliveryStatus.CANCELLED
+              ? CustomerOrderStatus.CANCELLED
+              : CustomerOrderStatus.PROCESSING
+        },
+        where: { id: order.id }
+      });
+
+      await tx.customerDeliveryEvent.create({
+        data: {
+          actorType: CustomerDeliveryActorType.STAFF,
+          actorUserId,
+          note: input.note?.trim() || null,
+          orderId: order.id,
+          status: target
+        }
+      });
+
+      return serializeDeliveryOrder(await findDeliveryOrder(tx, order.id));
+    },
+    { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
+  );
 }
 
 export async function confirmCustomerDeliveryReceived(
   orderNumber: string,
   customerAccountId: string
 ) {
-  const result = await prisma.$transaction(async (tx) => {
-    let order = await tx.customerOrder.findFirst({
-      include: deliveryOrderInclude,
-      where: { customerAccountId, orderNumber }
-    });
-    if (!order) {
-      throw new HttpError(404, "Order was not found for this customer account.", {
-        code: "CUSTOMER_DELIVERY_NOT_FOUND"
+  const result = await prisma.$transaction(
+    async (tx) => {
+      let order = await tx.customerOrder.findFirst({
+        include: deliveryOrderInclude,
+        where: { customerAccountId, orderNumber }
       });
-    }
-
-    await lockProductStock(tx, order.items.map((item) => item.productId));
-    order = await findDeliveryOrder(tx, order.id);
-
-    if (order.deliveryStatus === CustomerDeliveryStatus.DELIVERED && order.customerConfirmedAt) {
-      return { order: serializeDeliveryOrder(order), productIds: [] as string[] };
-    }
-    if (order.deliveryStatus !== CustomerDeliveryStatus.OUT_FOR_DELIVERY) {
-      throw new HttpError(409, "This order is not currently out for delivery.", {
-        code: "DELIVERY_NOT_OUT_FOR_DELIVERY"
-      });
-    }
-
-    const now = new Date();
-    await tx.customerOrder.update({
-      data: {
-        customerConfirmedAt: now,
-        deliveredAt: now,
-        deliveryStatus: CustomerDeliveryStatus.DELIVERED,
-        status: CustomerOrderStatus.PROCESSING
-      },
-      where: { id: order.id }
-    });
-    await tx.customerDeliveryEvent.create({
-      data: {
-        actorCustomerAccountId: customerAccountId,
-        actorType: CustomerDeliveryActorType.CUSTOMER,
-        note: "Customer confirmed that the order was received.",
-        orderId: order.id,
-        status: CustomerDeliveryStatus.DELIVERED
+      if (!order) {
+        throw new HttpError(404, "Order was not found for this customer account.", {
+          code: "CUSTOMER_DELIVERY_NOT_FOUND"
+        });
       }
-    });
 
-    let productIds: string[] = [];
-    if (
-      order.paymentMethod === CustomerPaymentMethod.PAYMONGO &&
-      order.paymentStatus === CustomerPaymentStatus.PAID
-    ) {
-      const refreshed = await findDeliveryOrder(tx, order.id);
-      const finalized = await finalizeOrderSale(tx, refreshed);
-      productIds = finalized.created ? finalized.productIds : [];
-    }
+      await lockProductStock(
+        tx,
+        order.items.map((item) => item.productId)
+      );
+      order = await findDeliveryOrder(tx, order.id);
 
-    return {
-      order: serializeDeliveryOrder(await findDeliveryOrder(tx, order.id)),
-      productIds
-    };
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
+      if (order.deliveryStatus === CustomerDeliveryStatus.DELIVERED && order.customerConfirmedAt) {
+        return { order: serializeDeliveryOrder(order), productIds: [] as string[] };
+      }
+      if (order.deliveryStatus !== CustomerDeliveryStatus.OUT_FOR_DELIVERY) {
+        throw new HttpError(409, "This order is not currently out for delivery.", {
+          code: "DELIVERY_NOT_OUT_FOR_DELIVERY"
+        });
+      }
+
+      const now = new Date();
+      await tx.customerOrder.update({
+        data: {
+          customerConfirmedAt: now,
+          deliveredAt: now,
+          deliveryStatus: CustomerDeliveryStatus.DELIVERED,
+          status: CustomerOrderStatus.PROCESSING
+        },
+        where: { id: order.id }
+      });
+      await tx.customerDeliveryEvent.create({
+        data: {
+          actorCustomerAccountId: customerAccountId,
+          actorType: CustomerDeliveryActorType.CUSTOMER,
+          note: "Customer confirmed that the order was received.",
+          orderId: order.id,
+          status: CustomerDeliveryStatus.DELIVERED
+        }
+      });
+
+      let productIds: string[] = [];
+      if (
+        order.paymentMethod === CustomerPaymentMethod.PAYMONGO &&
+        order.paymentStatus === CustomerPaymentStatus.PAID
+      ) {
+        const refreshed = await findDeliveryOrder(tx, order.id);
+        const finalized = await finalizeOrderSale(tx, refreshed);
+        productIds = finalized.created ? finalized.productIds : [];
+      }
+
+      return {
+        order: serializeDeliveryOrder(await findDeliveryOrder(tx, order.id)),
+        productIds
+      };
+    },
+    { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
+  );
 
   await invalidateProducts(result.productIds);
   return result.order;
@@ -489,51 +509,57 @@ export async function confirmCodCollected(
   actorUserId: string,
   input: CodSettlementInput
 ) {
-  const result = await prisma.$transaction(async (tx) => {
-    let order = await findDeliveryOrder(tx, orderId);
-    await lockProductStock(tx, order.items.map((item) => item.productId));
-    order = await findDeliveryOrder(tx, orderId);
-    if (order.paymentMethod !== CustomerPaymentMethod.CASH_ON_DELIVERY) {
-      throw new HttpError(409, "This order is not a Cash on Delivery order.", {
-        code: "ORDER_NOT_COD"
-      });
-    }
-    if (!isCodSettlementReady(order)) {
-      throw new HttpError(409, "COD can be settled only after the customer confirms receipt.", {
-        code: "COD_NOT_READY_FOR_SETTLEMENT"
-      });
-    }
-    if (order.paymentStatus === CustomerPaymentStatus.PAID && order.saleId) {
-      return { order: serializeDeliveryOrder(order), productIds: [] as string[] };
-    }
-
-    const now = new Date();
-    await tx.customerOrder.update({
-      data: {
-        codCollectedAt: now,
-        codCollectedById: actorUserId,
-        paidAt: order.paidAt ?? now,
-        paymentStatus: CustomerPaymentStatus.PAID
-      },
-      where: { id: order.id }
-    });
-    await tx.customerDeliveryEvent.create({
-      data: {
-        actorType: CustomerDeliveryActorType.STAFF,
-        actorUserId,
-        note: input.note?.trim() || "COD payment collected and verified.",
-        orderId: order.id,
-        status: CustomerDeliveryStatus.DELIVERED
+  const result = await prisma.$transaction(
+    async (tx) => {
+      let order = await findDeliveryOrder(tx, orderId);
+      await lockProductStock(
+        tx,
+        order.items.map((item) => item.productId)
+      );
+      order = await findDeliveryOrder(tx, orderId);
+      if (order.paymentMethod !== CustomerPaymentMethod.CASH_ON_DELIVERY) {
+        throw new HttpError(409, "This order is not a Cash on Delivery order.", {
+          code: "ORDER_NOT_COD"
+        });
       }
-    });
+      if (!isCodSettlementReady(order)) {
+        throw new HttpError(409, "COD can be settled only after the customer confirms receipt.", {
+          code: "COD_NOT_READY_FOR_SETTLEMENT"
+        });
+      }
+      if (order.paymentStatus === CustomerPaymentStatus.PAID && order.saleId) {
+        return { order: serializeDeliveryOrder(order), productIds: [] as string[] };
+      }
 
-    const refreshed = await findDeliveryOrder(tx, order.id);
-    const finalized = await finalizeOrderSale(tx, refreshed, actorUserId);
-    return {
-      order: serializeDeliveryOrder(await findDeliveryOrder(tx, order.id)),
-      productIds: finalized.created ? finalized.productIds : []
-    };
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
+      const now = new Date();
+      await tx.customerOrder.update({
+        data: {
+          codCollectedAt: now,
+          codCollectedById: actorUserId,
+          paidAt: order.paidAt ?? now,
+          paymentStatus: CustomerPaymentStatus.PAID
+        },
+        where: { id: order.id }
+      });
+      await tx.customerDeliveryEvent.create({
+        data: {
+          actorType: CustomerDeliveryActorType.STAFF,
+          actorUserId,
+          note: input.note?.trim() || "COD payment collected and verified.",
+          orderId: order.id,
+          status: CustomerDeliveryStatus.DELIVERED
+        }
+      });
+
+      const refreshed = await findDeliveryOrder(tx, order.id);
+      const finalized = await finalizeOrderSale(tx, refreshed, actorUserId);
+      return {
+        order: serializeDeliveryOrder(await findDeliveryOrder(tx, order.id)),
+        productIds: finalized.created ? finalized.productIds : []
+      };
+    },
+    { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
+  );
 
   await invalidateProducts(result.productIds);
   return result.order;

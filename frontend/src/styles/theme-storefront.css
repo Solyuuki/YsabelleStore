@@ -200,8 +200,11 @@
 }
 
 /* One clean media canvas — no extra navy frame surrounding the image. */
-:root.dark .customer-app .customer-product-page
-  .customer-product-detail__media > .customer-product-visual--large {
+:root.dark
+  .customer-app
+  .customer-product-page
+  .customer-product-detail__media
+  > .customer-product-visual--large {
   --product-media-surface: #fff;
   --product-media-border: rgb(168 180 217 / 55%);
   background: var(--product-media-surface);
@@ -210,13 +213,19 @@
   box-shadow: 0 14px 32px rgb(5 10 30 / 16%);
   color: #253046;
 }
-:root.dark .customer-app .customer-product-page
-  .customer-product-detail__media > .customer-product-visual--large[data-image-kind="fallback"] {
+:root.dark
+  .customer-app
+  .customer-product-page
+  .customer-product-detail__media
+  > .customer-product-visual--large[data-image-kind="fallback"] {
   background: #253451;
   color: #dce5f5;
 }
-:root.dark .customer-app .customer-product-page
-  .customer-product-visual--large .customer-product-visual__category {
+:root.dark
+  .customer-app
+  .customer-product-page
+  .customer-product-visual--large
+  .customer-product-visual__category {
   background: #273753;
   border-color: #596c90;
   color: #edf0fd;
@@ -356,7 +365,13 @@
   aspect-ratio: 1983 / 793;
   transform: translateY(-50%);
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 86%, transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 12%,
+    #000 86%,
+    transparent 100%
+  );
   mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 86%, transparent 100%);
 }
 /* Section 3 → Section 4 seamless bridge.
@@ -373,13 +388,7 @@
   height: clamp(104px, 12vw, 180px);
   pointer-events: none;
   z-index: 0;
-  background: linear-gradient(
-    90deg,
-    #252844 0%,
-    #212945 36%,
-    #1b2943 70%,
-    #17243c 100%
-  );
+  background: linear-gradient(90deg, #252844 0%, #212945 36%, #1b2943 70%, #17243c 100%);
 }
 :root.dark .customer-app .home-merchandising-canvas::after {
   bottom: 0;
@@ -480,13 +489,14 @@
   pointer-events: none;
   background:
     linear-gradient(
-      90deg,
-      transparent 3%,
-      rgb(122 159 237 / 10%) 20%,
-      rgb(172 153 245 / 24%) 52%,
-      rgb(122 159 237 / 10%) 80%,
-      transparent 97%
-    ) center bottom / 100% 1px no-repeat,
+        90deg,
+        transparent 3%,
+        rgb(122 159 237 / 10%) 20%,
+        rgb(172 153 245 / 24%) 52%,
+        rgb(122 159 237 / 10%) 80%,
+        transparent 97%
+      )
+      center bottom / 100% 1px no-repeat,
     linear-gradient(180deg, transparent 0%, rgb(23 36 60 / 22%) 53%, #17243c 100%);
 }
 /* The light-mode SVG is unchanged and excluded from dark mode. */
@@ -588,38 +598,56 @@
 }
 
 /* Sprint 11: consistent home-heading hierarchy with section-specific accent ink. */
-:root.dark .customer-app .customer-home
-  .home-section-heading--categories .home-section-heading__eyebrow {
+:root.dark
+  .customer-app
+  .customer-home
+  .home-section-heading--categories
+  .home-section-heading__eyebrow {
   color: #a99cff;
 }
-:root.dark .customer-app .customer-home
-  .home-section-heading--trending .home-section-heading__eyebrow {
+:root.dark
+  .customer-app
+  .customer-home
+  .home-section-heading--trending
+  .home-section-heading__eyebrow {
   color: #d4a5f5;
 }
-:root.dark .customer-app .customer-home
-  .home-section-heading--best-seller .home-section-heading__eyebrow {
+:root.dark
+  .customer-app
+  .customer-home
+  .home-section-heading--best-seller
+  .home-section-heading__eyebrow {
   color: #9fb9ff;
 }
-:root.dark .customer-app .customer-home
-  .home-section-heading--essentials .home-section-heading__eyebrow {
+:root.dark
+  .customer-app
+  .customer-home
+  .home-section-heading--essentials
+  .home-section-heading__eyebrow {
   color: #e4afd6;
 }
-:root.dark .customer-app .customer-home
+:root.dark
+  .customer-app
+  .customer-home
   :is(
     .home-section-heading--categories,
     .home-section-heading--trending,
     .home-section-heading--best-seller,
     .home-section-heading--essentials
-  ) .home-section-heading__title {
+  )
+  .home-section-heading__title {
   color: #e7edfa;
 }
-:root.dark .customer-app .customer-home
+:root.dark
+  .customer-app
+  .customer-home
   :is(
     .home-section-heading--categories,
     .home-section-heading--trending,
     .home-section-heading--best-seller,
     .home-section-heading--essentials
-  ) .home-section-heading__description {
+  )
+  .home-section-heading__description {
   color: #b9c6da;
 }
 
@@ -723,7 +751,13 @@
   aspect-ratio: 1024 / 1536;
   transform: translateX(-50%);
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 112px, #000 88%, transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 112px,
+    #000 88%,
+    transparent 100%
+  );
   mask-image: linear-gradient(to bottom, transparent 0, #000 112px, #000 88%, transparent 100%);
 }
 /* Fade only the page's last edge toward the existing footer transition. */
@@ -880,7 +914,9 @@
   color: #dce5f8 !important;
   box-shadow: none;
 }
-:root.dark .ysabelle-guide.driver-popover .driver-popover-prev-btn:not(:disabled):is(:hover, :focus-visible) {
+:root.dark
+  .ysabelle-guide.driver-popover
+  .driver-popover-prev-btn:not(:disabled):is(:hover, :focus-visible) {
   background: #344765 !important;
   border-color: #afa4ee !important;
   color: #f3f0ff !important;
@@ -892,20 +928,26 @@
   transform: none;
 }
 :root.dark .ysabelle-guide.driver-popover .driver-popover-prev-btn:disabled,
-:root.dark .ysabelle-guide.driver-popover .driver-popover-prev-btn:disabled:is(:hover, :focus-visible),
+:root.dark
+  .ysabelle-guide.driver-popover
+  .driver-popover-prev-btn:disabled:is(:hover, :focus-visible),
 :root.dark .ysabelle-guide.driver-popover .driver-popover-next-btn:disabled,
-:root.dark .ysabelle-guide.driver-popover .driver-popover-next-btn:disabled:is(:hover, :focus-visible) {
+:root.dark
+  .ysabelle-guide.driver-popover
+  .driver-popover-next-btn:disabled:is(:hover, :focus-visible) {
   background: #192438 !important;
   border-color: #344259 !important;
   color: #74839a !important;
   box-shadow: none;
   transform: none;
 }
-:root.dark .ysabelle-guide.driver-popover .driver-popover-footer button:not(:disabled):focus-visible {
+:root.dark
+  .ysabelle-guide.driver-popover
+  .driver-popover-footer
+  button:not(:disabled):focus-visible {
   outline: 3px solid #b8abff;
   outline-offset: 2px;
 }
-
 
 /* Forms and checkout remain opaque and readable above textured backgrounds. */
 :root.dark .customer-app :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]) {
@@ -1041,7 +1083,6 @@
   }
 }
 
-
 /* About/Discover chrome-only dark mode; preserve the approved scene palette. */
 :root[data-about-chrome-theme="dark"] .customer-app .customer-header {
   --customer-primary: #aea1e9;
@@ -1069,20 +1110,22 @@
     transparent
   );
 }
-:root[data-about-chrome-theme="dark"] .customer-app .customer-header :is(
-  .customer-nav a,
-  .customer-brand,
-  .customer-account-link,
-  .customer-help-button,
-  .customer-menu-button
-) {
+:root[data-about-chrome-theme="dark"]
+  .customer-app
+  .customer-header
+  :is(
+    .customer-nav a,
+    .customer-brand,
+    .customer-account-link,
+    .customer-help-button,
+    .customer-menu-button
+  ) {
   color: #d4deec;
 }
-:root[data-about-chrome-theme="dark"] .customer-app .customer-header :is(
-  .customer-cart-link,
-  .customer-global-search__shell,
-  .customer-mobile-panel
-) {
+:root[data-about-chrome-theme="dark"]
+  .customer-app
+  .customer-header
+  :is(.customer-cart-link, .customer-global-search__shell, .customer-mobile-panel) {
   background: #202c45;
   color: #d4deec;
   border-color: #455579;
@@ -1090,26 +1133,27 @@
 :root[data-about-chrome-theme="dark"] .customer-app .customer-header__action-divider {
   background: rgb(185 200 232 / 23%);
 }
-:root[data-about-chrome-theme="dark"] .customer-app .customer-header :is(
-  .customer-cart-link:hover,
-  .customer-account-link:hover
-) {
+:root[data-about-chrome-theme="dark"]
+  .customer-app
+  .customer-header
+  :is(.customer-cart-link:hover, .customer-account-link:hover) {
   background: #303957;
   color: #fff;
 }
 /* The About chrome theme may force dark header styling in light appearance.
    Keep navigation link hover/active styles consistent on every route. */
-:root[data-about-chrome-theme="dark"] .customer-app .customer-header .customer-nav a:is(
-  :hover,
-  :focus-visible,
-  [aria-current="page"]
-) {
+:root[data-about-chrome-theme="dark"]
+  .customer-app
+  .customer-header
+  .customer-nav
+  a:is(:hover, :focus-visible, [aria-current="page"]) {
   background: transparent;
 }
-:root[data-about-chrome-theme="dark"] .customer-app .customer-header .customer-nav a:is(
-  :hover,
-  :focus-visible
-) {
+:root[data-about-chrome-theme="dark"]
+  .customer-app
+  .customer-header
+  .customer-nav
+  a:is(:hover, :focus-visible) {
   color: #fff;
 }
 :root[data-about-chrome-theme="dark"] .customer-app .customer-theme-toggle {
@@ -1128,10 +1172,16 @@
   border: 0;
   color: #d4deec;
 }
-:root[data-about-chrome-theme="dark"] .customer-app .customer-global-search__shell input::placeholder {
+:root[data-about-chrome-theme="dark"]
+  .customer-app
+  .customer-global-search__shell
+  input::placeholder {
   color: #a9b7cf;
 }
-:root[data-about-chrome-theme="dark"] .customer-app .customer-global-search__shell input:focus-visible {
+:root[data-about-chrome-theme="dark"]
+  .customer-app
+  .customer-global-search__shell
+  input:focus-visible {
   outline: none;
   outline-offset: 0;
 }
@@ -1150,14 +1200,19 @@
   color: #d4deec;
   color-scheme: dark;
 }
-:root[data-about-chrome-theme="dark"] .customer-global-search__popup :is(
-  .customer-global-search__popup-header,
-  .customer-global-search__recent-query,
-  .customer-global-search__product-copy strong
-) {
+:root[data-about-chrome-theme="dark"]
+  .customer-global-search__popup
+  :is(
+    .customer-global-search__popup-header,
+    .customer-global-search__recent-query,
+    .customer-global-search__product-copy strong
+  ) {
   color: #d4deec;
 }
-:root[data-about-chrome-theme="dark"] .customer-global-search__popup .customer-global-search__product-copy span {
+:root[data-about-chrome-theme="dark"]
+  .customer-global-search__popup
+  .customer-global-search__product-copy
+  span {
   color: #bac7dd;
 }
 /* Footer body was already dark; only its light-mode wave needed retheming.
@@ -1192,16 +1247,21 @@
   mask-image: none;
 }
 :root.dark .customer-app .customer-footer__transition svg:not(.customer-footer__transition-outline),
-:root[data-about-chrome-theme="dark"] .customer-app .customer-footer__transition svg:not(.customer-footer__transition-outline) {
+:root[data-about-chrome-theme="dark"]
+  .customer-app
+  .customer-footer__transition
+  svg:not(.customer-footer__transition-outline) {
   display: none;
 }
 :root.dark .customer-app .customer-footer__transition .customer-footer__transition-outline,
-:root[data-about-chrome-theme="dark"] .customer-app .customer-footer__transition .customer-footer__transition-outline {
+:root[data-about-chrome-theme="dark"]
+  .customer-app
+  .customer-footer__transition
+  .customer-footer__transition-outline {
   display: block;
   -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 20%, #000 62%, transparent 100%);
   mask-image: linear-gradient(180deg, transparent 0%, #000 20%, #000 62%, transparent 100%);
 }
-
 
 /* Sprint 11: Privacy page storefront surface parity (dark mode only). */
 /* Reuse the proven Storefront hero texture and Trending → Essentials galaxy.
@@ -1213,7 +1273,9 @@
   background-image: none;
 }
 :root.dark .customer-app .customer-privacy-hero {
-  background: url("/textures/ys-dark-indigo-silk.svg") center / cover no-repeat, #1b2638;
+  background:
+    url("/textures/ys-dark-indigo-silk.svg") center / cover no-repeat,
+    #1b2638;
   border-bottom-color: rgb(177 190 239 / 15%);
 }
 :root.dark .customer-app .customer-privacy-hero::after,

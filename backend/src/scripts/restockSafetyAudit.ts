@@ -77,14 +77,20 @@ async function main() {
     }
   });
   if (!order) {
-    console.log(JSON.stringify({
-      kind: "YSABELLE_QA_RESTOCK_READ_ONLY_AUDIT",
-      database: "localhost/ysabellestore",
-      orderNumber,
-      status: "ORDER_NOT_FOUND",
-      writes: 0,
-      note: "No ticket was modified. Confirm the order number in Receiving."
-    }, null, 2));
+    console.log(
+      JSON.stringify(
+        {
+          kind: "YSABELLE_QA_RESTOCK_READ_ONLY_AUDIT",
+          database: "localhost/ysabellestore",
+          orderNumber,
+          status: "ORDER_NOT_FOUND",
+          writes: 0,
+          note: "No ticket was modified. Confirm the order number in Receiving."
+        },
+        null,
+        2
+      )
+    );
     return;
   }
 
@@ -109,15 +115,13 @@ async function main() {
       finiteUnits(line.requestedQuantity) &&
       finiteUnits(line.receivedQuantity);
     const anomalousSaved =
-      latest === undefined || !hasValidQuantity ||
+      latest === undefined ||
+      !hasValidQuantity ||
       requiresAutomatedQuantityReview(line.recommendedQuantity, latest, null);
     const anomalousRequested =
-      latest === undefined || !hasValidQuantity ||
-      requiresAutomatedQuantityReview(
-        line.requestedQuantity,
-        latest,
-        line.ownerOverrideReason
-      );
+      latest === undefined ||
+      !hasValidQuantity ||
+      requiresAutomatedQuantityReview(line.requestedQuantity, latest, line.ownerOverrideReason);
     const remainingUnits = Math.max(0, line.requestedQuantity - line.receivedQuantity);
     const purchaseSafety = current
       ? assessProcurementSafety({
@@ -167,21 +171,27 @@ async function main() {
   });
   const flagged = lines.filter((line) => line.flaggedForReview).length;
 
-  console.log(JSON.stringify({
-    kind: "YSABELLE_QA_RESTOCK_READ_ONLY_AUDIT",
-    database: "localhost/ysabellestore",
-    orderNumber: order.orderNumber,
-    status: order.status,
-    createdAt: order.createdAt.toISOString(),
-    approvedAt: order.approvedAt?.toISOString() ?? null,
-    automatedMonthlyTicket: Boolean(order.notes?.includes("[AutomatedRestockMonth:")),
-    selectedAutomatedLineCount: lines.length,
-    flaggedLineCount: flagged,
-    lines,
-    writes: 0,
-    releaseStatus: "NOT_CERTIFIED",
-    note: "Current-time read-only diagnostic only; no order is authorized by this report and no ticket/inventory was modified."
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        kind: "YSABELLE_QA_RESTOCK_READ_ONLY_AUDIT",
+        database: "localhost/ysabellestore",
+        orderNumber: order.orderNumber,
+        status: order.status,
+        createdAt: order.createdAt.toISOString(),
+        approvedAt: order.approvedAt?.toISOString() ?? null,
+        automatedMonthlyTicket: Boolean(order.notes?.includes("[AutomatedRestockMonth:")),
+        selectedAutomatedLineCount: lines.length,
+        flaggedLineCount: flagged,
+        lines,
+        writes: 0,
+        releaseStatus: "NOT_CERTIFIED",
+        note: "Current-time read-only diagnostic only; no order is authorized by this report and no ticket/inventory was modified."
+      },
+      null,
+      2
+    )
+  );
 }
 
 void main()

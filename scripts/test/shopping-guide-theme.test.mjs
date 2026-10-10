@@ -127,7 +127,6 @@ test("shopping guide popover is spacious, frosted, and has responsive button fee
   );
 });
 
-
 test("dark guide popup has readable progress and visibly disabled Back button", () => {
   const app = read("frontend/src/app/CustomerApp.tsx");
   const source = read("frontend/src/styles/theme-storefront.css").replace(/\s+/g, " ");
@@ -144,7 +143,9 @@ test("dark guide popup has readable progress and visibly disabled Back button", 
   assert.ok(source.includes("background: #293851 !important;"));
   assert.ok(source.includes(scope + " .driver-popover-footer button:disabled {"));
   assert.ok(source.includes("opacity: 1;"));
-  assert.ok(source.includes(scope + " .driver-popover-prev-btn:disabled:is(:hover, :focus-visible)"));
+  assert.ok(
+    source.includes(scope + " .driver-popover-prev-btn:disabled:is(:hover, :focus-visible)")
+  );
   assert.ok(source.includes(scope + " .driver-popover-next-btn:disabled"));
   assert.ok(source.includes("background: #192438 !important;"));
 });

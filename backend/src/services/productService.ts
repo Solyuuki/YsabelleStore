@@ -729,9 +729,13 @@ export async function updateProduct(
   if (input.authorizeTargetStockPolicy === true) {
     const proposed = normalized.targetStockLevel ?? existingProduct.targetStockLevel;
     if (!performedById || !Number.isSafeInteger(proposed) || proposed < 1) {
-      throw new HttpError(422, "Owner identity and a positive target are required to authorize restock policy.", {
-        code: "RESTOCK_TARGET_AUTHORIZATION_INVALID"
-      });
+      throw new HttpError(
+        422,
+        "Owner identity and a positive target are required to authorize restock policy.",
+        {
+          code: "RESTOCK_TARGET_AUTHORIZATION_INVALID"
+        }
+      );
     }
     data.restockTargetApprovedLevel = proposed;
     data.restockTargetApprovedAt = new Date();

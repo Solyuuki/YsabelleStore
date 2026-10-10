@@ -116,7 +116,6 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
                   totalPages={totalPages}
                 />
               ) : null}
-
             </section>
             <aside className="customer-order-summary">
               <p className="customer-kicker">Order summary</p>

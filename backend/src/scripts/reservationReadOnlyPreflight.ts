@@ -60,9 +60,11 @@ async function main() {
   if (!report.migrationReady) process.exitCode = 2;
 }
 
-void main().catch((error) => {
-  console.error("Read-only reservation preflight failed:", error);
-  process.exitCode = 1;
-}).finally(async () => {
-  await prisma.$disconnect();
-});
+void main()
+  .catch((error) => {
+    console.error("Read-only reservation preflight failed:", error);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

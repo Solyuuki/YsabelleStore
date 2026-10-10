@@ -183,7 +183,6 @@
   }
 }
 
-
 /* Cart shares the approved Trending → Everyday Essentials CSS galaxy
    and vector starfield. One full-width canvas for empty, populated and
    paginated states; no fixed-width bitmap shader, repeats or stretching. */
@@ -257,20 +256,35 @@
   color: #e3eafa !important;
   box-shadow: none;
 }
-:root.dark .customer-app .customer-cart-page .customer-cart-pagination nav button[aria-current="page"] {
+:root.dark
+  .customer-app
+  .customer-cart-page
+  .customer-cart-pagination
+  nav
+  button[aria-current="page"] {
   background: #473c73 !important;
   border-color: #a99bea !important;
   color: #f6f0ff !important;
   opacity: 1;
 }
-:root.dark .customer-app .customer-cart-page .customer-cart-pagination nav button:disabled:not([aria-current="page"]) {
+:root.dark
+  .customer-app
+  .customer-cart-page
+  .customer-cart-pagination
+  nav
+  button:disabled:not([aria-current="page"]) {
   background: #19263c !important;
   border-color: #435370 !important;
   color: #8493b2 !important;
   opacity: 0.55;
   cursor: not-allowed;
 }
-:root.dark .customer-app .customer-cart-page .customer-cart-pagination nav button:not(:disabled):hover {
+:root.dark
+  .customer-app
+  .customer-cart-page
+  .customer-cart-pagination
+  nav
+  button:not(:disabled):hover {
   background: #344968 !important;
   border-color: #a49adf !important;
 }

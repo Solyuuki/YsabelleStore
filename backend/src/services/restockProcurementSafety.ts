@@ -101,12 +101,13 @@ export function assessProcurementSafety(input: ProcurementSafetyInput): Procurem
 
   // Target-only fallback is allowed solely for an explicitly approved
   // current Owner target. Never use model output to establish a purchase cap.
-  const independentDemandCeiling = input.recommendationSource === "TARGET_STOCK"
-    ? Math.max(
-        input.targetStockLevel ?? 0,
-        posVerified ? RESTOCK_SAFETY_MONTHS_OF_COVER * input.monthlyPosDemand! : 0
-      )
-    : RESTOCK_SAFETY_MONTHS_OF_COVER * input.monthlyPosDemand!;
+  const independentDemandCeiling =
+    input.recommendationSource === "TARGET_STOCK"
+      ? Math.max(
+          input.targetStockLevel ?? 0,
+          posVerified ? RESTOCK_SAFETY_MONTHS_OF_COVER * input.monthlyPosDemand! : 0
+        )
+      : RESTOCK_SAFETY_MONTHS_OF_COVER * input.monthlyPosDemand!;
   const maxAllowedQuantity = Math.max(
     0,
     Math.ceil(
@@ -135,6 +136,5 @@ export function assessProcurementSafety(input: ProcurementSafetyInput): Procurem
 
 export function exceedsRestockOrderBudget(lineCostsPHP: readonly number[]) {
   if (lineCostsPHP.some((cost) => !Number.isFinite(cost) || cost < 0)) return true;
-  return lineCostsPHP.reduce((total, cost) => total + cost, 0) >
-    RESTOCK_SAFETY_MAX_ORDER_COST_PHP;
+  return lineCostsPHP.reduce((total, cost) => total + cost, 0) > RESTOCK_SAFETY_MAX_ORDER_COST_PHP;
 }

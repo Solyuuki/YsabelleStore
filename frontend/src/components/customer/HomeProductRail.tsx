@@ -53,8 +53,12 @@ export function HomeProductRail({ children, label }: { children: ReactNode; labe
     if (!viewport) return;
     if (!items.length) {
       setState((current) =>
-        current.canScrollNext || current.canScrollPrevious || current.firstVisible !== 0 ||
-        current.visibleCount !== 1 ? initialRailState : current
+        current.canScrollNext ||
+        current.canScrollPrevious ||
+        current.firstVisible !== 0 ||
+        current.visibleCount !== 1
+          ? initialRailState
+          : current
       );
       return;
     }

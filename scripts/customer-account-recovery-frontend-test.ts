@@ -132,7 +132,6 @@ async function main() {
     "Shared constellation must stay proportional at every recovery stage height."
   );
 
-
   /* Verify cooldown remains readable despite disabled state, and the
      post-reset Secure confirmation uses light text on a dark surface. */
   assert.match(
@@ -166,7 +165,10 @@ async function main() {
     "Recovery success details must be readable in dark mode."
   );
   assert.match(recoverySource, /disabled=\{submitting \|\| resendCooldown > 0\}/);
-  assert.match(recoverySource, /resendCooldown > 0 \? `Resend code in \$\{resendCooldown\}s` : "Resend code"/);
+  assert.match(
+    recoverySource,
+    /resendCooldown > 0 \? `Resend code in \$\{resendCooldown\}s` : "Resend code"/
+  );
   assert.match(recoverySource, /customer-recovery-status--success" role="status"/);
 
   assert.match(

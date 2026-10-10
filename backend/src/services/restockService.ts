@@ -517,80 +517,83 @@ export async function approveRestockOrder(
   input: ApproveRestockOrderRequest,
   approvedById: string
 ) {
-  await prisma.$transaction(async (tx) => {
-    const existing = await tx.restockOrder.findUnique({
-      include: {
-        lines: {
-          select: {
-            isSelected: true,
-            productId: true,
-            recommendationId: true,
-            requestedQuantity: true
+  await prisma.$transaction(
+    async (tx) => {
+      const existing = await tx.restockOrder.findUnique({
+        include: {
+          lines: {
+            select: {
+              isSelected: true,
+              productId: true,
+              recommendationId: true,
+              requestedQuantity: true
+            }
           }
-        }
-      },
-      where: { id: orderId }
-    });
-
-    if (!existing) {
-      throw new HttpError(404, "Restock order was not found.", {
-        code: "RESTOCK_ORDER_NOT_FOUND"
+        },
+        where: { id: orderId }
       });
-    }
-    assertDraft(existing, input.expectedVersion);
 
-    const selectedLines = existing.lines.filter((line) => line.isSelected);
-    if (selectedLines.length === 0) {
-      throw new HttpError(422, "Select at least one restock line before approval.", {
-        code: "RESTOCK_APPROVAL_EMPTY"
-      });
-    }
-    if (selectedLines.some((line) => line.requestedQuantity < 1)) {
-      throw new HttpError(422, "Selected restock lines require a positive requested quantity.", {
-        code: "RESTOCK_APPROVAL_INVALID_QUANTITY"
-      });
-    }
-
-    // Lock inventory product identities in deterministic order: competing
-    // approvals for the same product cannot both approve stale incoming stock.
-    for (const productId of [...new Set(selectedLines.map((line) => line.productId))].sort()) {
-      await tx.$queryRaw`SELECT id FROM products WHERE id = ${productId} FOR UPDATE`;
-    }
-    await assertAutomatedRestockQuantitySafe(orderId, input.expectedVersion, "APPROVAL", tx);
-
-    const updated = await tx.restockOrder.updateMany({
-      data: {
-        approvedAt: new Date(),
-        approvedById,
-        status: RestockOrderStatus.APPROVED,
-        version: { increment: 1 }
-      },
-      where: {
-        id: orderId,
-        status: RestockOrderStatus.DRAFT,
-        version: input.expectedVersion
+      if (!existing) {
+        throw new HttpError(404, "Restock order was not found.", {
+          code: "RESTOCK_ORDER_NOT_FOUND"
+        });
       }
-    });
+      assertDraft(existing, input.expectedVersion);
 
-    if (updated.count !== 1) {
-      throw new HttpError(409, "The restock order changed elsewhere. Refresh and try again.", {
-        code: "RESTOCK_ORDER_VERSION_CONFLICT"
-      });
-    }
+      const selectedLines = existing.lines.filter((line) => line.isSelected);
+      if (selectedLines.length === 0) {
+        throw new HttpError(422, "Select at least one restock line before approval.", {
+          code: "RESTOCK_APPROVAL_EMPTY"
+        });
+      }
+      if (selectedLines.some((line) => line.requestedQuantity < 1)) {
+        throw new HttpError(422, "Selected restock lines require a positive requested quantity.", {
+          code: "RESTOCK_APPROVAL_INVALID_QUANTITY"
+        });
+      }
 
-    const recommendationIds = selectedLines
-      .map((line) => line.recommendationId)
-      .filter((id): id is string => Boolean(id));
-    if (recommendationIds.length > 0) {
-      await tx.recommendationRecord.updateMany({
-        data: { status: "ACKNOWLEDGED" },
+      // Lock inventory product identities in deterministic order: competing
+      // approvals for the same product cannot both approve stale incoming stock.
+      for (const productId of [...new Set(selectedLines.map((line) => line.productId))].sort()) {
+        await tx.$queryRaw`SELECT id FROM products WHERE id = ${productId} FOR UPDATE`;
+      }
+      await assertAutomatedRestockQuantitySafe(orderId, input.expectedVersion, "APPROVAL", tx);
+
+      const updated = await tx.restockOrder.updateMany({
+        data: {
+          approvedAt: new Date(),
+          approvedById,
+          status: RestockOrderStatus.APPROVED,
+          version: { increment: 1 }
+        },
         where: {
-          id: { in: recommendationIds },
-          status: "OPEN"
+          id: orderId,
+          status: RestockOrderStatus.DRAFT,
+          version: input.expectedVersion
         }
       });
-    }
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
+
+      if (updated.count !== 1) {
+        throw new HttpError(409, "The restock order changed elsewhere. Refresh and try again.", {
+          code: "RESTOCK_ORDER_VERSION_CONFLICT"
+        });
+      }
+
+      const recommendationIds = selectedLines
+        .map((line) => line.recommendationId)
+        .filter((id): id is string => Boolean(id));
+      if (recommendationIds.length > 0) {
+        await tx.recommendationRecord.updateMany({
+          data: { status: "ACKNOWLEDGED" },
+          where: {
+            id: { in: recommendationIds },
+            status: "OPEN"
+          }
+        });
+      }
+    },
+    { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
+  );
 
   return await loadRestockOrder(orderId);
 }

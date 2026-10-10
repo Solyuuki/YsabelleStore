@@ -28,12 +28,39 @@ export function CategoryRetailBackdrop() {
           </linearGradient>
         </defs>
         <g fill="none" strokeLinecap="round" vectorEffect="non-scaling-stroke">
-          <path d="M-85 322C164 274 281 117 334 -82" stroke="url(#categoryDarkBlueStroke)" strokeWidth="1.5" />
-          <path d="M-108 366C178 288 312 104 368 -84" stroke="#709EE9" strokeOpacity="0.11" strokeWidth="1" />
-          <path d="M1700 288C1508 354 1390 485 1366 846" stroke="url(#categoryDarkVioletStroke)" strokeWidth="1.5" />
-          <path d="M1740 339C1512 405 1455 531 1437 864" stroke="#AC8BE7" strokeOpacity="0.12" strokeWidth="1" />
-          <path d="M-80 700C228 724 428 839 806 829C1129 818 1364 760 1680 686" stroke="url(#categoryDarkBottomStroke)" strokeWidth="1.5" />
-          <path d="M-70 742C239 784 495 872 822 865C1137 856 1442 785 1670 733" stroke="#8092E6" strokeOpacity="0.09" strokeWidth="1" />
+          <path
+            d="M-85 322C164 274 281 117 334 -82"
+            stroke="url(#categoryDarkBlueStroke)"
+            strokeWidth="1.5"
+          />
+          <path
+            d="M-108 366C178 288 312 104 368 -84"
+            stroke="#709EE9"
+            strokeOpacity="0.11"
+            strokeWidth="1"
+          />
+          <path
+            d="M1700 288C1508 354 1390 485 1366 846"
+            stroke="url(#categoryDarkVioletStroke)"
+            strokeWidth="1.5"
+          />
+          <path
+            d="M1740 339C1512 405 1455 531 1437 864"
+            stroke="#AC8BE7"
+            strokeOpacity="0.12"
+            strokeWidth="1"
+          />
+          <path
+            d="M-80 700C228 724 428 839 806 829C1129 818 1364 760 1680 686"
+            stroke="url(#categoryDarkBottomStroke)"
+            strokeWidth="1.5"
+          />
+          <path
+            d="M-70 742C239 784 495 872 822 865C1137 856 1442 785 1670 733"
+            stroke="#8092E6"
+            strokeOpacity="0.09"
+            strokeWidth="1"
+          />
         </g>
         <g>
           <circle cx="302" cy="177" r="6" fill="#95A3FF" fillOpacity="0.62" />

@@ -147,9 +147,10 @@ function checkoutIdempotencyKey(input: StorefrontOrderInput) {
     paymentMethod: input.paymentMethod
   });
   try {
-    const previous = JSON.parse(sessionStorage.getItem(CUSTOMER_CHECKOUT_RETRY_KEY) || "null") as
-      | { signature?: string; key?: string }
-      | null;
+    const previous = JSON.parse(sessionStorage.getItem(CUSTOMER_CHECKOUT_RETRY_KEY) || "null") as {
+      signature?: string;
+      key?: string;
+    } | null;
     if (previous?.signature === signature && previous.key) return previous.key;
     const key = crypto.randomUUID();
     sessionStorage.setItem(CUSTOMER_CHECKOUT_RETRY_KEY, JSON.stringify({ signature, key }));

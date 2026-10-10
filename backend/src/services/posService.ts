@@ -139,7 +139,10 @@ export async function searchPosProducts(
   });
 
   const normalizedQueryKey = normalizedQuery.toLowerCase();
-  const reserved = await activeReservationsByProduct(prisma, products.map((product) => product.id));
+  const reserved = await activeReservationsByProduct(
+    prisma,
+    products.map((product) => product.id)
+  );
 
   return {
     catalogCount: totalItems,
@@ -197,220 +200,232 @@ export async function checkoutPosSale(input: {
     ? createHash("sha256").update(`${input.cashierId}:${input.requestKey}`).digest("hex")
     : null;
 
-  const result: CheckoutResult = await prisma.$transaction(async (tx) => {
-    await lockProductStock(tx, normalizedItems.map((item) => item.productId));
-    if (checkoutRequestKey) {
-      const existing = await tx.sale.findUnique({
-        where: { checkoutRequestKey },
+  const result: CheckoutResult = await prisma.$transaction(
+    async (tx) => {
+      await lockProductStock(
+        tx,
+        normalizedItems.map((item) => item.productId)
+      );
+      if (checkoutRequestKey) {
+        const existing = await tx.sale.findUnique({
+          where: { checkoutRequestKey },
+          include: {
+            cashier: true,
+            items: { include: { product: true } }
+          }
+        });
+        if (existing) {
+          const quantities = new Map<string, number>();
+          for (const item of existing.items) {
+            quantities.set(item.productId, (quantities.get(item.productId) ?? 0) + item.quantity);
+          }
+          const requestMatches =
+            normalizedItems.length === quantities.size &&
+            normalizedItems.every((item) => quantities.get(item.productId) === item.quantity);
+          if (
+            !requestMatches ||
+            (input.cashReceived !== undefined &&
+              new Prisma.Decimal(input.cashReceived).comparedTo(
+                existing.checkoutCashReceived ?? existing.totalAmount
+              ) !== 0)
+          ) {
+            throw new HttpError(409, "POS request key was reused for a different checkout.", {
+              code: "POS_CHECKOUT_IDEMPOTENCY_CONFLICT"
+            });
+          }
+          return {
+            sale: {
+              cashierName: existing.cashier?.name ?? input.cashierName,
+              cashReceived: (existing.checkoutCashReceived ?? existing.totalAmount).toString(),
+              discountAmount: existing.discountAmount.toString(),
+              change: (existing.checkoutChange ?? new Prisma.Decimal(0)).toString(),
+              id: existing.id,
+              itemCount: existing.items.reduce((sum, item) => sum + item.quantity, 0),
+              items: existing.items.map((item) => ({
+                batchId: item.batchId,
+                barcode: item.product.barcode,
+                id: item.id,
+                productId: item.productId,
+                productName: item.product.name,
+                quantity: item.quantity,
+                sku: item.product.sku,
+                totalAmount: item.totalAmount.toString(),
+                unitPrice: item.unitPrice.toString()
+              })),
+              paymentMethod: "CASH" as const,
+              saleDate: existing.saleDate.toISOString(),
+              saleNumber: existing.saleNumber,
+              status: existing.status,
+              subtotalAmount: existing.subtotalAmount.toString(),
+              totalAmount: existing.totalAmount.toString()
+            }
+          };
+        }
+      }
+      const products = await tx.product.findMany({
         include: {
-          cashier: true,
-          items: { include: { product: true } }
-        }
+          category: true,
+          inventory: true
+        },
+        where: operationalProductWhere({
+          id: {
+            in: normalizedItems.map((item) => item.productId)
+          },
+          status: "ACTIVE"
+        })
       });
-      if (existing) {
-        const quantities = new Map<string, number>();
-        for (const item of existing.items) {
-          quantities.set(item.productId, (quantities.get(item.productId) ?? 0) + item.quantity);
-        }
-        const requestMatches = normalizedItems.length === quantities.size &&
-          normalizedItems.every((item) => quantities.get(item.productId) === item.quantity);
-        if (!requestMatches || (input.cashReceived !== undefined &&
-          new Prisma.Decimal(input.cashReceived).comparedTo(existing.checkoutCashReceived ?? existing.totalAmount) !== 0)) {
-          throw new HttpError(409, "POS request key was reused for a different checkout.", {
-            code: "POS_CHECKOUT_IDEMPOTENCY_CONFLICT"
+
+      const productMap = new Map(products.map((product) => [product.id, product]));
+      const checkoutLines = normalizedItems.map((item) => {
+        const product = productMap.get(item.productId);
+
+        if (!product) {
+          throw new HttpError(404, "One or more products could not be found.", {
+            code: "POS_PRODUCT_NOT_FOUND",
+            details: {
+              productId: item.productId
+            }
           });
         }
+
+        const unitPrice = toDecimal(product.sellingPrice);
+
+        if (unitPrice.lessThan(0)) {
+          throw new HttpError(422, "One or more products have an invalid price.", {
+            code: "INVALID_PRODUCT_PRICE",
+            details: {
+              productId: product.id
+            }
+          });
+        }
+
         return {
-          sale: {
-            cashierName: existing.cashier?.name ?? input.cashierName,
-            cashReceived: (existing.checkoutCashReceived ?? existing.totalAmount).toString(),
-            discountAmount: existing.discountAmount.toString(),
-            change: (existing.checkoutChange ?? new Prisma.Decimal(0)).toString(),
-            id: existing.id,
-            itemCount: existing.items.reduce((sum, item) => sum + item.quantity, 0),
-            items: existing.items.map((item) => ({
-              batchId: item.batchId,
-              barcode: item.product.barcode,
-              id: item.id,
-              productId: item.productId,
-              productName: item.product.name,
-              quantity: item.quantity,
-              sku: item.product.sku,
-              totalAmount: item.totalAmount.toString(),
-              unitPrice: item.unitPrice.toString()
-            })),
-            paymentMethod: "CASH" as const,
-            saleDate: existing.saleDate.toISOString(),
-            saleNumber: existing.saleNumber,
-            status: existing.status,
-            subtotalAmount: existing.subtotalAmount.toString(),
-            totalAmount: existing.totalAmount.toString()
-          }
+          product,
+          quantity: item.quantity,
+          unitPrice
         };
-      }
-    }
-    const products = await tx.product.findMany({
-      include: {
-        category: true,
-        inventory: true
-      },
-      where: operationalProductWhere({
-        id: {
-          in: normalizedItems.map((item) => item.productId)
-        },
-        status: "ACTIVE"
-      })
-    });
+      });
 
-    const productMap = new Map(products.map((product) => [product.id, product]));
-    const checkoutLines = normalizedItems.map((item) => {
-      const product = productMap.get(item.productId);
+      const subtotalAmount = checkoutLines.reduce(
+        (sum, line) => sum.add(line.unitPrice.mul(line.quantity)),
+        new Prisma.Decimal(0)
+      );
+      const discountAmount = new Prisma.Decimal(0);
+      const totalAmount = subtotalAmount.sub(discountAmount);
+      const cashReceived =
+        input.cashReceived === undefined ? totalAmount : toDecimal(input.cashReceived);
 
-      if (!product) {
-        throw new HttpError(404, "One or more products could not be found.", {
-          code: "POS_PRODUCT_NOT_FOUND",
+      if (cashReceived.lessThan(totalAmount)) {
+        throw new HttpError(422, "Cash received is less than the sale total.", {
+          code: "INSUFFICIENT_CASH_RECEIVED",
           details: {
-            productId: item.productId
+            cashReceived: cashReceived.toFixed(2),
+            totalAmount: totalAmount.toFixed(2)
           }
         });
       }
 
-      const unitPrice = toDecimal(product.sellingPrice);
+      const change = cashReceived.sub(totalAmount);
 
-      if (unitPrice.lessThan(0)) {
-        throw new HttpError(422, "One or more products have an invalid price.", {
-          code: "INVALID_PRODUCT_PRICE",
-          details: {
-            productId: product.id
-          }
+      const sale = await tx.sale.create({
+        data: {
+          cashierId: input.cashierId,
+          discountAmount,
+          notes: input.notes?.trim() || null,
+          saleDate,
+          saleNumber,
+          checkoutRequestKey,
+          checkoutCashReceived: cashReceived,
+          checkoutChange: change,
+          status: SaleStatus.COMPLETED,
+          subtotalAmount,
+          totalAmount
+        }
+      });
+
+      const saleItems: SaleItemRecord[] = [];
+
+      for (const line of checkoutLines) {
+        if (!line.product.inventory) {
+          throw new HttpError(404, "Inventory record was not found for the selected product.", {
+            code: "INVENTORY_NOT_FOUND",
+            details: {
+              productId: line.product.id
+            }
+          });
+        }
+
+        const quantityBefore = line.product.inventory.quantityOnHand;
+        const allocations = await allocateStockForSale(tx, {
+          productId: line.product.id,
+          quantity: line.quantity
         });
+
+        for (const allocation of allocations) {
+          const lineTotal = line.unitPrice.mul(allocation.quantity);
+          const createdSaleItem = await tx.saleItem.create({
+            data: {
+              batchId: allocation.batchId,
+              productId: line.product.id,
+              quantity: allocation.quantity,
+              saleId: sale.id,
+              totalAmount: lineTotal,
+              unitPrice: line.unitPrice
+            }
+          });
+
+          saleItems.push({
+            batchId: allocation.batchId,
+            barcode: line.product.barcode,
+            id: createdSaleItem.id,
+            productId: line.product.id,
+            productName: line.product.name,
+            quantity: allocation.quantity,
+            sku: line.product.sku,
+            totalAmount: lineTotal.toString(),
+            unitPrice: line.unitPrice.toString()
+          });
+        }
+
+        const syncResult = await synchronizeInventoryAggregate(tx, line.product.id);
+
+        await createInventoryMovementAfterAllocation(tx, {
+          batchId: allocations[0]?.batchId ?? null,
+          inventoryId: line.product.inventory.id,
+          performedById: input.cashierId,
+          productId: line.product.id,
+          quantity: line.quantity,
+          quantityBefore,
+          quantityAfter: syncResult.inventory.currentQuantity,
+          reason: `POS sale ${sale.saleNumber}`,
+          referenceId: sale.id,
+          referenceType: "SALE",
+          type: "SALE"
+        });
+
+        await assertStockInvariant(tx, line.product.id);
       }
 
       return {
-        product,
-        quantity: item.quantity,
-        unitPrice
-      };
-    });
-
-    const subtotalAmount = checkoutLines.reduce(
-      (sum, line) => sum.add(line.unitPrice.mul(line.quantity)),
-      new Prisma.Decimal(0)
-    );
-    const discountAmount = new Prisma.Decimal(0);
-    const totalAmount = subtotalAmount.sub(discountAmount);
-    const cashReceived =
-      input.cashReceived === undefined ? totalAmount : toDecimal(input.cashReceived);
-
-    if (cashReceived.lessThan(totalAmount)) {
-      throw new HttpError(422, "Cash received is less than the sale total.", {
-        code: "INSUFFICIENT_CASH_RECEIVED",
-        details: {
-          cashReceived: cashReceived.toFixed(2),
-          totalAmount: totalAmount.toFixed(2)
+        sale: {
+          cashierName: input.cashierName,
+          cashReceived: cashReceived.toString(),
+          discountAmount: sale.discountAmount.toString(),
+          change: change.toString(),
+          id: sale.id,
+          itemCount: saleItems.reduce((sum, item) => sum + item.quantity, 0),
+          items: saleItems,
+          paymentMethod: "CASH",
+          saleDate: sale.saleDate.toISOString(),
+          saleNumber: sale.saleNumber,
+          status: sale.status,
+          subtotalAmount: sale.subtotalAmount.toString(),
+          totalAmount: sale.totalAmount.toString()
         }
-      });
-    }
-
-    const change = cashReceived.sub(totalAmount);
-
-    const sale = await tx.sale.create({
-      data: {
-        cashierId: input.cashierId,
-        discountAmount,
-        notes: input.notes?.trim() || null,
-        saleDate,
-        saleNumber,
-        checkoutRequestKey,
-        checkoutCashReceived: cashReceived,
-        checkoutChange: change,
-        status: SaleStatus.COMPLETED,
-        subtotalAmount,
-        totalAmount
-      }
-    });
-
-    const saleItems: SaleItemRecord[] = [];
-
-    for (const line of checkoutLines) {
-      if (!line.product.inventory) {
-        throw new HttpError(404, "Inventory record was not found for the selected product.", {
-          code: "INVENTORY_NOT_FOUND",
-          details: {
-            productId: line.product.id
-          }
-        });
-      }
-
-      const quantityBefore = line.product.inventory.quantityOnHand;
-      const allocations = await allocateStockForSale(tx, {
-        productId: line.product.id,
-        quantity: line.quantity
-      });
-
-      for (const allocation of allocations) {
-        const lineTotal = line.unitPrice.mul(allocation.quantity);
-        const createdSaleItem = await tx.saleItem.create({
-          data: {
-            batchId: allocation.batchId,
-            productId: line.product.id,
-            quantity: allocation.quantity,
-            saleId: sale.id,
-            totalAmount: lineTotal,
-            unitPrice: line.unitPrice
-          }
-        });
-
-        saleItems.push({
-          batchId: allocation.batchId,
-          barcode: line.product.barcode,
-          id: createdSaleItem.id,
-          productId: line.product.id,
-          productName: line.product.name,
-          quantity: allocation.quantity,
-          sku: line.product.sku,
-          totalAmount: lineTotal.toString(),
-          unitPrice: line.unitPrice.toString()
-        });
-      }
-
-      const syncResult = await synchronizeInventoryAggregate(tx, line.product.id);
-
-      await createInventoryMovementAfterAllocation(tx, {
-        batchId: allocations[0]?.batchId ?? null,
-        inventoryId: line.product.inventory.id,
-        performedById: input.cashierId,
-        productId: line.product.id,
-        quantity: line.quantity,
-        quantityBefore,
-        quantityAfter: syncResult.inventory.currentQuantity,
-        reason: `POS sale ${sale.saleNumber}`,
-        referenceId: sale.id,
-        referenceType: "SALE",
-        type: "SALE"
-      });
-
-      await assertStockInvariant(tx, line.product.id);
-    }
-
-    return {
-      sale: {
-        cashierName: input.cashierName,
-        cashReceived: cashReceived.toString(),
-        discountAmount: sale.discountAmount.toString(),
-        change: change.toString(),
-        id: sale.id,
-        itemCount: saleItems.reduce((sum, item) => sum + item.quantity, 0),
-        items: saleItems,
-        paymentMethod: "CASH",
-        saleDate: sale.saleDate.toISOString(),
-        saleNumber: sale.saleNumber,
-        status: sale.status,
-        subtotalAmount: sale.subtotalAmount.toString(),
-        totalAmount: sale.totalAmount.toString()
-      }
-    };
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
+      };
+    },
+    { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
+  );
 
   // Checkout stays responsive; forecast delivery keeps serving the previous batch while this runs.
   invalidateForecastCache(normalizedItems.map((item) => item.productId));

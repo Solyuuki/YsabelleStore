@@ -174,7 +174,9 @@ async function loadOperationalActionLines() {
 
     if (page >= result.meta.totalPages) {
       if (exceedsRestockOrderBudget(lineCosts)) {
-        console.warn("[restock] Monthly automated recommendations exceed the purchase budget. No draft was created or updated.");
+        console.warn(
+          "[restock] Monthly automated recommendations exceed the purchase budget. No draft was created or updated."
+        );
         return [];
       }
       return lines;

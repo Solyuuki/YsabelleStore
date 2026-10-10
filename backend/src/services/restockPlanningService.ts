@@ -78,12 +78,13 @@ export async function listRestockPlanningCandidates(
   });
   const productIds = products.map((product) => product.id);
   const now = new Date();
-  const [incomingByProduct, operationalSalesByProduct, activeForecasts, activeReservations] = await Promise.all([
-    getIncomingRestockStock(productIds, excludeOrderId, db),
-    loadOperationalPosSales(productIds, now, db),
-    loadActiveInventoryForecasts(productIds, db),
-    activeReservationsByProduct(db, productIds)
-  ]);
+  const [incomingByProduct, operationalSalesByProduct, activeForecasts, activeReservations] =
+    await Promise.all([
+      getIncomingRestockStock(productIds, excludeOrderId, db),
+      loadOperationalPosSales(productIds, now, db),
+      loadActiveInventoryForecasts(productIds, db),
+      activeReservationsByProduct(db, productIds)
+    ]);
 
   const recommendations = productIds.length
     ? await db.recommendationRecord.findMany({
@@ -117,7 +118,9 @@ export async function listRestockPlanningCandidates(
     const knownUnitCosts = [
       product.costPrice?.toNumber(),
       ...product.inventoryBatches.map((batch) => batch.unitCost?.toNumber())
-    ].filter((price): price is number => price !== undefined && Number.isFinite(price) && price > 0);
+    ].filter(
+      (price): price is number => price !== undefined && Number.isFinite(price) && price > 0
+    );
     const conservativeUnitCost = knownUnitCosts.length > 0 ? Math.max(...knownUnitCosts) : null;
     const incomingStock = incomingByProduct.get(product.id) ?? 0;
     const salesSeries = operationalSalesByProduct.get(product.id) ?? [];

@@ -658,8 +658,12 @@ function HomeNextStep({ navigate }: { navigate: (path: string) => void }) {
     <section className="customer-section home-next-step">
       {/* Vector rendition of the approved portal backdrop; never stretch the source ratio. */}
       <div aria-hidden="true" className="home-next-step__dark-backdrop">
-        <svg className="home-next-step__dark-backdrop-svg"
-          focusable="false" preserveAspectRatio="xMaxYMid meet" viewBox="0 0 1983 793">
+        <svg
+          className="home-next-step__dark-backdrop-svg"
+          focusable="false"
+          preserveAspectRatio="xMaxYMid meet"
+          viewBox="0 0 1983 793"
+        >
           <defs>
             <radialGradient id="ysPortalHalo">
               <stop offset="0%" stopColor="#765BDB" stopOpacity="0.39" />
@@ -684,19 +688,53 @@ function HomeNextStep({ navigate }: { navigate: (path: string) => void }) {
             </linearGradient>
           </defs>
           <ellipse cx="1520" cy="337" rx="600" ry="405" fill="url(#ysPortalHalo)" />
-          <ellipse cx="1554" cy="346" rx="397" ry="267"
-            transform="rotate(-13 1554 346)" fill="url(#ysPortalInterior)" opacity="0.68" />
+          <ellipse
+            cx="1554"
+            cy="346"
+            rx="397"
+            ry="267"
+            transform="rotate(-13 1554 346)"
+            fill="url(#ysPortalInterior)"
+            opacity="0.68"
+          />
           <g fill="none" strokeLinecap="round">
-            <ellipse cx="1557" cy="343" rx="406" ry="260"
-              transform="rotate(-13 1557 343)" stroke="url(#ysPortalRim)" strokeWidth="2.1" />
-            <ellipse cx="1562" cy="338" rx="471" ry="305"
-              transform="rotate(-13 1562 338)" stroke="#91A0EF" strokeOpacity="0.19" />
-            <ellipse cx="1560" cy="350" rx="351" ry="220"
-              transform="rotate(-13 1560 350)" stroke="#BC98FF" strokeOpacity="0.25" />
-            <path d="M-96 470C270 276 530 344 833 505C1130 662 1374 717 1653 585C1813 510 1930 418 2100 353"
-              stroke="url(#ysPortalSweep)" strokeWidth="1.5" />
-            <path d="M-96 560C296 356 541 433 842 577C1170 728 1395 757 1706 618C1870 544 1961 475 2100 428"
-              stroke="#8391DB" strokeOpacity="0.12" />
+            <ellipse
+              cx="1557"
+              cy="343"
+              rx="406"
+              ry="260"
+              transform="rotate(-13 1557 343)"
+              stroke="url(#ysPortalRim)"
+              strokeWidth="2.1"
+            />
+            <ellipse
+              cx="1562"
+              cy="338"
+              rx="471"
+              ry="305"
+              transform="rotate(-13 1562 338)"
+              stroke="#91A0EF"
+              strokeOpacity="0.19"
+            />
+            <ellipse
+              cx="1560"
+              cy="350"
+              rx="351"
+              ry="220"
+              transform="rotate(-13 1560 350)"
+              stroke="#BC98FF"
+              strokeOpacity="0.25"
+            />
+            <path
+              d="M-96 470C270 276 530 344 833 505C1130 662 1374 717 1653 585C1813 510 1930 418 2100 353"
+              stroke="url(#ysPortalSweep)"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M-96 560C296 356 541 433 842 577C1170 728 1395 757 1706 618C1870 544 1961 475 2100 428"
+              stroke="#8391DB"
+              strokeOpacity="0.12"
+            />
           </g>
           <g fill="#A7AEFF">
             <circle cx="1095" cy="291" r="5" opacity="0.63" />

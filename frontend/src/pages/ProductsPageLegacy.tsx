@@ -3055,9 +3055,9 @@ function ProductDetailsDialog({
                     <span>
                       <strong>Owner authorization: Target-stock replenishment</strong>
                       <span className="mt-1 block text-xs">
-                        Explicitly authorize this target quantity for controlled replenishment
-                        when verified actual-sales history is incomplete. This does not
-                        bypass the quantity, unit-cost, or order budget limits.
+                        Explicitly authorize this target quantity for controlled replenishment when
+                        verified actual-sales history is incomplete. This does not bypass the
+                        quantity, unit-cost, or order budget limits.
                       </span>
                     </span>
                   </label>

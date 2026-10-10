@@ -388,23 +388,26 @@ export async function addStock(
   performedById?: string
 ): Promise<InventoryMutationResult> {
   try {
-    const result = await prisma.$transaction(async (tx) => {
-      const batchResult = await stockInBatch(tx, {
-        batchCode: input.batchCode,
-        expiresAt: input.expiresAt ?? null,
-        performedById,
-        productId,
-        quantity: input.quantity,
-        reason: "Stock in",
-        referenceId: null,
-        referenceType: "MANUAL_STOCK_IN"
-      });
+    const result = await prisma.$transaction(
+      async (tx) => {
+        const batchResult = await stockInBatch(tx, {
+          batchCode: input.batchCode,
+          expiresAt: input.expiresAt ?? null,
+          performedById,
+          productId,
+          quantity: input.quantity,
+          reason: "Stock in",
+          referenceId: null,
+          referenceType: "MANUAL_STOCK_IN"
+        });
 
-      return {
-        inventory: batchResult.inventory,
-        movement: asMovementSummary(batchResult.movement)
-      };
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
+        return {
+          inventory: batchResult.inventory,
+          movement: asMovementSummary(batchResult.movement)
+        };
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
+    );
 
     return result;
   } catch (error) {
@@ -423,22 +426,25 @@ export async function adjustStock(
   input: StockAdjustRequest,
   performedById?: string
 ): Promise<InventoryMutationResult> {
-  return prisma.$transaction(async (tx) => {
-    const adjustmentResult = await applyStockAdjustment(tx, {
-      direction: input.movementType === "ADJUSTMENT_IN" ? "IN" : "OUT",
-      performedById,
-      productId,
-      quantity: input.quantity,
-      reason: input.reason,
-      referenceId: input.referenceId ?? null,
-      referenceType: input.referenceType ?? "ADJUSTMENT"
-    });
+  return prisma.$transaction(
+    async (tx) => {
+      const adjustmentResult = await applyStockAdjustment(tx, {
+        direction: input.movementType === "ADJUSTMENT_IN" ? "IN" : "OUT",
+        performedById,
+        productId,
+        quantity: input.quantity,
+        reason: input.reason,
+        referenceId: input.referenceId ?? null,
+        referenceType: input.referenceType ?? "ADJUSTMENT"
+      });
 
-    return {
-      inventory: adjustmentResult.inventory,
-      movement: asMovementSummary(adjustmentResult.movement)
-    };
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
+      return {
+        inventory: adjustmentResult.inventory,
+        movement: asMovementSummary(adjustmentResult.movement)
+      };
+    },
+    { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
+  );
 }
 
 function mergeDeductionLineItems(lineItems: DeductionLineItem[]) {

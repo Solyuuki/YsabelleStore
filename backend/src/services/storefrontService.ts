@@ -31,7 +31,12 @@ import {
   storefrontProductWhere
 } from "./catalogQualityPolicy.js";
 import { getSellableStockQuantity } from "./stockDomainService.js";
-import { activeReservationsByProduct, availableToPromise, lockProductStock, reserveStorefrontItems } from "./stockReservationService.js";
+import {
+  activeReservationsByProduct,
+  availableToPromise,
+  lockProductStock,
+  reserveStorefrontItems
+} from "./stockReservationService.js";
 
 const storefrontProductInclude = {
   category: true,
@@ -249,7 +254,10 @@ function serializeStorefrontProduct(
   reviewSummary: StorefrontProductReviewSummary,
   reservedStock = 0
 ) {
-  const availableStock = Math.max(0, getSellableStockQuantity(product.inventoryBatches) - reservedStock);
+  const availableStock = Math.max(
+    0,
+    getSellableStockQuantity(product.inventoryBatches) - reservedStock
+  );
 
   return {
     id: product.id,
@@ -329,10 +337,10 @@ async function serializeStorefrontProducts(products: StorefrontProductRecord[]) 
   const [reservedByProduct, aggregates] = await Promise.all([
     activeReservationsByProduct(prisma, productIds),
     prisma.productReview.groupBy({
-    _avg: { rating: true },
-    _count: { _all: true },
-    by: ["productId"],
-    where: { productId: { in: productIds }, status: "VISIBLE" }
+      _avg: { rating: true },
+      _count: { _all: true },
+      by: ["productId"],
+      where: { productId: { in: productIds }, status: "VISIBLE" }
     })
   ]);
   const summaries = new Map<string, StorefrontProductReviewSummary>(
@@ -414,7 +422,10 @@ export async function listStorefrontProducts(query: StorefrontProductQuery) {
     })
   });
 
-  const reservations = await activeReservationsByProduct(prisma, products.map((product) => product.id));
+  const reservations = await activeReservationsByProduct(
+    prisma,
+    products.map((product) => product.id)
+  );
   const visibleProducts = products.filter((product) => {
     const availableStock = Math.max(
       0,
@@ -441,10 +452,13 @@ export async function listStorefrontMerchandising(now = new Date()) {
     include: storefrontProductInclude,
     where: storefrontProductWhere()
   });
-  const reservations = await activeReservationsByProduct(prisma, products.map((product) => product.id));
+  const reservations = await activeReservationsByProduct(
+    prisma,
+    products.map((product) => product.id)
+  );
   const availableProductRecords = products.filter(
-    (product) => getSellableStockQuantity(product.inventoryBatches) >
-      (reservations.get(product.id) ?? 0)
+    (product) =>
+      getSellableStockQuantity(product.inventoryBatches) > (reservations.get(product.id) ?? 0)
   );
   const productIds = availableProductRecords.map((product) => product.id);
 
@@ -920,9 +934,12 @@ export async function createStorefrontOrder(
   input: StorefrontOrderInput,
   context: StorefrontOrderContext = {}
 ) {
-  const requestKey = context.customerAccountId && context.checkoutRequestKey
-    ? createHash("sha256").update(`${context.customerAccountId}:${context.checkoutRequestKey}`).digest("hex")
-    : null;
+  const requestKey =
+    context.customerAccountId && context.checkoutRequestKey
+      ? createHash("sha256")
+          .update(`${context.customerAccountId}:${context.checkoutRequestKey}`)
+          .digest("hex")
+      : null;
   const itemQuantities = new Map<string, number>();
   for (const item of input.items) {
     itemQuantities.set(item.productId, (itemQuantities.get(item.productId) ?? 0) + item.quantity);
@@ -933,169 +950,181 @@ export async function createStorefrontOrder(
     quantity
   }));
 
-  return prisma.$transaction(async (tx) => {
-    await lockProductStock(tx, normalizedItems.map((item) => item.productId));
-    if (requestKey) {
-      const existing = await tx.customerOrder.findUnique({
-        include: storefrontOrderInclude,
-        where: { checkoutRequestKey: requestKey }
-      });
-      if (existing) {
-        const ordered = existing.items.map((item) => [item.productId, item.quantity] as const);
-        const received = normalizedItems.map((item) => [item.productId, item.quantity] as const);
-        const signature = (rows: readonly (readonly [string, number])[]) =>
-          JSON.stringify([...rows].sort(([left], [right]) => left.localeCompare(right)));
-        if (existing.customerAccountId !== context.customerAccountId ||
+  return prisma.$transaction(
+    async (tx) => {
+      await lockProductStock(
+        tx,
+        normalizedItems.map((item) => item.productId)
+      );
+      if (requestKey) {
+        const existing = await tx.customerOrder.findUnique({
+          include: storefrontOrderInclude,
+          where: { checkoutRequestKey: requestKey }
+        });
+        if (existing) {
+          const ordered = existing.items.map((item) => [item.productId, item.quantity] as const);
+          const received = normalizedItems.map((item) => [item.productId, item.quantity] as const);
+          const signature = (rows: readonly (readonly [string, number])[]) =>
+            JSON.stringify([...rows].sort(([left], [right]) => left.localeCompare(right)));
+          if (
+            existing.customerAccountId !== context.customerAccountId ||
             existing.paymentMethod !== input.paymentMethod ||
-            signature(ordered) !== signature(received)) {
-          throw new HttpError(409, "Checkout request key was reused for a different order.", {
-            code: "CHECKOUT_IDEMPOTENCY_CONFLICT"
+            signature(ordered) !== signature(received)
+          ) {
+            throw new HttpError(409, "Checkout request key was reused for a different order.", {
+              code: "CHECKOUT_IDEMPOTENCY_CONFLICT"
+            });
+          }
+          return serializeStorefrontOrder(existing);
+        }
+      }
+      const reservations = await activeReservationsByProduct(
+        tx,
+        normalizedItems.map((item) => item.productId)
+      );
+      const products = await tx.product.findMany({
+        include: storefrontProductInclude,
+        where: storefrontProductWhere({
+          id: { in: normalizedItems.map((item) => item.productId) }
+        })
+      });
+      const productMap = new Map(products.map((product) => [product.id, product]));
+
+      const orderItems = normalizedItems.map((item) => {
+        const product = productMap.get(item.productId);
+        if (!product) {
+          throw new HttpError(404, "One or more cart items are no longer available.", {
+            code: "STOREFRONT_PRODUCT_NOT_FOUND",
+            details: { productId: item.productId }
           });
         }
-        return serializeStorefrontOrder(existing);
-      }
-    }
-    const reservations = await activeReservationsByProduct(
-      tx,
-      normalizedItems.map((item) => item.productId)
-    );
-    const products = await tx.product.findMany({
-      include: storefrontProductInclude,
-      where: storefrontProductWhere({
-        id: { in: normalizedItems.map((item) => item.productId) }
-      })
-    });
-    const productMap = new Map(products.map((product) => [product.id, product]));
 
-    const orderItems = normalizedItems.map((item) => {
-      const product = productMap.get(item.productId);
-      if (!product) {
-        throw new HttpError(404, "One or more cart items are no longer available.", {
-          code: "STOREFRONT_PRODUCT_NOT_FOUND",
-          details: { productId: item.productId }
-        });
-      }
-
-      const availableStock = availableToPromise(
-        getSellableStockQuantity(product.inventoryBatches),
-        reservations.get(product.id) ?? 0
-      );
-      if (item.quantity > availableStock) {
-        throw new HttpError(
-          409,
-          `Only ${availableStock} unit(s) of ${product.name} are available.`,
-          {
-            code: "INSUFFICIENT_STOCK",
-            details: { available: availableStock, productId: product.id, requested: item.quantity }
-          }
+        const availableStock = availableToPromise(
+          getSellableStockQuantity(product.inventoryBatches),
+          reservations.get(product.id) ?? 0
         );
-      }
-
-      const unitPrice = product.sellingPrice;
-      return {
-        product,
-        quantity: item.quantity,
-        unitPrice,
-        totalAmount: unitPrice.mul(item.quantity)
-      };
-    });
-
-    const subtotalAmount = orderItems.reduce(
-      (sum, item) => sum.add(item.totalAmount),
-      new Prisma.Decimal(0)
-    );
-    const orderNumber = createOrderNumber();
-    const order = await tx.customerOrder.create({
-      data: {
-        customerAccountId: context.customerAccountId ?? null,
-        checkoutRequestKey: requestKey,
-        reservationPolicyVersion: 1,
-        orderNumber,
-        deliveryTicketNumber: `DEL-${orderNumber}`,
-        customerName: input.customerName,
-        customerEmail: input.customerEmail || null,
-        customerPhone: input.customerPhone,
-        fulfillmentMethod: input.fulfillmentMethod,
-        paymentMethod: input.paymentMethod,
-        notes: input.notes || null,
-        status: CustomerOrderStatus.PENDING,
-        deliveryStatus: CustomerDeliveryStatus.ORDER_PLACED,
-        deliveryEvents: {
-          create: {
-            actorType: CustomerDeliveryActorType.SYSTEM,
-            note: "Order placed for delivery.",
-            status: CustomerDeliveryStatus.ORDER_PLACED
-          }
-        },
-        addressSnapshot: {
-          create: {
-            addressLine1: input.customerAddress.addressLine1,
-            addressLine2: input.customerAddress.addressLine2 || null,
-            barangay: input.customerAddress.barangay,
-            cityMunicipality: input.customerAddress.cityMunicipality,
-            provinceRegion: input.customerAddress.provinceRegion,
-            postalCode: input.customerAddress.postalCode,
-            country: input.customerAddress.country
-          }
-        },
-        subtotalAmount,
-        totalAmount: subtotalAmount,
-        items: {
-          create: orderItems.map((item) => ({
-            productId: item.product.id,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            totalAmount: item.totalAmount
-          }))
+        if (item.quantity > availableStock) {
+          throw new HttpError(
+            409,
+            `Only ${availableStock} unit(s) of ${product.name} are available.`,
+            {
+              code: "INSUFFICIENT_STOCK",
+              details: {
+                available: availableStock,
+                productId: product.id,
+                requested: item.quantity
+              }
+            }
+          );
         }
-      },
-      include: storefrontOrderInclude
-    });
 
-    await reserveStorefrontItems(tx, order.id, normalizedItems);
+        const unitPrice = product.sellingPrice;
+        return {
+          product,
+          quantity: item.quantity,
+          unitPrice,
+          totalAmount: unitPrice.mul(item.quantity)
+        };
+      });
 
-    if (context.customerAccountId) {
-      if (input.saveAddressToAccount) {
-        await tx.customerSavedAddress.upsert({
-          create: {
-            customerAccountId: context.customerAccountId,
-            addressLine1: input.customerAddress.addressLine1,
-            addressLine2: input.customerAddress.addressLine2 || null,
-            barangay: input.customerAddress.barangay,
-            cityMunicipality: input.customerAddress.cityMunicipality,
-            provinceRegion: input.customerAddress.provinceRegion,
-            postalCode: input.customerAddress.postalCode,
-            country: input.customerAddress.country
+      const subtotalAmount = orderItems.reduce(
+        (sum, item) => sum.add(item.totalAmount),
+        new Prisma.Decimal(0)
+      );
+      const orderNumber = createOrderNumber();
+      const order = await tx.customerOrder.create({
+        data: {
+          customerAccountId: context.customerAccountId ?? null,
+          checkoutRequestKey: requestKey,
+          reservationPolicyVersion: 1,
+          orderNumber,
+          deliveryTicketNumber: `DEL-${orderNumber}`,
+          customerName: input.customerName,
+          customerEmail: input.customerEmail || null,
+          customerPhone: input.customerPhone,
+          fulfillmentMethod: input.fulfillmentMethod,
+          paymentMethod: input.paymentMethod,
+          notes: input.notes || null,
+          status: CustomerOrderStatus.PENDING,
+          deliveryStatus: CustomerDeliveryStatus.ORDER_PLACED,
+          deliveryEvents: {
+            create: {
+              actorType: CustomerDeliveryActorType.SYSTEM,
+              note: "Order placed for delivery.",
+              status: CustomerDeliveryStatus.ORDER_PLACED
+            }
           },
-          update: {
-            addressLine1: input.customerAddress.addressLine1,
-            addressLine2: input.customerAddress.addressLine2 || null,
-            barangay: input.customerAddress.barangay,
-            cityMunicipality: input.customerAddress.cityMunicipality,
-            provinceRegion: input.customerAddress.provinceRegion,
-            postalCode: input.customerAddress.postalCode,
-            country: input.customerAddress.country
+          addressSnapshot: {
+            create: {
+              addressLine1: input.customerAddress.addressLine1,
+              addressLine2: input.customerAddress.addressLine2 || null,
+              barangay: input.customerAddress.barangay,
+              cityMunicipality: input.customerAddress.cityMunicipality,
+              provinceRegion: input.customerAddress.provinceRegion,
+              postalCode: input.customerAddress.postalCode,
+              country: input.customerAddress.country
+            }
           },
-          where: { customerAccountId: context.customerAccountId }
-        });
+          subtotalAmount,
+          totalAmount: subtotalAmount,
+          items: {
+            create: orderItems.map((item) => ({
+              productId: item.product.id,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              totalAmount: item.totalAmount
+            }))
+          }
+        },
+        include: storefrontOrderInclude
+      });
+
+      await reserveStorefrontItems(tx, order.id, normalizedItems);
+
+      if (context.customerAccountId) {
+        if (input.saveAddressToAccount) {
+          await tx.customerSavedAddress.upsert({
+            create: {
+              customerAccountId: context.customerAccountId,
+              addressLine1: input.customerAddress.addressLine1,
+              addressLine2: input.customerAddress.addressLine2 || null,
+              barangay: input.customerAddress.barangay,
+              cityMunicipality: input.customerAddress.cityMunicipality,
+              provinceRegion: input.customerAddress.provinceRegion,
+              postalCode: input.customerAddress.postalCode,
+              country: input.customerAddress.country
+            },
+            update: {
+              addressLine1: input.customerAddress.addressLine1,
+              addressLine2: input.customerAddress.addressLine2 || null,
+              barangay: input.customerAddress.barangay,
+              cityMunicipality: input.customerAddress.cityMunicipality,
+              provinceRegion: input.customerAddress.provinceRegion,
+              postalCode: input.customerAddress.postalCode,
+              country: input.customerAddress.country
+            },
+            where: { customerAccountId: context.customerAccountId }
+          });
+        }
+
+        if (input.saveContactPhoneToAccount) {
+          await tx.customerAccount.update({
+            data: { defaultContactPhone: input.customerPhone },
+            where: { id: context.customerAccountId }
+          });
+        }
+
+        if (input.paymentMethod !== "PAYMONGO") {
+          await tx.customerCartItem.deleteMany({
+            where: { customerAccountId: context.customerAccountId }
+          });
+        }
       }
 
-      if (input.saveContactPhoneToAccount) {
-        await tx.customerAccount.update({
-          data: { defaultContactPhone: input.customerPhone },
-          where: { id: context.customerAccountId }
-        });
-      }
-
-      if (input.paymentMethod !== "PAYMONGO") {
-        await tx.customerCartItem.deleteMany({
-          where: { customerAccountId: context.customerAccountId }
-        });
-      }
-    }
-
-    return serializeStorefrontOrder(order);
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
+      return serializeStorefrontOrder(order);
+    },
+    { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
+  );
 }
 
 export async function listCustomerOrders(customerAccountId: string) {

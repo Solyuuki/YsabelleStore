@@ -246,203 +246,208 @@ export async function receiveRestockOrder(
   actorId: string
 ) {
   // Safety validation and the stock mutation must share the same transaction.
-  await prisma.$transaction(async (tx) => {
-    const order = await tx.restockOrder.findUnique({
-      include: {
-        lines: {
-          include: {
-            product: {
-              select: {
-                costPrice: true,
-                id: true,
-                inventoryBatches: {
-                  orderBy: { receivedAt: "desc" },
-                  select: { unitCost: true },
-                  take: 1
-                },
-                status: true
+  await prisma.$transaction(
+    async (tx) => {
+      const order = await tx.restockOrder.findUnique({
+        include: {
+          lines: {
+            include: {
+              product: {
+                select: {
+                  costPrice: true,
+                  id: true,
+                  inventoryBatches: {
+                    orderBy: { receivedAt: "desc" },
+                    select: { unitCost: true },
+                    take: 1
+                  },
+                  status: true
+                }
               }
             }
           }
-        }
-      },
-      where: { id: orderId }
-    });
-
-    if (!order) {
-      throw new HttpError(404, "Restock order was not found.", {
-        code: "RESTOCK_ORDER_NOT_FOUND"
-      });
-    }
-    assertVersion(order, input.expectedVersion);
-
-    if (!RECEIVABLE_STATUSES.includes(order.status as (typeof RECEIVABLE_STATUSES)[number])) {
-      throw new HttpError(409, "This restock order is not ready for receiving.", {
-        code: "RESTOCK_ORDER_NOT_RECEIVABLE",
-        details: { orderId, status: order.status }
-      });
-    }
-
-    // Serialized with approval: product locks stop two incoming shipments from
-    // independently authorizing the same available stock position.
-    for (const productId of [...new Set(order.lines.filter((line) => line.isSelected).map((line) => line.productId))].sort()) {
-      await tx.$queryRaw`SELECT id FROM products WHERE id = ${productId} FOR UPDATE`;
-    }
-    await assertAutomatedRestockQuantitySafe(orderId, input.expectedVersion, "RECEIPT", tx);
-
-    // Claim the expected version before physical stock mutation. Duplicate/concurrent submissions
-    // using the same version fail here, so the transaction exits without changing inventory.
-    const versionClaim = await tx.restockOrder.updateMany({
-      data: { version: { increment: 1 } },
-      where: {
-        id: orderId,
-        status: { in: [...RECEIVABLE_STATUSES] },
-        version: input.expectedVersion
-      }
-    });
-
-    if (versionClaim.count !== 1) {
-      throw new HttpError(
-        409,
-        "This delivery was already submitted or the order changed. Refresh and review the latest receipt state.",
-        { code: "RESTOCK_RECEIPT_VERSION_CONFLICT" }
-      );
-    }
-
-    const lineById = new Map(order.lines.map((line) => [line.id, line]));
-    let hasReturnUnits = false;
-
-    for (const receiptLine of input.lines) {
-      const orderLine = lineById.get(receiptLine.lineId);
-      if (!orderLine || !orderLine.isSelected) {
-        throw new HttpError(
-          422,
-          "A receipt line does not belong to the selected restock order lines.",
-          {
-            code: "RESTOCK_RECEIPT_LINE_MISMATCH",
-            details: { lineId: receiptLine.lineId }
-          }
-        );
-      }
-
-      const remaining = Math.max(0, orderLine.requestedQuantity - orderLine.receivedQuantity);
-      // Confirmation alone cannot increase the authorized purchase quantity.
-      // An excess delivery needs a separately approved order before stocking.
-      if (receiptLine.acceptedQuantity > remaining) {
-        throw new HttpError(
-          422,
-          "Accepted quantity exceeds approved remaining units. Create a separately approved restock order for any extra stock.",
-          {
-            code: "RESTOCK_OVER_DELIVERY_NOT_AUTHORIZED",
-            details: {
-              acceptedQuantity: receiptLine.acceptedQuantity,
-              lineId: receiptLine.lineId,
-              remainingQuantity: remaining,
-              confirmOverDelivery: receiptLine.confirmOverDelivery ?? false
-            }
-          }
-        );
-      }
-
-      if (receiptLine.acceptedQuantity > 0 && orderLine.product.status === "DISCONTINUED") {
-        throw new HttpError(
-          422,
-          "Discontinued products cannot create new sellable stock from a restock receipt.",
-          {
-            code: "RESTOCK_PRODUCT_DISCONTINUED",
-            details: { productId: orderLine.productId }
-          }
-        );
-      }
-
-      const referenceId = `${order.id}:${orderLine.id}:v${input.expectedVersion}`;
-      const receiptReason = [
-        `Restock ${order.orderNumber}`,
-        `delivered ${receiptLine.deliveredQuantity}`,
-        `damaged ${receiptLine.damagedQuantity}`,
-        `accepted ${receiptLine.acceptedQuantity}`
-      ].join("; ");
-
-      if (receiptLine.acceptedQuantity > 0) {
-        await receiveStockInTransaction(
-          tx,
-          orderLine.productId,
-          {
-            batchCode: receiptLine.batchCode ?? "",
-            confirmNewBarcode: receiptLine.confirmNewBarcode ?? false,
-            expiresAt: receiptLine.noExpiration ? null : (receiptLine.expiresAt ?? null),
-            quantity: receiptLine.acceptedQuantity,
-            reason: receiptReason,
-            referenceId,
-            referenceType: "RESTOCK_RECEIPT",
-            scannedBarcode: receiptLine.scannedBarcode ?? undefined
-          },
-          actorId,
-          {
-            unitCost:
-              receiptLine.unitCost === undefined
-                ? (orderLine.product.costPrice ??
-                  orderLine.product.inventoryBatches[0]?.unitCost ??
-                  undefined)
-                : new Prisma.Decimal(receiptLine.unitCost)
-          }
-        );
-      }
-
-      const rejectedQuantity = Math.max(
-        0,
-        receiptLine.deliveredQuantity - receiptLine.damagedQuantity - receiptLine.acceptedQuantity
-      );
-      if (receiptLine.damagedQuantity > 0 || rejectedQuantity > 0) {
-        hasReturnUnits = true;
-      }
-      const safeReceiptSummary = receiptSummary({
-        accepted: receiptLine.acceptedQuantity,
-        batchCode: receiptLine.batchCode,
-        damaged: receiptLine.damagedQuantity,
-        damageReason: receiptLine.damageReason,
-        delivered: receiptLine.deliveredQuantity,
-        expiresAt: receiptLine.expiresAt,
-        noExpiration: receiptLine.noExpiration,
-        rejected: rejectedQuantity
-      });
-
-      await tx.restockOrderLine.update({
-        data: {
-          notes: appendBoundedNote(orderLine.notes, safeReceiptSummary, 500),
-          receivedQuantity: { increment: receiptLine.acceptedQuantity }
         },
-        where: { id: orderLine.id }
+        where: { id: orderId }
       });
-    }
 
-    const refreshedLines = await tx.restockOrderLine.findMany({
-      select: {
-        isSelected: true,
-        receivedQuantity: true,
-        requestedQuantity: true
-      },
-      where: { restockOrderId: orderId }
-    });
-    const selectedLines = refreshedLines.filter((line) => line.isSelected);
-    const allFulfilled =
-      selectedLines.length > 0 &&
-      selectedLines.every((line) => line.receivedQuantity >= line.requestedQuantity);
-    const anyReceived = selectedLines.some((line) => line.receivedQuantity > 0);
-    const nextStatus = allFulfilled
-      ? RestockOrderStatus.RECEIVED
-      : anyReceived
-        ? RestockOrderStatus.PARTIALLY_RECEIVED
-        : RestockOrderStatus.AWAITING_DELIVERY;
+      if (!order) {
+        throw new HttpError(404, "Restock order was not found.", {
+          code: "RESTOCK_ORDER_NOT_FOUND"
+        });
+      }
+      assertVersion(order, input.expectedVersion);
 
-    await tx.restockOrder.update({
-      data: {
-        ...(hasReturnUnits ? { notes: ensureReturnReportMarker(order.notes) } : {}),
-        status: nextStatus
-      },
-      where: { id: orderId }
-    });
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
+      if (!RECEIVABLE_STATUSES.includes(order.status as (typeof RECEIVABLE_STATUSES)[number])) {
+        throw new HttpError(409, "This restock order is not ready for receiving.", {
+          code: "RESTOCK_ORDER_NOT_RECEIVABLE",
+          details: { orderId, status: order.status }
+        });
+      }
+
+      // Serialized with approval: product locks stop two incoming shipments from
+      // independently authorizing the same available stock position.
+      for (const productId of [
+        ...new Set(order.lines.filter((line) => line.isSelected).map((line) => line.productId))
+      ].sort()) {
+        await tx.$queryRaw`SELECT id FROM products WHERE id = ${productId} FOR UPDATE`;
+      }
+      await assertAutomatedRestockQuantitySafe(orderId, input.expectedVersion, "RECEIPT", tx);
+
+      // Claim the expected version before physical stock mutation. Duplicate/concurrent submissions
+      // using the same version fail here, so the transaction exits without changing inventory.
+      const versionClaim = await tx.restockOrder.updateMany({
+        data: { version: { increment: 1 } },
+        where: {
+          id: orderId,
+          status: { in: [...RECEIVABLE_STATUSES] },
+          version: input.expectedVersion
+        }
+      });
+
+      if (versionClaim.count !== 1) {
+        throw new HttpError(
+          409,
+          "This delivery was already submitted or the order changed. Refresh and review the latest receipt state.",
+          { code: "RESTOCK_RECEIPT_VERSION_CONFLICT" }
+        );
+      }
+
+      const lineById = new Map(order.lines.map((line) => [line.id, line]));
+      let hasReturnUnits = false;
+
+      for (const receiptLine of input.lines) {
+        const orderLine = lineById.get(receiptLine.lineId);
+        if (!orderLine || !orderLine.isSelected) {
+          throw new HttpError(
+            422,
+            "A receipt line does not belong to the selected restock order lines.",
+            {
+              code: "RESTOCK_RECEIPT_LINE_MISMATCH",
+              details: { lineId: receiptLine.lineId }
+            }
+          );
+        }
+
+        const remaining = Math.max(0, orderLine.requestedQuantity - orderLine.receivedQuantity);
+        // Confirmation alone cannot increase the authorized purchase quantity.
+        // An excess delivery needs a separately approved order before stocking.
+        if (receiptLine.acceptedQuantity > remaining) {
+          throw new HttpError(
+            422,
+            "Accepted quantity exceeds approved remaining units. Create a separately approved restock order for any extra stock.",
+            {
+              code: "RESTOCK_OVER_DELIVERY_NOT_AUTHORIZED",
+              details: {
+                acceptedQuantity: receiptLine.acceptedQuantity,
+                lineId: receiptLine.lineId,
+                remainingQuantity: remaining,
+                confirmOverDelivery: receiptLine.confirmOverDelivery ?? false
+              }
+            }
+          );
+        }
+
+        if (receiptLine.acceptedQuantity > 0 && orderLine.product.status === "DISCONTINUED") {
+          throw new HttpError(
+            422,
+            "Discontinued products cannot create new sellable stock from a restock receipt.",
+            {
+              code: "RESTOCK_PRODUCT_DISCONTINUED",
+              details: { productId: orderLine.productId }
+            }
+          );
+        }
+
+        const referenceId = `${order.id}:${orderLine.id}:v${input.expectedVersion}`;
+        const receiptReason = [
+          `Restock ${order.orderNumber}`,
+          `delivered ${receiptLine.deliveredQuantity}`,
+          `damaged ${receiptLine.damagedQuantity}`,
+          `accepted ${receiptLine.acceptedQuantity}`
+        ].join("; ");
+
+        if (receiptLine.acceptedQuantity > 0) {
+          await receiveStockInTransaction(
+            tx,
+            orderLine.productId,
+            {
+              batchCode: receiptLine.batchCode ?? "",
+              confirmNewBarcode: receiptLine.confirmNewBarcode ?? false,
+              expiresAt: receiptLine.noExpiration ? null : (receiptLine.expiresAt ?? null),
+              quantity: receiptLine.acceptedQuantity,
+              reason: receiptReason,
+              referenceId,
+              referenceType: "RESTOCK_RECEIPT",
+              scannedBarcode: receiptLine.scannedBarcode ?? undefined
+            },
+            actorId,
+            {
+              unitCost:
+                receiptLine.unitCost === undefined
+                  ? (orderLine.product.costPrice ??
+                    orderLine.product.inventoryBatches[0]?.unitCost ??
+                    undefined)
+                  : new Prisma.Decimal(receiptLine.unitCost)
+            }
+          );
+        }
+
+        const rejectedQuantity = Math.max(
+          0,
+          receiptLine.deliveredQuantity - receiptLine.damagedQuantity - receiptLine.acceptedQuantity
+        );
+        if (receiptLine.damagedQuantity > 0 || rejectedQuantity > 0) {
+          hasReturnUnits = true;
+        }
+        const safeReceiptSummary = receiptSummary({
+          accepted: receiptLine.acceptedQuantity,
+          batchCode: receiptLine.batchCode,
+          damaged: receiptLine.damagedQuantity,
+          damageReason: receiptLine.damageReason,
+          delivered: receiptLine.deliveredQuantity,
+          expiresAt: receiptLine.expiresAt,
+          noExpiration: receiptLine.noExpiration,
+          rejected: rejectedQuantity
+        });
+
+        await tx.restockOrderLine.update({
+          data: {
+            notes: appendBoundedNote(orderLine.notes, safeReceiptSummary, 500),
+            receivedQuantity: { increment: receiptLine.acceptedQuantity }
+          },
+          where: { id: orderLine.id }
+        });
+      }
+
+      const refreshedLines = await tx.restockOrderLine.findMany({
+        select: {
+          isSelected: true,
+          receivedQuantity: true,
+          requestedQuantity: true
+        },
+        where: { restockOrderId: orderId }
+      });
+      const selectedLines = refreshedLines.filter((line) => line.isSelected);
+      const allFulfilled =
+        selectedLines.length > 0 &&
+        selectedLines.every((line) => line.receivedQuantity >= line.requestedQuantity);
+      const anyReceived = selectedLines.some((line) => line.receivedQuantity > 0);
+      const nextStatus = allFulfilled
+        ? RestockOrderStatus.RECEIVED
+        : anyReceived
+          ? RestockOrderStatus.PARTIALLY_RECEIVED
+          : RestockOrderStatus.AWAITING_DELIVERY;
+
+      await tx.restockOrder.update({
+        data: {
+          ...(hasReturnUnits ? { notes: ensureReturnReportMarker(order.notes) } : {}),
+          status: nextStatus
+        },
+        where: { id: orderId }
+      });
+    },
+    { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted }
+  );
 
   return getRestockOrder(orderId);
 }

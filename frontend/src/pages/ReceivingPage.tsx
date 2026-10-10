@@ -1228,7 +1228,10 @@ function ReceiptEditor({
               const accepted = acceptedQuantity(row);
               const missing = Math.max(0, remaining - asWholeNumber(row.deliveredQuantity));
               return (
-                <div className="ys-receiving-exception-row rounded-lg border border-slate-200 bg-white p-4" key={line.id}>
+                <div
+                  className="ys-receiving-exception-row rounded-lg border border-slate-200 bg-white p-4"
+                  key={line.id}
+                >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-slate-950">{line.product.name}</p>

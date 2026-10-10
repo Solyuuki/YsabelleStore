@@ -468,13 +468,16 @@
 /* Google and Email Quick Sign keep their intentionally pale branded surfaces.
    A broad dark-mode :is(p, small) rule would otherwise paint their helper
    copy pale blue, making it unreadable on these light buttons. */
-:root.dark .customer-app .customer-auth-page--login
-  .customer-social-auth__button > span:last-child small {
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-social-auth__button
+  > span:last-child
+  small {
   color: #475569;
   font-size: 0.75rem;
   font-weight: 700;
 }
-
 
 /* Support and privacy: labels, hero chips, callouts, and notices. */
 :root.dark .customer-app .customer-support-hero__signals span {
@@ -870,13 +873,7 @@
   background-position: center top;
   background-repeat: no-repeat;
 }
-:root.dark
-  .customer-app
-  :is(
-    .customer-shop-heading,
-    .customer-support-hero,
-    .home-next-step
-  ) {
+:root.dark .customer-app :is(.customer-shop-heading, .customer-support-hero, .home-next-step) {
   background-size: min(1600px, 100%) auto;
   background-position: center;
   background-repeat: no-repeat;
@@ -896,12 +893,7 @@
   height: clamp(40px, 5.5vw, 78px);
   z-index: 0;
   pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgb(16 24 39 / 0%) 0%,
-    rgb(16 24 39 / 18%) 40%,
-    #101827 100%
-  );
+  background: linear-gradient(180deg, rgb(16 24 39 / 0%) 0%, rgb(16 24 39 / 18%) 40%, #101827 100%);
 }
 /* The SHOP quantity field previously picked up the global dark input surface,
    producing a rectangle inside the rounded +/- group. Keep one unified surface. */
@@ -1306,15 +1298,16 @@
 /* Login dark-mode cleanup: the old crystal facet layer crosses the
    new galaxy backdrop and creates distracting diagonal bands INSIDE the card.
    Keep the original card, fields, actions and focus treatment unchanged. */
-:root.dark .customer-app .customer-auth-page--login
+:root.dark
+  .customer-app
+  .customer-auth-page--login
   .customer-auth-stage__panel.ys-material-surface::before {
   display: none;
   content: none;
 }
 /* The pre-galaxy rotating conic glow behind the stage is obsolete as well.
    This rule is login-only; Register / Recovery keep their existing motion. */
-:root.dark .customer-app .customer-auth-page--login
-  .customer-auth-stage::before {
+:root.dark .customer-app .customer-auth-page--login .customer-auth-stage::before {
   display: none;
   content: none;
   animation: none;
@@ -1333,7 +1326,6 @@
     animation: none;
   }
 }
-
 
 /* Recovery Identify → Verify → Secure (+ completion) uses the very same
    dark galaxy canvas as Trending → Essentials, Shop, Account and Sign In.
@@ -1399,7 +1391,6 @@
   animation: none;
 }
 
-
 /* Recovery contrast guards: Verify cooldown and Secure completion.
    The generic dark auth button text is dark (#10192d), and the recovery
    stylesheet applies 0.48 opacity to disabled resend buttons. Both become
@@ -1408,14 +1399,22 @@
   color: #d4deec;
   opacity: 1;
 }
-:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-resend .customer-recovery-secondary {
+:root.dark
+  .customer-app
+  .customer-auth-page--recovery
+  .customer-recovery-resend
+  .customer-recovery-secondary {
   color: #e7dfff;
   background: #303d60;
   border-color: #8878ce;
   opacity: 1;
   text-shadow: none;
 }
-:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-resend .customer-recovery-secondary:disabled {
+:root.dark
+  .customer-app
+  .customer-auth-page--recovery
+  .customer-recovery-resend
+  .customer-recovery-secondary:disabled {
   color: #b8c6dc;
   background: #25344d;
   border-color: #526483;
@@ -1423,12 +1422,20 @@
   box-shadow: none;
   cursor: not-allowed;
 }
-:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-resend .customer-recovery-secondary:hover:not(:disabled) {
+:root.dark
+  .customer-app
+  .customer-auth-page--recovery
+  .customer-recovery-resend
+  .customer-recovery-secondary:hover:not(:disabled) {
   color: #fff0ff;
   background: #3d4673;
   border-color: #b0a1ec;
 }
-:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-resend .customer-recovery-secondary:focus-visible {
+:root.dark
+  .customer-app
+  .customer-auth-page--recovery
+  .customer-recovery-resend
+  .customer-recovery-secondary:focus-visible {
   outline: 2px solid #b8a9fa;
   outline-offset: 3px;
 }
@@ -1442,19 +1449,32 @@
   color: #eff3ff;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%);
 }
-:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-status--success > div > strong {
+:root.dark
+  .customer-app
+  .customer-auth-page--recovery
+  .customer-recovery-status--success
+  > div
+  > strong {
   color: #f2f5ff;
   opacity: 1;
 }
-:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-status--success > div > span {
+:root.dark
+  .customer-app
+  .customer-auth-page--recovery
+  .customer-recovery-status--success
+  > div
+  > span {
   color: #cbd8ec;
   opacity: 1;
 }
-:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-status--success > .customer-recovery-status__icon {
+:root.dark
+  .customer-app
+  .customer-auth-page--recovery
+  .customer-recovery-status--success
+  > .customer-recovery-status__icon {
   background: #3b4470;
   color: #c7bcff;
 }
-
 
 /* Register uses the exact same approved Trending → Essentials, Shop and
    Recovery galaxy background. Override the legacy !important silk wallpaper
@@ -1516,21 +1536,27 @@
 :root.dark .customer-app .customer-auth-page--register::before,
 :root.dark .customer-app .customer-auth-page--register::after,
 :root.dark .customer-app .customer-auth-page--register .customer-auth-stage::before,
-:root.dark .customer-app .customer-auth-page--register .customer-auth-stage__panel.ys-material-surface::before {
+:root.dark
+  .customer-app
+  .customer-auth-page--register
+  .customer-auth-stage__panel.ys-material-surface::before {
   content: none;
   display: none;
   animation: none;
 }
 /* The provider buttons are intentionally near-white. The generic dark-auth
    helper text colors are too pale against them; use slate, not lavender-white. */
-:root.dark .customer-app .customer-auth-page--register
-  .customer-social-auth__button > span:last-child small {
+:root.dark
+  .customer-app
+  .customer-auth-page--register
+  .customer-social-auth__button
+  > span:last-child
+  small {
   color: #475569;
   font-size: 0.75rem;
   font-weight: 700;
   opacity: 1;
 }
-
 
 /* Support uses the same continuous CSS galaxy and proportional vector as
    the approved Trending -> Everyday Essentials canvas. Do not reuse a capped,
@@ -1641,7 +1667,6 @@
   color: #b8c6dd;
 }
 
-
 /* Privacy & Cookies hero: reuse the Storefront category background and vector
    from Shop by Category / Customer Support; leave the galaxy reading area and
    existing light-mode Privacy page unchanged. */
@@ -1660,7 +1685,6 @@
   content: none;
   display: none;
 }
-
 
 /* Privacy main content: reuse the exact Trending-to-Essentials galaxy */
 /* Original SVG is preserved proportionally; no raster cover/stretch or tiling.
@@ -1693,13 +1717,7 @@
     #000 90%,
     transparent 100%
   );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0,
-    #000 112px,
-    #000 90%,
-    transparent 100%
-  );
+  mask-image: linear-gradient(to bottom, transparent 0, #000 112px, #000 90%, transparent 100%);
 }
 :root.dark .customer-app .customer-privacy-body__cosmos {
   display: block;
@@ -1733,13 +1751,16 @@
     .customer-account-inline-action-form,
     .customer-account-contact-card
   )
-  label > span,
+  label
+  > span,
 :root.dark[data-appearance-scope="storefront"]
   .customer-app
   .customer-account-page-v2
   #profile-panel
   .customer-account-address-form
-  label > span small,
+  label
+  > span
+  small,
 :root.dark[data-appearance-scope="storefront"]
   .customer-app
   .customer-account-page-v2
@@ -1751,7 +1772,8 @@
   .customer-app
   .customer-account-page-v2
   #profile-panel
-  .customer-account-address-heading p,
+  .customer-account-address-heading
+  p,
 :root.dark[data-appearance-scope="storefront"]
   .customer-app
   .customer-account-page-v2
@@ -1769,18 +1791,21 @@
 :root.dark[data-appearance-scope="storefront"]
   .customer-app
   .customer-account-page-v2
-  .customer-account-session-empty strong {
+  .customer-account-session-empty
+  strong {
   color: #eef3ff;
 }
 :root.dark[data-appearance-scope="storefront"]
   .customer-app
   .customer-account-page-v2
-  .customer-account-session-empty span {
+  .customer-account-session-empty
+  span {
   color: #cbd7e9;
 }
 :root.dark[data-appearance-scope="storefront"]
   .customer-app
   .customer-account-page-v2
-  .customer-account-session-empty > svg {
+  .customer-account-session-empty
+  > svg {
   color: #ada2ff;
 }

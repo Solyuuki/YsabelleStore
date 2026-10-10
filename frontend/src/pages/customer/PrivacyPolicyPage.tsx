@@ -134,9 +134,9 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
 
             <PolicySection icon={Database} id="data-we-process" title="2. Personal data we process">
               <p>
-                The categories below reflect the customer-facing data fields and workflows present in
-                the current system. We do not add categories here simply because they are common on
-                other websites.
+                The categories below reflect the customer-facing data fields and workflows present
+                in the current system. We do not add categories here simply because they are common
+                on other websites.
               </p>
               <div className="customer-privacy-data-grid">
                 {PRIVACY_DATA_GROUPS.map((group) => (
@@ -154,8 +154,8 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
                   <p>
                     Passwords are stored as password hashes. Session and security credentials are
                     stored or compared as tokens/hashes where the relevant workflow requires them.
-                    Support instructions explicitly tell customers not to send passwords, OTPs, CVVs,
-                    or full card numbers.
+                    Support instructions explicitly tell customers not to send passwords, OTPs,
+                    CVVs, or full card numbers.
                   </p>
                 </div>
               </div>
@@ -189,8 +189,8 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
               </div>
               <p>
                 This privacy notice does not impose a blanket consent requirement. Where consent is
-                actually required for a separate optional activity, it must be requested specifically
-                for that activity rather than being bundled into general store access.
+                actually required for a separate optional activity, it must be requested
+                specifically for that activity rather than being bundled into general store access.
               </p>
             </PolicySection>
 
@@ -201,8 +201,8 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
             >
               <p>
                 Some store functions rely on service providers. We send only the information needed
-                for the relevant function and do not describe a provider as active unless the related
-                integration is configured.
+                for the relevant function and do not describe a provider as active unless the
+                related integration is configured.
               </p>
               <div className="customer-privacy-provider-list">
                 {PRIVACY_SERVICE_PROVIDERS.map((provider) => (
@@ -217,10 +217,10 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
                 <div>
                   <strong>PayMongo checkout</strong>
                   <p>
-                    When PayMongo checkout is enabled, Ysabelle Store sends billing name/email, order
-                    line items, an order reference, and internal order/customer references needed for
-                    checkout and payment reconciliation. Card or e-wallet credentials are entered with
-                    the payment provider rather than into a Ysabelle Store card form.
+                    When PayMongo checkout is enabled, Ysabelle Store sends billing name/email,
+                    order line items, an order reference, and internal order/customer references
+                    needed for checkout and payment reconciliation. Card or e-wallet credentials are
+                    entered with the payment provider rather than into a Ysabelle Store card form.
                   </p>
                 </div>
               </div>
@@ -235,9 +235,10 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
             <PolicySection icon={Cookie} id="cookies-storage" title="5. Cookies and device storage">
               <p>
                 The current storefront uses service, security, and convenience storage. It does not
-                initialize an advertising pixel or behavioral analytics tracker. Because these current
-                mechanisms support requested store features rather than advertising, the storefront
-                presents an informational privacy notice instead of a fake advertising consent choice.
+                initialize an advertising pixel or behavioral analytics tracker. Because these
+                current mechanisms support requested store features rather than advertising, the
+                storefront presents an informational privacy notice instead of a fake advertising
+                consent choice.
               </p>
               <div
                 className="customer-privacy-storage-table"
@@ -270,13 +271,15 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
             >
               <p>
                 The current forecasting and inventory recommender operate on product, sales,
-                inventory, replenishment, and expiry-risk evidence. Their purpose is to support stock
-                and replenishment decisions for the store.
+                inventory, replenishment, and expiry-risk evidence. Their purpose is to support
+                stock and replenishment decisions for the store.
               </p>
               <div className="customer-privacy-callout customer-privacy-callout--quiet">
                 <UserRoundCheck aria-hidden="true" size={18} />
                 <div>
-                  <strong>No customer scoring or eligibility decision is made by this system.</strong>
+                  <strong>
+                    No customer scoring or eligibility decision is made by this system.
+                  </strong>
                   <p>
                     The current recommender evidence sent to an optional Cloudflare AI or Groq
                     decision-assistance provider contains product/inventory evidence such as SKU,
@@ -292,23 +295,23 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
               title="7. Retention and security"
             >
               <p>
-                We keep personal data only for as long as necessary for the declared purpose, account
-                and transaction operations, security, legitimate business needs, legal claims, or
-                periods required by applicable law. Retention therefore differs by record type rather
-                than using one blanket period for every record.
+                We keep personal data only for as long as necessary for the declared purpose,
+                account and transaction operations, security, legitimate business needs, legal
+                claims, or periods required by applicable law. Retention therefore differs by record
+                type rather than using one blanket period for every record.
               </p>
               <p>
-                Short-lived verification/security grants generally expire within 10 minutes. Customer
-                session cookies are configured for up to 7 days. Remembered-browser credentials can
-                remain on the browser for up to 365 days, while remembered trust is valid for up to 30
-                days and can be revoked.
+                Short-lived verification/security grants generally expire within 10 minutes.
+                Customer session cookies are configured for up to 7 days. Remembered-browser
+                credentials can remain on the browser for up to 365 days, while remembered trust is
+                valid for up to 30 days and can be revoked.
               </p>
               <p>
                 The system uses measures including HttpOnly cookies for customer authentication
-                credentials, SameSite restrictions, Secure cookies in production, hashed passwords or
-                tokens where applicable, expiration/revocation checks, role/access controls, and audit
-                records for moderation actions. No internet service can promise absolute security, so
-                access should remain limited to what is operationally necessary.
+                credentials, SameSite restrictions, Secure cookies in production, hashed passwords
+                or tokens where applicable, expiration/revocation checks, role/access controls, and
+                audit records for moderation actions. No internet service can promise absolute
+                security, so access should remain limited to what is operationally necessary.
               </p>
             </PolicySection>
 
@@ -335,10 +338,10 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
 
             <PolicySection icon={Mail} id="contact" title="9. Privacy requests and complaints">
               <p>
-                For access, correction, objection, deletion/blocking, portability, or another privacy
-                concern, use the Ysabelle Store Customer Support page and put
-                <strong> “Privacy Request”</strong> in the subject. Do not send passwords, OTPs, CVVs,
-                or full card numbers.
+                For access, correction, objection, deletion/blocking, portability, or another
+                privacy concern, use the Ysabelle Store Customer Support page and put
+                <strong> “Privacy Request”</strong> in the subject. Do not send passwords, OTPs,
+                CVVs, or full card numbers.
               </p>
               <div className="customer-privacy-contact-actions">
                 <CustomerLink className="customer-button" href="/support" navigate={navigate}>
