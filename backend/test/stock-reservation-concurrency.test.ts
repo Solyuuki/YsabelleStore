@@ -147,6 +147,29 @@ test("real MySQL POS + Storefront share stock safely under simultaneous commits"
     assert.ok(finalOrder.saleId);
     assert.equal(finalOrder.sale?.items.reduce((sum, line) => sum + line.quantity, 0), 3);
     assert.deepEqual(await position(cod.id), { physical: 7, reserved: 0, available: 7 });
+
+    const replayProduct = await makeProduct("idem");
+    const replayRequest = {
+      cashierId: cashier.id,
+      cashierName: cashier.name,
+      cashReceived: "1000.00",
+      requestKey: `checkout-retry-${unique}`,
+      items: [{ productId: replayProduct.id, quantity: 4 }]
+    };
+    const replay = await Promise.allSettled([
+      checkoutPosSale(replayRequest),
+      checkoutPosSale(replayRequest)
+    ]);
+    assert.equal(replay.filter((result) => result.status === "fulfilled").length, 2, JSON.stringify(replay));
+    const sales = replay.map((result) => {
+      if (result.status !== "fulfilled") throw result.reason;
+      return result.value.sale;
+    });
+    assert.equal(sales[0]?.id, sales[1]?.id, "Same cashier intent must return one sale.");
+    assert.equal(await prisma.sale.count({
+      where: { checkoutRequestKey: { not: null }, items: { some: { productId: replayProduct.id } } }
+    }), 1);
+    assert.deepEqual(await position(replayProduct.id), { physical: 6, reserved: 0, available: 6 });
   } finally {
     await prisma.$disconnect();
   }
