@@ -14,6 +14,7 @@ import {
 import { loadActiveInventoryForecasts } from "./inventoryForecastSourceService.js";
 import { buildRestockForecastDecision } from "./restockForecastDecisionService.js";
 import { getIncomingRestockStock } from "./restockService.js";
+import { activeReservationsByProduct } from "./stockReservationService.js";
 import { classifyStockHealth } from "./stockHealthService.js";
 import {
   calculateStockTruth,
@@ -74,10 +75,11 @@ export async function listRestockPlanningCandidates(
   });
   const productIds = products.map((product) => product.id);
   const now = new Date();
-  const [incomingByProduct, operationalSalesByProduct, activeForecasts] = await Promise.all([
+  const [incomingByProduct, operationalSalesByProduct, activeForecasts, activeReservations] = await Promise.all([
     getIncomingRestockStock(productIds, excludeOrderId, db),
     loadOperationalPosSales(productIds, now, db),
-    loadActiveInventoryForecasts(productIds, db)
+    loadActiveInventoryForecasts(productIds, db),
+    activeReservationsByProduct(db, productIds)
   ]);
 
   const recommendations = productIds.length
@@ -103,6 +105,10 @@ export async function listRestockPlanningCandidates(
 
   const candidates = products.map((product) => {
     const stockTruth = calculateStockTruth(product.inventoryBatches, now);
+    // Pending Storefront commitments are not completed sales. Their reserved
+    // quantity reduces stock available for a NEW sale or replenishment plan.
+    const reservedStock = activeReservations.get(product.id) ?? 0;
+    const availableForNewOrders = Math.max(0, stockTruth.sellableStock - reservedStock);
     // Use the highest known unit cost so missing/stale catalog prices
     // cannot silently understate the estimated purchase commitment.
     const knownUnitCosts = [
@@ -124,7 +130,7 @@ export async function listRestockPlanningCandidates(
     const stockHealth = classifyStockHealth({
       asOf: now,
       historicalSeries: salesSeries,
-      sellableStock: stockTruth.sellableStock
+      sellableStock: availableForNewOrders
     });
     const activeForecast = activeForecasts.get(product.id) ?? null;
     const operationalForecast = activeForecast
@@ -135,7 +141,7 @@ export async function listRestockPlanningCandidates(
           incomingStock,
           now,
           reorderLevel: product.reorderLevel,
-          sellableStock: stockTruth.sellableStock,
+          sellableStock: availableForNewOrders,
           targetStockLevel: product.targetStockLevel
         });
     const forecastDecision = activeForecast
@@ -145,7 +151,7 @@ export async function listRestockPlanningCandidates(
           incomingStock,
           now,
           reorderLevel: product.reorderLevel,
-          sellableStock: stockTruth.sellableStock,
+          sellableStock: availableForNewOrders,
           targetStockLevel: product.targetStockLevel
         })
       : {
@@ -237,7 +243,7 @@ export async function listRestockPlanningCandidates(
       recommendationId,
       recommendationSource,
       recommendedQuantity,
-      sellableStock: stockTruth.sellableStock,
+      sellableStock: availableForNewOrders,
       stockHealth
     };
   });
