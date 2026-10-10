@@ -25,7 +25,15 @@ export const checkoutSale: RequestHandler = async (request, response, next) => {
       });
     }
 
+    const requestKey = request.header("Idempotency-Key");
+    if (requestKey && !/^[a-zA-Z0-9-]{16,96}$/.test(requestKey)) {
+      throw new HttpError(422, "POS checkout request key is invalid.", {
+        code: "POS_IDEMPOTENCY_KEY_INVALID"
+      });
+    }
+
     const data = await checkoutPosSale({
+      requestKey,
       cashReceived: parsedBody.data.cashReceived,
       cashierId: currentUser.id,
       cashierName: currentUser.name,
