@@ -1,0 +1,48 @@
+name: Stock Reservation Concurrency QA
+
+on:
+  push:
+    branches: ["sprint/v0.11/sprint-11"]
+    paths:
+      - "backend/**"
+      - "database/prisma/**"
+      - ".github/workflows/stock-reservation-concurrency-qa.yml"
+  workflow_dispatch:
+
+jobs:
+  reservations:
+    name: Ephemeral MySQL parallel POS + Storefront checkout
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: qa-only
+          MYSQL_DATABASE: ys_stock_concurrency_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pqa-only"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      CI: "true"
+      NODE_ENV: test
+      DATABASE_URL: mysql://root:qa-only@127.0.0.1:3306/ys_stock_concurrency_ci
+      YS_RESERVATION_EPHEMERAL_QA: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install project dependencies
+        run: npm ci
+      - name: Generate Prisma client
+        run: npx prisma generate --schema database/prisma/schema.prisma
+      - name: Apply migrations to disposable MySQL only
+        run: npx prisma migrate deploy --schema database/prisma/schema.prisma
+      - name: Execute real transaction concurrency tests
+        run: npx tsx --test --test-concurrency=1 backend/test/stock-reservation-concurrency.test.ts
