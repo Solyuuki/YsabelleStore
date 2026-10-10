@@ -512,7 +512,7 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
                 <div className="ys-user-management-tabs inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
                   <button
                     className={managementTabClass(customerView === "accounts")}
-          data-active={customerView === "accounts"}
+                    data-active={customerView === "accounts"}
                     onClick={() => setCustomerView("accounts")}
                     type="button"
                   >
@@ -520,7 +520,7 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
                   </button>
                   <button
                     className={managementTabClass(customerView === "reviews")}
-          data-active={customerView === "reviews"}
+                    data-active={customerView === "reviews"}
                     onClick={() => setCustomerView("reviews")}
                     type="button"
                   >
