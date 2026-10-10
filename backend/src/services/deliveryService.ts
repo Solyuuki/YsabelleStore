@@ -24,6 +24,7 @@ import {
   createInventoryMovementAfterAllocation,
   synchronizeInventoryAggregate
 } from "./stockDomainService.js";
+import { changeOrderReservations, lockProductStock, verifyFulfillmentReservation } from "./stockReservationService.js";
 
 const deliveryOrderInclude = {
   addressSnapshot: true,
@@ -184,9 +185,12 @@ async function finalizeOrderSale(
   order: DeliveryOrderRecord,
   actorUserId?: string
 ) {
+  await lockProductStock(tx, order.items.map((item) => item.productId));
+  order = await findDeliveryOrder(tx, order.id);
   if (order.saleId) {
     return { created: false, productIds: order.items.map((item) => item.productId) };
   }
+  const managedReservation = await verifyFulfillmentReservation(tx, order);
 
   const sale = await tx.sale.create({
     data: {
@@ -213,7 +217,8 @@ async function finalizeOrderSale(
     const quantityBefore = inventory.quantityOnHand;
     const allocations = await allocateStockForSale(tx, {
       productId: line.productId,
-      quantity: line.quantity
+      quantity: line.quantity,
+      ...(managedReservation ? { reservationOrderId: order.id } : {})
     });
 
     for (const allocation of allocations) {
@@ -244,6 +249,15 @@ async function finalizeOrderSale(
       type: "SALE"
     });
     await assertStockInvariant(tx, line.productId);
+  }
+
+  if (managedReservation) {
+    const changed = await changeOrderReservations(tx, order.id, "CONSUMED");
+    if (changed.count !== order.items.length) {
+      throw new HttpError(409, "A stock reservation changed before fulfillment.", {
+        code: "ORDER_RESERVATION_CONFLICT"
+      });
+    }
   }
 
   await tx.customerOrder.update({
@@ -319,7 +333,9 @@ export async function updateDeliveryStatus(
   input: DeliveryTransitionInput
 ) {
   return prisma.$transaction(async (tx) => {
-    const order = await findDeliveryOrder(tx, orderId);
+    let order = await findDeliveryOrder(tx, orderId);
+    await lockProductStock(tx, order.items.map((item) => item.productId));
+    order = await findDeliveryOrder(tx, orderId);
     const target = input.targetStatus as CustomerDeliveryStatus;
 
     if (!canTransitionDeliveryStatus(order.deliveryStatus, target)) {
@@ -356,6 +372,9 @@ export async function updateDeliveryStatus(
     }
 
     const now = new Date();
+    if (target === CustomerDeliveryStatus.CANCELLED) {
+      await changeOrderReservations(tx, order.id, "RELEASED");
+    }
     await tx.customerOrder.update({
       data: {
         courierProvider: courierProvider ?? null,
@@ -382,7 +401,7 @@ export async function updateDeliveryStatus(
     });
 
     return serializeDeliveryOrder(await findDeliveryOrder(tx, order.id));
-  });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
 }
 
 export async function confirmCustomerDeliveryReceived(
@@ -390,7 +409,7 @@ export async function confirmCustomerDeliveryReceived(
   customerAccountId: string
 ) {
   const result = await prisma.$transaction(async (tx) => {
-    const order = await tx.customerOrder.findFirst({
+    let order = await tx.customerOrder.findFirst({
       include: deliveryOrderInclude,
       where: { customerAccountId, orderNumber }
     });
@@ -399,6 +418,9 @@ export async function confirmCustomerDeliveryReceived(
         code: "CUSTOMER_DELIVERY_NOT_FOUND"
       });
     }
+
+    await lockProductStock(tx, order.items.map((item) => item.productId));
+    order = await findDeliveryOrder(tx, order.id);
 
     if (order.deliveryStatus === CustomerDeliveryStatus.DELIVERED && order.customerConfirmedAt) {
       return { order: serializeDeliveryOrder(order), productIds: [] as string[] };
@@ -443,7 +465,7 @@ export async function confirmCustomerDeliveryReceived(
       order: serializeDeliveryOrder(await findDeliveryOrder(tx, order.id)),
       productIds
     };
-  });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
 
   await invalidateProducts(result.productIds);
   return result.order;
@@ -455,7 +477,9 @@ export async function confirmCodCollected(
   input: CodSettlementInput
 ) {
   const result = await prisma.$transaction(async (tx) => {
-    const order = await findDeliveryOrder(tx, orderId);
+    let order = await findDeliveryOrder(tx, orderId);
+    await lockProductStock(tx, order.items.map((item) => item.productId));
+    order = await findDeliveryOrder(tx, orderId);
     if (order.paymentMethod !== CustomerPaymentMethod.CASH_ON_DELIVERY) {
       throw new HttpError(409, "This order is not a Cash on Delivery order.", {
         code: "ORDER_NOT_COD"
@@ -496,7 +520,7 @@ export async function confirmCodCollected(
       order: serializeDeliveryOrder(await findDeliveryOrder(tx, order.id)),
       productIds: finalized.created ? finalized.productIds : []
     };
-  });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
 
   await invalidateProducts(result.productIds);
   return result.order;
