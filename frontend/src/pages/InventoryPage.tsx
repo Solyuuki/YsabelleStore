@@ -2,6 +2,7 @@ import {
   ArrowUpDown,
   Boxes,
   CalendarDays,
+  ChevronDown,
   CircleCheck,
   ClipboardList,
   FileUp,
@@ -588,7 +589,7 @@ export function InventoryPage() {
             <FilterSelect
               icon={Filter}
               label="Stock level"
-              minWidthClassName="min-w-[166px]"
+              minWidthClassName="min-w-[190px]"
               value={stockStatus}
               onChange={(value) => {
                 setStockStatus(value as StockStatusFilter);
@@ -603,7 +604,7 @@ export function InventoryPage() {
             <FilterSelect
               icon={Tag}
               label="Category"
-              minWidthClassName="min-w-[158px]"
+              minWidthClassName="min-w-[190px]"
               value={categoryId}
               onChange={(value) => {
                 setCategoryId(value);
@@ -620,7 +621,7 @@ export function InventoryPage() {
             <FilterSelect
               icon={CircleCheck}
               label="Availability"
-              minWidthClassName="min-w-[172px]"
+              minWidthClassName="min-w-[198px]"
               value={productStatus}
               onChange={(value) => {
                 setProductStatus(value as ProductStatusFilter);
@@ -635,7 +636,7 @@ export function InventoryPage() {
             <FilterSelect
               icon={ArrowUpDown}
               label="Sort"
-              minWidthClassName="min-w-[194px]"
+              minWidthClassName="min-w-[220px]"
               value={`${sortBy}:${sortOrder}`}
               onChange={(value) => {
                 const [nextSortBy, nextSortOrder] = value.split(":") as [
@@ -808,18 +809,23 @@ function FilterSelect({
 }) {
   return (
     <label
-      className={`ys-inventory-filter relative flex h-10 shrink-0 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-600 ${minWidthClassName ?? "w-auto"}`}
+      className={`ys-inventory-filter relative flex h-10 shrink-0 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-600 ${minWidthClassName ?? "w-auto"}`}
     >
       <span className="sr-only">{label}</span>
       <Icon className="h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
       <Select
         aria-label={label}
-        className="h-auto w-auto min-w-0 border-0 bg-transparent px-0 py-0 pr-7 shadow-none focus-visible:ring-0"
+        className="h-auto w-full min-w-0 flex-1 border-0 bg-transparent px-0 py-0 shadow-none focus-visible:ring-0"
+        style={{ backgroundImage: "none" }}
         value={value}
         onChange={(event) => onChange(event.target.value)}
       >
         {children}
       </Select>
+      <ChevronDown
+        aria-hidden="true"
+        className="ys-inventory-filter-chevron pointer-events-none h-4 w-4 shrink-0 text-slate-500"
+      />
     </label>
   );
 }

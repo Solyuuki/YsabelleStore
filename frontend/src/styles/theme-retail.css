@@ -1232,6 +1232,11 @@
   color: #ecf2ff !important;
   color-scheme: dark !important;
 }
+/* The inventory toolbar uses a physical chevron slot after the native select,
+   avoiding label/arrow collisions while keeping a readable dark-mode affordance. */
+:root.dark .app-shell-ambient .ys-inventory-filter-chevron {
+  color: #cbd8ef !important;
+}
 :root.dark .app-shell-ambient :is(.ys-inventory-search, .ys-inventory-filter):focus-within {
   border-color: #a89aff !important;
   box-shadow: 0 0 0 1px rgb(168 154 255 / 20%);
