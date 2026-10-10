@@ -333,9 +333,10 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
         title="User Management"
       />
 
-      <div className="mb-4 inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
+      <div className="ys-user-management-tabs mb-4 inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
         <button
           className={managementTabClass(activeTab === "store")}
+          data-active={activeTab === "store"}
           onClick={() => setActiveTab("store")}
           type="button"
         >
@@ -344,6 +345,7 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
         </button>
         <button
           className={managementTabClass(activeTab === "customers")}
+          data-active={activeTab === "customers"}
           onClick={() => setActiveTab("customers")}
           type="button"
         >
@@ -507,9 +509,10 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
                     Customer restrictions and review visibility are audited owner actions.
                   </p>
                 </div>
-                <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
+                <div className="ys-user-management-tabs inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
                   <button
                     className={managementTabClass(customerView === "accounts")}
+          data-active={customerView === "accounts"}
                     onClick={() => setCustomerView("accounts")}
                     type="button"
                   >
@@ -517,6 +520,7 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
                   </button>
                   <button
                     className={managementTabClass(customerView === "reviews")}
+          data-active={customerView === "reviews"}
                     onClick={() => setCustomerView("reviews")}
                     type="button"
                   >
@@ -979,7 +983,7 @@ function ModerationDialog({
 
 function managementTabClass(active: boolean) {
   return [
-    "inline-flex min-h-9 items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors",
+    "ys-user-management-tab inline-flex min-h-9 items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors",
     active
       ? "bg-white text-indigo-700 shadow-sm ring-1 ring-slate-200"
       : "text-slate-500 hover:bg-white/70 hover:text-slate-900"
