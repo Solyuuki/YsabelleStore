@@ -364,6 +364,19 @@ export async function updateDeliveryStatus(
       });
     }
 
+    if (
+      target === CustomerDeliveryStatus.CANCELLED &&
+      order.paymentMethod === CustomerPaymentMethod.PAYMONGO &&
+      order.paymongoCheckoutSessionId &&
+      order.paymentStatus === CustomerPaymentStatus.PENDING
+    ) {
+      throw new HttpError(
+        409,
+        "PayMongo checkout status must be reconciled before releasing reserved inventory.",
+        { code: "PAYMONGO_CANCELLATION_REQUIRES_RECONCILIATION" }
+      );
+    }
+
     const courierProvider = input.courierProvider?.trim() || order.courierProvider;
     if (target === CustomerDeliveryStatus.OUT_FOR_DELIVERY && !courierProvider) {
       throw new HttpError(400, "Choose the courier or delivery service before dispatch.", {
