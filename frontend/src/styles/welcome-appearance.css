@@ -1,0 +1,217 @@
+/* Retail sign-in appearance follows the existing workstation preference.
+   Login and Owner/Staff routes share the same AppearanceContext value. */
+.ys-retail-theme-control {
+  position: absolute;
+  z-index: 20;
+  top: clamp(1rem, 3vh, 2rem);
+  right: clamp(1.5rem, 5vw, 6rem);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0.65rem 0.45rem 0.9rem;
+  border: 1px solid rgb(109 119 157 / 25%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 78%);
+  box-shadow: 0 12px 32px -22px rgb(34 39 94 / 26%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.ys-retail-theme-control__label {
+  color: #465573;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.035em;
+}
+.ys-retail-theme-control__value {
+  min-width: 2.4rem;
+  color: #343c68;
+  font-size: 0.74rem;
+  font-weight: 750;
+  text-align: center;
+}
+.ys-retail-theme-switch {
+  position: relative;
+  display: inline-flex;
+  width: 4.05rem;
+  height: 2.15rem;
+  flex: none;
+  align-items: center;
+  cursor: pointer;
+}
+.ys-retail-theme-switch input {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.ys-retail-theme-switch__track {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border: 1px solid #bcc4e0;
+  border-radius: 999px;
+  background: linear-gradient(130deg, #dce7fa, #f2ecff);
+  box-shadow: inset 0 1px 3px rgb(39 50 85 / 13%);
+  transition:
+    border-color 240ms ease,
+    background 240ms ease,
+    box-shadow 240ms ease;
+}
+.ys-retail-theme-switch__thumb {
+  position: absolute;
+  top: 0.24rem;
+  left: 0.25rem;
+  display: grid;
+  width: 1.55rem;
+  height: 1.55rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: #6c57c7;
+  box-shadow: 0 3px 9px rgb(36 44 84 / 22%);
+  transition:
+    transform 250ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 240ms ease,
+    color 240ms ease;
+}
+.ys-retail-theme-switch__thumb svg {
+  grid-area: 1 / 1;
+  transition: opacity 160ms ease;
+}
+.ys-retail-theme-switch__moon {
+  opacity: 0;
+}
+.ys-retail-theme-switch input:checked + .ys-retail-theme-switch__track {
+  border-color: #777bb8;
+  background: linear-gradient(130deg, #2a3459, #574788);
+}
+.ys-retail-theme-switch input:checked + .ys-retail-theme-switch__track .ys-retail-theme-switch__thumb {
+  transform: translateX(1.86rem);
+  background: #d9d4ff;
+  color: #332b68;
+}
+.ys-retail-theme-switch input:checked + .ys-retail-theme-switch__track .ys-retail-theme-switch__sun {
+  opacity: 0;
+}
+.ys-retail-theme-switch input:checked + .ys-retail-theme-switch__track .ys-retail-theme-switch__moon {
+  opacity: 1;
+}
+.ys-retail-theme-switch input:focus-visible + .ys-retail-theme-switch__track {
+  outline: 3px solid #8c80ee;
+  outline-offset: 3px;
+}
+
+:root.dark[data-appearance-scope="retail"] .ys-retail-welcome.ys-glass-flow-background {
+  /* Match the dashboard's actual dark background, never stretch its texture. */
+  background-color: #101827 !important;
+  background-image: url("/textures/ys-dark-midnight-velvet.svg") !important;
+  background-size: min(1600px, 100%) auto !important;
+  background-position: center top !important;
+  background-repeat: repeat-y !important;
+}
+:root.dark .ys-retail-welcome {
+  color: #f0f4ff !important;
+}
+:root.dark .ys-retail-welcome .ys-retail-theme-control {
+  border-color: #586988;
+  background: rgb(22 34 55 / 88%);
+  box-shadow: 0 18px 40px -25px rgb(2 8 24 / 80%);
+}
+:root.dark .ys-retail-welcome .ys-retail-theme-control__label,
+:root.dark .ys-retail-welcome .ys-retail-theme-control__value {
+  color: #d9e3f4;
+}
+:root.dark .ys-retail-welcome .ys-retail-security-pill {
+  border-color: #6561b4 !important;
+  background: #2a2b56 !important;
+  color: #dfd9ff !important;
+}
+:root.dark .ys-retail-welcome .ys-retail-security-pill svg {
+  color: #bdb3ff !important;
+}
+:root.dark .ys-retail-welcome .ys-retail-login-card {
+  border: 1px solid #596b88 !important;
+  background: rgb(26 39 61 / 94%) !important;
+  color: #edf2ff !important;
+  box-shadow: 0 32px 70px -35px rgb(2 6 24 / 85%) !important;
+}
+:root.dark .ys-retail-welcome .ys-retail-login-card::before {
+  opacity: 0.035;
+}
+:root.dark .ys-retail-welcome .text-slate-950,
+:root.dark .ys-retail-welcome .text-slate-900 {
+  color: #f0f4ff !important;
+}
+:root.dark .ys-retail-welcome .text-slate-700,
+:root.dark .ys-retail-welcome .text-slate-600 {
+  color: #d2dff1 !important;
+}
+:root.dark .ys-retail-welcome .text-slate-500,
+:root.dark .ys-retail-welcome .text-slate-400 {
+  color: #aebfda !important;
+}
+:root.dark .ys-retail-welcome .ys-retail-known-account {
+  border-color: #516581 !important;
+  background: #253650 !important;
+  color: #e5edfd !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 4%);
+}
+:root.dark .ys-retail-welcome .ys-retail-role-badge {
+  border-color: #786dc5 !important;
+  background: #39355e !important;
+  color: #e2ddff !important;
+}
+:root.dark .ys-retail-welcome .ys-retail-welcome-note {
+  border-color: #5d7291 !important;
+  background: #253650 !important;
+  color: #e2ecfc !important;
+}
+:root.dark .ys-retail-welcome .ys-retail-login-card input:not([type="checkbox"]) {
+  border-color: #62748e !important;
+  background: #15243a !important;
+  color: #eef4ff !important;
+}
+:root.dark .ys-retail-welcome .ys-retail-login-card input::placeholder {
+  color: #a9b8d0 !important;
+}
+:root.dark .ys-retail-welcome .ys-retail-login-card button[class*="bg-white"] {
+  border-color: #60718b !important;
+  background: #2b3d56 !important;
+  color: #f0f4ff !important;
+}
+:root.dark .ys-retail-welcome .ys-retail-login-card button[class*="bg-white"]:hover {
+  background: #354c69 !important;
+}
+:root.dark .ys-retail-welcome .ys-retail-login-card [role="alert"] {
+  border-color: #a47a91 !important;
+  background: #412d42 !important;
+  color: #ffe4ed !important;
+}
+:root.dark .ys-retail-welcome .ys-retail-welcome-footer {
+  color: #d3dfef !important;
+}
+:root.dark .ys-retail-welcome .welcome-particle {
+  background: rgb(156 149 255 / 24%);
+  box-shadow: 0 0 12px rgb(97 105 189 / 18%);
+}
+
+@media (max-width: 600px) {
+  .ys-retail-theme-control {
+    right: 1.25rem;
+    gap: 0.5rem;
+  }
+  .ys-retail-theme-control__label {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ys-retail-theme-switch__track,
+  .ys-retail-theme-switch__thumb,
+  .ys-retail-theme-switch__thumb svg {
+    transition: none;
+  }
+}

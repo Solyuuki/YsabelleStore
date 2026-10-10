@@ -1,5 +1,5 @@
 name: Sprint 11 formatter with Python image-engine dependencies
-# CI formatter: confirm updated shared orbital component assertions (2026-10-10).
+# CI formatter: validate retail sign-in appearance switch and persist preference (2026-10-10).
 
 on:
   push:
