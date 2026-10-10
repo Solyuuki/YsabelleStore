@@ -70,7 +70,10 @@ export async function listRestockPlanningCandidates(
       name: true,
       reorderLevel: true,
       sku: true,
-      targetStockLevel: true
+      targetStockLevel: true,
+      restockTargetApprovedLevel: true,
+      restockTargetApprovedById: true,
+      restockTargetApprovedAt: true
     }
   });
   const productIds = products.map((product) => product.id);
@@ -236,6 +239,9 @@ export async function listRestockPlanningCandidates(
         reorderLevel: product.reorderLevel,
         sku: product.sku,
         targetStockLevel: product.targetStockLevel,
+        approvedTargetStockLevel: product.restockTargetApprovedLevel,
+        targetApprovalById: product.restockTargetApprovedById,
+        targetApprovedAt: product.restockTargetApprovedAt,
         unitCost: conservativeUnitCost
       },
       quarantinedStock: stockTruth.quarantinedStock,
