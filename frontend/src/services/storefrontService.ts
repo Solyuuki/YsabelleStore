@@ -135,13 +135,44 @@ export async function fetchCustomerOrders(signal?: AbortSignal) {
   return response.data;
 }
 
+const CUSTOMER_CHECKOUT_RETRY_KEY = "ysabelle:checkout-request-v1";
+
+/**
+ * Reuse the same key after timeouts: server-side uniqueness prevents a retry
+ * from placing a second order. No customer PII is stored in this key.
+ */
+function checkoutIdempotencyKey(input: StorefrontOrderInput) {
+  const signature = JSON.stringify({
+    items: [...input.items].sort((a, b) => a.productId.localeCompare(b.productId)),
+    paymentMethod: input.paymentMethod
+  });
+  try {
+    const previous = JSON.parse(sessionStorage.getItem(CUSTOMER_CHECKOUT_RETRY_KEY) || "null") as
+      | { signature?: string; key?: string }
+      | null;
+    if (previous?.signature === signature && previous.key) return previous.key;
+    const key = crypto.randomUUID();
+    sessionStorage.setItem(CUSTOMER_CHECKOUT_RETRY_KEY, JSON.stringify({ signature, key }));
+    return key;
+  } catch {
+    return crypto.randomUUID();
+  }
+}
+
 export async function placeStorefrontOrder(input: StorefrontOrderInput) {
+  const key = checkoutIdempotencyKey(input);
   const response = await apiClient.request<StorefrontOrder, unknown>("/api/storefront/orders", {
     method: "POST",
     credentials: "include",
+    headers: { "Idempotency-Key": key },
     json: input
   });
   if (!response.success || !response.data) throw new Error(response.message);
+  try {
+    sessionStorage.removeItem(CUSTOMER_CHECKOUT_RETRY_KEY);
+  } catch {
+    // Session storage is an optional retry optimization.
+  }
   return response.data;
 }
 
