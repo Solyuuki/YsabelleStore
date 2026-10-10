@@ -13,6 +13,10 @@ const homeSource = await readFile(
   new URL("../../frontend/src/pages/customer/CustomerHomePage.tsx", import.meta.url),
   "utf8"
 );
+const categoryBackdropSource = await readFile(
+  new URL("../../frontend/src/components/customer/CategoryRetailBackdrop.tsx", import.meta.url),
+  "utf8"
+);
 const shopSource = await readFile(
   new URL("../../frontend/src/pages/customer/ShopPage.tsx", import.meta.url),
   "utf8"
@@ -329,13 +333,14 @@ assert.doesNotMatch(premiumCss, /\.home-categories::(?:before|after)/);
 const homeCategoriesRule = premiumCss.match(/\.home-categories\s*\{[^}]*\}/s)?.[0] ?? "";
 assert.doesNotMatch(homeCategoriesRule, /repeating-linear-gradient|url\(["']?\//);
 assert.match(homeSource, /<CategoryRetailBackdrop \/>/);
+assert.match(homeSource, /import \{ CategoryRetailBackdrop \} from/);
 assert.match(
-  homeSource,
+  categoryBackdropSource,
   /function CategoryRetailBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?viewBox="0 0 1600 900"[\s\S]*?home-categories__portal-ceiling[\s\S]*?home-categories__portal-side--left[\s\S]*?home-categories__portal-side--right[\s\S]*?home-categories__handoff/
 );
 assert.doesNotMatch(
-  homeSource,
-  /function CategoryRetailBackdrop\(\)[\s\S]*?home-categories__(?:products|podiums|leaves|shelf)/
+  categoryBackdropSource,
+  /home-categories__(?:products|podiums|leaves|shelf)/
 );
 assert.match(
   premiumCss,

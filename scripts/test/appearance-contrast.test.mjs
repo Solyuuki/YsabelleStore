@@ -214,8 +214,8 @@ test("customer address labels and empty-session heading keep readable dark contr
   assert.match(dark, /\.customer-account-address-form/);
   assert.match(dark, /label\s*>\s*span\s+small/);
   assert.match(dark, /\.customer-account-address-heading p/);
-  assert.match(dark, /\.customer-account-session-empty strong/);
-  assert.match(dark, /\.customer-account-session-empty span/);
+  assert.match(dark, /\.customer-account-session-empty\s+strong\s*\{\s*color:\s*#eef3ff;/);
+  assert.match(dark, /\.customer-account-session-empty\s+span\s*\{\s*color:\s*#cbd7e9;/);
 
   for (const [label, ink, surface] of [
     ["delivery form labels", "#d1dcef", "#24334a"],
