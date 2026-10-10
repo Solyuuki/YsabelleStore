@@ -12,8 +12,8 @@ import {
   allocateStockForSale,
   assertStockInvariant,
   createInventoryMovementAfterAllocation,
-  synchronizeInventoryAggregate
   getSellableStockQuantity,
+  synchronizeInventoryAggregate
 } from "./stockDomainService.js";
 
 type CheckoutCartItem = PosCheckoutItemInput;
