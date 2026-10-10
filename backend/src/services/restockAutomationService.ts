@@ -150,7 +150,12 @@ async function loadOperationalActionLines() {
         sellableStock: candidate.sellableStock,
         incomingStock: candidate.incomingStock,
         expiryRiskQuantity: candidate.expiryRiskQuantity,
-        unitCost: candidate.product.unitCost
+        unitCost: candidate.product.unitCost,
+        recommendationSource: candidate.recommendationSource,
+        targetStockLevel: candidate.product.targetStockLevel,
+        approvedTargetStockLevel: candidate.product.approvedTargetStockLevel,
+        targetApprovalById: candidate.product.targetApprovalById,
+        targetApprovedAt: candidate.product.targetApprovedAt
       });
       if (!verdict.safe) {
         console.warn(
