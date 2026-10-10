@@ -11,6 +11,7 @@ import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import { serializeInventory, type InventorySummaryRow } from "./catalogSerializers.js";
 import { calculateStockTruth, getDaysUntilExpiry, isBatchSellable } from "./stockTruth.js";
+import { activeReservationsByProduct, availableToPromise, lockProductStock } from "./stockReservationService.js";
 
 type TransactionClient = Prisma.TransactionClient | PrismaClient;
 
@@ -553,8 +554,11 @@ export async function allocateStockForSale(
   input: {
     productId: string;
     quantity: number;
+    /** Fulfillment may consume its own ACTIVE stock reservation. */
+    reservationOrderId?: string;
   }
 ) {
+  await lockProductStock(tx as Prisma.TransactionClient, [input.productId]);
   const product = await getProductContext(tx, input.productId);
   const batches = product.inventoryBatches
     .filter((batch) => isBatchSellable(batch))
@@ -576,12 +580,21 @@ export async function allocateStockForSale(
     });
 
   const sellableStock = getSellableStockQuantity(product.inventoryBatches);
+  const reservations = await activeReservationsByProduct(
+    tx as Prisma.TransactionClient,
+    [input.productId],
+    input.reservationOrderId
+  );
+  const available = availableToPromise(
+    sellableStock,
+    reservations.get(input.productId) ?? 0
+  );
 
-  if (input.quantity > sellableStock) {
+  if (input.quantity > available) {
     throw new HttpError(409, "Insufficient sellable stock for checkout.", {
       code: "INSUFFICIENT_STOCK",
       details: {
-        available: sellableStock,
+        available,
         productId: input.productId,
         requested: input.quantity
       }
@@ -610,15 +623,24 @@ export async function allocateStockForSale(
           ? InventoryBatchStatus.LOW_STOCK
           : InventoryBatchStatus.AVAILABLE;
 
-    await tx.inventoryBatch.update({
+    // Conditional decrement is a second protection against legacy writers that
+    // do not yet participate in the shared product-row locking protocol.
+    const claim = await tx.inventoryBatch.updateMany({
       data: {
-        quantityRemaining: nextRemaining,
+        quantityRemaining: { decrement: allocatedQuantity },
         status: nextStatus
       },
       where: {
-        id: batch.id
+        id: batch.id,
+        quantityRemaining: batch.quantityRemaining,
+        status: batch.status
       }
     });
+    if (claim.count !== 1) {
+      throw new HttpError(409, "Stock changed during checkout. Please retry.", {
+        code: "STOCK_CONCURRENT_UPDATE"
+      });
+    }
 
     allocations.push({
       batchId: batch.id,
