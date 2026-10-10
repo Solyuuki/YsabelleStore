@@ -199,3 +199,33 @@ test("forecast selected rows, monthly preview and user management hovers stay re
     assert.ok(contrastRatio(fg, bg) >= 4.5, `${label} has insufficient dark contrast`);
   }
 });
+
+test("customer address labels and empty-session heading keep readable dark contrast", () => {
+  const dark = read("frontend/src/styles/theme-storefront-contrast.css");
+  const premium = read("frontend/src/styles/customer-account-premium.css");
+  const layout = read("frontend/src/pages/customer/CustomerAccountPage.tsx");
+
+  assert.match(premium, /#profile-panel \.customer-account-address-form label > span/);
+  assert.match(layout, /className="customer-account-address-form"/);
+  assert.match(layout, /className="customer-account-session-empty"/);
+  assert.match(dark, /Sprint 11 customer profile: late premium light-theme ID selectors/);
+  assert.match(dark, /:root\.dark\[data-appearance-scope="storefront"\]/);
+  assert.match(dark, /\.customer-account-address-form/);
+  assert.match(dark, /label > span small/);
+  assert.match(dark, /\.customer-account-address-heading p/);
+  assert.match(dark, /\.customer-account-session-empty strong/);
+  assert.match(dark, /\.customer-account-session-empty span/);
+
+  for (const [label, ink, surface] of [
+    ["delivery form labels", "#d1dcef", "#24334a"],
+    ["optional address label", "#d1dcef", "#24334a"],
+    ["address help", "#bfcde2", "#24334a"],
+    ["no-other-session heading", "#eef3ff", "#24334a"],
+    ["no-other-session body", "#cbd7e9", "#24334a"]
+  ]) {
+    assert.ok(
+      contrastRatio(ink, surface) >= 4.5,
+      `${label} lacks WCAG AA dark contrast: ${contrastRatio(ink, surface).toFixed(2)}:1`
+    );
+  }
+});
