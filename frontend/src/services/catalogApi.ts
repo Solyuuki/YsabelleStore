@@ -51,6 +51,9 @@ export type ProductRecord = {
   sellingPrice: string;
   reorderLevel: number;
   targetStockLevel: number;
+  restockTargetApprovedLevel: number | null;
+  restockTargetApprovedAt: string | null;
+  restockTargetApprovedById: string | null;
   status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
   availabilityStatus: "AVAILABLE" | "UNAVAILABLE";
   isAvailable: boolean;
