@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+// Sprint 11 regression: bounded purchasing must be verified alongside concurrent checkout QA.
+
 import { buildRestockForecastDecision } from "../src/services/restockForecastDecisionService.js";
 import {
   reconcileDraftRestockLine,
