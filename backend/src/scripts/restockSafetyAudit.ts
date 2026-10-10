@@ -127,7 +127,12 @@ async function main() {
           sellableStock: current.sellableStock,
           incomingStock: current.incomingStock,
           expiryRiskQuantity: current.expiryRiskQuantity,
-          unitCost: current.product.unitCost
+          unitCost: current.product.unitCost,
+          recommendationSource: line.recommendationSource,
+          targetStockLevel: current.product.targetStockLevel,
+          approvedTargetStockLevel: current.product.approvedTargetStockLevel,
+          targetApprovalById: current.product.targetApprovalById,
+          targetApprovedAt: current.product.targetApprovedAt
         })
       : null;
     return {
