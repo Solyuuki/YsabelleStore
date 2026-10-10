@@ -2651,6 +2651,7 @@ function ProductDetailsDialog({
     sizeUnit: "" as NonNullable<ProductRecord["sizeUnit"]> | "",
     sizeValue: "",
     targetStockLevel: "0",
+    authorizeTargetStockPolicy: false,
     unit: "PIECE" as ProductRecord["unit"],
     variant: ""
   });
@@ -2673,6 +2674,7 @@ function ProductDetailsDialog({
       reorderLevel: String(product.reorderLevel),
       sellingPrice: product.sellingPrice,
       targetStockLevel: String(product.targetStockLevel),
+      authorizeTargetStockPolicy: false,
       unit: product.unit,
       variant: product.variant ?? "",
       sizeValue: product.sizeValue ?? "",
@@ -2754,6 +2756,7 @@ function ProductDetailsDialog({
         reorderLevel: Number(form.reorderLevel),
         sellingPrice: form.sellingPrice.trim(),
         targetStockLevel: Number(form.targetStockLevel),
+        authorizeTargetStockPolicy: form.authorizeTargetStockPolicy,
         unit: form.unit,
         variant: form.variant.trim() || null,
         sizeValue: form.sizeValue ? Number(form.sizeValue) : null,
@@ -3038,6 +3041,26 @@ function ProductDetailsDialog({
                       }
                     />
                   </div>
+                  <label className="ys-product-target-policy flex items-start gap-3 rounded-lg border border-slate-200 px-3 py-3 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={form.authorizeTargetStockPolicy}
+                      onChange={(event) =>
+                        setForm((current) => ({
+                          ...current,
+                          authorizeTargetStockPolicy: event.target.checked
+                        }))
+                      }
+                    />
+                    <span>
+                      <strong>Owner authorization: Target-stock replenishment</strong>
+                      <span className="mt-1 block text-xs">
+                        Explicitly authorize this target quantity for controlled replenishment
+                        when verified actual-sales history is incomplete. This does not
+                        bypass the quantity, unit-cost, or order budget limits.
+                      </span>
+                    </span>
+                  </label>
                   <div className="space-y-2">
                     <Label htmlFor="edit-quality-status">Catalog quality</Label>
                     <Select
