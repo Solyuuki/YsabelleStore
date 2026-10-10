@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
+import { useAppearance } from "@/context/AppearanceContext";
+
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 const ABOUT_ORIGIN_VIDEO_FILE = "about-origin-motion-6738635d.mp4";
+const ABOUT_DARK_GALAXY_VIDEO_FILE = "about-dark-galaxy-loop.mp4";
 const CROSSFADE_LEAD_SECONDS = 0.95;
 const CROSSFADE_DURATION_MS = 720;
 
@@ -16,15 +19,28 @@ type FrameAwareVideo = HTMLVideoElement & {
   cancelVideoFrameCallback?: (handle: number) => void;
 };
 
-function resolveAboutOriginVideo() {
+function resolveAboutOriginVideo(isDark: boolean) {
+  const file = isDark ? ABOUT_DARK_GALAXY_VIDEO_FILE : ABOUT_ORIGIN_VIDEO_FILE;
   if (window.location.protocol === "file:") {
-    return new URL(`./media/${ABOUT_ORIGIN_VIDEO_FILE}`, document.baseURI).href;
+    return new URL(`./media/${file}`, document.baseURI).href;
   }
 
-  return `/media/${ABOUT_ORIGIN_VIDEO_FILE}`;
+  return `/media/${file}`;
 }
 
 export function AboutWelcomeMotion() {
+  const { storefrontTheme } = useAppearance();
+  // Recreate the player on theme change: the light motion/crossfade remains
+  // untouched, while the dark master uses its own seamless native loop.
+  return (
+    <AboutWelcomeMotionPlayer
+      isDark={storefrontTheme === "dark"}
+      key={storefrontTheme}
+    />
+  );
+}
+
+function AboutWelcomeMotionPlayer({ isDark }: { isDark: boolean }) {
   const videoRefs = [useRef<HTMLVideoElement>(null), useRef<HTMLVideoElement>(null)] as const;
   const transitionTimerRef = useRef<number | null>(null);
   const resetFrameRef = useRef<number | null>(null);
@@ -110,7 +126,7 @@ export function AboutWelcomeMotion() {
   }, [reduceMotion]);
 
   useEffect(() => {
-    if (reduceMotion || !videoReady || transitioningRef.current) return;
+    if (reduceMotion || isDark || !videoReady || transitioningRef.current) return;
 
     const video = videoRefs[activeIndex].current as FrameAwareVideo | null;
     if (!video?.requestVideoFrameCallback) return;
@@ -136,7 +152,7 @@ export function AboutWelcomeMotion() {
         video.cancelVideoFrameCallback(callbackHandle);
       }
     };
-  }, [activeIndex, reduceMotion, videoReady]);
+  }, [activeIndex, isDark, reduceMotion, videoReady]);
 
   useEffect(() => {
     return () => {
@@ -158,6 +174,7 @@ export function AboutWelcomeMotion() {
 
   function maybeCrossfade(video: HTMLVideoElement, index: 0 | 1, mediaTime = video.currentTime) {
     if (
+      isDark ||
       transitioningRef.current ||
       index !== activeIndexRef.current ||
       !welcomeVisibleRef.current ||
@@ -237,18 +254,34 @@ export function AboutWelcomeMotion() {
     beginCrossfade(index);
   }
 
-  const source = resolveAboutOriginVideo();
+  const source = resolveAboutOriginVideo(isDark);
 
   return (
     <div
       aria-hidden="true"
-      className={`about-welcome-motion${videoReady ? " is-video-ready" : ""}`}
+      className={`about-welcome-motion${isDark ? " about-welcome-motion--dark" : ""}${videoReady ? " is-video-ready" : ""}`}
       ref={rootRef}
     >
       <div className="about-welcome-motion__fallback" />
 
       {!reduceMotion ? (
-        <>
+        isDark ? (
+          <video
+            autoPlay
+            className="about-welcome-motion__video is-active"
+            loop
+            muted
+            onCanPlay={(event) => markPrimaryReady(event.currentTarget)}
+            onLoadedData={(event) => markPrimaryReady(event.currentTarget)}
+            onPlaying={(event) => markPrimaryReady(event.currentTarget)}
+            playsInline
+            preload="auto"
+            ref={videoRefs[0]}
+            src={source}
+            tabIndex={-1}
+          />
+        ) : (
+          <>
           {[0, 1].map((rawIndex) => {
             const index = rawIndex as 0 | 1;
             const isActive = index === activeIndex;
@@ -281,7 +314,8 @@ export function AboutWelcomeMotion() {
               />
             );
           })}
-        </>
+          </>
+        )
       ) : null}
 
       <span className="about-welcome-motion__scrim" />

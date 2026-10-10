@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState, type CSSProperties } from "react";
 
 import { DiscoverPage } from "@/pages/customer/DiscoverPage";
+import { useAppearance } from "@/context/AppearanceContext";
 import "@/styles/about-welcome-motion.css";
 import "@/styles/about-catalog-intelligence.css";
 import "@/styles/about-sales-inventory.css";
@@ -21,6 +22,7 @@ const DeferredAboutStorefrontHandoff = lazy(() =>
 );
 
 export function AboutExperiencePage({ navigate }: { navigate: (path: string) => void }) {
+  const { storefrontTheme } = useAppearance();
   const [storyReady, setStoryReady] = useState(false);
 
   useEffect(() => {
@@ -36,6 +38,7 @@ export function AboutExperiencePage({ navigate }: { navigate: (path: string) => 
       <section
         aria-label="Opening About"
         className="about-experience about-experience--boot about-experience-boot"
+        data-about-hero-theme={storefrontTheme}
         style={storyTheme}
       >
         <span className="sr-only">Opening Ysabelle Store About experience...</span>
@@ -44,7 +47,7 @@ export function AboutExperiencePage({ navigate }: { navigate: (path: string) => 
   }
 
   return (
-    <div className="about-experience" style={storyTheme}>
+    <div className="about-experience" data-about-hero-theme={storefrontTheme} style={storyTheme}>
       <DiscoverPage navigate={navigate} variant="about" />
       <Suspense
         fallback={
