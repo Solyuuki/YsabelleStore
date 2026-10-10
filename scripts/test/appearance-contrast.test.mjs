@@ -229,3 +229,40 @@ test("customer address labels and empty-session heading keep readable dark contr
     );
   }
 });
+
+test("restock recommendation action card keeps all warning and status text readable", () => {
+  const forecast = read("frontend/src/components/reports/RestockForecastPanel.tsx");
+  const retail = read("frontend/src/styles/theme-retail.css");
+
+  assert.match(forecast, /className=\{`ys-restock-recommendation /);
+  assert.match(forecast, /data-tone=\{tone\}/);
+  for (const part of ["label", "title", "body", "meta"]) {
+    assert.ok(
+      forecast.includes(`ys-restock-recommendation-${part}`),
+      `Missing restock action ${part} class`
+    );
+    assert.ok(
+      retail.includes(`.ys-restock-recommendation-${part}`),
+      `Missing scoped dark restock action ${part} color`
+    );
+  }
+  for (const tone of ["amber", "emerald", "indigo"]) {
+    assert.ok(
+      retail.includes(`.ys-restock-recommendation[data-tone="${tone}"]`),
+      `Missing dark recommendation treatment for ${tone}`
+    );
+  }
+
+  for (const [tone, background, foregrounds] of [
+    ["amber", "#3d3123", ["#ffdc9a", "#fff1d7", "#ebdcc3", "#f2d8ad"]],
+    ["emerald", "#233b38", ["#a8eacb", "#e7fff2", "#c8e8da", "#b8dfcf"]],
+    ["indigo", "#293651", ["#cbbfff", "#f1edff", "#d0dbf3", "#c1ccec"]]
+  ]) {
+    for (const ink of foregrounds) {
+      assert.ok(
+        contrastRatio(ink, background) >= 4.5,
+        `${tone} restock action text fails WCAG AA contrast`
+      );
+    }
+  }
+});
