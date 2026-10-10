@@ -18,6 +18,7 @@ import type { AppRoutePath } from "@/app/routes";
 import { APP_VERSION_LABEL } from "@/config/appVersion";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -433,6 +434,9 @@ export function WelcomePage({
 
   return (
     <main className="welcome-ambient ys-retail-welcome ys-material-canvas ys-glass-flow-background auth-page-enter relative flex min-h-screen flex-col overflow-hidden text-slate-950">
+      <div aria-hidden="true" className="ys-retail-welcome__galaxy">
+        <StorefrontGalaxyArtwork className="ys-retail-welcome__cosmos" />
+      </div>
       <div className="welcome-ambient-blob left-[8%] top-[12%] h-[clamp(15rem,24vw,28rem)] w-[clamp(15rem,24vw,28rem)] bg-emerald-200" />
       <div className="welcome-ambient-blob right-[7%] top-[8%] h-[clamp(16rem,26vw,32rem)] w-[clamp(16rem,26vw,32rem)] bg-blue-200 animation-delay-7000" />
       <div className="welcome-ambient-blob bottom-[2%] left-[38%] h-[clamp(14rem,22vw,26rem)] w-[clamp(14rem,22vw,26rem)] bg-violet-200 animation-delay-14000" />

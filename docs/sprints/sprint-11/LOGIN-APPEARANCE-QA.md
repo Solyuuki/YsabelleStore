@@ -11,8 +11,9 @@ storefront keeps its independent theme preference.
 1. Open `/staff-login` in Light Mode. Confirm the accessible Light/Dark switch
    appears above the account panel, without overlapping the account cards.
 2. Use the switch to select Dark. Confirm the track and moon indicator move,
-   the login background uses the existing dark workstation texture, and all
-   account names, badges, helper text, inputs, and actions remain readable.
+   the login background uses the shared Storefront Trending → Everyday
+   Essentials galaxy palette and SVG artwork, and all account names, badges,
+   helper text, inputs, and actions remain readable.
 3. Refresh the page. Dark must remain selected without a Light Mode flash.
 4. Continue with a trusted Owner account or sign in with a password. Dashboard,
    sidebar, and Settings must open in the selected Dark Mode.
@@ -25,12 +26,14 @@ storefront keeps its independent theme preference.
 8. Test keyboard Tab/Space operation, visible focus, and narrow layouts.
    Reduced-motion preferences must suppress switch motion.
 9. Verify receipt-print and protected About scenes keep their existing
-   presentation and no stretched texture appears at different viewports.
+   presentation and no stretched texture, repeated SVG, side gutters, or
+   horizontal seams appear at different viewports (especially ultrawide screens).
 
 ## Automated evidence
 
 - `scripts/test/retail-auth-appearance.test.mjs` validates accessible switch
-  wiring, saved preference handoff, and proportional background usage.
+  wiring, saved preference handoff, shared galaxy background reuse, and
+  non-repeating proportional SVG artwork.
 - The frontend build and dark-mode contract jobs must pass on the same commit.
 - Final release acceptance requires the entire repository CI to pass.
 

@@ -33,19 +33,31 @@ test("login, dashboard and Settings share one persisted retail preference", () =
   assert.match(settings, /setRetailTheme\("dark"\)/);
 });
 
-test("dark login reuses the approved retail texture without stretching or changing storefront", () => {
+test("dark sign-in reuses Trending through Essentials galaxy without tiling or changing storefront", () => {
   const page = read("frontend/src/pages/WelcomePage.tsx");
   const css = read("frontend/src/styles/welcome-appearance.css");
   const retail = read("frontend/src/styles/theme-retail.css");
+  const storefront = read("frontend/src/styles/theme-storefront.css");
+  const artwork = read("frontend/src/components/customer/StorefrontGalaxyArtwork.tsx");
 
   assert.match(page, /ys-retail-welcome ys-material-canvas/);
   assert.match(page, /@\/styles\/welcome-appearance\.css/);
   assert.match(page, /ys-retail-known-account/);
+  assert.match(page, /import \{ StorefrontGalaxyArtwork \} from/);
+  assert.match(page, /<StorefrontGalaxyArtwork\s+className="ys-retail-welcome__cosmos"/);
+  assert.match(page, /aria-hidden="true" className="ys-retail-welcome__galaxy"/);
+  assert.match(artwork, /preserveAspectRatio="xMidYMid meet"/);
+  assert.match(retail, /--storefront-galaxy-background:/);
+  assert.match(storefront, /background: var\(--storefront-galaxy-background\)/);
   assert.match(css, /:root\.dark\[data-appearance-scope="retail"\] \.ys-retail-welcome/);
-  assert.match(css, /url\("\/textures\/ys-dark-midnight-velvet\.svg"\)/);
-  assert.match(retail, /url\("\/textures\/ys-dark-midnight-velvet\.svg"\)/);
-  assert.match(css, /background-size: min\(1600px, 100%\) auto !important;/);
-  assert.match(css, /background-repeat: repeat-y !important;/);
+  assert.match(css, /background-image: var\(--storefront-galaxy-background\) !important;/);
+  assert.match(css, /background-size: auto !important;/);
+  assert.match(css, /background-repeat: no-repeat !important;/);
+  assert.match(css, /\.ys-retail-welcome__galaxy \{/);
+  assert.match(css, /\.ys-retail-welcome__cosmos \{/);
+  assert.match(css, /mask-image: linear-gradient\(to bottom/);
+  assert.doesNotMatch(css, /ys-dark-midnight-velvet\.svg/);
+  assert.doesNotMatch(css, /background-repeat:\s*repeat-y/);
   assert.doesNotMatch(css, /background-size:\s*cover/i);
   assert.match(css, /\.ys-retail-theme-switch input:focus-visible/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);

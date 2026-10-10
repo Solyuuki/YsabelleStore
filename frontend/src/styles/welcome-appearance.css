@@ -114,13 +114,32 @@
   outline-offset: 3px;
 }
 
+/* Match the storefront Trending → Everyday Essentials artwork.
+   This is a full-width CSS galaxy, not a tiled 1600px wallpaper. */
+.ys-retail-welcome__galaxy {
+  display: none;
+}
 :root.dark[data-appearance-scope="retail"] .ys-retail-welcome.ys-glass-flow-background {
-  /* Match the dashboard's actual dark background, never stretch its texture. */
-  background-color: #101827 !important;
-  background-image: url("/textures/ys-dark-midnight-velvet.svg") !important;
-  background-size: min(1600px, 100%) auto !important;
+  background-color: #17243c !important;
+  background-image: var(--storefront-galaxy-background) !important;
+  background-size: auto !important;
   background-position: center top !important;
-  background-repeat: repeat-y !important;
+  background-repeat: no-repeat !important;
+}
+:root.dark[data-appearance-scope="retail"] .ys-retail-welcome__galaxy {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 9%, #000 91%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 9%, #000 91%, transparent 100%);
+}
+:root.dark[data-appearance-scope="retail"] .ys-retail-welcome__cosmos {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 :root.dark .ys-retail-welcome {
   color: #f0f4ff !important;
@@ -203,9 +222,10 @@
 :root.dark .ys-retail-welcome .ys-retail-welcome-footer {
   color: #d3dfef !important;
 }
+/* The shared galaxy includes its own deterministic pinpoints.
+   Avoid layering a second independent starfield over the same scene. */
 :root.dark .ys-retail-welcome .welcome-particle {
-  background: rgb(156 149 255 / 24%);
-  box-shadow: 0 0 12px rgb(97 105 189 / 18%);
+  display: none;
 }
 
 @media (max-width: 600px) {
