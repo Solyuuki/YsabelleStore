@@ -1683,3 +1683,67 @@
   background-color: #2e4060 !important;
   border-color: #9387d5 !important;
 }
+
+/* Sprint 11: Restock report rows and the next-month preview must not inherit
+   light-indigo hover/selection fills against the dark workstation text palette. */
+:root.dark .app-shell-ambient .ys-restock-product-row {
+  background-color: #202c43 !important;
+  color: #e6ecfa;
+}
+:root.dark .app-shell-ambient .ys-restock-product-row:hover:not([data-selected="true"]),
+:root.dark .app-shell-ambient .ys-restock-product-row:focus-visible:not([data-selected="true"]) {
+  background-color: #30415d !important;
+}
+:root.dark .app-shell-ambient .ys-restock-product-row[data-selected="true"] {
+  background-color: #354563 !important;
+  box-shadow: inset 3px 0 0 #afa4ff;
+}
+:root.dark .app-shell-ambient .ys-restock-product-row[data-selected="true"]:hover,
+:root.dark .app-shell-ambient .ys-restock-product-row[data-selected="true"]:focus-visible {
+  background-color: #3c4d70 !important;
+}
+:root.dark .app-shell-ambient .ys-restock-product-row :is([class~="text-slate-950"], [class~="text-slate-900"]) {
+  color: #f2f5ff !important;
+}
+:root.dark .app-shell-ambient .ys-restock-product-row [class~="text-slate-500"] {
+  color: #ccd7eb !important;
+}
+:root.dark .app-shell-ambient .ys-restock-month-preview {
+  background-color: #273650 !important;
+  border-color: #607493 !important;
+  color: #e7edfc;
+}
+:root.dark .app-shell-ambient .ys-restock-month-preview-label {
+  color: #cdc4ff !important;
+}
+:root.dark .app-shell-ambient .ys-restock-month-preview-title {
+  color: #f3f5ff !important;
+}
+:root.dark .app-shell-ambient .ys-restock-month-preview-note {
+  color: #d2dff2 !important;
+}
+
+/* Owner/User Management uses a single dark segmented-control vocabulary.
+   The Tailwind hover:bg-white/70 class is intentionally overridden only here. */
+:root.dark .app-shell-ambient .ys-user-management-tabs {
+  background-color: #18263c !important;
+  border-color: #526583 !important;
+}
+:root.dark .app-shell-ambient .ys-user-management-tabs .ys-user-management-tab {
+  background-color: transparent !important;
+  color: #d3dff0 !important;
+}
+:root.dark .app-shell-ambient .ys-user-management-tabs .ys-user-management-tab:hover:not(:disabled),
+:root.dark .app-shell-ambient .ys-user-management-tabs .ys-user-management-tab:focus-visible {
+  background-color: #30415e !important;
+  color: #f3f5ff !important;
+}
+:root.dark .app-shell-ambient .ys-user-management-tabs .ys-user-management-tab[data-active="true"] {
+  background-color: #39365e !important;
+  color: #e7e0ff !important;
+  box-shadow: inset 0 0 0 1px #8e84d6;
+}
+:root.dark .app-shell-ambient .ys-user-management-tabs .ys-user-management-tab[data-active="true"]:hover,
+:root.dark .app-shell-ambient .ys-user-management-tabs .ys-user-management-tab[data-active="true"]:focus-visible {
+  background-color: #454172 !important;
+}
