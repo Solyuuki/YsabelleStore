@@ -23,13 +23,15 @@ test("real MySQL POS + Storefront share stock safely under simultaneous commits"
   concurrency: false
 }, async () => {
   const unique = randomUUID().slice(0, 8);
-  const category = await prisma.category.create({
-    data: {
-      name: `Reservation QA ${unique}`,
-      slug: `reservation-qa-${unique}`,
+  const category = await prisma.category.upsert({
+    where: { name: "Coffee & Milk" },
+    create: {
+      name: "Coffee & Milk",
+      slug: "coffee-milk",
       dataQualityStatus: "APPROVED",
       isStorefrontVisible: true
-    }
+    },
+    update: { dataQualityStatus: "APPROVED", isStorefrontVisible: true }
   });
   const cashier = await prisma.user.create({
     data: {
@@ -44,6 +46,8 @@ test("real MySQL POS + Storefront share stock safely under simultaneous commits"
     data: {
       categoryId: category.id,
       sku: `QA-RES-${unique}-${suffix}`,
+      barcode: `QA-RES-BC-${unique}-${suffix}`,
+      imageUrl: "/images/products/qa-reservation.webp",
       name: `Reservation QA ${suffix}`,
       sellingPrice: "15.00",
       costPrice: "10.00",
