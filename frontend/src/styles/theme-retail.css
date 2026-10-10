@@ -1863,3 +1863,49 @@
 :root.dark .app-shell-ambient .ys-restock-recommendation .ys-restock-recommendation-meta {
   color: var(--ys-restock-action-meta) !important;
 }
+
+/* Report export cards live in a Radix portal outside .app-shell-ambient.
+   Secondary choices must stay legible in Dark Mode without altering light mode
+   or changing the PDF / Print / CSV actions. */
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"]
+  .ys-report-export-option--secondary {
+  border-color: #7183a2 !important;
+  background-color: #293a55 !important;
+  color: #edf3ff !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 5%);
+}
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"]
+  .ys-report-export-option--secondary .ys-report-export-option__icon {
+  color: #cbc3ff !important;
+  opacity: 1;
+}
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"]
+  .ys-report-export-option--secondary .ys-report-export-option__title {
+  color: #f3f6ff !important;
+}
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"]
+  .ys-report-export-option--secondary .ys-report-export-option__description {
+  color: #d0dcee !important;
+}
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"]
+  .ys-report-export-option--secondary:hover:not(:disabled) {
+  border-color: #ada5f2 !important;
+  background-color: #354765 !important;
+}
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"]
+  .ys-report-export-option--secondary:focus-visible {
+  outline: 2px solid #b3a8ff;
+  outline-offset: 3px;
+}
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"]
+  .ys-report-export-option--secondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.78;
+}

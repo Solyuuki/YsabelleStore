@@ -609,36 +609,36 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
               </Button>
 
               <Button
-                className="h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
+                className="ys-report-export-option ys-report-export-option--secondary h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
                 disabled={exportDisabled}
                 onClick={() => void handlePrint()}
                 type="button"
                 variant="secondary"
               >
-                <Printer className="mt-0.5 h-5 w-5 shrink-0" />
+                <Printer aria-hidden="true" className="ys-report-export-option__icon mt-0.5 h-5 w-5 shrink-0" />
                 <span>
-                  <span className="block font-semibold text-slate-950">
+                  <span className="ys-report-export-option__title block font-semibold text-slate-950">
                     {exportBusy === "print" ? "Preparing…" : "Print"}
                   </span>
-                  <span className="mt-1 block text-xs font-normal leading-5 text-slate-500">
+                  <span className="ys-report-export-option__description mt-1 block text-xs font-normal leading-5 text-slate-500">
                     Open a clean print view for paper printing.
                   </span>
                 </span>
               </Button>
 
               <Button
-                className="h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
+                className="ys-report-export-option ys-report-export-option--secondary h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
                 disabled={exportDisabled}
                 onClick={() => void handleCsv()}
                 type="button"
                 variant="secondary"
               >
-                <FileSpreadsheet className="mt-0.5 h-5 w-5 shrink-0" />
+                <FileSpreadsheet aria-hidden="true" className="ys-report-export-option__icon mt-0.5 h-5 w-5 shrink-0" />
                 <span>
-                  <span className="block font-semibold text-slate-950">
+                  <span className="ys-report-export-option__title block font-semibold text-slate-950">
                     {exportBusy === "csv" ? "Preparing…" : "Excel-compatible CSV"}
                   </span>
-                  <span className="mt-1 block text-xs font-normal leading-5 text-slate-500">
+                  <span className="ys-report-export-option__description mt-1 block text-xs font-normal leading-5 text-slate-500">
                     Spreadsheet-ready copy of the selected report.
                   </span>
                 </span>
