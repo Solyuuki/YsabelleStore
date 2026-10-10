@@ -211,6 +211,12 @@ enum InventoryMovementType {
   DAMAGED
 }
 
+enum InventoryReservationStatus {
+  ACTIVE
+  CONSUMED
+  RELEASED
+}
+
 enum SaleStatus {
   DRAFT
   COMPLETED
@@ -724,6 +730,7 @@ model Product {
   barcodes                  ProductBarcode[]
   inventory                 Inventory?
   inventoryBatches          InventoryBatch[]
+  reservations              InventoryReservation[]
   inventoryMovements        InventoryMovement[]
   saleItems                 SaleItem[]
   forecastRecords           ForecastRecord[]
@@ -972,6 +979,7 @@ model Inventory {
   createdAt          DateTime            @default(now()) @map("created_at")
   updatedAt          DateTime            @updatedAt @map("updated_at")
   product            Product             @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  reservations       InventoryReservation[]
   movements          InventoryMovement[]
 
   @@index([quantityOnHand], map: "idx_inventory_quantity_on_hand")
@@ -1170,6 +1178,8 @@ model CustomerOrder {
   deliveryEvents            CustomerDeliveryEvent[]
   customerAccount           CustomerAccount?          @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   codCollectedBy            User?                     @relation("CustomerOrderCodCollectedBy", fields: [codCollectedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  reservations              InventoryReservation[]
+  checkoutRequestKey        String?                   @unique(map: "uq_customer_order_checkout_key") @map("checkout_request_key") @db.VarChar(191)
   sale                      Sale?                     @relation(fields: [saleId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   verifiedReviews           ProductReview[]            @relation("ProductReviewVerifiedOrder")
   supportTickets              SupportTicket[]
@@ -1200,6 +1210,24 @@ model CustomerDeliveryEvent {
   @@index([actorUserId], map: "idx_customer_delivery_events_user")
   @@index([actorCustomerAccountId], map: "idx_customer_delivery_events_customer")
   @@map("customer_delivery_events")
+}
+
+model InventoryReservation {
+  id          String                     @id @default(cuid()) @db.VarChar(191)
+  orderId     String                     @map("order_id") @db.VarChar(191)
+  productId   String                     @map("product_id") @db.VarChar(191)
+  quantity    Int                        @db.UnsignedInt
+  status      InventoryReservationStatus @default(ACTIVE)
+  consumedAt  DateTime?                  @map("consumed_at")
+  releasedAt  DateTime?                  @map("released_at")
+  createdAt   DateTime                   @default(now()) @map("created_at")
+  updatedAt   DateTime                   @updatedAt @map("updated_at")
+  order       CustomerOrder              @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  product     Product                    @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([orderId, productId], map: "uq_inventory_reservations_order_product")
+  @@index([productId, status], map: "idx_inventory_reservations_product_status")
+  @@map("inventory_reservations")
 }
 
 model CustomerOrderItem {
