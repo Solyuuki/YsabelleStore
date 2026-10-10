@@ -6,6 +6,11 @@ The Known Accounts and password sign-in screens share the existing retail
 appearance preference with the Owner and Staff workstation. The customer
 storefront keeps its independent theme preference.
 
+Dark login reuses `--storefront-galaxy-background` and
+`StorefrontGalaxyArtwork` from Trending through Everyday Essentials. The
+full-viewport CSS palette does not tile or cap at 1600px; its proportional
+vector artwork is decorative and fades into the same footer background.
+
 ## Manual QA checklist
 
 1. Open `/staff-login` in Light Mode. Confirm the accessible Light/Dark switch
