@@ -100,6 +100,11 @@ export async function captureDatabaseFixtureScope(
         }
 
         if (newCustomerOrders.length > 0) {
+          // Checkout reservations use ON DELETE RESTRICT, so scoped fixtures
+          // must release their reservation rows before deleting test orders.
+          await transaction.inventoryReservation.deleteMany({
+            where: { orderId: { in: newCustomerOrders } }
+          });
           await transaction.customerOrder.deleteMany({ where: { id: { in: newCustomerOrders } } });
         }
 
