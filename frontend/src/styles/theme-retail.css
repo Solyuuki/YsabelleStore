@@ -1747,3 +1747,45 @@
 :root.dark .app-shell-ambient .ys-user-management-tabs .ys-user-management-tab[data-active="true"]:focus-visible {
   background-color: #454172 !important;
 }
+
+/* Forecast restock action card: utility text-amber-900/950 etc. must never
+   render as dark ink on the darkened warning/positive/info surfaces. */
+:root.dark .app-shell-ambient .ys-restock-recommendation {
+  color: #e8edf8;
+}
+:root.dark .app-shell-ambient .ys-restock-recommendation[data-tone="amber"] {
+  --ys-restock-action-label: #ffdc9a;
+  --ys-restock-action-title: #fff1d7;
+  --ys-restock-action-body: #ebdcc3;
+  --ys-restock-action-meta: #f2d8ad;
+  background-color: #3d3123 !important;
+  border-color: #b39462 !important;
+}
+:root.dark .app-shell-ambient .ys-restock-recommendation[data-tone="emerald"] {
+  --ys-restock-action-label: #a8eacb;
+  --ys-restock-action-title: #e7fff2;
+  --ys-restock-action-body: #c8e8da;
+  --ys-restock-action-meta: #b8dfcf;
+  background-color: #233b38 !important;
+  border-color: #5d907d !important;
+}
+:root.dark .app-shell-ambient .ys-restock-recommendation[data-tone="indigo"] {
+  --ys-restock-action-label: #cbbfff;
+  --ys-restock-action-title: #f1edff;
+  --ys-restock-action-body: #d0dbf3;
+  --ys-restock-action-meta: #c1ccec;
+  background-color: #293651 !important;
+  border-color: #7783b9 !important;
+}
+:root.dark .app-shell-ambient .ys-restock-recommendation .ys-restock-recommendation-label {
+  color: var(--ys-restock-action-label) !important;
+}
+:root.dark .app-shell-ambient .ys-restock-recommendation .ys-restock-recommendation-title {
+  color: var(--ys-restock-action-title) !important;
+}
+:root.dark .app-shell-ambient .ys-restock-recommendation .ys-restock-recommendation-body {
+  color: var(--ys-restock-action-body) !important;
+}
+:root.dark .app-shell-ambient .ys-restock-recommendation .ys-restock-recommendation-meta {
+  color: var(--ys-restock-action-meta) !important;
+}
