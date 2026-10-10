@@ -408,7 +408,8 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                         <TableRow
                           aria-label={`View forecast for ${item.product.name}`}
                           aria-pressed={selectedRow}
-                          className={`cursor-pointer select-none transition-colors duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 ${
+                          data-selected={selectedRow}
+                          className={`ys-restock-product-row cursor-pointer select-none transition-colors duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 ${
                             selectedRow
                               ? "bg-indigo-50/70 hover:bg-indigo-50/80"
                               : "hover:bg-slate-50"
@@ -592,17 +593,17 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
 
               {displayedPreview ? (
                 <div
-                  className="rounded-lg border border-indigo-200 bg-indigo-50/60 p-4"
+                  className="ys-restock-month-preview rounded-lg border border-indigo-200 bg-indigo-50/60 p-4"
                   data-product-transition
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
+                      <p className="ys-restock-month-preview-label text-xs font-semibold uppercase tracking-wide text-indigo-700">
                         {chartView === "ALL"
                           ? "All products next month preview"
                           : "Next month restock preview"}
                       </p>
-                      <p className="mt-1 text-lg font-semibold text-indigo-950">
+                      <p className="ys-restock-month-preview-title mt-1 text-lg font-semibold text-indigo-950">
                         {displayedPreview.monthLabel}
                         {chartView === "ALL" && allProductsPreview
                           ? ` · ${allProductsPreview.productsToRestock.toLocaleString()} products projected`
@@ -637,7 +638,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                       value={displayedPreview.batchNumber}
                     />
                   </div>
-                  <p className="mt-3 text-xs leading-5 text-indigo-800">
+                  <p className="ys-restock-month-preview-note mt-3 text-xs leading-5 text-indigo-800">
                     {chartView === "ALL"
                       ? "This store-wide preview aggregates operational POS demand, sellable stock, active incoming quantities, expiry risk, and stock policy for all products. It is not counted as new incoming stock and does not create the next monthly ticket yet."
                       : "This is an estimate based on current POS demand, sellable and incoming stock, expiry risk, and stock policy. It is not counted as incoming stock and does not create the next monthly ticket yet. The quantity will be recalculated when the next batch cycle starts."}
