@@ -4,9 +4,11 @@ import { resolve } from "node:path";
 
 const cssPath = resolve(process.cwd(), "src/styles/customer-home-premium.css");
 const homePath = resolve(process.cwd(), "src/pages/customer/CustomerHomePage.tsx");
+const categoryBackdropPath = resolve(process.cwd(), "src/components/customer/CategoryRetailBackdrop.tsx");
 
 const css = readFileSync(cssPath, "utf8");
 const home = readFileSync(homePath, "utf8");
+const categoryBackdrop = readFileSync(categoryBackdropPath, "utf8");
 
 assert.doesNotMatch(
   css,
@@ -46,14 +48,14 @@ assert.match(
 );
 
 assert.match(
-  home,
+  categoryBackdrop,
   /function CategoryRetailBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?viewBox="0 0 1600 900"[\s\S]*?home-categories__portal-ceiling[\s\S]*?home-categories__portal-side--left[\s\S]*?home-categories__portal-side--right[\s\S]*?home-categories__handoff/,
   "Category backdrop must use architectural portal framing and a merchandising handoff wave."
 );
 
 assert.doesNotMatch(
-  home,
-  /function CategoryRetailBackdrop\(\)[\s\S]*?home-categories__(?:products|podiums|leaves|shelf)/,
+  categoryBackdrop,
+  /home-categories__(?:products|podiums|leaves|shelf)/,
   "Category showroom backdrop must not restore literal retail-object silhouettes."
 );
 
@@ -240,7 +242,7 @@ assert.match(
 
 
 /* Shop catalog and the homepage merchandising shelves share the SAME dark galaxy. */
-const storefrontTheme = readFileSync(resolve(process.cwd(), "src/styles/theme-storefront.css"), "utf8");
+const storefrontTheme = readFileSync(resolve(process.cwd(), "src/styles/theme-storefront.css"), "utf8").replace(/\s+/g, " ");
 const shopCatalogBackdrop = readFileSync(resolve(process.cwd(), "src/components/customer/ShopCatalogBackdrop.tsx"), "utf8");
 const galaxyArtwork = readFileSync(resolve(process.cwd(), "src/components/customer/StorefrontGalaxyArtwork.tsx"), "utf8");
 
@@ -314,7 +316,7 @@ assert.doesNotMatch(
 /* Sign In reuses exactly the approved Account/Shop galaxy, not a stretched
    auth silk image. This remains conditional on login: register/recovery intact. */
 const customerAuthFrameSource = readFileSync(resolve(process.cwd(), "src/components/customer/CustomerAuthFrame.tsx"), "utf8");
-const storefrontContrast = readFileSync(resolve(process.cwd(), "src/styles/theme-storefront-contrast.css"), "utf8");
+const storefrontContrast = readFileSync(resolve(process.cwd(), "src/styles/theme-storefront-contrast.css"), "utf8").replace(/\s+/g, " ");
 assert.match(
   customerAuthFrameSource,
   /mode === "login" \? \([\s\S]*?<StorefrontGalaxyArtwork className="customer-auth-page--login__cosmos" \/>/,

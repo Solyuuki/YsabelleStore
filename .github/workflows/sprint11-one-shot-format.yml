@@ -1,5 +1,5 @@
 name: Sprint 11 formatter with Python image-engine dependencies
-# CI formatter: re-run after normalized social auth contrast source contract (2026-10-10).
+# CI formatter: validate shared category backdrop contracts and pre-push gates (2026-10-10).
 
 on:
   push:
@@ -56,6 +56,8 @@ jobs:
         run: npx prisma db push --schema database/prisma/schema.prisma --skip-generate
       - name: Normalize repository formatting (preserve logic)
         run: npm run format
+      - name: Validate frontend contracts after formatting
+        run: npm test --workspace @ysabellestore/frontend
       - name: Commit formatted files with all pre-push checks
         shell: bash
         run: |
