@@ -21,6 +21,11 @@ export type ProcurementSafetyInput = {
   incomingStock: number;
   expiryRiskQuantity: number;
   unitCost: number | null;
+  recommendationSource?: "SARIMA" | "LOW_STOCK" | "TARGET_STOCK" | "MANUAL";
+  targetStockLevel?: number;
+  approvedTargetStockLevel?: number | null;
+  targetApprovalById?: string | null;
+  targetApprovedAt?: Date | null;
 };
 
 export type ProcurementSafetyResult =
@@ -30,6 +35,7 @@ export type ProcurementSafetyResult =
       reason:
         | "INVALID_QUANTITY"
         | "POS_HISTORY_UNVERIFIED"
+        | "TARGET_POLICY_UNVERIFIED"
         | "INVALID_STOCK_POSITION"
         | "COST_UNAVAILABLE"
         | "ABSOLUTE_UNIT_LIMIT_EXCEEDED"
@@ -61,13 +67,26 @@ export function assessProcurementSafety(input: ProcurementSafetyInput): Procurem
   if (input.requestedQuantity > RESTOCK_SAFETY_ABSOLUTE_MAX_LINE_UNITS) {
     return reject("ABSOLUTE_UNIT_LIMIT_EXCEEDED", RESTOCK_SAFETY_ABSOLUTE_MAX_LINE_UNITS);
   }
-  if (
-    input.posConfidence === "LOW" ||
-    input.monthlyPosDemand === null ||
-    !validNonNegative(input.monthlyPosDemand) ||
-    input.monthlyPosDemand <= 0
-  ) {
-    return reject("POS_HISTORY_UNVERIFIED");
+  const posVerified =
+    input.posConfidence !== "LOW" &&
+    input.monthlyPosDemand !== null &&
+    validNonNegative(input.monthlyPosDemand) &&
+    input.monthlyPosDemand > 0;
+  const explicitlyApprovedTarget =
+    input.recommendationSource === "TARGET_STOCK" &&
+    validUnits(input.targetStockLevel ?? NaN) &&
+    (input.targetStockLevel ?? 0) > 0 &&
+    input.approvedTargetStockLevel === input.targetStockLevel &&
+    Boolean(input.targetApprovalById) &&
+    input.targetApprovedAt instanceof Date &&
+    Number.isFinite(input.targetApprovedAt.getTime());
+
+  if (!posVerified && !explicitlyApprovedTarget) {
+    return reject(
+      input.recommendationSource === "TARGET_STOCK"
+        ? "TARGET_POLICY_UNVERIFIED"
+        : "POS_HISTORY_UNVERIFIED"
+    );
   }
   if (
     !validUnits(input.sellableStock) ||
@@ -81,10 +100,15 @@ export function assessProcurementSafety(input: ProcurementSafetyInput): Procurem
     return reject("COST_UNAVAILABLE");
   }
 
+  // Target-only fallback is allowed solely for an explicitly approved
+  // current Owner target. Never use model output to establish a purchase cap.
+  const independentDemandCeiling = posVerified
+    ? RESTOCK_SAFETY_MONTHS_OF_COVER * input.monthlyPosDemand!
+    : input.targetStockLevel!;
   const maxAllowedQuantity = Math.max(
     0,
     Math.ceil(
-      RESTOCK_SAFETY_MONTHS_OF_COVER * input.monthlyPosDemand +
+      independentDemandCeiling +
         input.expiryRiskQuantity -
         input.sellableStock -
         input.incomingStock
