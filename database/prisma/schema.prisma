@@ -1179,6 +1179,7 @@ model CustomerOrder {
   codCollectedBy            User?                     @relation("CustomerOrderCodCollectedBy", fields: [codCollectedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
   reservations              InventoryReservation[]
   checkoutRequestKey        String?                   @unique(map: "uq_customer_order_checkout_key") @map("checkout_request_key") @db.VarChar(191)
+  reservationPolicyVersion Int                      @default(0) @map("reservation_policy_version") @db.UnsignedInt
   sale                      Sale?                     @relation(fields: [saleId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   verifiedReviews           ProductReview[]            @relation("ProductReviewVerifiedOrder")
   supportTickets              SupportTicket[]
