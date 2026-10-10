@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 import { Prisma, SaleStatus } from "@prisma/client";
 
@@ -174,6 +174,7 @@ export async function checkoutPosSale(input: {
   cashierId: string;
   cashierName: string;
   notes?: string | null;
+  requestKey?: string;
   items: CheckoutCartItem[];
 }): Promise<CheckoutResult> {
   const normalizedItems = mergeCartItems(input.items);
@@ -186,9 +187,62 @@ export async function checkoutPosSale(input: {
 
   const saleDate = new Date();
   const saleNumber = generateSaleNumber(saleDate);
+  const checkoutRequestKey = input.requestKey
+    ? createHash("sha256").update(`${input.cashierId}:${input.requestKey}`).digest("hex")
+    : null;
 
   const result: CheckoutResult = await prisma.$transaction(async (tx) => {
     await lockProductStock(tx, normalizedItems.map((item) => item.productId));
+    if (checkoutRequestKey) {
+      const existing = await tx.sale.findUnique({
+        where: { checkoutRequestKey },
+        include: {
+          cashier: true,
+          items: { include: { product: true } }
+        }
+      });
+      if (existing) {
+        const quantities = new Map<string, number>();
+        for (const item of existing.items) {
+          quantities.set(item.productId, (quantities.get(item.productId) ?? 0) + item.quantity);
+        }
+        const requestMatches = normalizedItems.length === quantities.size &&
+          normalizedItems.every((item) => quantities.get(item.productId) === item.quantity);
+        if (!requestMatches || (input.cashReceived !== undefined &&
+          new Prisma.Decimal(input.cashReceived).comparedTo(existing.checkoutCashReceived ?? existing.totalAmount) !== 0)) {
+          throw new HttpError(409, "POS request key was reused for a different checkout.", {
+            code: "POS_CHECKOUT_IDEMPOTENCY_CONFLICT"
+          });
+        }
+        return {
+          sale: {
+            cashierName: existing.cashier?.name ?? input.cashierName,
+            cashReceived: (existing.checkoutCashReceived ?? existing.totalAmount).toString(),
+            discountAmount: existing.discountAmount.toString(),
+            change: (existing.checkoutChange ?? new Prisma.Decimal(0)).toString(),
+            id: existing.id,
+            itemCount: existing.items.reduce((sum, item) => sum + item.quantity, 0),
+            items: existing.items.map((item) => ({
+              batchId: item.batchId,
+              barcode: item.product.barcode,
+              id: item.id,
+              productId: item.productId,
+              productName: item.product.name,
+              quantity: item.quantity,
+              sku: item.product.sku,
+              totalAmount: item.totalAmount.toString(),
+              unitPrice: item.unitPrice.toString()
+            })),
+            paymentMethod: "CASH" as const,
+            saleDate: existing.saleDate.toISOString(),
+            saleNumber: existing.saleNumber,
+            status: existing.status,
+            subtotalAmount: existing.subtotalAmount.toString(),
+            totalAmount: existing.totalAmount.toString()
+          }
+        };
+      }
+    }
     const products = await tx.product.findMany({
       include: {
         category: true,
@@ -261,6 +315,9 @@ export async function checkoutPosSale(input: {
         notes: input.notes?.trim() || null,
         saleDate,
         saleNumber,
+        checkoutRequestKey,
+        checkoutCashReceived: cashReceived,
+        checkoutChange: change,
         status: SaleStatus.COMPLETED,
         subtotalAmount,
         totalAmount
