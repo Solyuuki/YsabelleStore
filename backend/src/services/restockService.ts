@@ -480,7 +480,12 @@ export async function assertAutomatedRestockQuantitySafe(
       sellableStock: candidate.sellableStock,
       incomingStock: candidate.incomingStock,
       expiryRiskQuantity: candidate.expiryRiskQuantity,
-      unitCost: candidate.product.unitCost
+      unitCost: candidate.product.unitCost,
+      recommendationSource: line.recommendationSource,
+      targetStockLevel: candidate.product.targetStockLevel,
+      approvedTargetStockLevel: candidate.product.approvedTargetStockLevel,
+      targetApprovalById: candidate.product.targetApprovalById,
+      targetApprovedAt: candidate.product.targetApprovedAt
     });
     if (!verdict.safe) {
       throw new HttpError(
