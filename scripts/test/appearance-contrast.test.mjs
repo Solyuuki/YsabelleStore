@@ -160,3 +160,42 @@ test("forecast detail chart has an unobstructed dark grid surface", () => {
     "Forecast grid should remain visible without competing with the plotted series"
   );
 });
+
+test("forecast selected rows, monthly preview and user management hovers stay readable in dark mode", () => {
+  const forecast = read("frontend/src/components/reports/RestockForecastPanel.tsx");
+  const users = read("frontend/src/pages/UserManagementPage.tsx");
+  const retail = read("frontend/src/styles/theme-retail.css");
+
+  assert.match(forecast, /ys-restock-product-row/);
+  assert.match(forecast, /data-selected=\{selectedRow\}/);
+  assert.match(forecast, /ys-restock-month-preview/);
+  assert.match(forecast, /ys-restock-month-preview-note/);
+  assert.match(users, /ys-user-management-tabs/);
+  assert.match(users, /ys-user-management-tab/);
+  assert.match(users, /data-active=\{activeTab === "store"\}/);
+
+  for (const selector of [
+    ".ys-restock-product-row[data-selected=\"true\"]",
+    ".ys-restock-product-row[data-selected=\"true\"]:hover",
+    ".ys-restock-month-preview",
+    ".ys-restock-month-preview-title",
+    ".ys-restock-month-preview-note",
+    ".ys-user-management-tabs .ys-user-management-tab:hover",
+    ".ys-user-management-tabs .ys-user-management-tab[data-active=\"true\"]"
+  ]) {
+    assert.ok(retail.includes(selector), `Missing scoped dark contrast styling: ${selector}`);
+  }
+
+  for (const [label, fg, bg] of [
+    ["selected forecast name", "#f2f5ff", "#354563"],
+    ["selected forecast subtitle", "#ccd7eb", "#354563"],
+    ["hovered forecast name", "#f2f5ff", "#3c4d70"],
+    ["restock preview label", "#cdc4ff", "#273650"],
+    ["restock preview title", "#f3f5ff", "#273650"],
+    ["restock preview note", "#d2dff2", "#273650"],
+    ["user management hovered tab", "#f3f5ff", "#30415e"],
+    ["user management active tab", "#e7e0ff", "#39365e"]
+  ]) {
+    assert.ok(contrastRatio(fg, bg) >= 4.5, `${label} has insufficient dark contrast`);
+  }
+});
