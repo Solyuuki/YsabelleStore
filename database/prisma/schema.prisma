@@ -1040,6 +1040,9 @@ model InventoryMovement {
 model Sale {
   id             String     @id @default(cuid()) @db.VarChar(191)
   saleNumber     String     @unique(map: "uq_sales_sale_number") @map("sale_number") @db.VarChar(80)
+  checkoutRequestKey String? @unique(map: "uq_sales_checkout_request_key") @map("checkout_request_key") @db.VarChar(191)
+  checkoutCashReceived Decimal? @map("checkout_cash_received") @db.Decimal(12, 2)
+  checkoutChange Decimal? @map("checkout_change") @db.Decimal(12, 2)
   cashierId      String?    @map("cashier_id") @db.VarChar(191)
   saleDate       DateTime   @default(now()) @map("sale_date")
   subtotalAmount Decimal    @map("subtotal_amount") @db.Decimal(12, 2)
