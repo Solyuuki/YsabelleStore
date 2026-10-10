@@ -7,12 +7,13 @@ import { invalidateForecastCache } from "../modules/forecasting/forecast.service
 import { HttpError } from "../utils/httpError.js";
 import type { PosCheckoutItemInput } from "../validators/pos.validators.js";
 import { operationalProductWhere } from "./catalogQualityPolicy.js";
-import { lockProductStock } from "./stockReservationService.js";
+import { activeReservationsByProduct, lockProductStock } from "./stockReservationService.js";
 import {
   allocateStockForSale,
   assertStockInvariant,
   createInventoryMovementAfterAllocation,
   synchronizeInventoryAggregate
+  getSellableStockQuantity,
 } from "./stockDomainService.js";
 
 type CheckoutCartItem = PosCheckoutItemInput;
@@ -119,6 +120,7 @@ export async function searchPosProducts(
     include: {
       category: true,
       inventory: true,
+      inventoryBatches: true,
       barcodes: {
         select: { barcode: true }
       }
@@ -137,6 +139,7 @@ export async function searchPosProducts(
   });
 
   const normalizedQueryKey = normalizedQuery.toLowerCase();
+  const reserved = await activeReservationsByProduct(prisma, products.map((product) => product.id));
 
   return {
     catalogCount: totalItems,
@@ -149,7 +152,10 @@ export async function searchPosProducts(
         : undefined;
 
       return {
-        availableStock: product.inventory?.quantityOnHand ?? 0,
+        availableStock: Math.max(
+          0,
+          getSellableStockQuantity(product.inventoryBatches) - (reserved.get(product.id) ?? 0)
+        ),
         barcode: matchedBarcode ?? product.barcode,
         categoryName: product.category.name,
         id: product.id,
