@@ -1208,6 +1208,16 @@
   outline-offset: 2px;
 }
 
+/* Sales receipt detail list: fixed cash/register header and totals remain outside
+   the scroll viewport. Reserve the native scrollbar track instead of allowing
+   moving product cards to scrape the panel edge while scrolling. */
+@media (min-width: 1280px) {
+  .app-shell-ambient .ys-sales-receipt-scroll {
+    scrollbar-gutter: stable;
+    scroll-padding-block: 0.75rem;
+  }
+}
+
 /* Sprint 11: Inventory modal and filter dark-mode contrast convergence. */
 /* FilterSelect uses the shared Select's own chevron; outer labels handle
    focus while the inner control remains transparent. */
