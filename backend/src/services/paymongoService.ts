@@ -596,15 +596,27 @@ async function reconcilePaidCheckoutSession(
     });
   }
 
-  await prisma.customerOrder.update({
+  // A delayed paid event must never revive a cancelled order whose stock
+  // reservation was already released. Surface the exception for refund review.
+  const applied = await prisma.customerOrder.updateMany({
     data: {
       paymentStatus: CustomerPaymentStatus.PAID,
       paymongoPaymentId: paymentId,
       paymongoPaymentIntentId: paymentIntentId ?? undefined,
       paidAt: paidAtSeconds ? new Date(paidAtSeconds * 1000) : new Date()
     },
-    where: { id: orderId }
+    where: {
+      id: orderId,
+      status: { not: CustomerOrderStatus.CANCELLED },
+      deliveryStatus: { not: CustomerDeliveryStatus.CANCELLED }
+    }
   });
+  if (applied.count !== 1) {
+    console.error(`[paymongo] PAID_AFTER_CANCELLED_ORDER for ${orderNumber}; manual payment/refund review required.`);
+    throw new HttpError(409, "A payment arrived after the order was cancelled. Contact support.", {
+      code: "PAID_AFTER_CANCELLED_ORDER"
+    });
+  }
 
   return true;
 }
