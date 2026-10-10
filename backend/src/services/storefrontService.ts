@@ -246,9 +246,10 @@ async function listStorefrontSizeVariants(product: StorefrontProductRecord) {
 
 function serializeStorefrontProduct(
   product: StorefrontProductRecord,
-  reviewSummary: StorefrontProductReviewSummary
+  reviewSummary: StorefrontProductReviewSummary,
+  reservedStock = 0
 ) {
-  const availableStock = getSellableStockQuantity(product.inventoryBatches);
+  const availableStock = Math.max(0, getSellableStockQuantity(product.inventoryBatches) - reservedStock);
 
   return {
     id: product.id,
@@ -325,12 +326,15 @@ async function serializeStorefrontProducts(products: StorefrontProductRecord[]) 
   if (products.length === 0) return [];
 
   const productIds = products.map((product) => product.id);
-  const aggregates = await prisma.productReview.groupBy({
+  const [reservedByProduct, aggregates] = await Promise.all([
+    activeReservationsByProduct(prisma, productIds),
+    prisma.productReview.groupBy({
     _avg: { rating: true },
     _count: { _all: true },
     by: ["productId"],
     where: { productId: { in: productIds }, status: "VISIBLE" }
-  });
+    })
+  ]);
   const summaries = new Map<string, StorefrontProductReviewSummary>(
     aggregates.map((aggregate) => [
       aggregate.productId,
@@ -345,7 +349,8 @@ async function serializeStorefrontProducts(products: StorefrontProductRecord[]) 
   return products.map((product) =>
     serializeStorefrontProduct(
       product,
-      summaries.get(product.id) ?? { averageRating: 0, reviewCount: 0 }
+      summaries.get(product.id) ?? { averageRating: 0, reviewCount: 0 },
+      reservedByProduct.get(product.id) ?? 0
     )
   );
 }
@@ -409,8 +414,12 @@ export async function listStorefrontProducts(query: StorefrontProductQuery) {
     })
   });
 
+  const reservations = await activeReservationsByProduct(prisma, products.map((product) => product.id));
   const visibleProducts = products.filter((product) => {
-    const availableStock = getSellableStockQuantity(product.inventoryBatches);
+    const availableStock = Math.max(
+      0,
+      getSellableStockQuantity(product.inventoryBatches) - (reservations.get(product.id) ?? 0)
+    );
     if (query.availability === "in-stock") return availableStock > 0;
     if (query.availability === "out-of-stock") return availableStock <= 0;
     return true;
@@ -432,8 +441,10 @@ export async function listStorefrontMerchandising(now = new Date()) {
     include: storefrontProductInclude,
     where: storefrontProductWhere()
   });
+  const reservations = await activeReservationsByProduct(prisma, products.map((product) => product.id));
   const availableProductRecords = products.filter(
-    (product) => getSellableStockQuantity(product.inventoryBatches) > 0
+    (product) => getSellableStockQuantity(product.inventoryBatches) >
+      (reservations.get(product.id) ?? 0)
   );
   const productIds = availableProductRecords.map((product) => product.id);
 
