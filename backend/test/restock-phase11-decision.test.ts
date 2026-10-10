@@ -442,7 +442,7 @@ test("Owner-signed TARGET_STOCK policy permits only current bounded inventory ga
   for (const [sellableStock, targetStockLevel, requestedQuantity, unitCost] of [
     [15, 24, 9, 16.5],
     [8, 10, 2, 88.5]
-  ]) {
+  ] as const) {
     const candidate = assessProcurementSafety({
       ...input,
       sellableStock,

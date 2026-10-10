@@ -13,6 +13,9 @@
     "0007_delivery_fulfillment": "609c83f14ac4ff5c2d24ef5cf2db63a3c6b9c88b1cca410d47350c4de9fd0eaa",
     "0008_customer_profile_defaults": "870be95ea1fd2855eaa0052aa16adef21bcc07deb5d2f1734e68f78f2b462edb",
     "0009_customer_support_foundation": "3922422bfef02be80977e6ba0122ccac7b801e357adfee73bb5da51b9ad9e45a",
-    "0010_customer_admin_scalability": "44de8dbd0b604e3f0bdec032233449ac038a5c9ae5390e1fd14196b3361604d2"
+    "0010_customer_admin_scalability": "44de8dbd0b604e3f0bdec032233449ac038a5c9ae5390e1fd14196b3361604d2",
+    "0011_atomic_storefront_reservations": "8da36245131b33e6524f318d90ec6be263599b84e16b975dcc56606e374e6aae",
+    "0012_pos_checkout_idempotency": "368f0785ec927b1eee07cbffdeed4fb6793324156a32b8bfa12cd0d594b614ae",
+    "0013_restock_target_policy_approval": "826dcf0bec716044194ad871efc4197b7a70d8beefc3363a2290dfdccae429f7"
   }
 }

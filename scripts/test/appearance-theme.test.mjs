@@ -70,8 +70,7 @@ test("dedicated dark asset files exist and are referenced by scoped theme styles
   const assets = [
     ["frontend/public/textures/ys-dark-midnight-velvet.svg", "ys-dark-midnight-velvet.svg"],
     ["frontend/public/textures/ys-dark-graphite-glass.svg", "ys-dark-graphite-glass.svg"],
-    ["frontend/public/textures/ys-dark-indigo-silk.svg", "ys-dark-indigo-silk.svg"],
-    ["frontend/public/media/ys-dark-delivery-closing.svg", "ys-dark-delivery-closing.svg"]
+    ["frontend/public/textures/ys-dark-indigo-silk.svg", "ys-dark-indigo-silk.svg"]
   ];
 
   for (const [path, name] of assets) {
@@ -83,6 +82,18 @@ test("dedicated dark asset files exist and are referenced by scoped theme styles
   }
   assert.doesNotMatch(storefront, /kpi-card-frosted-ribbon\.webp/);
   assert.doesNotMatch(retail, /kpi-card-frosted-ribbon\.webp/);
+});
+
+test("dark closing portal preserves inline SVG proportions and its footer handoff", () => {
+  const home = read("frontend/src/pages/customer/CustomerHomePage.tsx");
+  const storefront = read("frontend/src/styles/theme-storefront.css");
+
+  assert.match(home, /className="home-next-step__dark-backdrop-svg"/);
+  assert.match(home, /preserveAspectRatio="xMaxYMid meet" viewBox="0 0 1983 793"/);
+  assert.match(storefront, /aspect-ratio: 1983 \/ 793;/);
+  assert.match(storefront, /height: auto;/);
+  assert.match(storefront, /\.customer-home \.home-next-step::after \{/);
+  assert.match(storefront, /\.customer-footer \{/);
 });
 
 test("contrast layer uses semantic dark surfaces and is not applied to About", () => {

@@ -45,7 +45,9 @@ test("storefront and retail themes use new dark assets rather than light texture
   assert.ok(store.includes("ys-dark-midnight-velvet.svg"));
   assert.ok(store.includes("ys-dark-indigo-silk.svg"));
   assert.ok(store.includes("ys-dark-graphite-glass.svg"));
-  assert.ok(store.includes("ys-dark-delivery-closing.svg"));
+  const home = read("frontend/src/pages/customer/CustomerHomePage.tsx");
+  assert.match(home, /preserveAspectRatio="xMaxYMid meet" viewBox="0 0 1983 793"/);
+  assert.match(store, /aspect-ratio: 1983 \/ 793;/);
   assert.ok(retail.includes("ys-dark-midnight-velvet.svg"));
   assert.ok(retail.includes("ys-dark-graphite-glass.svg"));
   assert.ok(app.includes("@/styles/theme-storefront-contrast.css"));
@@ -65,8 +67,7 @@ test("new image textures are separate from existing Light Mode assets", () => {
   for (const asset of [
     "frontend/public/textures/ys-dark-midnight-velvet.svg",
     "frontend/public/textures/ys-dark-graphite-glass.svg",
-    "frontend/public/textures/ys-dark-indigo-silk.svg",
-    "frontend/public/media/ys-dark-delivery-closing.svg"
+    "frontend/public/textures/ys-dark-indigo-silk.svg"
   ]) {
     const contents = read(asset);
     assert.ok(contents.startsWith('<svg xmlns="http://www.w3.org/2000/svg"'));
