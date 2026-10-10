@@ -404,7 +404,7 @@ export async function addStock(
         inventory: batchResult.inventory,
         movement: asMovementSummary(batchResult.movement)
       };
-    });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
 
     return result;
   } catch (error) {
@@ -438,7 +438,7 @@ export async function adjustStock(
       inventory: adjustmentResult.inventory,
       movement: asMovementSummary(adjustmentResult.movement)
     };
-  });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
 }
 
 function mergeDeductionLineItems(lineItems: DeductionLineItem[]) {
