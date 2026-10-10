@@ -315,7 +315,7 @@ assert.doesNotMatch(
 
 /* Sign In reuses exactly the approved Account/Shop galaxy, not a stretched
    auth silk image. This remains conditional on login: register/recovery intact. */
-const customerAuthFrameSource = readFileSync(resolve(process.cwd(), "src/components/customer/CustomerAuthFrame.tsx"), "utf8");
+const customerAuthFrameSource = readFileSync(resolve(process.cwd(), "src/components/customer/CustomerAuthFrame.tsx"), "utf8").replace(/\s+/g, " ");
 const storefrontContrast = readFileSync(resolve(process.cwd(), "src/styles/theme-storefront-contrast.css"), "utf8").replace(/\s+/g, " ");
 assert.match(
   customerAuthFrameSource,
