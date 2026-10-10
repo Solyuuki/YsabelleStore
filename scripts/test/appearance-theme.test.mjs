@@ -89,7 +89,7 @@ test("dark closing portal preserves inline SVG proportions and its footer handof
   const storefront = read("frontend/src/styles/theme-storefront.css");
 
   assert.match(home, /className="home-next-step__dark-backdrop-svg"/);
-  assert.match(home, /preserveAspectRatio="xMaxYMid meet" viewBox="0 0 1983 793"/);
+  assert.match(home, /preserveAspectRatio="xMaxYMid meet"\s+viewBox="0 0 1983 793"/);
   assert.match(storefront, /aspect-ratio: 1983 \/ 793;/);
   assert.match(storefront, /height: auto;/);
   assert.match(storefront, /\.customer-home \.home-next-step::after \{/);

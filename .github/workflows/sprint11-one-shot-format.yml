@@ -1,5 +1,5 @@
 name: Sprint 11 formatter with Python image-engine dependencies
-# CI formatting normalization: activation for Sprint 11 validation (2026-10-10).
+# CI formatter rerun after Sprint 11 regression contract alignment (2026-10-10).
 
 on:
   push:

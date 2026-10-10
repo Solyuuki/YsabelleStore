@@ -144,6 +144,7 @@ const themeCss = await readFile(
   new URL("../../frontend/src/styles/theme-storefront.css", import.meta.url),
   "utf8"
 );
+const formattedThemeCss = themeCss.replace(/\s+/g, " ");
 assert.match(
   footerSource,
   /Your Pasig City grocery for pantry staples, snacks, and more\./,
@@ -154,8 +155,7 @@ assert.doesNotMatch(
   /find the things you need in one convenient online store/,
   "Do not restore the oversized footer description."
 );
-assert.match(
-  themeCss,
+assert.match(formattedThemeCss,
   /:root\.dark \.customer-app \.customer-footer,[\s\S]*?linear-gradient\(180deg, #101827 0%, #101827 15%, #11192d 55%, #0d1222 100%\)/,
   "Dark footer gradient must start with the shared #101827 boundary color."
 );
@@ -174,28 +174,23 @@ assert.match(
   /d="M0 35C300 56 600 62 900 44C1180 27 1390 64 1600 39"[\s\S]*?fill="none"/,
   "The original second footer curve must be restored without an opaque fill."
 );
-assert.match(
-  themeCss,
+assert.match(formattedThemeCss,
   /\.customer-footer__transition-outline\s*\{\s*display:\s*none;/,
   "Light mode must hide the dark-only outline and keep its existing waves."
 );
-assert.match(
-  themeCss,
+assert.match(formattedThemeCss,
   /:root\.dark \.customer-app \.customer-footer__transition svg:not\(\.customer-footer__transition-outline\)/,
   "Only the filled original SVG should be hidden in dark mode."
 );
-assert.match(
-  themeCss,
+assert.match(formattedThemeCss,
   /:root\.dark \.customer-app \.customer-footer__transition \.customer-footer__transition-outline,[\s\S]*?display:\s*block;/,
   "The approved blue-violet footer outlines must remain visible in dark mode."
 );
-assert.match(
-  themeCss,
+assert.match(formattedThemeCss,
   /:root\[data-about-chrome-theme="dark"\] \.customer-app \.customer-footer__transition \.customer-footer__transition-outline/,
   "Dark About chrome should also use the restored outlines."
 );
-assert.match(
-  themeCss,
+assert.match(formattedThemeCss,
   /mask-image:\s*linear-gradient\(180deg, transparent 0%, #000 20%, #000 62%, transparent 100%\)/,
   "Restored outlines must feather out without an abrupt strip boundary."
 );

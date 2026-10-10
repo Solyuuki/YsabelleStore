@@ -55,44 +55,46 @@ test("dark support reuses approved storefront art and keeps every support label 
     readFile(new URL("../../frontend/src/styles/theme-storefront-contrast.css", import.meta.url), "utf8"),
     readFile(new URL("../../frontend/src/components/customer/StorefrontGalaxyArtwork.tsx", import.meta.url), "utf8")
   ]);
+  const darkStyles = darkCss.replace(/\s+/g, " ");
   assert.match(
     supportPage,
     /className="customer-support-page__artwork"[\s\S]*?<StorefrontGalaxyArtwork className="customer-support-page__cosmos"/,
     "Support body must reuse the approved shared constellation SVG."
   );
   assert.match(sharedArt, /preserveAspectRatio="xMidYMid meet"/);
+  assert.match(supportPage, /<CategoryRetailBackdrop \/>/);
   assert.match(
-    darkCss,
+    darkStyles,
     /:root\.dark \.customer-app \.customer-support-page\s*\{[^}]*var\(--storefront-galaxy-background\) !important;/,
     "Support body must reuse the storefront galaxy CSS token."
   );
   assert.match(
-    darkCss,
+    darkStyles,
     /\.customer-support-page\s*\{[^}]*#101827 100%/,
     "Support page must fade to the shared footer surface."
   );
   assert.match(
-    darkCss,
-    /\.customer-support-hero::before\s*\{[^}]*ys-dark-shop-orbital-hero\.svg/,
-    "Support heading uses the same approved orbital hero artwork as Shop."
+    darkStyles,
+    /\.customer-support-hero\s*\{[^}]*background:\s*var\(--storefront-category-background\) !important;/,
+    "Support heading reuses the approved Shop by Category backdrop."
   );
   assert.match(
-    darkCss,
+    darkStyles,
     /\.customer-support-hero::after\s*\{[^}]*display:\s*none;/,
     "Legacy support curves must not be rendered over the approved hero."
   );
   assert.match(
-    darkCss,
+    darkStyles,
     /\.customer-support-section-heading > span\s*\{[^}]*color:\s*#e5edfb;/,
     "Support operations badge must have readable ink on a dark background."
   );
   assert.match(
-    darkCss,
+    darkStyles,
     /\.customer-support-faq summary\s*\{[^}]*color:\s*#e3eaf9;/,
     "All support FAQ questions must use readable text, including collapsed rows."
   );
-  assert.match(darkCss, /\.customer-support-faq summary:focus-visible\s*\{[^}]*outline:/);
-  assert.match(darkCss, /\.customer-support-page__artwork\s*\{[^}]*display:\s*none;/);
+  assert.match(darkStyles, /\.customer-support-faq summary:focus-visible\s*\{[^}]*outline:/);
+  assert.match(darkStyles, /\.customer-support-page__artwork\s*\{[^}]*display:\s*none;/);
   assert.match(supportPage, /FAQS\.map\(\(faq\) =>/);
   assert.match(supportPage, /onSubmit=\{\(event\) => void handleSubmit\(event\)\}/);
 });

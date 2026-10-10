@@ -46,7 +46,7 @@ test("storefront and retail themes use new dark assets rather than light texture
   assert.ok(store.includes("ys-dark-indigo-silk.svg"));
   assert.ok(store.includes("ys-dark-graphite-glass.svg"));
   const home = read("frontend/src/pages/customer/CustomerHomePage.tsx");
-  assert.match(home, /preserveAspectRatio="xMaxYMid meet" viewBox="0 0 1983 793"/);
+  assert.match(home, /preserveAspectRatio="xMaxYMid meet"\s+viewBox="0 0 1983 793"/);
   assert.match(store, /aspect-ratio: 1983 \/ 793;/);
   assert.ok(retail.includes("ys-dark-midnight-velvet.svg"));
   assert.ok(retail.includes("ys-dark-graphite-glass.svg"));
@@ -212,7 +212,7 @@ test("customer address labels and empty-session heading keep readable dark contr
   assert.match(dark, /Sprint 11 customer profile: late premium light-theme ID selectors/);
   assert.match(dark, /:root\.dark\[data-appearance-scope="storefront"\]/);
   assert.match(dark, /\.customer-account-address-form/);
-  assert.match(dark, /label > span small/);
+  assert.match(dark, /label\s*>\s*span\s+small/);
   assert.match(dark, /\.customer-account-address-heading p/);
   assert.match(dark, /\.customer-account-session-empty strong/);
   assert.match(dark, /\.customer-account-session-empty span/);

@@ -130,7 +130,7 @@ test("shopping guide popover is spacious, frosted, and has responsive button fee
 
 test("dark guide popup has readable progress and visibly disabled Back button", () => {
   const app = read("frontend/src/app/CustomerApp.tsx");
-  const source = read("frontend/src/styles/theme-storefront.css");
+  const source = read("frontend/src/styles/theme-storefront.css").replace(/\s+/g, " ");
   const scope = ":root.dark .ysabelle-guide.driver-popover";
 
   assert.ok(

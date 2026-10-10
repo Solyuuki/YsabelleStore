@@ -33,7 +33,8 @@ test("active inventory forecast source reads the persisted forecast batch by can
 });
 
 test("POS fallback remains based on completed operational sales and does not masquerade as SARIMA", () => {
-  assert.match(demandSource, /prisma\.saleItem\.findMany/);
+  assert.match(demandSource, /db:\s*Prisma\.TransactionClient\s*=\s*prisma/);
+  assert.match(demandSource, /db\.saleItem\.findMany/);
   assert.match(demandSource, /productId: \{ in: uniqueProductIds \}/);
   assert.match(demandSource, /status: "COMPLETED"/);
   assert.equal(demandSource.includes("forecastBatchCache"), false);

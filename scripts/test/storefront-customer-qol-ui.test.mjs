@@ -53,32 +53,28 @@ const cartCss = await readFile(
   new URL("../../frontend/src/styles/customer-cart-premium.css", import.meta.url),
   "utf8"
 );
+const formattedCartCss = cartCss.replace(/\s+/g, " ");
 const cartSource = await readFile(
   new URL("../../frontend/src/pages/customer/CartPage.tsx", import.meta.url),
   "utf8"
 );
-assert.match(
-  cartCss,
+assert.match(formattedCartCss,
   /:root\.dark \.customer-app \.customer-cart-page\s*\{[^}]*background-image:[\s\S]*?var\(--storefront-galaxy-background\) !important;/,
   "Cart must reuse the exact approved Trending → Essentials galaxy palette."
 );
-assert.match(
-  cartCss,
+assert.match(formattedCartCss,
   /\.customer-cart-page\s*\{[^}]*#101827 100%/,
   "Cart background must reach the approved footer handoff color."
 );
-assert.match(
-  cartCss,
+assert.match(formattedCartCss,
   /\.customer-cart-page\s*\{[^}]*background-repeat:\s*no-repeat !important;/,
   "The Cart backdrop must never repeat the old shader."
 );
-assert.match(
-  cartCss,
+assert.match(formattedCartCss,
   /\.customer-cart-page__artwork\s*\{[^}]*display:\s*none;/,
   "Cart artwork must not appear in light mode."
 );
-assert.match(
-  cartCss,
+assert.match(formattedCartCss,
   /\.customer-cart-page__cosmos\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;/,
   "Cart starfield must fill its own layer without distorting SVG geometry."
 );
@@ -87,20 +83,18 @@ assert.match(
   /<div aria-hidden="true" className="customer-cart-page__artwork">\s*<StorefrontGalaxyArtwork className="customer-cart-page__cosmos" \/>/,
   "Cart must reuse the shared vector constellation without exposing decorations to screen readers."
 );
-assert.match(
-  cartCss,
+assert.match(formattedCartCss,
   /\.customer-cart-page > \.customer-container\s*\{[^}]*z-index:\s*1;/,
   "Empty and populated Cart UI must render above galaxy artwork."
 );
-assert.match(
-  cartCss,
+assert.match(formattedCartCss,
   /\.customer-cart-page__artwork\s*\{[^}]*mask-image:[\s\S]*?transparent 100%/,
   "Cart constellation must fade into the footer rather than ending abruptly."
 );
-assert.match(cartCss, /\.customer-cart-pagination\s*\{[^}]*background:\s*#202d44 !important;/);
-assert.match(cartCss, /\.customer-cart-pagination nav button\[aria-current="page"\]\s*\{[^}]*background:\s*#473c73 !important;/);
-assert.match(cartCss, /\.customer-cart-pagination nav button:disabled:not\(\[aria-current="page"\]\)\s*\{[^}]*opacity:\s*0\.55;/);
-assert.match(cartCss, /\.customer-cart-page \.customer-quantity > input\[type="number"\]\s*\{[^}]*background:\s*transparent !important;/);
+assert.match(formattedCartCss, /\.customer-cart-pagination\s*\{[^}]*background:\s*#202d44 !important;/);
+assert.match(formattedCartCss, /\.customer-cart-pagination nav button\[aria-current="page"\]\s*\{[^}]*background:\s*#473c73 !important;/);
+assert.match(formattedCartCss, /\.customer-cart-pagination nav button:disabled:not\(\[aria-current="page"\]\)\s*\{[^}]*opacity:\s*0\.55;/);
+assert.match(formattedCartCss, /\.customer-cart-page \.customer-quantity > input\[type="number"\]\s*\{[^}]*background:\s*transparent !important;/);
 assert.match(cartSource, /<AppPagination[\s\S]*?className="customer-cart-pagination"/);
 assert.match(cartSource, /pageSize=\{CART_PAGE_SIZE\}/);
 assert.match(cartSource, /<QuantityControl[\s\S]*?updateQuantity\(product\.id, value\)/);
@@ -112,8 +106,7 @@ assert.doesNotMatch(
   /Continue shopping|customer-continue-link|customer-cart-actions/,
   "Populated Cart must not render redundant Continue shopping UI."
 );
-assert.doesNotMatch(
-  cartCss,
+assert.doesNotMatch(formattedCartCss,
   /\.customer-cart-actions\b/,
   "Removed Cart action must not leave an empty reserved row."
 );
