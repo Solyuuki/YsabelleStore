@@ -1710,3 +1710,77 @@
   position: relative;
   z-index: 1;
 }
+
+/* Sprint 11 customer profile: late premium light-theme ID selectors otherwise
+   turn the address labels and session status heading nearly black in dark mode.
+   Restrict to the storefront account route; preserve original Light Mode styles. */
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  #profile-panel
+  :is(
+    .customer-account-address-form,
+    .customer-account-inline-action-form,
+    .customer-account-contact-card
+  )
+  label,
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  #profile-panel
+  :is(
+    .customer-account-address-form,
+    .customer-account-inline-action-form,
+    .customer-account-contact-card
+  )
+  label > span,
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  #profile-panel
+  .customer-account-address-form
+  label > span small,
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  #profile-panel
+  :is(.customer-account-address-heading span, .customer-account-info-card > span) {
+  color: #d1dcef;
+}
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  #profile-panel
+  .customer-account-address-heading p,
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  #profile-panel
+  :is(.customer-account-info-card small, .customer-account-contact-card > small) {
+  color: #bfcde2;
+}
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  .customer-account-session-empty {
+  background: #24334a;
+  border-color: #687995;
+}
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  .customer-account-session-empty strong {
+  color: #eef3ff;
+}
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  .customer-account-session-empty span {
+  color: #cbd7e9;
+}
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  .customer-account-session-empty > svg {
+  color: #ada2ff;
+}
