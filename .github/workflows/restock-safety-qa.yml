@@ -9,6 +9,10 @@ on:
       - "backend/test/restock*"
       - "backend/src/scripts/restockSafetyAudit.ts"
       - "backend/src/services/stockHealthService.ts"
+      - "database/prisma/schema.prisma"
+      - "database/prisma/migrations/**"
+      - "database/prisma/state/canonical-state.json"
+      - "database/prisma/state/migration-checksums.json"
       - ".github/workflows/restock-safety-qa.yml"
   pull_request:
     paths:
@@ -16,6 +20,11 @@ on:
       - "backend/test/restock*"
       - "backend/src/scripts/restockSafetyAudit.ts"
       - "backend/src/services/stockHealthService.ts"
+      - "database/prisma/schema.prisma"
+      - "database/prisma/migrations/**"
+      - "database/prisma/state/canonical-state.json"
+      - "database/prisma/state/migration-checksums.json"
+      - ".github/workflows/restock-safety-qa.yml"
 
 permissions:
   contents: read
