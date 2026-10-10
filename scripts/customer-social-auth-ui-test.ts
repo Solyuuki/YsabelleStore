@@ -57,7 +57,7 @@ assert.match(premiumLabelBody, /color:\s*#171a2b;/);
 const storefrontContrast = readFileSync(
   new URL("../frontend/src/styles/theme-storefront-contrast.css", import.meta.url),
   "utf8"
-);
+).replace(/\s+/g, " ");
 assert.match(
   storefrontContrast,
   /:root\.dark \.customer-app \.customer-auth-page--login\s+\.customer-social-auth__button > span:last-child small\s*\{[^}]*color:\s*#475569;[^}]*font-size:\s*0\.75rem;/,

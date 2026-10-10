@@ -1,5 +1,5 @@
 name: Sprint 11 formatter with Python image-engine dependencies
-# CI formatter: re-run after scoped inventory reservation test fixture cleanup (2026-10-10).
+# CI formatter: re-run after normalized social auth contrast source contract (2026-10-10).
 
 on:
   push:
