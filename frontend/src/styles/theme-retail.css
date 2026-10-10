@@ -75,8 +75,8 @@
 }
 
 /* Shared storefront galaxy palette: original Trending → Everyday Essentials canvas.
-   Available to both the customer storefront and the retail workstation in dark mode. */
-:root.dark {
+   Available to the About page even when its global .dark class is intentionally deferred. */
+:root {
   --storefront-galaxy-background:
     linear-gradient(
       180deg,

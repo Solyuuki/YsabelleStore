@@ -6,6 +6,7 @@ import "@/styles/about-welcome-motion.css";
 import "@/styles/about-catalog-intelligence.css";
 import "@/styles/about-sales-inventory.css";
 import "@/styles/about-forecast-intelligence.css";
+import "@/styles/about-dark-chapters.css";
 
 const storyTheme = {
   "--story-blue": "#008cff",

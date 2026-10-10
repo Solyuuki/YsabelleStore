@@ -1,0 +1,245 @@
+/* Sprint 11 About dark-mode rollout: Chapters 02–03 and shared progress navigation.
+   Scene 01 has its own approved MP4. Both chapter videos and all GSAP motion
+   stay untouched. About uses a customer preference data attribute because the
+   global .dark class is intentionally withheld on this route until all scenes
+   have their own approved palette. */
+
+.about-experience[data-about-hero-theme="dark"] .discover-story--about {
+  --story-seam-12: #17243c;
+  --story-seam-23: #17243c;
+  --about-welcome-catalog-seam: linear-gradient(
+    90deg,
+    #17243c 0%,
+    #161f3b 36%,
+    #201d43 72%,
+    #17243c 100%
+  );
+  --about-catalog-sales-seam: linear-gradient(
+    90deg,
+    #17243c 0%,
+    #171f3c 36%,
+    #211e43 74%,
+    #17243c 100%
+  );
+}
+
+/* The same responsive, non-raster galaxy surface used by Storefront's
+   Trending -> Everyday Essentials canvas. No resized image, repeating tile,
+   or fixed-height background plate. */
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-catalog {
+  background:
+    linear-gradient(
+      180deg,
+      #17243c 0%,
+      rgb(23 36 60 / 0%) 15%,
+      rgb(23 36 60 / 0%) 83%,
+      #17243c 100%
+    ),
+    var(--storefront-galaxy-background);
+  color: #f2f5ff;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-catalog::before {
+  background:
+    linear-gradient(rgb(159 173 242 / 5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(159 173 242 / 5%) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-catalog__copy .story-kicker {
+  color: #a8cfff;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-catalog__copy h2 {
+  color: #f2f5ff;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-catalog__copy .story-mask:last-child .story-mask__line {
+  background: linear-gradient(106deg, #a8c4ff 0%, #c0a3ff 48%, #f2a3d4 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-catalog__copy p {
+  color: #d2dcf0;
+}
+
+/* Only the surrounding catalog system card changes; never recolor,
+   re-encode, or overlay the existing Gemini catalog video. */
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-catalog__system {
+  border-color: rgb(166 175 250 / 26%);
+  background: rgb(17 26 50 / 91%);
+  box-shadow:
+    0 32px 78px rgb(4 9 28 / 34%),
+    inset 0 1px 0 rgb(237 235 255 / 9%);
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-catalog__step,
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-catalog__pipeline .story-origin-shelf__item.story-catalog__step {
+  color: #b9b2ff;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-catalog__step:nth-child(2) {
+  color: #9bd6ff;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-catalog__step:nth-child(3) {
+  color: #b7adff;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-catalog__step:nth-child(4) {
+  color: #d7a0fa;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-catalog__step:nth-child(5) {
+  color: #f0a9d6;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-catalog__step svg {
+  border-color: rgb(158 173 255 / 29%);
+  background: #202b4b;
+  box-shadow:
+    0 6px 16px rgb(3 8 29 / 23%),
+    inset 0 1px 0 rgb(255 255 255 / 10%);
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-catalog__step small {
+  color: #d5dff2;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-catalog__summary {
+  color: #afbeda;
+}
+
+/* Chapter 03 uses the same galaxy DNA as Chapter 02 with the existing
+   darker handoff into the next chapter. Existing sales video is unchanged. */
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-sales {
+  background:
+    linear-gradient(
+      180deg,
+      #17243c 0%,
+      transparent 17%,
+      transparent 83%,
+      var(--story-seam-34) 100%
+    ),
+    var(--storefront-galaxy-background);
+  color: #f2f5ff;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-sales__copy .story-kicker {
+  color: #abd9ff;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-sales__copy h2 {
+  color: #f2f5ff;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-sales__copy .story-mask:last-child .story-mask__line {
+  background: linear-gradient(108deg, #a6d9ff 0%, #aca8ff 35%, #d09cf5 68%, #f2a9d4 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-sales__copy p {
+  color: #d7e0f4;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-sales__system {
+  border-color: rgb(174 182 255 / 28%);
+  background: rgb(14 22 46 / 92%);
+  box-shadow:
+    0 34px 82px rgb(4 9 28 / 36%),
+    inset 0 1px 0 rgb(242 240 255 / 9%);
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-sales__step small {
+  color: #dbe4f6;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-story--about
+  .story-sales__summary {
+  color: #b8c7e5;
+}
+
+/* Same rail geometry/GSAP visibility. Only its dark glass surface,
+   muted markers and focus contrast change; links remain interactive. */
+.about-experience[data-about-hero-theme="dark"] .discover-progress {
+  border-color: rgb(159 166 255 / 32%);
+  background: linear-gradient(180deg, rgb(24 34 66 / 83%), rgb(16 25 49 / 78%));
+  box-shadow:
+    0 18px 46px rgb(3 8 26 / 30%),
+    inset 0 1px 0 rgb(213 214 255 / 12%),
+    0 0 24px rgb(125 108 231 / 9%);
+  backdrop-filter: blur(18px) saturate(115%);
+}
+
+.about-experience[data-about-hero-theme="dark"] .discover-progress__rail {
+  background: rgb(157 176 255 / 34%);
+}
+
+.about-experience[data-about-hero-theme="dark"] .discover-progress__dot {
+  border-color: rgb(179 190 255 / 42%);
+  background: linear-gradient(180deg, #9ba8dd, #6474aa);
+  box-shadow: inset 0 1px 0 rgb(237 237 255 / 24%);
+  opacity: 0.88;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .discover-progress li.is-active .discover-progress__dot {
+  border-color: rgb(240 235 255 / 90%);
+  background: linear-gradient(180deg, #9ae2ff 0%, #7e8aff 49%, #cc8aff 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 70%),
+    0 0 8px rgb(94 191 255 / 46%),
+    0 0 14px rgb(137 104 255 / 37%);
+  opacity: 1;
+}
+
+.about-experience[data-about-hero-theme="dark"] .discover-progress a:focus-visible {
+  outline-color: #a7dfff;
+}
