@@ -3,6 +3,7 @@
 -- Legacy customer orders deliberately remain without backfilled reservations.
 ALTER TABLE `customer_orders`
   ADD COLUMN `checkout_request_key` VARCHAR(191) NULL,
+  ADD COLUMN `reservation_policy_version` INTEGER UNSIGNED NOT NULL DEFAULT 0,
   ADD UNIQUE INDEX `uq_customer_order_checkout_key` (`checkout_request_key`);
 
 CREATE TABLE `inventory_reservations` (
