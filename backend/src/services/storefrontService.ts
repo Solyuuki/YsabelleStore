@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 import {
   CustomerDeliveryActorType,
@@ -31,6 +31,7 @@ import {
   storefrontProductWhere
 } from "./catalogQualityPolicy.js";
 import { getSellableStockQuantity } from "./stockDomainService.js";
+import { activeReservationsByProduct, availableToPromise, lockProductStock, reserveStorefrontItems } from "./stockReservationService.js";
 
 const storefrontProductInclude = {
   category: true,
@@ -59,6 +60,7 @@ type StorefrontProductReviewSummary = {
 };
 
 type StorefrontOrderContext = {
+  checkoutRequestKey?: string;
   customerAccountId?: string;
 };
 
@@ -907,6 +909,9 @@ export async function createStorefrontOrder(
   input: StorefrontOrderInput,
   context: StorefrontOrderContext = {}
 ) {
+  const requestKey = context.customerAccountId && context.checkoutRequestKey
+    ? createHash("sha256").update(`${context.customerAccountId}:${context.checkoutRequestKey}`).digest("hex")
+    : null;
   const itemQuantities = new Map<string, number>();
   for (const item of input.items) {
     itemQuantities.set(item.productId, (itemQuantities.get(item.productId) ?? 0) + item.quantity);
@@ -918,6 +923,31 @@ export async function createStorefrontOrder(
   }));
 
   return prisma.$transaction(async (tx) => {
+    await lockProductStock(tx, normalizedItems.map((item) => item.productId));
+    if (requestKey) {
+      const existing = await tx.customerOrder.findUnique({
+        include: storefrontOrderInclude,
+        where: { checkoutRequestKey: requestKey }
+      });
+      if (existing) {
+        const ordered = existing.items.map((item) => [item.productId, item.quantity] as const);
+        const received = normalizedItems.map((item) => [item.productId, item.quantity] as const);
+        const signature = (rows: readonly (readonly [string, number])[]) =>
+          JSON.stringify([...rows].sort(([left], [right]) => left.localeCompare(right)));
+        if (existing.customerAccountId !== context.customerAccountId ||
+            existing.paymentMethod !== input.paymentMethod ||
+            signature(ordered) !== signature(received)) {
+          throw new HttpError(409, "Checkout request key was reused for a different order.", {
+            code: "CHECKOUT_IDEMPOTENCY_CONFLICT"
+          });
+        }
+        return serializeStorefrontOrder(existing);
+      }
+    }
+    const reservations = await activeReservationsByProduct(
+      tx,
+      normalizedItems.map((item) => item.productId)
+    );
     const products = await tx.product.findMany({
       include: storefrontProductInclude,
       where: storefrontProductWhere({
@@ -935,7 +965,10 @@ export async function createStorefrontOrder(
         });
       }
 
-      const availableStock = getSellableStockQuantity(product.inventoryBatches);
+      const availableStock = availableToPromise(
+        getSellableStockQuantity(product.inventoryBatches),
+        reservations.get(product.id) ?? 0
+      );
       if (item.quantity > availableStock) {
         throw new HttpError(
           409,
@@ -964,6 +997,8 @@ export async function createStorefrontOrder(
     const order = await tx.customerOrder.create({
       data: {
         customerAccountId: context.customerAccountId ?? null,
+        checkoutRequestKey: requestKey,
+        reservationPolicyVersion: 1,
         orderNumber,
         deliveryTicketNumber: `DEL-${orderNumber}`,
         customerName: input.customerName,
@@ -1006,6 +1041,8 @@ export async function createStorefrontOrder(
       include: storefrontOrderInclude
     });
 
+    await reserveStorefrontItems(tx, order.id, normalizedItems);
+
     if (context.customerAccountId) {
       if (input.saveAddressToAccount) {
         await tx.customerSavedAddress.upsert({
@@ -1047,7 +1084,7 @@ export async function createStorefrontOrder(
     }
 
     return serializeStorefrontOrder(order);
-  });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
 }
 
 export async function listCustomerOrders(customerAccountId: string) {
