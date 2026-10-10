@@ -718,6 +718,9 @@ model Product {
   sellingPrice              Decimal                     @map("selling_price") @db.Decimal(10, 2)
   reorderLevel              Int                         @default(0) @map("reorder_level") @db.UnsignedInt
   targetStockLevel          Int                         @default(0) @map("target_stock_level") @db.UnsignedInt
+  restockTargetApprovedLevel Int?                      @map("restock_target_approved_level") @db.UnsignedInt
+  restockTargetApprovedAt    DateTime?                 @map("restock_target_approved_at")
+  restockTargetApprovedById  String?                   @map("restock_target_approved_by_id") @db.VarChar(191)
   status                    ProductStatus               @default(ACTIVE)
   recordSource              CatalogRecordSource         @default(CATALOG) @map("record_source")
   dataQualityStatus         CatalogQualityStatus        @default(NEEDS_REVIEW) @map("data_quality_status")
