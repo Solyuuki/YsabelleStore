@@ -385,6 +385,7 @@ export async function stockInBatch(
     });
   }
 
+  await lockProductStock(tx as Prisma.TransactionClient, [input.productId]);
   const product = await getProductContext(tx, input.productId);
   const unitCost = input.unitCost ?? resolveKnownUnitCost(product);
   const inventory = await getOrCreateInventory(tx, input.productId);
@@ -469,6 +470,7 @@ export async function applyStockAdjustment(
     referenceType?: string | null;
   }
 ) {
+  await lockProductStock(tx as Prisma.TransactionClient, [input.productId]);
   const product = await getProductContext(tx, input.productId);
 
   if (input.direction === "IN") {
