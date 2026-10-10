@@ -186,7 +186,16 @@ export const createStorefrontOrderController: RequestHandler = async (request, r
         code: "CUSTOMER_SESSION_REQUIRED"
       });
     }
-    const order = await createStorefrontOrder(body, { customerAccountId: customer.id });
+    const requestKey = request.header("Idempotency-Key");
+    if (requestKey && !/^[a-zA-Z0-9-]{16,96}$/.test(requestKey)) {
+      throw new HttpError(422, "Checkout request key is invalid.", {
+        code: "CHECKOUT_IDEMPOTENCY_KEY_INVALID"
+      });
+    }
+    const order = await createStorefrontOrder(body, {
+      customerAccountId: customer.id,
+      checkoutRequestKey: requestKey
+    });
     response.status(201).json(createSuccessResponse("Delivery order placed successfully.", order));
   } catch (error) {
     next(error);
