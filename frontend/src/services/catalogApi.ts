@@ -597,7 +597,7 @@ export async function updateProduct(
       | "reorderLevel"
       | "targetStockLevel"
     >
-  >
+  > & { authorizeTargetStockPolicy?: boolean }
 ) {
   return apiClient.request<ProductRecord, { code?: string; details?: unknown }>(
     `/api/catalog/products/${encodeURIComponent(productId)}`,
