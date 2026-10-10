@@ -703,13 +703,13 @@ function RecommendationCard({
   }[tone];
 
   return (
-    <div className={`rounded-md border px-4 py-3 ${classes.box}`}>
+    <div className={`ys-restock-recommendation rounded-md border px-4 py-3 ${classes.box}`} data-tone={tone}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className={`text-xs font-semibold uppercase tracking-wide ${classes.label}`}>
+          <p className={`ys-restock-recommendation-label text-xs font-semibold uppercase tracking-wide ${classes.label}`}>
             {hasProcessedOrder ? "Restock batch" : "Recommended next step"}
           </p>
-          <p className={`mt-1 text-lg font-semibold ${classes.title}`}>
+          <p className={`ys-restock-recommendation-title mt-1 text-lg font-semibold ${classes.title}`}>
             {needsOrder
               ? `Order ${formatNumber(selected.recommendedQuantity)} units`
               : hasProcessedOrder && activeRestock
@@ -718,7 +718,7 @@ function RecommendationCard({
                   : "Included in active restock ticket"
                 : "No order needed right now"}
           </p>
-          <p className={`mt-1 text-sm leading-6 ${classes.body}`}>
+          <p className={`ys-restock-recommendation-body mt-1 text-sm leading-6 ${classes.body}`}>
             {needsOrder
               ? `Place the order by ${formatDate(selected.forecastDecision?.recommendedActionDate)}. Current usable stock covers about ${coverageLabel(selected)} at roughly ${formatNumber(demand)} units per month.`
               : hasProcessedOrder && activeRestock
@@ -732,7 +732,7 @@ function RecommendationCard({
             : riskLabel(risk)}
         </Badge>
       </div>
-      <div className={`mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs ${classes.meta}`}>
+      <div className={`ys-restock-recommendation-meta mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs ${classes.meta}`}>
         <span>Sellable {formatNumber(selected.sellableStock)}</span>
         <span>Incoming {formatNumber(selected.incomingStock)}</span>
         <span>Expiry risk {formatNumber(selected.expiryRiskQuantity)}</span>
