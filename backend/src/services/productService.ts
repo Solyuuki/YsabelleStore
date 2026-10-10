@@ -718,6 +718,24 @@ export async function updateProduct(
 
   if (normalized.targetStockLevel !== undefined) {
     data.targetStockLevel = normalized.targetStockLevel;
+    if (normalized.targetStockLevel !== existingProduct.targetStockLevel) {
+      // Approval is pinned to one target value; editing it revokes old consent.
+      data.restockTargetApprovedLevel = null;
+      data.restockTargetApprovedAt = null;
+      data.restockTargetApprovedById = null;
+    }
+  }
+
+  if (input.authorizeTargetStockPolicy === true) {
+    const proposed = normalized.targetStockLevel ?? existingProduct.targetStockLevel;
+    if (!performedById || !Number.isSafeInteger(proposed) || proposed < 1) {
+      throw new HttpError(422, "Owner identity and a positive target are required to authorize restock policy.", {
+        code: "RESTOCK_TARGET_AUTHORIZATION_INVALID"
+      });
+    }
+    data.restockTargetApprovedLevel = proposed;
+    data.restockTargetApprovedAt = new Date();
+    data.restockTargetApprovedById = performedById;
   }
 
   if (normalized.status !== undefined) {
