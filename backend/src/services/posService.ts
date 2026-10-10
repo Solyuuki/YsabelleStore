@@ -7,6 +7,7 @@ import { invalidateForecastCache } from "../modules/forecasting/forecast.service
 import { HttpError } from "../utils/httpError.js";
 import type { PosCheckoutItemInput } from "../validators/pos.validators.js";
 import { operationalProductWhere } from "./catalogQualityPolicy.js";
+import { lockProductStock } from "./stockReservationService.js";
 import {
   allocateStockForSale,
   assertStockInvariant,
@@ -187,6 +188,7 @@ export async function checkoutPosSale(input: {
   const saleNumber = generateSaleNumber(saleDate);
 
   const result: CheckoutResult = await prisma.$transaction(async (tx) => {
+    await lockProductStock(tx, normalizedItems.map((item) => item.productId));
     const products = await tx.product.findMany({
       include: {
         category: true,
@@ -345,7 +347,7 @@ export async function checkoutPosSale(input: {
         totalAmount: sale.totalAmount.toString()
       }
     };
-  });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
 
   // Checkout stays responsive; forecast delivery keeps serving the previous batch while this runs.
   invalidateForecastCache(normalizedItems.map((item) => item.productId));
