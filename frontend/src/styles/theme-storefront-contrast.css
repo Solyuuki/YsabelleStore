@@ -1,0 +1,2050 @@
+/*
+ * Storefront Dark Mode — component-level legibility contract.
+ * Every light-first content surface is paired with an explicit dark ink/surface.
+ * Product photography and branded sign-in controls are intentional exceptions.
+ * All selectors are dark-only; approved Light Mode and About scene CSS stay intact.
+ */
+:root.dark .customer-app {
+  --store-contrast-card: #1b2638;
+  --store-contrast-card-raised: #24334a;
+  --store-contrast-input: #17243a;
+  --store-contrast-stroke: #687995;
+  --store-contrast-ink: #d4deec;
+  --store-contrast-body: #b8c6d8;
+  --store-contrast-muted: #9fafc6;
+  --store-contrast-link: #c3b6f0;
+}
+
+/* Product catalogue: the image is intentionally light for color fidelity,
+   but metadata, controls and navigation must use dark-surface contrast. */
+:root.dark .customer-app .customer-product-card__body :is(h3, h3 a, strong),
+:root.dark .customer-app .shop-catalog-refresh__body :is(h3, strong) {
+  color: var(--store-contrast-ink);
+}
+:root.dark
+  .customer-app
+  .customer-product-card__body
+  :is(
+    .customer-eyebrow,
+    .customer-product-card__rating,
+    .customer-product-card__rating span,
+    .customer-product-card__price-row span,
+    small
+  ) {
+  color: var(--store-contrast-body);
+}
+:root.dark .customer-app .customer-product-card__price-row strong {
+  color: #e1d7ff;
+}
+:root.dark
+  .customer-app
+  .customer-product-card__body
+  :is(.customer-product-card__actions, .customer-product-card__price-row) {
+  border-color: var(--store-contrast-stroke);
+}
+:root.dark .customer-app .customer-quantity {
+  background: #24324e;
+  border: 1px solid #536581;
+  color: var(--store-contrast-ink);
+}
+:root.dark .customer-app .customer-quantity :is(button, output, input, span, strong) {
+  color: var(--store-contrast-ink);
+}
+:root.dark .customer-app .customer-quantity button:hover:not(:disabled) {
+  background: #364569;
+}
+:root.dark .customer-app .customer-quantity button:disabled {
+  color: #a8b9d5;
+}
+:root.dark .customer-app .customer-product-detail__favorite {
+  background: #263551;
+  border-color: #526381;
+  color: #dce5fb;
+}
+:root.dark .customer-app .customer-product-detail__favorite[aria-pressed="true"] {
+  background: #442943;
+  border-color: #875a8b;
+  color: #ffc5e1;
+}
+:root.dark
+  .customer-app
+  :is(.customer-related-products__arrow, .customer-product-size-selector__arrow) {
+  background: #273753;
+  color: #e0d9ff;
+  border-color: #536682;
+}
+:root.dark .customer-app .customer-product-section-state,
+:root.dark .customer-app .customer-related-products__skeleton-grid i {
+  background: #223049;
+  border-color: #52627f;
+  color: var(--store-contrast-body);
+}
+
+/* Reviews use the identical graphite-frost vector as the dark product
+   card body. Cover maintains the SVG aspect ratio (cropping, never stretching);
+   one non-repeating image is rendered per review surface, with a safe color
+   fallback if the asset is unavailable. */
+:root.dark
+  .customer-app
+  :is(
+    .customer-review-overview,
+    .customer-review-composer,
+    .customer-review,
+    .customer-review-empty
+  ) {
+  background:
+    url("/textures/ys-dark-graphite-glass.svg") center / cover no-repeat,
+    #24334a;
+  color: var(--store-contrast-ink);
+  border-color: var(--store-contrast-stroke);
+  box-shadow:
+    0 12px 28px rgb(2 8 23 / 14%),
+    inset 0 1px 0 rgb(171 190 239 / 4%);
+}
+:root.dark
+  .customer-app
+  :is(.customer-review-overview, .customer-review-composer, .customer-review)
+  :is(h3, strong, label) {
+  color: var(--store-contrast-ink);
+}
+
+/* Review initials were inheriting light-mode ink over a dark token background.
+   Keep avatar contrast independent from theme tokens and no other surfaces. */
+:root.dark .customer-app .customer-product-page .customer-review__avatar {
+  background: #46487e;
+  border: 1px solid #aa9de8;
+  color: #f4f1ff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 13%);
+}
+
+:root.dark .customer-app .customer-review-score > strong {
+  color: #c9bdff;
+}
+:root.dark .customer-app .customer-review-distribution__row > span {
+  color: var(--store-contrast-ink);
+}
+:root.dark .customer-app .customer-review-distribution__row progress,
+:root.dark .customer-app .customer-review-distribution__row progress::-webkit-progress-bar {
+  background: #46536c;
+}
+:root.dark .customer-app .customer-review-composer__header p:last-child,
+:root.dark .customer-app .customer-review-composer__footer > span,
+:root.dark .customer-app .customer-review > p,
+:root.dark .customer-app .customer-review header time,
+:root.dark .customer-app .customer-review__meta :is(span, small) {
+  color: var(--store-contrast-body);
+}
+:root.dark .customer-app .customer-review-composer textarea {
+  background: var(--store-contrast-input);
+  border-color: #596b89;
+  color: var(--store-contrast-ink);
+}
+:root.dark .customer-app .customer-review-composer textarea::placeholder {
+  color: #adbedb;
+}
+:root.dark .customer-app :is(.customer-review-filters button, .customer-review-pagination button) {
+  background: #263551;
+  border-color: #536480;
+  color: #d4deec;
+}
+:root.dark .customer-app .customer-review-filters button.is-active {
+  background: #4f478f;
+  border-color: #b5aaff;
+  color: #fff;
+}
+:root.dark .customer-app .customer-review-filters button > span {
+  background: rgb(255 255 255 / 11%);
+  color: #ebeeff;
+}
+:root.dark .customer-app .customer-review-composer__error {
+  background: #44293b;
+  border-color: #895772;
+  color: #ffd0dc;
+}
+:root.dark .customer-app .customer-review-composer__success {
+  background: #1d3f38;
+  border-color: #407d6b;
+  color: #b8f6dd;
+}
+
+/* Shop: remove white wash from hero, and restore readable filter labels. */
+/* The approved Shop hero is vector art without baked-in text.
+   The heading remains accessible HTML and the SVG preserves aspect ratio. */
+:root.dark .customer-app .customer-shop-heading {
+  background:
+    url("/textures/ys-dark-shop-orbital-hero.svg") center / cover no-repeat,
+    #111f3d;
+}
+/* Only dark mode hides the original stretched light-mode wave overlay. */
+:root.dark .customer-app .customer-shop-heading__backdrop {
+  display: none;
+}
+:root.dark .customer-app .customer-shop-heading :is(h1, .shop-motion-intro__title) {
+  color: #d4deec;
+}
+:root.dark .customer-app .customer-shop-heading :is(.shop-motion-intro__description, p:last-child) {
+  color: var(--store-contrast-body);
+}
+:root.dark .customer-app .customer-filter-panel :is(h2, .customer-filter-panel__title) {
+  color: var(--store-contrast-ink);
+}
+:root.dark .customer-app .customer-filter-panel > a {
+  color: #d0daec;
+}
+:root.dark .customer-app .customer-filter-panel > a:hover:not(.is-active) {
+  background: #34425e;
+  border-color: #5d6c8b;
+  color: #fff;
+}
+:root.dark .customer-app .customer-filter-panel > a.is-active {
+  background: #3c3767;
+  color: #e2dcff;
+  border-color: #8578bd;
+}
+:root.dark .customer-app .customer-filter-panel small,
+:root.dark .customer-app .customer-filter-panel > a.is-active small {
+  color: #bcc9e1;
+}
+:root.dark .customer-app .customer-select {
+  background-color: #263550;
+  color: #e6edff;
+  border-color: #576988;
+}
+:root.dark .customer-app .customer-select option {
+  color: #e6edff;
+  background: #263550;
+}
+
+/* Cart: empty states and transactional summaries were still solid white. */
+:root.dark
+  .customer-app
+  :is(
+    .customer-empty-state,
+    .customer-cart-item,
+    .customer-order-summary,
+    .customer-cart-pagination
+  ) {
+  background: linear-gradient(145deg, #24324c, #202c44);
+  border-color: var(--store-contrast-stroke);
+  color: var(--store-contrast-ink);
+}
+:root.dark .customer-app .customer-empty-state :is(h2, h3, strong) {
+  color: var(--store-contrast-ink);
+}
+:root.dark .customer-app .customer-empty-state p,
+:root.dark .customer-app .customer-cart-item__info > p:not(.customer-eyebrow) {
+  color: var(--store-contrast-body);
+}
+:root.dark .customer-app .customer-cart-item__info button {
+  color: #ffb9c9;
+}
+:root.dark .customer-app .customer-order-summary > div {
+  color: var(--store-contrast-body);
+}
+:root.dark .customer-app .customer-order-summary__total {
+  border-color: #566480;
+  color: var(--store-contrast-ink) !important;
+}
+
+/* Account: no frosted material should be an opaque light panel with light text. */
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  :is(
+    .customer-account-history-card,
+    .customer-account-history-pagination,
+    .customer-account-info-card,
+    .customer-account-contact-card,
+    .customer-account-address-card,
+    .customer-account-security-card,
+    .customer-account-password-identity,
+    .customer-account-auth-methods
+  ) {
+  background: linear-gradient(148deg, #2b3a54, #24314a);
+  border-color: #52617f;
+  color: var(--store-contrast-ink);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 3%);
+}
+:root.dark .customer-app #profile-panel .customer-account-inline-action-form,
+:root.dark
+  .customer-app
+  #profile-panel
+  :is(.customer-account-info-card, .customer-account-contact-card, .customer-account-address-card) {
+  background:
+    url("/textures/ys-dark-graphite-glass.svg") center / cover no-repeat,
+    #24334a;
+  border-color: #536380;
+  box-shadow: 0 10px 26px rgb(0 0 0 / 10%);
+}
+:root.dark .customer-app #profile-panel .customer-account-address-summary {
+  background: #1c2a43;
+  border-color: #50617d;
+  color: #d0dbec;
+}
+:root.dark
+  .customer-app
+  #profile-panel
+  :is(.customer-account-address-summary strong, .customer-account-info-card strong),
+:root.dark
+  .customer-app
+  .customer-account-history-card
+  :is(
+    .customer-account-history-card__identity strong,
+    .customer-account-history-card__summary > strong,
+    .customer-account-history-card__payment strong,
+    .customer-account-history-card__details li strong
+  ) {
+  color: var(--store-contrast-ink);
+}
+:root.dark
+  .customer-app
+  #profile-panel
+  :is(
+    .customer-account-section-heading p:last-child,
+    .customer-account-info-card > span,
+    .customer-account-address-heading span,
+    .customer-account-contact-card label > span,
+    .customer-account-info-card small,
+    .customer-account-contact-card > small,
+    .customer-account-address-heading p,
+    .customer-account-address-summary
+  ),
+:root.dark
+  .customer-app
+  .customer-account-history-card
+  :is(
+    .customer-account-history-card__identity > span,
+    .customer-account-history-card__identity > small,
+    .customer-account-history-card__summary > span:first-child,
+    .customer-account-history-card__details li,
+    .customer-account-history-card__payment
+  ) {
+  color: var(--store-contrast-body);
+}
+:root.dark .customer-app .customer-account-history-card__details {
+  border-color: #4d5c78;
+}
+:root.dark
+  .customer-app
+  #profile-panel
+  :is(
+    .customer-account-inline-action-form input,
+    .customer-account-contact-card input,
+    .customer-account-address-form input
+  ),
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  :is(
+    .customer-account-security-form input,
+    .customer-account-password-change-form input,
+    .customer-account-otp-input
+  ) {
+  background: #18263f;
+  border-color: #586b89;
+  color: var(--store-contrast-ink);
+  box-shadow: none;
+}
+:root.dark .customer-app .customer-account-page-v2 :is(input, textarea)::placeholder {
+  color: #abbad5;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  :is(
+    .customer-account-security-card p,
+    .customer-account-security-card small,
+    .customer-account-session-list time,
+    .customer-account-session-list small,
+    .customer-account-session-list dt,
+    .customer-account-session-list dd
+  ) {
+  color: var(--store-contrast-body);
+}
+:root.dark .customer-app .customer-account-page-v2 .customer-account-session-list article {
+  background: #1f2d47;
+  border-color: #536482;
+}
+:root.dark .customer-app .customer-account-payment-gate {
+  background: #403322;
+  border-color: #95703a;
+  color: #f3d7a8;
+}
+:root.dark .customer-app .customer-account-payment-gate :is(p, strong) {
+  color: #f8e0b7;
+}
+/* Status chips retain accessible foregrounds according to their semantic surface. */
+:root.dark .customer-app .customer-account-page-v2 .customer-account-status {
+  border-color: #668574;
+  background: #1f3e36;
+  color: #b6ddc6;
+}
+
+/* Authentication: dark outer panel and inner fields together. No pale shell. */
+:root.dark
+  .customer-app
+  :is(.customer-auth-page--login, .customer-auth-page--register, .customer-auth-page--recovery)
+  .customer-auth-stage__panel {
+  background: linear-gradient(155deg, #273751, #202c45);
+  border-color: #596884;
+  box-shadow:
+    0 28px 70px rgb(0 0 0 / 22%),
+    inset 0 1px 0 rgb(255 255 255 / 5%);
+}
+:root.dark .customer-app .customer-auth-page--recovery .customer-auth-stage__panel::after {
+  background: radial-gradient(circle at 88% 12%, rgb(144 106 225 / 9%), transparent 37%);
+}
+:root.dark .customer-app .customer-recovery-progress {
+  background: #34415f;
+  border-color: #687391;
+}
+:root.dark .customer-app .customer-auth-card {
+  background: transparent;
+  color: var(--store-contrast-ink);
+}
+:root.dark
+  .customer-app
+  .customer-auth-card
+  :is(
+    .customer-auth-card__intro h1,
+    .customer-auth-field,
+    .customer-auth-field > span,
+    .customer-auth-switch,
+    .customer-recovery-progress__item
+  ) {
+  color: var(--store-contrast-ink);
+}
+:root.dark
+  .customer-app
+  .customer-auth-card
+  :is(
+    .customer-auth-card__intro p,
+    .customer-auth-switch p,
+    .customer-recovery-progress__item small
+  ) {
+  color: var(--store-contrast-body);
+}
+:root.dark
+  .customer-app
+  .customer-auth-page
+  :is(.customer-auth-field input, .customer-recovery-code-input) {
+  background: #17243a;
+  color: #eff3ff;
+  border-color: #5a6c89;
+  box-shadow: none;
+}
+:root.dark .customer-app .customer-auth-page :is(input, textarea)::placeholder {
+  color: #b1c0d9;
+}
+:root.dark
+  .customer-app
+  :is(.customer-auth-page--login, .customer-auth-page--register)
+  .customer-auth-stage__panel
+  .customer-auth-field
+  input {
+  background: #142139;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page
+  :is(.customer-auth-submit, .customer-recovery-secondary) {
+  color: #10192d;
+  font-weight: 800;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page
+  :is(.customer-auth-quick-divider, .customer-recovery-back) {
+  color: #c7d2e9;
+}
+/* Google / email identity providers intentionally retain light branded buttons. */
+:root.dark
+  .customer-app
+  .customer-auth-page
+  :is(.customer-auth-google, .customer-email-quick-sign, .customer-auth-quick-sign) {
+  color: #19233b;
+}
+
+/* Google and Email Quick Sign keep their intentionally pale branded surfaces.
+   A broad dark-mode :is(p, small) rule would otherwise paint their helper
+   copy pale blue, making it unreadable on these light buttons. */
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-social-auth__button
+  > span:last-child
+  small {
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* Support and privacy: labels, hero chips, callouts, and notices. */
+:root.dark .customer-app .customer-support-hero__signals span {
+  background: #293852;
+  border-color: #526282;
+  color: #e2eafd;
+}
+:root.dark
+  .customer-app
+  .customer-support-page
+  :is(
+    .customer-support-form label,
+    .customer-support-form label > span,
+    .customer-support-character-count,
+    .customer-support-section-heading p,
+    .customer-support-hero__card p
+  ) {
+  color: var(--store-contrast-body);
+}
+:root.dark
+  .customer-app
+  .customer-support-page
+  :is(
+    .customer-support-form__two-column label,
+    .customer-support-form-card label,
+    .customer-support-form .customer-support-field-label
+  ) {
+  color: #e4ebf9;
+}
+:root.dark
+  .customer-app
+  :is(
+    .customer-support-account-note,
+    .customer-support-field-tooltip,
+    .customer-support-safety-note
+  ) {
+  color: #e5edff;
+}
+:root.dark .customer-app .customer-support-account-note {
+  background: #373257;
+  border-color: #625b8c;
+}
+:root.dark .customer-app .customer-privacy-hero__summary li,
+:root.dark .customer-app .customer-privacy-hero__summary p {
+  color: #cbd7ea;
+}
+
+/* Focus remains evident without changing product photography or the story. */
+:root.dark .customer-app :is(button, a, input, textarea, select):focus-visible {
+  outline: 2px solid #bdb1ff;
+  outline-offset: 2px;
+}
+
+/* Explicit text hierarchy and predictable outlines for all remaining
+   storefront form and card surfaces; intentionally excludes photo canvases. */
+:root.dark .customer-app .customer-page :is(h1, h2, h3),
+:root.dark .customer-app .customer-auth-page :is(h1, h2, h3),
+:root.dark .customer-app .customer-account-page-v2 :is(h1, h2, h3) {
+  color: #d4deec;
+}
+:root.dark
+  .customer-app
+  :is(
+    .customer-review,
+    .customer-review-overview,
+    .customer-review-composer,
+    .customer-order-summary,
+    .customer-cart-item,
+    .customer-empty-state,
+    .customer-account-security-card,
+    .customer-account-info-card,
+    .customer-account-address-card,
+    .customer-account-contact-card,
+    .customer-account-history-card,
+    .customer-auth-stage__panel,
+    .customer-support-form-card,
+    .customer-support-info-card
+  ) {
+  border-color: #687995;
+}
+:root.dark
+  .customer-app
+  :is(
+    .customer-cart-page,
+    .customer-checkout-page,
+    .customer-shop-page,
+    .customer-support-page,
+    .customer-privacy-page,
+    .customer-account-page-v2
+  )
+  :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  background-color: #17243a;
+  color: #d4deec;
+  border-color: #687995;
+}
+:root.dark .customer-app :is(input, textarea)::placeholder {
+  color: #9fafc6;
+}
+:root.dark .customer-app :is(.customer-button, .customer-auth-submit):focus-visible,
+:root.dark .customer-app :is(input, select, textarea):focus-visible {
+  outline: 2px solid #aca0ef;
+  outline-offset: 3px;
+}
+
+/* Header search owns its accessible focus ring on the rounded outer shell.
+   Never draw the global rectangular input outline inside the pill. */
+:root.dark .customer-app .customer-global-search__shell input:focus-visible {
+  outline: none;
+  outline-offset: 0;
+}
+
+/* Respect deliberate, branded light canvases: text contrast is local. */
+:root.dark
+  .customer-app
+  :is(
+    .customer-product-card__media,
+    .customer-product-detail__media,
+    .customer-product-visual,
+    .home-category-card__visual
+  ) {
+  color: #253046;
+}
+/* Dark interactive controls keep dark ink over saturated brand fills. */
+:root.dark
+  .customer-app
+  :is(.customer-button--primary, .customer-auth-submit, .customer-account-action--primary) {
+  color: #111827;
+}
+/* Neither default black nor blinding white for long-form reading. */
+:root.dark .customer-app .customer-privacy-document :is(p, li),
+:root.dark .customer-app .customer-support-page :is(p, li) {
+  color: #b8c6d8;
+}
+
+/* Checkout surfaces and payment states: never place pale cards under muted ink. */
+:root.dark
+  .customer-app
+  :is(
+    .customer-checkout-form section,
+    .customer-choice-card,
+    .customer-payment-option,
+    .customer-payment-resume,
+    .customer-payment-status,
+    .customer-success-card,
+    .customer-order-reference,
+    .customer-success-pickup,
+    .customer-checkout-use-saved,
+    .customer-checkout-alternate-field > input
+  ) {
+  background: #1b2638;
+  border-color: #687995;
+  color: #b8c6d8;
+}
+:root.dark
+  .customer-app
+  :is(
+    .customer-checkout-form section,
+    .customer-choice-card,
+    .customer-payment-option,
+    .customer-payment-resume,
+    .customer-payment-status,
+    .customer-success-card,
+    .customer-order-reference
+  )
+  :is(h2, h3, strong) {
+  color: #d4deec;
+}
+:root.dark .customer-app .customer-payment-option:hover:not(.is-selected) {
+  background: #2a3850;
+  border-color: #8893b1;
+}
+:root.dark .customer-app .customer-payment-option.is-selected {
+  background: #353453;
+  border-color: #aaa0db;
+}
+:root.dark .customer-app .customer-payment-status--paid {
+  background: #1c4037;
+  border-color: #608977;
+}
+:root.dark .customer-app .customer-payment-status--paid :is(strong, p, span) {
+  color: #c0e8d5;
+}
+:root.dark .customer-app .customer-form-error {
+  border-color: #9d6274;
+  background: #462d3e;
+  color: #ffd4df !important;
+}
+:root.dark .customer-app .customer-success-card :is(p, small) {
+  color: #b8c6d8;
+}
+:root.dark .customer-app .customer-order-reference {
+  border-color: #7685a5;
+}
+:root.dark
+  .customer-app
+  .customer-success-card
+  :is(a.customer-success-secondary-action, button.customer-success-secondary-action) {
+  background: #293750;
+  color: #d4deec;
+  border-color: #687995;
+}
+
+/* Product option / filters: opacity and background always match label ink. */
+:root.dark
+  .customer-app
+  :is(
+    .customer-product-size-option,
+    .customer-pagination button,
+    .customer-product-card__favorite
+  ) {
+  background: #26344c;
+  color: #d4deec;
+  border-color: #687995;
+}
+:root.dark .customer-app .customer-product-size-option[data-selected] {
+  background: #333453;
+  border-color: #aea1e9;
+}
+:root.dark .customer-app .customer-product-size-option__copy strong {
+  color: #d4deec;
+}
+:root.dark .customer-app .customer-product-size-option__copy small,
+:root.dark
+  .customer-app
+  .customer-product-size-option[data-selected]
+  .customer-product-size-option__copy
+  small {
+  color: #b8c6d8;
+}
+:root.dark .customer-app .customer-product-size-option__visual {
+  background: #f4f6fa;
+}
+:root.dark .customer-app .customer-product-card__favorite:is(:hover, :focus-visible) {
+  background: #344461;
+  color: #d6cafa;
+  border-color: #afa1df;
+}
+:root.dark .customer-app .customer-product-card__favorite[aria-pressed="true"] {
+  background: #4b2e57;
+  color: #f0c6e3;
+  border-color: #8d6694;
+}
+:root.dark .customer-app .customer-pagination button:not(:disabled):hover {
+  background: #34445e;
+  color: #e3e9f4;
+}
+:root.dark .customer-app .customer-product-rating-badge {
+  background: #263550;
+  color: #d4deec;
+  border-color: #687995;
+}
+:root.dark .customer-app .customer-product-rating-badge__count {
+  color: #b8c6d8;
+}
+
+/* Remembered-account widgets and OTP recovery are separate, opaque surfaces. */
+:root.dark
+  .customer-app
+  :is(
+    .customer-known-accounts,
+    .customer-known-account,
+    .customer-known-accounts__capacity,
+    .customer-known-accounts__other,
+    .customer-known-accounts__loading,
+    .customer-remember-choice,
+    .customer-recovery-code-slot,
+    .customer-recovery-code-slot--filled,
+    .customer-recovery-code-slot--active,
+    .customer-recovery-secondary
+  ) {
+  background: #25344d;
+  color: #d4deec;
+  border-color: #687995;
+}
+:root.dark
+  .customer-app
+  :is(
+    .customer-known-account__identity strong,
+    .customer-known-accounts__title-row strong,
+    .customer-remember-choice > span
+  ) {
+  color: #d4deec;
+}
+:root.dark
+  .customer-app
+  :is(
+    .customer-known-account__identity > span,
+    .customer-known-account__identity small,
+    .customer-remember-choice small,
+    .customer-known-accounts__loading
+  ) {
+  color: #b8c6d8;
+}
+:root.dark .customer-app .customer-known-account__menu-trigger {
+  color: #bbc8dc;
+}
+:root.dark .customer-app .customer-known-account__menu-item {
+  color: #ffbccd;
+}
+:root.dark .customer-app .customer-known-account__select:hover:not(:disabled),
+:root.dark .customer-app .customer-known-accounts__other:hover:not(:disabled) {
+  background: #30415d;
+}
+:root.dark .customer-app .customer-recovery-code-slot::before {
+  background: none;
+}
+:root.dark .customer-app .customer-recovery-code-slot--active {
+  border-color: #aca0e8;
+  box-shadow: 0 0 0 2px rgb(172 160 232 / 30%);
+}
+:root.dark .customer-app .customer-recovery-code-slot--empty::after {
+  background: #8b9ebc;
+}
+:root.dark .customer-app .customer-recovery-tertiary {
+  color: #b8c6d8;
+}
+
+/* Support, privacy and the account session panels must retain readable
+   notices even when legacy CSS declares an opaque light gradient. */
+:root.dark
+  .customer-app
+  :is(
+    .customer-support-safety-note,
+    .customer-support-faq details,
+    .customer-privacy-storage-card,
+    .customer-privacy-sheet__footer,
+    .customer-privacy-notice,
+    .customer-account-session-empty,
+    .customer-account-session-confirm,
+    .customer-account-form-error
+  ) {
+  background: #24334a;
+  border-color: #687995;
+  color: #b8c6d8;
+}
+:root.dark
+  .customer-app
+  :is(.customer-support-safety-note, .customer-privacy-notice, .customer-account-session-confirm)
+  :is(h3, strong) {
+  color: #d4deec;
+}
+:root.dark .customer-app .customer-support-form :is(input, select, textarea) {
+  color: #d4deec;
+  border-color: #687995;
+  background: #17243a;
+}
+
+/* Sprint 11 visual QA: structured, non-glaring outlines and never dirty-white
+   storefront panels. All changes are scoped to active storefront dark mode.
+   Product photography stays neutral and About is not themed. */
+:root.dark[data-appearance-scope="storefront"] .customer-app {
+  --store-outline-hairline: #44556e;
+  --store-outline-panel: #64758f;
+  --store-outline-focus: #a99af1;
+  --store-ink-high: #d4deec;
+  --store-ink-body: #b8c6d8;
+  --store-ink-muted: #9fafc6;
+  --store-panel-opaque: #1b293e;
+  --store-panel-raised: #25354e;
+}
+/* Bounded page artwork: cap texture width and tile naturally down long pages,
+   never rescale a 1600x900 SVG to fit a 4000px-tall page. */
+:root.dark[data-appearance-scope="storefront"] .customer-app.ys-glass-flow-background {
+  background-color: #101827 !important;
+  background-size: min(1600px, 100%) auto !important;
+  background-position: center top !important;
+  background-repeat: repeat-y !important;
+}
+:root.dark
+  .customer-app
+  :is(
+    .customer-home,
+    .customer-shop-page,
+    .customer-cart-page,
+    .customer-checkout-page,
+    .customer-account-page-v2,
+    .customer-privacy-page
+  ) {
+  background-size: min(1600px, 100%) auto;
+  background-position: center top;
+  background-repeat: repeat-y;
+}
+/* Panel materials are cropped from fixed-size artwork, not stretched to fit. */
+:root.dark
+  .customer-app
+  :is(
+    .customer-product-card__body,
+    .home-category-card__body,
+    .shop-catalog-refresh__body,
+    .customer-account-section
+  ) {
+  background-size: 900px auto !important;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+:root.dark .customer-app :is(.customer-shop-heading, .customer-support-hero, .home-next-step) {
+  background-size: min(1600px, 100%) auto;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Wide and narrow screens crop the proportional vector rather than stretch
+   it; the final lower pixels fade into the existing midnight catalog surface. */
+:root.dark .customer-app .customer-shop-page .customer-shop-heading {
+  background-size: cover;
+  background-position: center 52%;
+  background-repeat: no-repeat;
+}
+:root.dark .customer-app .customer-shop-page .customer-shop-heading::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: clamp(40px, 5.5vw, 78px);
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgb(16 24 39 / 0%) 0%, rgb(16 24 39 / 18%) 40%, #101827 100%);
+}
+/* Cart, Shop, Favorites and Product Detail share one +/- quantity control.
+   The global dark form-input surface would otherwise paint a rectangle inside
+   it (especially now that whole-unit quantities use type="text"). Preserve the
+   parent's rounded surface, with keyboard focus indicated on the whole group. */
+:root.dark .customer-app .customer-quantity > input {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: 0;
+  box-shadow: none !important;
+  outline: none !important;
+  color: #e2e9fb;
+}
+:root.dark .customer-app .customer-quantity:focus-within {
+  outline: 2px solid #b1a3f5;
+  outline-offset: 2px;
+}
+:root.dark .customer-app .customer-shop-page .customer-quantity button:disabled,
+:root.dark .customer-app .customer-shop-page .customer-quantity button:disabled:hover {
+  background: transparent;
+  color: #91a1bf;
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* Clear section boundaries, readable bodies and tidy focal outlines. */
+:root.dark
+  .customer-app
+  :is(
+    .customer-product-card,
+    .home-category-card,
+    .customer-review,
+    .customer-review-overview,
+    .customer-review-composer,
+    .customer-filter-panel,
+    .customer-account-section,
+    .customer-account-history-card,
+    .customer-account-hero,
+    .customer-account-rail,
+    .customer-auth-stage__panel,
+    .customer-support-form-card,
+    .customer-support-info-card,
+    .customer-privacy-document,
+    .customer-cart-item,
+    .customer-order-summary,
+    .customer-empty-state
+  ) {
+  border-color: var(--store-outline-panel);
+  box-shadow:
+    0 12px 28px rgb(2 8 23 / 14%),
+    inset 0 1px 0 rgb(171 190 239 / 4%);
+}
+:root.dark
+  .customer-app
+  :is(
+    .customer-quantity,
+    .customer-select,
+    .customer-review-filters button,
+    .customer-review-composer textarea,
+    .customer-product-detail__favorite,
+    .customer-account-page-v2 input,
+    .customer-account-page-v2 select,
+    .customer-account-page-v2 textarea,
+    .customer-auth-page input,
+    .customer-support-page input,
+    .customer-support-page textarea,
+    .customer-support-page select
+  ) {
+  border-color: var(--store-outline-panel);
+}
+:root.dark
+  .customer-app
+  :is(
+    .customer-account-page-v2,
+    .customer-support-page,
+    .customer-privacy-page,
+    .customer-cart-page,
+    .customer-auth-page
+  )
+  :is(p, small) {
+  color: var(--store-ink-body);
+}
+:root.dark
+  .customer-app
+  :is(.customer-account-page-v2, .customer-auth-page, .customer-support-page)
+  :is(h1, h2, h3) {
+  color: var(--store-ink-high);
+}
+
+/* Home closing CTA: the heading/description was dark on dark; light-theme
+   badges were visually detached from the new midnight texture. */
+:root.dark .customer-app .home-next-step h2 {
+  color: #d4deec;
+}
+:root.dark .customer-app .home-next-step h2 span {
+  background-image: linear-gradient(100deg, #a9c0f5, #b4a5f1 55%, #cca0dc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+:root.dark .customer-app .home-next-step__lede {
+  color: #b8c6d8;
+}
+:root.dark .customer-app .home-next-step__meta > span {
+  background: #25354c;
+  border: 1px solid #697b97;
+  color: #d4deec;
+  box-shadow: 0 4px 14px rgb(2 8 23 / 12%);
+}
+:root.dark .customer-app .home-next-step__meta > span :is(strong, svg) {
+  color: #bec0f7;
+}
+:root.dark .customer-app .home-next-step__actions .home-secondary-link {
+  color: #bfb4f1;
+  text-decoration-color: #bfb4f1;
+}
+:root.dark .customer-app .home-next-step__actions .customer-button {
+  border: 1px solid #8d84dc;
+  color: #f0eefb;
+}
+:root.dark .customer-app .home-next-step__visual :is(svg, img) {
+  max-width: 100%;
+}
+
+/* Search is portaled: scope by root rather than assuming a .customer-app
+   ancestor. Both suggestions and recent searches inherit a dark canvas. */
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__popup {
+  background: #1c2b41;
+  border: 1px solid #697b98;
+  color: #d4deec;
+  box-shadow: 0 20px 48px rgb(2 8 23 / 34%);
+}
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__popup-header {
+  background: #25354e;
+  border-bottom: 1px solid #536781;
+  color: #b8c6d8;
+}
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__popup-header button,
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__recent-query,
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__recent-action,
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__item {
+  color: #d4deec;
+}
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__product-copy span,
+:root.dark[data-appearance-scope="storefront"] .customer-global-search__empty {
+  color: #b8c6d8;
+}
+:root.dark[data-appearance-scope="storefront"]
+  .customer-global-search__item:is(:hover, [data-highlighted]),
+:root.dark[data-appearance-scope="storefront"]
+  .customer-global-search__recent-action:is(:hover, :focus-visible) {
+  background: #34455e;
+}
+:root.dark[data-appearance-scope="storefront"]
+  .customer-global-search__popup
+  :is(button, a):focus-visible {
+  outline: 2px solid #b5a6f1;
+  outline-offset: 2px;
+}
+
+/* Security: nested password form / identity method cards were still white. */
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  :is(
+    .customer-account-password-change-current,
+    .customer-account-auth-methods > span,
+    .customer-account-otp-actions,
+    .customer-account-session-confirm
+  ) {
+  background: #1b293f;
+  border: 1px solid #64758f;
+  color: #d4deec;
+  box-shadow: inset 0 1px 0 rgb(164 179 220 / 4%);
+}
+:root.dark .customer-app .customer-account-auth-methods :is(strong, small),
+:root.dark .customer-app .customer-account-password-change-current :is(label, span, small) {
+  color: #c3d0e1;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  .customer-account-security-card
+  :is(.customer-account-password-recovery-link, .customer-account-secondary-button) {
+  color: #c2b7f3;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  .customer-account-security-card
+  .customer-account-password-recovery-link:hover {
+  color: #d8cffc;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  .customer-account-security-card
+  .customer-account-secondary-button {
+  background: #273854;
+  border: 1px solid #687995;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  .customer-account-security-card
+  .customer-account-password-change-current
+  input {
+  background: #152239;
+  border-color: #64758f;
+  color: #d4deec;
+}
+/* Favorites empty state and archived order panels must not revert to white. */
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  :is(
+    .customer-account-empty,
+    .customer-account-state,
+    .customer-account-order-v2,
+    .customer-account-history-card
+  ) {
+  background: #223149;
+  border-color: #64758f;
+  color: #d4deec;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  .customer-account-empty
+  :is(p, small, span, svg) {
+  color: #b8c6d8;
+}
+:root.dark .customer-app .customer-account-page-v2 .customer-account-empty strong {
+  color: #d4deec;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  .customer-account-order-v2
+  :is(.customer-account-order-meta, li, small, p) {
+  color: #b8c6d8;
+}
+
+/* Recovery and login/register: dark-specific silk artwork, never pale lavender
+   behind a dark card. Scoping ensures the approved Light Mode is untouched. */
+:root.dark .customer-app .customer-auth-page--recovery,
+:root.dark .customer-app .customer-auth-page--login,
+:root.dark .customer-app .customer-auth-page--register {
+  background-color: #101827;
+  background-image:
+    linear-gradient(145deg, rgb(11 21 36 / 25%), rgb(24 24 45 / 20%)),
+    url("/textures/ys-dark-indigo-silk.svg");
+  background-size:
+    auto,
+    min(1600px, 100%) auto;
+  background-position:
+    center,
+    center top;
+  background-repeat: no-repeat, no-repeat;
+}
+:root.dark .customer-app .customer-auth-page--recovery::before,
+:root.dark .customer-app .customer-auth-page--login::before,
+:root.dark .customer-app .customer-auth-page--register::before {
+  opacity: 0.12;
+}
+:root.dark .customer-app .customer-auth-page--recovery::after,
+:root.dark .customer-app .customer-auth-page--login::after,
+:root.dark .customer-app .customer-auth-page--register::after {
+  opacity: 0.1;
+}
+:root.dark .customer-app .customer-auth-page--recovery .customer-auth-stage__panel,
+:root.dark .customer-app .customer-auth-page--login .customer-auth-stage__panel,
+:root.dark .customer-app .customer-auth-page--register .customer-auth-stage__panel {
+  background: #24334a;
+  border: 1px solid #697b98;
+  box-shadow:
+    0 26px 68px rgb(2 8 23 / 20%),
+    inset 0 1px 0 rgb(185 199 235 / 5%);
+}
+:root.dark .customer-app .customer-auth-page--recovery .customer-auth-stage__panel::after {
+  background: none;
+}
+:root.dark .customer-app .customer-recovery-progress {
+  background: #293955;
+  border-color: #72819c;
+  box-shadow: inset 0 1px 0 rgb(186 199 242 / 4%);
+}
+:root.dark .customer-app .customer-recovery-progress__step {
+  color: #b8c6d8;
+}
+:root.dark .customer-app .customer-recovery-progress__step--active,
+:root.dark .customer-app .customer-recovery-progress__step--complete {
+  color: #d4deec;
+}
+:root.dark .customer-app .customer-recovery-progress__dot {
+  background: #35445d;
+  border-color: #8492aa;
+  color: #c9d4e6;
+}
+:root.dark .customer-app .customer-recovery-progress__step--active .customer-recovery-progress__dot,
+:root.dark
+  .customer-app
+  .customer-recovery-progress__step--complete
+  .customer-recovery-progress__dot {
+  background: #625bb3;
+  color: #f0efff;
+  border-color: #a99ae6;
+}
+:root.dark .customer-app .customer-recovery-progress__line {
+  background: #64738b;
+}
+/* Sign In: use the SAME one-piece galaxy palette and shared constellation as
+   Trending → Essentials, Shop, and Account. Overrule the legacy auth silk
+   image/material background (which uses !important), scoped to login only. */
+.customer-app .customer-auth-page--login__cosmos {
+  display: none;
+}
+:root.dark .customer-app .customer-auth-page--login.ys-glass-flow-background {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #101827 !important;
+  background-image:
+    linear-gradient(
+      to bottom,
+      #101827 0,
+      transparent 145px,
+      transparent calc(100% - 220px),
+      #101827 100%
+    ),
+    var(--storefront-galaxy-background) !important;
+  background-size: auto !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+}
+:root.dark .customer-app .customer-auth-page--login__cosmos {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* The shared SVG's intrinsic viewBox uses xMidYMid meet, never stretching. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+}
+/* Login-only orbital composition: deliberately asymmetric rather than
+   left-heavy. Leave the approved shared SVG unchanged for all other pages. */
+.customer-app .customer-auth-page--login__balanced-orbits {
+  display: none;
+}
+:root.dark .customer-app .customer-auth-page--login__cosmos g[fill="none"]:not([stroke]) {
+  opacity: 0.28;
+}
+:root.dark .customer-app .customer-auth-page--login__balanced-orbits {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+}
+:root.dark .customer-app .customer-auth-page--login > .customer-auth-stage {
+  position: relative;
+  z-index: 1;
+}
+/* Suppress obsolete animated blurry backdrop blobs on Sign In only.
+   The panel's own styling and interactions remain unchanged. */
+:root.dark .customer-app .customer-auth-page--login::before,
+:root.dark .customer-app .customer-auth-page--login::after {
+  content: none;
+  animation: none;
+}
+
+/* Login dark-mode cleanup: the old crystal facet layer crosses the
+   new galaxy backdrop and creates distracting diagonal bands INSIDE the card.
+   Keep the original card, fields, actions and focus treatment unchanged. */
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-auth-stage__panel.ys-material-surface::before {
+  display: none;
+  content: none;
+}
+/* The pre-galaxy rotating conic glow behind the stage is obsolete as well.
+   This rule is login-only; Register / Recovery keep their existing motion. */
+:root.dark .customer-app .customer-auth-page--login .customer-auth-stage::before {
+  display: none;
+  content: none;
+  animation: none;
+}
+
+/* Avoid global control styling overriding intentional product photo backgrounds. */
+:root.dark .customer-app .customer-product-card__media,
+:root.dark .customer-app .customer-product-detail__media {
+  color-scheme: light;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root.dark .customer-app .customer-auth-page--recovery::before,
+  :root.dark .customer-app .customer-auth-page--recovery::after,
+  :root.dark .customer-app .customer-auth-page--login::before,
+  :root.dark .customer-app .customer-auth-page--login::after {
+    animation: none;
+  }
+}
+
+/* Recovery Identify → Verify → Secure (+ completion) uses the very same
+   dark galaxy canvas as Trending → Essentials, Shop, Account and Sign In.
+   Overrides the old !important pastel/glass-flow wallpaper on the shared
+   recovery wrapper. Keep Light Mode and the auth card itself untouched. */
+.customer-app .customer-auth-page--recovery__artwork {
+  display: none;
+}
+:root.dark .customer-app .customer-auth-page--recovery.ys-glass-flow-background {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #101827 !important;
+  background-image:
+    linear-gradient(
+      to bottom,
+      #101827 0,
+      transparent 145px,
+      transparent calc(100% - 220px),
+      #101827 100%
+    ),
+    var(--storefront-galaxy-background) !important;
+  background-size: auto !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+  background-blend-mode: normal !important;
+}
+:root.dark .customer-app .customer-auth-page--recovery__artwork {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+}
+:root.dark .customer-app .customer-auth-page--recovery__cosmos {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+:root.dark .customer-app .customer-auth-page--recovery > .customer-auth-stage {
+  position: relative;
+  z-index: 1;
+}
+/* Old recovery-only animated ambient blobs interfere with the new starfield.
+   The verified stepper, form and card visuals remain unchanged. */
+:root.dark .customer-app .customer-auth-page--recovery::before,
+:root.dark .customer-app .customer-auth-page--recovery::after {
+  content: none;
+  animation: none;
+}
+
+/* Recovery contrast guards: Verify cooldown and Secure completion.
+   The generic dark auth button text is dark (#10192d), and the recovery
+   stylesheet applies 0.48 opacity to disabled resend buttons. Both become
+   unreadable on dark surfaces. Do not change the cooldown/verification logic. */
+:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-resend > span {
+  color: #d4deec;
+  opacity: 1;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--recovery
+  .customer-recovery-resend
+  .customer-recovery-secondary {
+  color: #e7dfff;
+  background: #303d60;
+  border-color: #8878ce;
+  opacity: 1;
+  text-shadow: none;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--recovery
+  .customer-recovery-resend
+  .customer-recovery-secondary:disabled {
+  color: #b8c6dc;
+  background: #25344d;
+  border-color: #526483;
+  opacity: 1;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--recovery
+  .customer-recovery-resend
+  .customer-recovery-secondary:hover:not(:disabled) {
+  color: #fff0ff;
+  background: #3d4673;
+  border-color: #b0a1ec;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--recovery
+  .customer-recovery-resend
+  .customer-recovery-secondary:focus-visible {
+  outline: 2px solid #b8a9fa;
+  outline-offset: 3px;
+}
+
+/* Completion is a dark frosted status card, not an opaque pastel strip.
+   Use explicit accessible colors for its title and supporting explanation;
+   leave the light-mode confirmation appearance and all stage logic untouched. */
+:root.dark .customer-app .customer-auth-page--recovery .customer-recovery-status--success {
+  background: linear-gradient(135deg, #293a56 0%, #24334b 100%);
+  border: 1px solid #6982a3;
+  color: #eff3ff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%);
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--recovery
+  .customer-recovery-status--success
+  > div
+  > strong {
+  color: #f2f5ff;
+  opacity: 1;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--recovery
+  .customer-recovery-status--success
+  > div
+  > span {
+  color: #cbd8ec;
+  opacity: 1;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--recovery
+  .customer-recovery-status--success
+  > .customer-recovery-status__icon {
+  background: #3b4470;
+  color: #c7bcff;
+}
+
+/* Register uses the exact same approved Trending → Essentials, Shop and
+   Recovery galaxy background. Override the legacy !important silk wallpaper
+   only for Register dark mode: no repeated bitmap, cropping or stretching. */
+.customer-app .customer-auth-page--register__artwork {
+  display: none;
+}
+:root.dark .customer-app .customer-auth-page--register.ys-glass-flow-background {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #101827 !important;
+  background-image:
+    linear-gradient(
+      to bottom,
+      #101827 0,
+      transparent 145px,
+      transparent calc(100% - 220px),
+      #101827 100%
+    ),
+    var(--storefront-galaxy-background) !important;
+  background-size: auto !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+  background-blend-mode: normal !important;
+}
+:root.dark .customer-app .customer-auth-page--register__artwork {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+}
+:root.dark .customer-app .customer-auth-page--register__cosmos {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+:root.dark .customer-app .customer-auth-page--register > .customer-auth-stage {
+  position: relative;
+  z-index: 1;
+}
+/* Suppress only Register's old shader blobs, inner crystal facets and
+   oversized stage glow. Keep the form, frosted panel and light mode intact. */
+:root.dark .customer-app .customer-auth-page--register::before,
+:root.dark .customer-app .customer-auth-page--register::after,
+:root.dark .customer-app .customer-auth-page--register .customer-auth-stage::before,
+:root.dark
+  .customer-app
+  .customer-auth-page--register
+  .customer-auth-stage__panel.ys-material-surface::before {
+  content: none;
+  display: none;
+  animation: none;
+}
+/* The provider buttons are intentionally near-white. The generic dark-auth
+   helper text colors are too pale against them; use slate, not lavender-white. */
+:root.dark
+  .customer-app
+  .customer-auth-page--register
+  .customer-social-auth__button
+  > span:last-child
+  small {
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 700;
+  opacity: 1;
+}
+
+/* Support uses the same continuous CSS galaxy and proportional vector as
+   the approved Trending -> Everyday Essentials canvas. Do not reuse a capped,
+   repeating bitmap or stretch the starfield over changing FAQ/form height. */
+.customer-app .customer-support-page__artwork {
+  display: none;
+}
+:root.dark .customer-app .customer-support-page {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #101827;
+  background-image:
+    linear-gradient(
+      to bottom,
+      #101827 0,
+      transparent 145px,
+      transparent calc(100% - 220px),
+      #101827 100%
+    ),
+    var(--storefront-galaxy-background) !important;
+  background-size: auto !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+}
+:root.dark .customer-app .customer-support-page__artwork {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+}
+:root.dark .customer-app .customer-support-page__cosmos {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+:root.dark .customer-app .customer-support-page > :not(.customer-support-page__artwork) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Keep the existing light-mode Support hero untouched. The shared category
+   backdrop is visible only when the storefront dark theme is selected. */
+.customer-app .customer-support-hero > .home-categories__backdrop {
+  display: none;
+}
+:root.dark .customer-app .customer-support-hero > .home-categories__backdrop {
+  display: block;
+}
+
+/* The first Support section uses the exact Shop by Category dark backdrop:
+   shared CSS gradients plus the proportional SVG lines/dots in the page markup.
+   No independent orbital bitmap or stretched shader layer. */
+:root.dark .customer-app .customer-support-hero {
+  background: var(--storefront-category-background) !important;
+  border-bottom-color: transparent;
+}
+:root.dark .customer-app .customer-support-hero::before,
+:root.dark .customer-app .customer-support-hero::after {
+  content: none;
+  display: none;
+}
+:root.dark .customer-app .customer-support-hero__grid {
+  position: relative;
+  z-index: 1;
+}
+
+/* Text contrast: the original FAQ titles (#30384e) and operations chip
+   (#4e5a75) were dark-on-dark. Keep dark-mode focus/disabled controls legible. */
+:root.dark .customer-app .customer-support-section-heading > span {
+  border: 1px solid #667b9b;
+  background: #293a54;
+  color: #e5edfb;
+}
+:root.dark .customer-app .customer-support-section-heading > span svg {
+  color: #adbbf3;
+}
+:root.dark .customer-app .customer-support-faq summary {
+  color: #e3eaf9;
+}
+:root.dark .customer-app .customer-support-faq summary::after {
+  color: #c6b5ff;
+}
+:root.dark .customer-app .customer-support-faq details p {
+  color: #c5d2e6;
+}
+:root.dark .customer-app .customer-support-faq summary:focus-visible {
+  outline: 2px solid #b8a9fa;
+  outline-offset: 3px;
+  border-radius: 0.85rem;
+}
+:root.dark .customer-app .customer-support-reference span {
+  color: #b8c6dd;
+}
+
+/* Privacy & Cookies hero: reuse the Storefront category background and vector
+   from Shop by Category / Customer Support; leave the galaxy reading area and
+   existing light-mode Privacy page unchanged. */
+.customer-app .customer-privacy-hero > .home-categories__backdrop {
+  display: none;
+}
+:root.dark .customer-app .customer-privacy-hero > .home-categories__backdrop {
+  display: block;
+}
+:root.dark .customer-app .customer-privacy-hero {
+  background: var(--storefront-category-background) !important;
+  border-bottom-color: transparent;
+}
+:root.dark .customer-app .customer-privacy-hero::before,
+:root.dark .customer-app .customer-privacy-hero::after {
+  content: none;
+  display: none;
+}
+
+/* Privacy main content: reuse the exact Trending-to-Essentials galaxy */
+/* Original SVG is preserved proportionally; no raster cover/stretch or tiling.
+   Header/hero stays on the Shop by Category background above this body. */
+.customer-app .customer-privacy-body__artwork {
+  display: none;
+}
+:root.dark .customer-app .customer-privacy-body {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #17243c;
+  background-image: var(--storefront-galaxy-background);
+  background-size: auto;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+:root.dark .customer-app .customer-privacy-body__artwork {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 112px,
+    #000 90%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(to bottom, transparent 0, #000 112px, #000 90%, transparent 100%);
+}
+:root.dark .customer-app .customer-privacy-body__cosmos {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+:root.dark .customer-app .customer-privacy-body > .customer-privacy-layout {
+  position: relative;
+  z-index: 1;
+}
+
+/* Sprint 11 customer profile: late premium light-theme ID selectors otherwise
+   turn the address labels and session status heading nearly black in dark mode.
+   Restrict to the storefront account route; preserve original Light Mode styles. */
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  #profile-panel
+  :is(
+    .customer-account-address-form,
+    .customer-account-inline-action-form,
+    .customer-account-contact-card
+  )
+  label,
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  #profile-panel
+  :is(
+    .customer-account-address-form,
+    .customer-account-inline-action-form,
+    .customer-account-contact-card
+  )
+  label
+  > span,
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  #profile-panel
+  .customer-account-address-form
+  label
+  > span
+  small,
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  #profile-panel
+  :is(.customer-account-address-heading span, .customer-account-info-card > span) {
+  color: #d1dcef;
+}
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  #profile-panel
+  .customer-account-address-heading
+  p,
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  #profile-panel
+  :is(.customer-account-info-card small, .customer-account-contact-card > small) {
+  color: #bfcde2;
+}
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  .customer-account-session-empty {
+  background: #24334a;
+  border-color: #687995;
+}
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  .customer-account-session-empty
+  strong {
+  color: #eef3ff;
+}
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  .customer-account-session-empty
+  span {
+  color: #cbd7e9;
+}
+:root.dark[data-appearance-scope="storefront"]
+  .customer-app
+  .customer-account-page-v2
+  .customer-account-session-empty
+  > svg {
+  color: #ada2ff;
+}
+
+/* Sprint 11 — Email Quick Sign (address + 6-digit code).
+   Its reference skin and mobile-auth fallback were light-only, so the inner
+   stage, OTP slots and code-sent notice stayed pastel inside the dark login.
+   Scope to this flow; Google buttons, light mode and auth behavior stay intact. */
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign.customer-mobile-auth {
+  background: linear-gradient(155deg, #1b2a43, #202e48 70%, #242a49);
+  border: 1px solid #607492;
+  border-radius: 1.1rem;
+  box-shadow:
+    0 18px 42px rgb(4 10 26 / 22%),
+    inset 0 1px 0 rgb(194 207 255 / 6%);
+  color: #edf3ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__intro
+  h2 {
+  color: #f3f6ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__eyebrow {
+  color: #c2b7ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__intro
+  > p:last-child {
+  color: #c8d6ec;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  :is(.customer-auth-field > span:first-child, .customer-verification-code__label) {
+  color: #ebf2ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-auth-field
+  input[type="email"] {
+  background: #15233b;
+  border-color: #7186a6;
+  color: #f0f5ff;
+  box-shadow: inset 0 1px 0 rgb(203 213 255 / 5%);
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-auth-field
+  input[type="email"]::placeholder {
+  color: #b9c9e1;
+  opacity: 1;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-auth-field
+  input[type="email"]:focus-visible {
+  border-color: #b6a8ff;
+  outline: 2px solid #b6a8ff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgb(163 146 255 / 13%);
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-verification-code__slot {
+  border-color: #7183a1;
+  background: linear-gradient(160deg, #273953, #1d2b44);
+  color: #f5f7ff;
+  box-shadow:
+    0 8px 18px rgb(4 10 26 / 17%),
+    inset 0 1px 0 rgb(210 221 255 / 6%);
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-verification-code__slot::before {
+  background: linear-gradient(145deg, rgb(213 206 255 / 5%), transparent 62%);
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-verification-code__slot[data-active="true"] {
+  border-color: transparent;
+  background:
+    linear-gradient(145deg, #293c5a, #232e4d) padding-box,
+    linear-gradient(135deg, #6fa7ff, #a28bff 55%, #e178bf) border-box;
+  color: #ffffff;
+  box-shadow:
+    0 0 0 3px rgb(168 155 255 / 17%),
+    0 12px 26px rgb(4 10 26 / 22%);
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-verification-code__hint {
+  color: #bfcee5;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__remember {
+  background: #253651;
+  border: 1px solid #657a99;
+  box-shadow: inset 0 1px 0 rgb(202 216 255 / 6%);
+  color: #edf3ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__remember
+  > span {
+  color: #edf3ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__remember
+  small {
+  color: #c2d0e6;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__remember
+  input[type="checkbox"] {
+  accent-color: #9b8bfa;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__status {
+  background: #293956;
+  border-color: #6a7c9a;
+  color: #d2dff2;
+  box-shadow: inset 0 1px 0 rgb(203 213 255 / 5%);
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__status-icon {
+  background: #41396c;
+  color: #d6ccff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__status
+  strong {
+  color: #f0f4ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__status
+  span:not(.customer-email-quick-sign__status-icon) {
+  color: #c6d4ea;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__form
+  > .customer-auth-submit {
+  background: linear-gradient(115deg, #245fd1, #5540bd 48%, #932876);
+  border-color: rgb(191 189 255 / 42%);
+  color: #ffffff;
+  text-shadow: 0 1px 1px rgb(9 13 34 / 30%);
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__form
+  > .customer-auth-submit:disabled {
+  opacity: 0.72;
+  color: #f2f4ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  :is(.customer-mobile-auth__countdown, .customer-email-quick-sign__back) {
+  color: #c4d2e9;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-mobile-auth__secondary {
+  color: #bcb0ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  :is(.customer-mobile-auth__secondary, .customer-email-quick-sign__back):hover:not(:disabled) {
+  color: #ffffff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-auth-alert {
+  background: #492e42;
+  border-color: #b07e9c;
+  color: #ffe0ed;
+}

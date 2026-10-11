@@ -38,6 +38,7 @@ function toSafeCustomer(customer: CustomerAccount): SafeCustomer {
     username: customer.username,
     email: customer.email,
     phone: customer.phone,
+    defaultContactPhone: customer.defaultContactPhone,
     status: customer.status
   };
 }

@@ -1,11 +1,12 @@
-import { RestockOrderStatus, RestockRecommendationSource } from "@prisma/client";
+import { Prisma, RestockOrderStatus, RestockRecommendationSource } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import { listRestockPlanningCandidates } from "./restockPlanningService.js";
-import { approveRestockOrder, createRestockOrder } from "./restockService.js";
+import { assessProcurementSafety, exceedsRestockOrderBudget } from "./restockProcurementSafety.js";
+import { createRestockOrder } from "./restockService.js";
 
 const AUTOMATION_PAGE_SIZE = 100;
-const DEFAULT_RECONCILE_INTERVAL_MS = 30_000;
+const DEFAULT_RECONCILE_INTERVAL_MS = 60 * 60_000;
 const MANILA_OFFSET_MS = 8 * 60 * 60 * 1000;
 const MONTH_ABBREVIATIONS = [
   "JAN",
@@ -21,11 +22,6 @@ const MONTH_ABBREVIATIONS = [
   "NOV",
   "DEC"
 ] as const;
-const EXTENDABLE_BATCH_STATUSES = new Set<RestockOrderStatus>([
-  RestockOrderStatus.DRAFT,
-  RestockOrderStatus.APPROVED,
-  RestockOrderStatus.AWAITING_DELIVERY
-]);
 let inFlightAutomation: Promise<RestockAutomationResult> | null = null;
 let workerTimer: NodeJS.Timeout | null = null;
 let workerReconciliation: Promise<void> | null = null;
@@ -49,6 +45,7 @@ type RestockActionLine = {
   quantity: number;
   recommendationId: string | null;
   recommendationSource:
+    | typeof RestockRecommendationSource.SARIMA
     | typeof RestockRecommendationSource.LOW_STOCK
     | typeof RestockRecommendationSource.TARGET_STOCK;
 };
@@ -124,6 +121,7 @@ async function findAutomationActorId() {
 async function loadOperationalActionLines() {
   const lines: RestockActionLine[] = [];
   let page = 1;
+  const lineCosts: number[] = [];
 
   while (true) {
     const result = await listRestockPlanningCandidates({
@@ -136,12 +134,34 @@ async function loadOperationalActionLines() {
       const quantity = Math.max(0, Math.ceil(candidate.recommendedQuantity));
       if (quantity <= 0) continue;
       if (
+        candidate.recommendationSource !== RestockRecommendationSource.SARIMA &&
         candidate.recommendationSource !== RestockRecommendationSource.LOW_STOCK &&
         candidate.recommendationSource !== RestockRecommendationSource.TARGET_STOCK
       ) {
         continue;
       }
 
+      const verdict = assessProcurementSafety({
+        requestedQuantity: quantity,
+        monthlyPosDemand: candidate.stockHealth.monthlyDemand,
+        posConfidence: candidate.stockHealth.confidence,
+        sellableStock: candidate.sellableStock,
+        incomingStock: candidate.incomingStock,
+        expiryRiskQuantity: candidate.expiryRiskQuantity,
+        unitCost: candidate.product.unitCost,
+        recommendationSource: candidate.recommendationSource,
+        targetStockLevel: candidate.product.targetStockLevel,
+        approvedTargetStockLevel: candidate.product.approvedTargetStockLevel,
+        targetApprovalById: candidate.product.targetApprovalById,
+        targetApprovedAt: candidate.product.targetApprovedAt
+      });
+      if (!verdict.safe) {
+        console.warn(
+          `[restock] Holding automated recommendation for ${candidate.product.sku}: ${verdict.reason}. Owner review required.`
+        );
+        continue;
+      }
+      lineCosts.push(verdict.lineCostPHP);
       lines.push({
         productId: candidate.product.id,
         quantity,
@@ -150,7 +170,15 @@ async function loadOperationalActionLines() {
       });
     }
 
-    if (page >= result.meta.totalPages) return lines;
+    if (page >= result.meta.totalPages) {
+      if (exceedsRestockOrderBudget(lineCosts)) {
+        console.warn(
+          "[restock] Monthly automated recommendations exceed the purchase budget. No draft was created or updated."
+        );
+        return [];
+      }
+      return lines;
+    }
     page += 1;
   }
 }
@@ -196,191 +224,36 @@ function findMonthlyBatch(orders: RestockTicketIdentity[], batch: MonthlyBatchId
   return orders.find((order) => isMonthlyAutomatedTicket(order, batch)) ?? null;
 }
 
-async function appendActionLinesToMonthlyBatch(
-  batchOrder: RestockTicketIdentity,
-  actionLines: RestockActionLine[]
-) {
-  if (!EXTENDABLE_BATCH_STATUSES.has(batchOrder.status) || actionLines.length === 0) {
-    return batchOrder;
-  }
-
-  const updated = await prisma.$transaction(async (tx) => {
-    const current = await tx.restockOrder.findUnique({
-      select: {
-        id: true,
-        lines: {
-          select: {
-            id: true,
-            productId: true,
-            receivedQuantity: true,
-            recommendationId: true,
-            recommendationSource: true,
-            recommendedQuantity: true,
-            requestedQuantity: true
-          }
-        },
-        status: true,
-        version: true
-      },
-      where: { id: batchOrder.id }
-    });
-
-    if (!current || !EXTENDABLE_BATCH_STATUSES.has(current.status)) return null;
-    if (current.lines.some((line) => line.receivedQuantity > 0)) return null;
-
-    const existingByProduct = new Map(current.lines.map((line) => [line.productId, line]));
-    const recommendationIds: string[] = [];
-
-    for (const line of actionLines) {
-      const existing = existingByProduct.get(line.productId);
-      if (line.recommendationId) recommendationIds.push(line.recommendationId);
-
-      if (existing) {
-        await tx.restockOrderLine.update({
-          data: {
-            recommendationId: line.recommendationId ?? existing.recommendationId,
-            recommendedQuantity: { increment: line.quantity },
-            requestedQuantity: { increment: line.quantity }
-          },
-          where: { id: existing.id }
-        });
-        continue;
-      }
-
-      await tx.restockOrderLine.create({
-        data: {
-          isSelected: true,
-          notes: "Operational restock forecast added this line to the monthly batch.",
-          ownerOverrideReason: null,
-          productId: line.productId,
-          receivedQuantity: 0,
-          recommendationId: line.recommendationId,
-          recommendationSource: line.recommendationSource,
-          recommendedQuantity: line.quantity,
-          requestedQuantity: line.quantity,
-          restockOrderId: current.id
-        }
-      });
-    }
-
-    if (recommendationIds.length > 0 && current.status !== RestockOrderStatus.DRAFT) {
-      await tx.recommendationRecord.updateMany({
-        data: { status: "ACKNOWLEDGED" },
-        where: {
-          id: { in: recommendationIds },
-          status: "OPEN"
-        }
-      });
-    }
-
-    const order = await tx.restockOrder.update({
-      data: { version: { increment: 1 } },
-      select: {
-        createdAt: true,
-        id: true,
-        lines: {
-          select: {
-            id: true,
-            productId: true,
-            receivedQuantity: true,
-            recommendationId: true,
-            recommendationSource: true,
-            recommendedQuantity: true,
-            requestedQuantity: true
-          }
-        },
-        notes: true,
-        orderNumber: true,
-        status: true,
-        version: true
-      },
-      where: { id: current.id }
-    });
-
-    return order;
-  });
-
-  return updated ?? batchOrder;
-}
-
 async function runRestockAutomation(): Promise<RestockAutomationResult> {
   const batch = monthlyBatchIdentity();
-  const actionLines = await loadOperationalActionLines();
-
-  if (actionLines.length === 0) {
-    return { orderId: null, orderNumber: null, status: "NO_ACTION" };
-  }
-
+  // Snapshot-first: an existing month is immutable, even after worker restarts.
+  // Do not rerun the forecast or mutate the Owner's saved draft on refresh.
   const monthOrders = await loadAutomatedTicketsForMonth(batch);
   const monthlyOrder = findMonthlyBatch(monthOrders, batch);
 
   if (monthlyOrder) {
-    if (monthlyOrder.status === RestockOrderStatus.CANCELLED) {
-      console.info(
-        `[restock] ${batch.monthKey} automation remains suppressed by cancelled batch ${monthlyOrder.orderNumber}.`
-      );
-      return {
-        orderId: monthlyOrder.id,
-        orderNumber: monthlyOrder.orderNumber,
-        status: "CANCELLED"
-      };
-    }
-
-    if (
-      monthlyOrder.status === RestockOrderStatus.PARTIALLY_RECEIVED ||
-      monthlyOrder.status === RestockOrderStatus.RECEIVED
-    ) {
-      console.info(
-        `[restock] ${batch.monthKey} monthly batch ${monthlyOrder.orderNumber} has already started receiving; no second automated ticket will be created this month.`
-      );
-      return {
-        orderId: monthlyOrder.id,
-        orderNumber: monthlyOrder.orderNumber,
-        status: "EXISTING"
-      };
-    }
-
-    const actorId =
-      monthlyOrder.status === RestockOrderStatus.DRAFT ? await findAutomationActorId() : null;
-    if (monthlyOrder.status === RestockOrderStatus.DRAFT && !actorId) {
-      console.warn("[restock] No active user is available to approve the monthly restock batch.");
-      return {
-        orderId: monthlyOrder.id,
-        orderNumber: monthlyOrder.orderNumber,
-        status: "NO_ACTOR"
-      };
-    }
-
-    const merged = await appendActionLinesToMonthlyBatch(monthlyOrder, actionLines);
-    if (merged.status === RestockOrderStatus.DRAFT && actorId) {
-      const approved = await approveRestockOrder(
-        merged.id,
-        { expectedVersion: merged.version },
-        actorId
-      );
-      console.info(
-        `[restock] Updated and auto-approved monthly batch ${approved.orderNumber} for ${batch.monthKey}.`
-      );
-      return { orderId: approved.id, orderNumber: approved.orderNumber, status: "UPDATED" };
-    }
-
-    console.info(
-      `[restock] Added ${actionLines.length} replenishment line(s) to monthly batch ${merged.orderNumber}.`
-    );
-    return { orderId: merged.id, orderNumber: merged.orderNumber, status: "UPDATED" };
+    return {
+      orderId: monthlyOrder.id,
+      orderNumber: monthlyOrder.orderNumber,
+      status: monthlyOrder.status === RestockOrderStatus.CANCELLED ? "CANCELLED" : "EXISTING"
+    };
   }
 
   const legacyOrders = monthOrders.filter(isLegacyAutomatedTicket);
   if (legacyOrders.length > 0) {
     const latestLegacy = legacyOrders.at(-1)!;
-    console.info(
-      `[restock] ${batch.monthKey} already contains ${legacyOrders.length} legacy automated ticket(s). Monthly batching will not create another ticket in this month.`
-    );
     return {
       orderId: latestLegacy.id,
       orderNumber: latestLegacy.orderNumber,
       status: latestLegacy.status === RestockOrderStatus.CANCELLED ? "CANCELLED" : "EXISTING"
     };
+  }
+
+  // First run of a new month only: assess the complete eligible product list.
+  // The result becomes an Owner-review draft with a DB-unique monthly identity.
+  const actionLines = await loadOperationalActionLines();
+  if (actionLines.length === 0) {
+    return { orderId: null, orderNumber: null, status: "NO_ACTION" };
   }
 
   const actorId = await findAutomationActorId();
@@ -392,41 +265,55 @@ async function runRestockAutomation(): Promise<RestockAutomationResult> {
   }
 
   const totalUnits = actionLines.reduce((sum, line) => sum + line.quantity, 0);
-  const order = await createRestockOrder(
-    {
-      notes: `${batch.marker} Automatically generated monthly batch from the operational restock forecast.`,
-      lines: actionLines.map((line) => ({
-        isSelected: true,
-        notes: "Operational restock forecast generated this replenishment line.",
-        ownerOverrideReason: null,
-        productId: line.productId,
-        recommendationId: line.recommendationId,
-        recommendationSource: line.recommendationSource,
-        recommendedQuantity: line.quantity,
-        requestedQuantity: line.quantity
-      }))
-    },
-    actorId
-  );
-
-  const renamed = await prisma.restockOrder.update({
-    data: { orderNumber: batch.orderNumber },
-    select: { id: true, orderNumber: true, version: true },
-    where: { id: order.id }
-  });
-  const approved = await approveRestockOrder(
-    renamed.id,
-    { expectedVersion: renamed.version },
-    actorId
-  );
+  const previousMonth = new Date(batch.monthStart.getTime() - 86_400_000);
+  const sourceMonth = new Date(previousMonth.getTime() + MANILA_OFFSET_MS)
+    .toISOString()
+    .slice(0, 7);
+  let order: Awaited<ReturnType<typeof createRestockOrder>>;
+  try {
+    // Unique orderNumber is claimed in the create transaction, not by a later rename.
+    order = await createRestockOrder(
+      {
+        notes: `${batch.marker} [RestockSourceMonth:${sourceMonth}] Frozen forecast-driven multi-product batch; Owner approval required.`,
+        lines: actionLines.map((line) => ({
+          isSelected: true,
+          notes: "Inventory Recommender generated this forecast-driven replenishment line.",
+          ownerOverrideReason: null,
+          productId: line.productId,
+          recommendationId: line.recommendationId,
+          recommendationSource: line.recommendationSource,
+          recommendedQuantity: line.quantity,
+          requestedQuantity: line.quantity
+        }))
+      },
+      actorId,
+      batch.orderNumber
+    );
+  } catch (error) {
+    // Multi-process race: one server already created the uniquely named batch.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      const competing = await prisma.restockOrder.findUnique({
+        select: { id: true, orderNumber: true, status: true },
+        where: { orderNumber: batch.orderNumber }
+      });
+      if (competing) {
+        return {
+          orderId: competing.id,
+          orderNumber: competing.orderNumber,
+          status: competing.status === RestockOrderStatus.CANCELLED ? "CANCELLED" : "EXISTING"
+        };
+      }
+    }
+    throw error;
+  }
 
   console.info(
-    `[restock] Created monthly batch ${approved.orderNumber} with ${actionLines.length} product(s), ${totalUnits} unit(s), and auto-approved it for Receiving.`
+    `[restock] Created owner-review monthly plan ${order.orderNumber} with ${actionLines.length} product(s) and ${totalUnits} recommended unit(s). Approval is required before Receiving.`
   );
 
   return {
-    orderId: approved.id,
-    orderNumber: approved.orderNumber,
+    orderId: order.id,
+    orderNumber: order.orderNumber,
     status: "CREATED"
   };
 }

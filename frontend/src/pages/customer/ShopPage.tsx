@@ -1,8 +1,16 @@
 import { ArrowLeft, ArrowRight, Search, SlidersHorizontal } from "lucide-react";
-import { useCallback, useEffect, useState, type CSSProperties, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FormEvent
+} from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { ProductCard } from "@/components/customer/ProductCard";
+import { ShopCatalogBackdrop } from "@/components/customer/ShopCatalogBackdrop";
 import { useRevealOnView } from "@/hooks/useRevealOnView";
 import { fetchStorefrontCategories, fetchStorefrontProducts } from "@/services/storefrontService";
 import type {
@@ -12,7 +20,11 @@ import type {
 } from "@/types/storefront";
 
 const SEARCH_DEBOUNCE_MS = 350;
+const CATALOG_EXIT_DURATION_MS = 120;
+const CATALOG_REFRESH_LOADER_DELAY_MS = 180;
+const CATALOG_ENTER_DURATION_MS = 260;
 type AvailabilityFilter = "all" | "in-stock" | "out-of-stock";
+type CatalogTransitionPhase = "idle" | "exiting" | "entering";
 
 export function ShopPage({
   categorySlug,
@@ -43,6 +55,9 @@ export function ShopPage({
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showRefreshLoader, setShowRefreshLoader] = useState(false);
+  const [catalogTransition, setCatalogTransition] = useState<CatalogTransitionPhase>("idle");
+  const displayedProductsRef = useRef<StorefrontProduct[]>([]);
   const introReveal = useRevealOnView<HTMLElement>({
     rootMargin: "0px 0px -12% 0px",
     threshold: 0.2
@@ -66,8 +81,23 @@ export function ShopPage({
 
   useEffect(() => {
     const controller = new AbortController();
+    const hasDisplayedProducts = displayedProductsRef.current.length > 0;
+    const transitionStartedAt = performance.now();
+    let loaderTimer: number | null = null;
+    let swapTimer: number | null = null;
+    let enterTimer: number | null = null;
+
     setLoading(true);
     setError("");
+    setShowRefreshLoader(false);
+    setCatalogTransition(hasDisplayedProducts ? "exiting" : "idle");
+
+    if (hasDisplayedProducts) {
+      loaderTimer = window.setTimeout(() => {
+        if (!controller.signal.aborted) setShowRefreshLoader(true);
+      }, CATALOG_REFRESH_LOADER_DELAY_MS);
+    }
+
     Promise.all([
       fetchStorefrontCategories(controller.signal),
       fetchStorefrontProducts(
@@ -82,18 +112,57 @@ export function ShopPage({
       )
     ])
       .then(([nextCategories, result]) => {
+        if (controller.signal.aborted) return;
+
         setCategories(nextCategories);
-        setProducts(result.items);
-        setMeta(result.meta);
+
+        const elapsed = performance.now() - transitionStartedAt;
+        const swapDelay = hasDisplayedProducts
+          ? Math.max(0, CATALOG_EXIT_DURATION_MS - elapsed)
+          : 0;
+
+        swapTimer = window.setTimeout(() => {
+          if (controller.signal.aborted) return;
+          if (loaderTimer !== null) {
+            window.clearTimeout(loaderTimer);
+            loaderTimer = null;
+          }
+
+          displayedProductsRef.current = result.items;
+          setProducts(result.items);
+          setMeta(result.meta);
+          setShowRefreshLoader(false);
+          setLoading(false);
+
+          if (result.items.length) {
+            setCatalogTransition("entering");
+            enterTimer = window.setTimeout(
+              () => setCatalogTransition("idle"),
+              CATALOG_ENTER_DURATION_MS
+            );
+          } else {
+            setCatalogTransition("idle");
+          }
+        }, swapDelay);
       })
       .catch((reason: unknown) => {
-        if (!controller.signal.aborted)
-          setError(reason instanceof Error ? reason.message : "Products could not be loaded.");
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
+        if (controller.signal.aborted) return;
+        if (loaderTimer !== null) {
+          window.clearTimeout(loaderTimer);
+          loaderTimer = null;
+        }
+        setShowRefreshLoader(false);
+        setCatalogTransition("idle");
+        setLoading(false);
+        setError(reason instanceof Error ? reason.message : "Products could not be loaded.");
       });
-    return () => controller.abort();
+
+    return () => {
+      controller.abort();
+      if (loaderTimer !== null) window.clearTimeout(loaderTimer);
+      if (swapTimer !== null) window.clearTimeout(swapTimer);
+      if (enterTimer !== null) window.clearTimeout(enterTimer);
+    };
   }, [availabilityParam, categorySlug, pageParam, searchParam]);
 
   const activeCategory = categories.find((category) => category.slug === categorySlug);
@@ -145,6 +214,53 @@ export function ShopPage({
         className={`customer-shop-heading shop-motion-intro ${introReveal.isVisible ? "is-visible" : ""}`}
         ref={introReveal.ref}
       >
+        <div aria-hidden="true" className="customer-shop-heading__backdrop">
+          <svg focusable="false" preserveAspectRatio="none" viewBox="0 0 1600 420">
+            <defs>
+              <linearGradient id="shopHeroWaveBlue" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0%" stopColor="var(--shop-hero-blue)" />
+                <stop offset="100%" stopColor="var(--shop-hero-blue-soft)" />
+              </linearGradient>
+              <linearGradient id="shopHeroWaveViolet" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0%" stopColor="var(--shop-hero-violet-soft)" />
+                <stop offset="100%" stopColor="var(--shop-hero-violet)" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M0 262C220 312 420 302 620 252C820 204 1010 222 1190 275C1350 322 1470 318 1600 282V420H0Z"
+              fill="url(#shopHeroWaveBlue)"
+              opacity="0.34"
+            />
+            <path
+              d="M0 330C230 274 430 292 630 342C820 390 1000 365 1170 318C1350 269 1490 279 1600 308V420H0Z"
+              fill="url(#shopHeroWaveViolet)"
+              opacity="0.28"
+            />
+            <path
+              d="M-40 188C210 365 480 384 760 292C1000 214 1220 224 1640 94"
+              fill="none"
+              stroke="var(--shop-hero-line)"
+              strokeLinecap="round"
+              strokeWidth="2.4"
+              opacity="0.72"
+            />
+            <path
+              d="M20 112C220 182 250 302 520 318C780 334 980 180 1240 132C1390 104 1515 118 1620 152"
+              fill="none"
+              stroke="var(--shop-hero-line)"
+              strokeLinecap="round"
+              strokeWidth="1.7"
+              opacity="0.5"
+            />
+            <g fill="var(--shop-hero-sparkle)" opacity="0.7">
+              <circle cx="82" cy="230" r="7" />
+              <circle cx="1385" cy="215" r="9" />
+              <circle cx="1260" cy="145" r="6" />
+              <path d="M176 177L182 190L195 196L182 202L176 215L170 202L157 196L170 190Z" />
+              <path d="M1450 92L1456 105L1469 111L1456 117L1450 130L1444 117L1431 111L1444 105Z" />
+            </g>
+          </svg>
+        </div>
         <div className="customer-container">
           <p className="customer-kicker shop-motion-intro__eyebrow">The grocery aisle, online</p>
           <h1 className="shop-motion-intro__title">
@@ -157,6 +273,7 @@ export function ShopPage({
         </div>
       </section>
       <div className="customer-container customer-shop-layout">
+        <ShopCatalogBackdrop />
         <aside
           aria-label="Shop filters"
           className={`customer-filter-panel shop-category-navigation ${categoryNavigationReveal.isVisible ? "is-visible" : ""}`}
@@ -189,7 +306,11 @@ export function ShopPage({
           ))}
         </aside>
 
-        <section className="customer-shop-results" aria-labelledby="shop-results-title">
+        <section
+          aria-busy={loading}
+          aria-labelledby="shop-results-title"
+          className="customer-shop-results"
+        >
           <form
             className={`customer-shop-toolbar shop-motion-controls ${controlsReveal.isVisible ? "is-visible" : ""}`}
             onSubmit={submit}
@@ -256,15 +377,23 @@ export function ShopPage({
               </button>
             </div>
           ) : null}
-          {!error && loading ? (
+          {!error && loading && !products.length ? (
             <div className="customer-product-grid customer-product-grid--loading">
               {Array.from({ length: 8 }, (_, index) => (
                 <div className="customer-product-skeleton" key={index} />
               ))}
             </div>
           ) : null}
-          {!error && !loading && products.length ? (
-            <ShopProductGrid navigate={navigate} products={products} />
+          {!error && products.length ? (
+            <div className="shop-product-grid-shell">
+              <ShopProductGrid
+                isEntering={catalogTransition === "entering"}
+                isRefreshing={catalogTransition === "exiting"}
+                navigate={navigate}
+                products={products}
+              />
+              <ShopCatalogRefreshLoader visible={showRefreshLoader} />
+            </div>
           ) : null}
           {!error && !loading && !products.length ? (
             <div className="customer-empty-state">
@@ -305,14 +434,20 @@ export function ShopPage({
 }
 
 function ShopProductGrid({
+  isEntering,
+  isRefreshing,
   navigate,
   products
 }: {
+  isEntering: boolean;
+  isRefreshing: boolean;
   navigate: (path: string) => void;
   products: StorefrontProduct[];
 }) {
   return (
-    <div className="customer-product-grid shop-product-grid is-visible">
+    <div
+      className={`customer-product-grid shop-product-grid is-visible${isRefreshing ? " is-refreshing" : ""}${isEntering ? " is-entering" : ""}`}
+    >
       {products.map((product, index) => (
         <div
           className="shop-product-reveal"
@@ -322,6 +457,31 @@ function ShopProductGrid({
           <ProductCard navigate={navigate} product={product} />
         </div>
       ))}
+    </div>
+  );
+}
+
+function ShopCatalogRefreshLoader({ visible }: { visible: boolean }) {
+  return (
+    <div aria-hidden="true" className={`shop-catalog-refresh${visible ? " is-visible" : ""}`}>
+      <span className="shop-catalog-refresh__label">Updating aisle…</span>
+      <div className="customer-product-grid shop-catalog-refresh__grid">
+        {Array.from({ length: 6 }, (_, index) => (
+          <div className="shop-catalog-refresh__card" key={index}>
+            <div className="shop-catalog-refresh__media" />
+            <div className="shop-catalog-refresh__body">
+              <span className="shop-catalog-refresh__line shop-catalog-refresh__line--eyebrow" />
+              <span className="shop-catalog-refresh__line shop-catalog-refresh__line--title" />
+              <span className="shop-catalog-refresh__line shop-catalog-refresh__line--meta" />
+              <span className="shop-catalog-refresh__line shop-catalog-refresh__line--price" />
+              <div className="shop-catalog-refresh__actions">
+                <span />
+                <span />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

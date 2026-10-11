@@ -12,12 +12,21 @@
 | YSB-M3-BE-001  | 2026-06-29 | Backend Prisma boundary support                      | `backend/src/database/prismaClient.ts`, `backend/src/controllers/healthController.ts`            | Sprint branch `dd53be7`                  | Backend build and Prisma validation passed on 2026-06-29.            |
 | YSB-M3-DOC-001 | 2026-06-29 | M3 artifact reconstruction and migration naming rule | `docs/implementation-artifacts/m3-vito/**`, `database/docs/**`                                   | Current documentation-only work          | Final validation pending after docs update.                          |
 
+## Sprint 11 Customer Support Integration
+
+- Branch: `m3/v0.11/fix/customer-support-integration`
+- Status: integrated on top of current Sprint 11 and awaiting final CI artifact verification.
+- Scope: customer support ticketing, staff support inbox, Gmail send/inbound synchronization, support routes, Prisma support models, migration convergence, and integration guardrails.
+- Preservation: current Sprint 11 PayMongo, delivery/COD, customer-profile, storefront, and About work remain authoritative.
+- Contribution history: original M3 customer-support ancestry is preserved through the integration merge parent.
+
 ## In Progress
 
 | Task ID              | Scope                                                          | Status             | Evidence                                                                               | Next Action                                           |
 | -------------------- | -------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------- | ----------------------------------------------------- |
 | YSB-M3-MIG-STD-001   | Numbered migration naming standard                             | Done               | Sprint 1 migration folder renamed to `0001_sprint_1_database_foundation`; docs updated | Validate Prisma and backend commands.                 |
 | YSB-M3-VITO-20260710 | Preserve artifact markdown templates during automation updates | Manual QA Required | sprint/v0.3/sprint-3                                                                   | Perform manual QA on the changed auth/device/UI flow. |
+| YSB-M3-VITO-20260930 | Preserve artifact markdown templates during automation updates | Manual QA Required | m3/v0.11/feat/customer-service                                                         | Perform manual QA on the changed auth/device/UI flow. |
 
 ## Pending
 

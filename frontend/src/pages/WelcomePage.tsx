@@ -5,7 +5,9 @@ import {
   EyeOff,
   LoaderCircle,
   LogIn,
+  MoonStar,
   ShieldCheck,
+  Sun,
   Trash2,
   UsersRound
 } from "lucide-react";
@@ -16,10 +18,13 @@ import type { AppRoutePath } from "@/app/routes";
 import { APP_VERSION_LABEL } from "@/config/appVersion";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { LoginResult, RememberedAccount } from "@/context/AuthContext";
+import { useAppearance } from "@/context/AppearanceContext";
+import "@/styles/welcome-appearance.css";
 import { checkSystemHealth } from "@/services/systemHealthService";
 import type { SystemHealthState } from "@/services/systemHealthService";
 import type { AuthUser } from "@/types/auth";
@@ -94,6 +99,7 @@ export function WelcomePage({
   status,
   user
 }: WelcomePageProps) {
+  const { retailTheme, setRetailTheme } = useAppearance();
   const [panelMode, setPanelMode] = useState<"remembered" | "login">(
     rememberedAccounts.length > 0 ? "remembered" : "login"
   );
@@ -427,7 +433,10 @@ export function WelcomePage({
   }
 
   return (
-    <main className="welcome-ambient auth-page-enter relative flex min-h-screen flex-col overflow-hidden text-slate-950">
+    <main className="welcome-ambient ys-retail-welcome ys-material-canvas ys-glass-flow-background auth-page-enter relative flex min-h-screen flex-col overflow-hidden text-slate-950">
+      <div aria-hidden="true" className="ys-retail-welcome__galaxy">
+        <StorefrontGalaxyArtwork className="ys-retail-welcome__cosmos" />
+      </div>
       <div className="welcome-ambient-blob left-[8%] top-[12%] h-[clamp(15rem,24vw,28rem)] w-[clamp(15rem,24vw,28rem)] bg-emerald-200" />
       <div className="welcome-ambient-blob right-[7%] top-[8%] h-[clamp(16rem,26vw,32rem)] w-[clamp(16rem,26vw,32rem)] bg-blue-200 animation-delay-7000" />
       <div className="welcome-ambient-blob bottom-[2%] left-[38%] h-[clamp(14rem,22vw,26rem)] w-[clamp(14rem,22vw,26rem)] bg-violet-200 animation-delay-14000" />
@@ -438,9 +447,30 @@ export function WelcomePage({
       </div>
 
       <div className="welcome-shell">
+        <div className="ys-retail-theme-control">
+          <span className="ys-retail-theme-control__label">Appearance</span>
+          <label className="ys-retail-theme-switch">
+            <input
+              aria-label="Dark mode for login and retail workspace"
+              checked={retailTheme === "dark"}
+              onChange={(event) => setRetailTheme(event.target.checked ? "dark" : "light")}
+              role="switch"
+              type="checkbox"
+            />
+            <span aria-hidden="true" className="ys-retail-theme-switch__track">
+              <span className="ys-retail-theme-switch__thumb">
+                <Sun className="ys-retail-theme-switch__sun" size={15} />
+                <MoonStar className="ys-retail-theme-switch__moon" size={15} />
+              </span>
+            </span>
+          </label>
+          <span aria-live="polite" className="ys-retail-theme-control__value">
+            {retailTheme === "dark" ? "Dark" : "Light"}
+          </span>
+        </div>
         <div className="welcome-content">
           <section className="auth-hero-enter max-w-[min(58vw,55rem)]">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[13px] font-semibold text-emerald-800 shadow-sm">
+            <div className="ys-retail-security-pill inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[13px] font-semibold text-emerald-800 shadow-sm">
               <ShieldCheck className="h-4 w-4 text-emerald-700" aria-hidden="true" />
               System Secure
             </div>
@@ -451,7 +481,7 @@ export function WelcomePage({
             <div className="mt-[clamp(2rem,3.5vw,3.75rem)] max-w-[clamp(34rem,44vw,48rem)]">
               {showRememberedAccounts && (error || !hasTrustedDeviceAccounts) ? (
                 <div
-                  className="auth-panel-enter rounded-md border border-emerald-100 bg-white p-4 text-sm text-emerald-800 shadow-sm"
+                  className="ys-retail-welcome-note auth-panel-enter rounded-md border border-emerald-100 bg-white p-4 text-sm text-emerald-800 shadow-sm"
                   key="remembered-panel"
                 >
                   {error && trustedDeviceMessages.has(error)
@@ -459,11 +489,11 @@ export function WelcomePage({
                     : "Saved account found. Please sign in to continue."}
                 </div>
               ) : authenticated ? (
-                <div className="rounded-md border border-emerald-100 bg-white p-4 text-sm text-emerald-800 shadow-sm">
+                <div className="ys-retail-welcome-note rounded-md border border-emerald-100 bg-white p-4 text-sm text-emerald-800 shadow-sm">
                   Authenticated as {user.name} with {user.role.toLowerCase()} access.
                 </div>
               ) : selectedRememberedAccount && panelMode === "login" ? (
-                <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
+                <div className="ys-retail-welcome-note rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
                   {selectedRememberedAccount.trustedDeviceAvailable &&
                   error &&
                   trustedDeviceMessages.has(error)
@@ -475,7 +505,7 @@ export function WelcomePage({
           </section>
 
           <Card
-            className="auth-card-enter welcome-card border-white/70 bg-white/90 shadow-xl shadow-slate-200/70 backdrop-blur-sm"
+            className="ys-retail-login-card auth-card-enter welcome-card border-white/70 bg-white/90 shadow-xl shadow-slate-200/70 backdrop-blur-sm"
             ref={cardRef}
           >
             <CardHeader>
@@ -554,7 +584,7 @@ export function WelcomePage({
               ) : (
                 <form className="space-y-[clamp(1rem,1.6vw,1.5rem)]" onSubmit={handleSubmit}>
                   {selectedRememberedAccount ? (
-                    <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
+                    <div className="ys-retail-welcome-note rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
                       {selectedRememberedAccount.trustedDeviceAvailable &&
                       error &&
                       trustedDeviceMessages.has(error)
@@ -567,7 +597,7 @@ export function WelcomePage({
                     <span>Email</span>
                     <input
                       aria-invalid={emailHasError}
-                      autoComplete="username"
+                      autoComplete="section-staff username"
                       className={cn(
                         "h-11 w-full rounded-md border bg-white px-3 text-sm text-slate-950 outline-none transition-[border-color,box-shadow,transform,background-color] duration-200 ease-out placeholder:text-slate-400 focus-visible:shadow-sm",
                         emailHasError
@@ -588,7 +618,7 @@ export function WelcomePage({
                     <div className="relative">
                       <input
                         aria-invalid={passwordHasError}
-                        autoComplete="current-password"
+                        autoComplete="section-staff current-password"
                         className={cn(
                           "h-11 w-full rounded-md border bg-white px-3 pr-11 text-sm text-slate-950 outline-none transition-[border-color,box-shadow,transform,background-color] duration-200 ease-out placeholder:text-slate-400 focus-visible:shadow-sm",
                           passwordHasError
@@ -665,7 +695,7 @@ export function WelcomePage({
           </Card>
         </div>
 
-        <footer className="auth-footer-enter welcome-footer text-[13px] font-medium text-slate-700/80">
+        <footer className="ys-retail-welcome-footer auth-footer-enter welcome-footer text-[13px] font-medium text-slate-700/80">
           <p className="min-w-0 justify-self-start whitespace-nowrap">
             YsabelleStore <span className="text-slate-500">{APP_VERSION_LABEL}</span>
           </p>
@@ -703,7 +733,7 @@ function RememberedAccountCard({
 }) {
   return (
     <div
-      className="auth-panel-enter rounded-xl border border-slate-200/80 bg-white/80 p-4 text-slate-700 shadow-sm transition-[background-color,border-color,box-shadow,transform] duration-300 ease-out"
+      className="ys-retail-known-account auth-panel-enter rounded-xl border border-slate-200/80 bg-white/80 p-4 text-slate-700 shadow-sm transition-[background-color,border-color,box-shadow,transform] duration-300 ease-out"
       style={{ animationDelay: `${enterDelayMs}ms` }}
     >
       <div className="flex items-start justify-between gap-3">
@@ -711,7 +741,7 @@ function RememberedAccountCard({
           <p className="truncate text-sm font-semibold text-slate-950">{account.name}</p>
           <p className="truncate text-xs text-slate-500">{account.email}</p>
         </div>
-        <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
+        <span className="ys-retail-role-badge shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
           {account.role}
         </span>
       </div>

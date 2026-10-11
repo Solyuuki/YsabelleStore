@@ -40,6 +40,21 @@
   height: 100%;
 }
 
+/*
+ * Carousel items must already be visually present before horizontal navigation.
+ * The generic viewport reveal is useful for vertical page entry, but hidden
+ * off-screen rail items create a white/ghost gap when the user advances right.
+ * Scope this override to product rails only so arrow motion stays symmetrical
+ * while other storefront reveal animations remain unchanged.
+ */
+.home-product-rail .home-reveal.home-reveal--product {
+  opacity: 1;
+  transform: none;
+  transition: none;
+  transition-delay: 0ms;
+  will-change: auto;
+}
+
 .home-product-rail .customer-product-card h3 {
   display: -webkit-box;
   min-height: 2.56em;
@@ -92,16 +107,28 @@
 
 .home-product-rail__control:not(:disabled):hover,
 .home-product-rail__control:not(:disabled):focus-visible {
-  border-color: transparent;
-  background: linear-gradient(135deg, var(--customer-info), var(--customer-primary));
-  box-shadow: 0 14px 32px rgb(98 91 255 / 22%);
+  border-color: rgb(255 255 255 / 82%);
+  background: linear-gradient(135deg, #8f84f7 0%, #9f83f4 48%, #c48ff0 100%);
+  box-shadow:
+    0 12px 28px rgb(122 92 235 / 24%),
+    0 0 0 2px rgb(255 255 255 / 72%),
+    0 0 26px rgb(196 143 240 / 22%);
   color: #fff;
-  transform: translateY(-50%) scale(1.05);
+  transform: translateY(-50%) scale(1.045);
+}
+
+.home-product-rail__control:not(:disabled):focus-visible {
+  outline: 3px solid rgb(98 91 255 / 28%);
+  outline-offset: 3px;
 }
 
 .home-product-rail__control:not(:disabled):active {
-  box-shadow: 0 8px 18px rgb(98 91 255 / 18%);
-  transform: translateY(-50%) scale(0.97);
+  border-color: rgb(255 255 255 / 72%);
+  background: linear-gradient(135deg, #8173ef 0%, #9274ee 48%, #b67ee8 100%);
+  box-shadow:
+    0 8px 18px rgb(122 92 235 / 20%),
+    0 0 0 2px rgb(255 255 255 / 58%);
+  transform: translateY(-50%) scale(0.98);
 }
 
 .home-product-rail__control:disabled {
@@ -110,6 +137,57 @@
   box-shadow: 0 4px 12px rgb(16 20 38 / 5%);
   cursor: default;
   opacity: 0.38;
+}
+
+/* Sprint 11 dark storefront: rail navigation must follow the midnight-violet
+   surface, including the real disabled state, without changing light mode.
+   Full-opacity dark disabled buttons avoid the washed-out translucent gray disc. */
+:root.dark .customer-app .home-product-rail__control {
+  background: #24334f;
+  border-color: #6579a0;
+  color: #e0e8fa;
+  box-shadow:
+    0 8px 20px rgb(4 10 26 / 25%),
+    inset 0 1px 0 rgb(205 215 255 / 8%);
+  /* Opaque controls do not need GPU-expensive backdrop sampling. */
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* Product favorite controls are also opaque in dark mode. */
+:root.dark .customer-app .home-product-rail .customer-product-card__favorite {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+:root.dark .customer-app .home-product-rail__control:not(:disabled):hover,
+:root.dark .customer-app .home-product-rail__control:not(:disabled):focus-visible {
+  background: linear-gradient(135deg, #4e55a6 0%, #6948bd 100%);
+  border-color: #b2a4fa;
+  color: #fff;
+  box-shadow:
+    0 10px 24px rgb(20 14 57 / 34%),
+    0 0 0 2px rgb(156 146 247 / 20%);
+}
+
+:root.dark .customer-app .home-product-rail__control:not(:disabled):focus-visible {
+  outline: 3px solid #b5a7fa;
+  outline-offset: 3px;
+}
+
+:root.dark .customer-app .home-product-rail__control:not(:disabled):active {
+  background: #4b4195;
+  border-color: #a99bea;
+  color: #fff;
+  box-shadow: 0 5px 14px rgb(10 12 34 / 30%);
+}
+
+:root.dark .customer-app .home-product-rail__control:disabled {
+  background: #1b2538;
+  border-color: #354158;
+  color: #8793a9;
+  opacity: 0.48;
+  box-shadow: none;
+  cursor: default;
 }
 
 .home-product-rail__status {

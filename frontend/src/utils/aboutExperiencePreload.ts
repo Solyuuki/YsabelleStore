@@ -1,0 +1,40 @@
+type IdleWindow = Window & {
+  requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
+  cancelIdleCallback?: (handle: number) => void;
+};
+
+function importAboutExperienceModule() {
+  return import("@/pages/customer/AboutExperiencePage");
+}
+
+let aboutModulePromise: ReturnType<typeof importAboutExperienceModule> | null = null;
+
+export function loadAboutExperienceModule() {
+  aboutModulePromise ??= importAboutExperienceModule();
+  return aboutModulePromise;
+}
+
+export function preloadAboutExperience() {
+  void loadAboutExperienceModule();
+}
+
+export function scheduleAboutExperiencePreload() {
+  const idleWindow = window as IdleWindow;
+
+  if (idleWindow.requestIdleCallback) {
+    const idleId = idleWindow.requestIdleCallback(
+      () => {
+        preloadAboutExperience();
+      },
+      { timeout: 400 }
+    );
+
+    return () => idleWindow.cancelIdleCallback?.(idleId);
+  }
+
+  const timeoutId = window.setTimeout(() => {
+    preloadAboutExperience();
+  }, 80);
+
+  return () => window.clearTimeout(timeoutId);
+}

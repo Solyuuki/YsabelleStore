@@ -29,6 +29,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { updateProduct } from "@/services/catalogApi";
 import {
   approveRestockOrder,
+  RestockOwnerWarningError,
+  type RestockOwnerWarning,
   createRestockOrder,
   dismissRestockRecommendation,
   listRestockPlanning,
@@ -38,6 +40,8 @@ import {
   type RestockPlanningCandidate,
   type RestockRecommendationSource
 } from "@/services/restockApi";
+import { parseWholeUnitQuantity } from "@/utils/wholeUnitQuantity";
+import { RestockOwnerWarnings } from "@/components/reports/RestockOwnerWarnings";
 
 const RESTOCK_PAGE_SIZE = 8;
 const CATALOG_PAGE_SIZE = 10;
@@ -62,11 +66,6 @@ type PaginationMeta = {
   totalItems: number;
   totalPages: number;
 };
-
-function asNonNegativeInteger(value: string) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? Math.max(0, Math.trunc(parsed)) : 0;
-}
 
 function makePlanLine(candidate: RestockPlanningCandidate, manual = false): PlanLine {
   const recommendedQuantity = manual ? 0 : candidate.recommendedQuantity;
@@ -179,10 +178,12 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [ownerWarnings, setOwnerWarnings] = useState<RestockOwnerWarning[]>([]);
   const [restockPage, setRestockPage] = useState(1);
   const [reviewPage, setReviewPage] = useState(1);
   const [expandedProductIds, setExpandedProductIds] = useState<Set<string>>(() => new Set());
   const confirmLockRef = useRef(false);
+  const reviewScrollRef = useRef<HTMLDivElement>(null);
 
   const resetPlanner = useCallback(() => {
     setLines([]);
@@ -195,6 +196,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
     setCatalogError(null);
     setCatalogOpen(false);
     setReviewOpen(false);
+    setOwnerWarnings([]);
     setRestockPage(1);
     setReviewPage(1);
     setExpandedProductIds(new Set());
@@ -206,6 +208,13 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
   useEffect(() => {
     resetPlanner();
   }, [resetPlanner]);
+
+  // Keep purchasing advice visible inside the bounded, internally scrolling dialog.
+  useEffect(() => {
+    if (reviewOpen && ownerWarnings.length > 0 && reviewScrollRef.current) {
+      reviewScrollRef.current.scrollTop = reviewScrollRef.current.scrollHeight;
+    }
+  }, [reviewOpen, ownerWarnings]);
 
   const selectedLines = useMemo(() => lines.filter((line) => line.isSelected), [lines]);
   const selectedCount = selectedLines.length;
@@ -445,7 +454,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
     }
   }
 
-  async function confirmRestock() {
+  async function confirmRestock(acknowledgeWarnings = false) {
     const validationError = validatePlan(lines);
     if (validationError) {
       setError(validationError);
@@ -483,7 +492,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
 
       if (!order || order.status !== "DRAFT") return;
 
-      const approved = await approveRestockOrder(order.id, order.version);
+      const approved = await approveRestockOrder(order.id, order.version, acknowledgeWarnings);
       setReviewOpen(false);
       setNotice(null);
       onOrdersChanged();
@@ -494,6 +503,10 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
       });
       await resetPlanner();
     } catch (requestError) {
+      if (requestError instanceof RestockOwnerWarningError) {
+        setOwnerWarnings(requestError.warnings);
+        return;
+      }
       const message =
         requestError instanceof Error
           ? requestError.message
@@ -518,6 +531,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
 
     setError(null);
     setReviewPage(1);
+    setOwnerWarnings([]);
     setReviewOpen(true);
   }
 
@@ -746,15 +760,18 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
                           disabled={!editable || !line.isSelected}
                           inputMode="numeric"
                           min={1}
-                          onChange={(event) =>
+                          onChange={(event) => {
+                            const quantity = parseWholeUnitQuantity(event.target.value);
+                            if (quantity === null) return;
                             updateLine(productId, (current) => ({
                               ...current,
-                              requestedQuantity: asNonNegativeInteger(event.target.value)
-                            }))
-                          }
+                              requestedQuantity: quantity
+                            }));
+                          }}
                           onFocus={(event) => event.currentTarget.select()}
+                          pattern="[0-9]*"
                           step={1}
-                          type="number"
+                          type="text"
                           value={line.requestedQuantity}
                         />
                       </div>
@@ -834,13 +851,17 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
                               aria-label={`Target stock for ${line.candidate.product.name}`}
                               disabled={Boolean(draftOrder)}
                               min={0}
-                              onChange={(event) =>
+                              onChange={(event) => {
+                                const quantity = parseWholeUnitQuantity(event.target.value);
+                                if (quantity === null) return;
                                 updateLine(productId, (current) => ({
                                   ...current,
-                                  policyTargetStockLevel: asNonNegativeInteger(event.target.value)
-                                }))
-                              }
-                              type="number"
+                                  policyTargetStockLevel: quantity
+                                }));
+                              }}
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                              type="text"
                               value={line.policyTargetStockLevel}
                             />
                           </div>
@@ -852,13 +873,17 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
                               aria-label={`Reorder level for ${line.candidate.product.name}`}
                               disabled={Boolean(draftOrder)}
                               min={0}
-                              onChange={(event) =>
+                              onChange={(event) => {
+                                const quantity = parseWholeUnitQuantity(event.target.value);
+                                if (quantity === null) return;
                                 updateLine(productId, (current) => ({
                                   ...current,
-                                  policyReorderLevel: asNonNegativeInteger(event.target.value)
-                                }))
-                              }
-                              type="number"
+                                  policyReorderLevel: quantity
+                                }));
+                              }}
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                              type="text"
                               value={line.policyReorderLevel}
                             />
                           </div>
@@ -996,7 +1021,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
         }}
         open={catalogOpen}
       >
-        <DialogContent className="max-w-[820px]">
+        <DialogContent className="ys-restock-product-picker max-w-[820px]">
           <DialogHeader>
             <DialogTitle>Add product</DialogTitle>
             <DialogDescription>
@@ -1009,6 +1034,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
             <div className="flex flex-col gap-2 sm:flex-row">
               <Input
                 autoFocus
+                className="ys-restock-product-picker__search-input"
                 disabled={searching}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 onKeyDown={(event) => {
@@ -1018,6 +1044,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
                 value={searchTerm}
               />
               <Button
+                className="ys-restock-product-picker__secondary-action"
                 disabled={searching || busyAction !== null}
                 onClick={() => void searchExistingProducts(1)}
                 type="button"
@@ -1036,7 +1063,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
             ) : null}
 
             {searchResults.length > 0 ? (
-              <div className="max-h-[50vh] divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200">
+              <div className="ys-restock-product-picker__results max-h-[50vh] divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200">
                 {searchResults.map((candidate) => {
                   const alreadyAdded = lineIds.has(candidate.product.id);
 
@@ -1070,11 +1097,11 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
                 })}
               </div>
             ) : catalogMeta ? (
-              <div className="rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500">
+              <div className="ys-restock-product-picker__empty rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500">
                 No matching products found.
               </div>
             ) : (
-              <div className="rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500">
+              <div className="ys-restock-product-picker__empty rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500">
                 Enter at least two characters to search the catalog.
               </div>
             )}
@@ -1094,7 +1121,11 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
 
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="secondary">
+              <Button
+                className="ys-restock-product-picker__secondary-action"
+                type="button"
+                variant="secondary"
+              >
                 Done
               </Button>
             </DialogClose>
@@ -1103,22 +1134,28 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
       </Dialog>
 
       <Dialog onOpenChange={setReviewOpen} open={reviewOpen}>
-        <DialogContent className="max-h-[88vh] max-w-[760px] overflow-hidden">
-          <DialogHeader>
+        <DialogContent className="ys-report-modal flex max-h-[calc(100dvh-2rem)] max-w-[760px] flex-col gap-0 overflow-hidden sm:max-h-[88dvh]">
+          <DialogHeader className="shrink-0 pb-4">
             <DialogTitle>Review restock</DialogTitle>
             <DialogDescription>
               Check the products and quantities before you save or confirm the restock.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 px-6 pb-2">
+          <div
+            aria-label="Restock review details and purchasing advice"
+            className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 pb-4"
+            ref={reviewScrollRef}
+            role="region"
+            tabIndex={0}
+          >
             <div className="grid gap-3 sm:grid-cols-3">
               <SummaryValue label="Products" value={selectedCount} />
               <SummaryValue label="Total units" value={requestedUnits} />
               <SummaryValue label="Quantity changes" value={overrideCount} />
             </div>
 
-            <div className="max-h-[36vh] divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200">
+            <div className="divide-y divide-slate-100 rounded-lg border border-slate-200">
               {pagedSelectedLines.map((line) => (
                 <div
                   className="flex flex-col gap-2 p-3 sm:flex-row sm:items-start sm:justify-between"
@@ -1182,9 +1219,34 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
                 when the actual delivery is received.
               </AlertDescription>
             </Alert>
+
+            <RestockOwnerWarnings
+              warnings={ownerWarnings}
+              onApplySuggestedQuantity={(productId, quantity) => {
+                setLines((current) =>
+                  current.map((line) =>
+                    line.candidate.product.id === productId
+                      ? {
+                          ...line,
+                          requestedQuantity: quantity,
+                          ownerOverrideReason:
+                            line.recommendationSource !== "MANUAL" &&
+                            quantity !== line.recommendedQuantity
+                              ? "Owner selected system suggested quantity."
+                              : line.ownerOverrideReason
+                        }
+                      : line
+                  )
+                );
+                setDraftDirty(true);
+                setOwnerWarnings([]);
+                setReviewOpen(false);
+                setError(null);
+              }}
+            />
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="shrink-0">
             <DialogClose asChild>
               <Button disabled={busyAction !== null} type="button" variant="secondary">
                 Back
@@ -1192,10 +1254,14 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
             </DialogClose>
             <Button
               disabled={busyAction !== null}
-              onClick={() => void confirmRestock()}
+              onClick={() => void confirmRestock(ownerWarnings.length > 0)}
               type="button"
             >
-              {busyAction === "confirm" ? "Confirming…" : "Confirm restock"}
+              {busyAction === "confirm"
+                ? "Confirming…"
+                : ownerWarnings.length > 0
+                  ? "Continue with my quantities"
+                  : "Confirm restock"}
             </Button>
           </DialogFooter>
         </DialogContent>

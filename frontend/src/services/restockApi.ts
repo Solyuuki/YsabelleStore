@@ -277,6 +277,23 @@ export async function createRestockRequest(input: {
   return response.data;
 }
 
+/** Removes an unapproved manual draft; does not cancel a Receiving ticket. */
+export async function removeRestockDraft(orderId: string, expectedVersion: number) {
+  const response = await apiClient.request<{ removed: boolean; orderId: string }>(
+    `/api/restock-orders/${encodeURIComponent(orderId)}`,
+    {
+      method: "DELETE",
+      json: { expectedVersion }
+    }
+  );
+
+  if (!response.success || !response.data?.removed) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
 export async function replaceRestockOrderLines(
   orderId: string,
   input: { expectedVersion: number; lines: RestockDraftLineInput[] }
@@ -296,16 +313,40 @@ export async function replaceRestockOrderLines(
   return response.data;
 }
 
-export async function approveRestockOrder(orderId: string, expectedVersion: number) {
+export type RestockOwnerWarning = {
+  productId: string | null;
+  reason: string;
+  requestedQuantity: number | null;
+  suggestedQuantity: number | null;
+};
+
+export class RestockOwnerWarningError extends Error {
+  readonly warnings: RestockOwnerWarning[];
+  constructor(warnings: RestockOwnerWarning[]) {
+    super("Review these purchasing warnings before confirming your restock.");
+    this.name = "RestockOwnerWarningError";
+    this.warnings = warnings;
+  }
+}
+
+export async function approveRestockOrder(
+  orderId: string,
+  expectedVersion: number,
+  acknowledgeWarnings = false
+) {
   const response = await apiClient.request<RestockOrder, { code?: string; details?: unknown }>(
     `/api/restock-orders/${encodeURIComponent(orderId)}/approve`,
     {
       method: "POST",
-      json: { expectedVersion }
+      json: { expectedVersion, acknowledgeWarnings }
     }
   );
 
   if (!response.success || !response.data) {
+    if (!response.success && response.error?.code === "RESTOCK_OWNER_WARNING_ACK_REQUIRED") {
+      const details = response.error.details as { warnings?: RestockOwnerWarning[] } | undefined;
+      throw new RestockOwnerWarningError(Array.isArray(details?.warnings) ? details.warnings : []);
+    }
     throw new Error(response.message);
   }
 

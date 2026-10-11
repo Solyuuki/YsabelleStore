@@ -80,6 +80,9 @@ export type ProductSummary = {
   sellingPrice: string;
   reorderLevel: number;
   targetStockLevel: number;
+  restockTargetApprovedLevel: number | null;
+  restockTargetApprovedAt: Date | null;
+  restockTargetApprovedById: string | null;
   status: ProductStatusView;
   availabilityStatus: ProductAvailabilityView;
   isAvailable: boolean;
@@ -232,6 +235,9 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
     sellingPrice: product.sellingPrice.toString(),
     reorderLevel: product.reorderLevel,
     targetStockLevel: product.targetStockLevel,
+    restockTargetApprovedLevel: product.restockTargetApprovedLevel,
+    restockTargetApprovedAt: product.restockTargetApprovedAt,
+    restockTargetApprovedById: product.restockTargetApprovedById,
     status: product.status,
     availabilityStatus: available ? "AVAILABLE" : "UNAVAILABLE",
     isAvailable: available,

@@ -15,11 +15,14 @@ import {
 } from "@/services/customerSocialAuthService";
 import "@/styles/customer-auth-quick-sign.css";
 import { validateCustomerRegisterForm } from "@/utils/customerAuthForms";
+import { buildCustomerAuthPath, getCustomerReturnPath } from "@/utils/customerRoutes";
 
 type RegistrationVerificationPanel = "registration-email" | "quick-email" | null;
 
 export function CustomerRegisterPage({ navigate }: { navigate: (path: string) => void }) {
   const { refreshSession, register } = useCustomerAuth();
+  const requestedReturnTo = getCustomerReturnPath(globalThis.location?.search ?? "");
+  const returnTo = requestedReturnTo ?? "/account";
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -99,7 +102,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
         phone: phone.trim() || undefined,
         username: username.trim()
       });
-      navigate("/account");
+      navigate(returnTo);
     } catch (error) {
       setServerError(
         error instanceof Error ? error.message : "Unable to create your account. Please try again."
@@ -113,7 +116,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
     setServerError(null);
     setBusySocialProvider(provider);
     try {
-      startCustomerSocialAuth(provider, "/account", "register");
+      startCustomerSocialAuth(provider, returnTo, "register");
     } catch (error) {
       setBusySocialProvider(null);
       setServerError(
@@ -124,7 +127,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
 
   async function handleQuickSignVerified() {
     await refreshSession();
-    navigate("/");
+    navigate(returnTo);
   }
 
   return (
@@ -158,7 +161,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
                 <input
                   aria-describedby={fieldErrors.name ? "customer-register-name-error" : undefined}
                   aria-invalid={Boolean(fieldErrors.name)}
-                  autoComplete="name"
+                  autoComplete="section-customer name"
                   id="customer-register-name"
                   onChange={(event) => setName(event.target.value)}
                   placeholder="e.g. Juan Dela Cruz"
@@ -177,7 +180,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
                     fieldErrors.username ? "customer-register-username-error" : undefined
                   }
                   aria-invalid={Boolean(fieldErrors.username)}
-                  autoComplete="username"
+                  autoComplete="section-customer username"
                   id="customer-register-username"
                   onChange={(event) => setUsername(event.target.value)}
                   placeholder="Create your username"
@@ -197,7 +200,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
                       fieldErrors.email ? "customer-register-email-error" : undefined
                     }
                     aria-invalid={Boolean(fieldErrors.email)}
-                    autoComplete="email"
+                    autoComplete="section-customer email"
                     id="customer-register-email"
                     inputMode="email"
                     onChange={(event) => handleEmailChange(event.target.value)}
@@ -225,7 +228,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
                 <input
                   aria-describedby={fieldErrors.phone ? "customer-register-phone-error" : undefined}
                   aria-invalid={Boolean(fieldErrors.phone)}
-                  autoComplete="tel"
+                  autoComplete="section-customer tel"
                   id="customer-register-phone"
                   inputMode="tel"
                   onChange={(event) => handlePhoneChange(event.target.value)}
@@ -246,7 +249,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
                       fieldErrors.password ? "customer-register-password-error" : undefined
                     }
                     aria-invalid={Boolean(fieldErrors.password)}
-                    autoComplete="new-password"
+                    autoComplete="section-customer new-password"
                     id="customer-register-password"
                     onChange={(event) => setPassword(event.target.value)}
                     placeholder="Create a strong password"
@@ -281,7 +284,7 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
                         : undefined
                     }
                     aria-invalid={Boolean(fieldErrors.confirmPassword)}
-                    autoComplete="new-password"
+                    autoComplete="section-customer new-password"
                     id="customer-register-confirm-password"
                     onChange={(event) => setConfirmPassword(event.target.value)}
                     placeholder="Re-enter your password"
@@ -358,7 +361,10 @@ export function CustomerRegisterPage({ navigate }: { navigate: (path: string) =>
 
         <p className="customer-auth-switch">
           Already have an account?{" "}
-          <CustomerLink href="/login" navigate={navigate}>
+          <CustomerLink
+            href={buildCustomerAuthPath("/login", requestedReturnTo)}
+            navigate={navigate}
+          >
             Sign In
           </CustomerLink>
         </p>

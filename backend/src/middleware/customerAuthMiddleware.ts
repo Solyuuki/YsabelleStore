@@ -15,7 +15,7 @@ export function getAuthenticatedCustomer(request: Request): SafeCustomer | undef
   return (request as RequestWithCustomerAuth).authCustomer;
 }
 
-export const requireCustomerAuth: RequestHandler = async (request, _response, next) => {
+export const requireCustomerAuth: RequestHandler = async (request, response, next) => {
   try {
     const sessionToken = readCustomerSessionCookie(request);
 
@@ -29,6 +29,9 @@ export const requireCustomerAuth: RequestHandler = async (request, _response, ne
       await getCustomerFromSessionToken(sessionToken);
     next();
   } catch (error) {
+    if (error instanceof HttpError && error.code === "CUSTOMER_SESSION_INVALID") {
+      clearCustomerSessionCookie(response);
+    }
     next(error);
   }
 };

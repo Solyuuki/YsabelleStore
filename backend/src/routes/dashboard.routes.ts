@@ -2,6 +2,8 @@ import { Router } from "express";
 
 import {
   getDashboardOperationsController,
+  getDashboardSalesCalendarController,
+  getDashboardSalesDayController,
   getDashboardSummaryController,
   getNavigationBadgesController
 } from "../controllers/dashboardController.js";
@@ -13,6 +15,16 @@ export const dashboardRouter = Router();
 dashboardRouter.use(requireAuth);
 dashboardRouter.get("/summary", requireRole("OWNER", "STAFF"), getDashboardSummaryController);
 dashboardRouter.get("/operations", requireRole("OWNER"), getDashboardOperationsController);
+dashboardRouter.get(
+  "/sales-calendar",
+  requireRole("OWNER", "STAFF"),
+  getDashboardSalesCalendarController
+);
+dashboardRouter.get(
+  "/sales-calendar/day",
+  requireRole("OWNER", "STAFF"),
+  getDashboardSalesDayController
+);
 dashboardRouter.get(
   "/navigation-badges",
   requireRole("OWNER", "STAFF"),

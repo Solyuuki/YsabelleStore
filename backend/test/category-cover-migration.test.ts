@@ -1,0 +1,116 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import test from "node:test";
+
+import { LEGACY_CATEGORY_COVER_SOURCES } from "../src/modules/catalog-image/legacyCategoryCoverSources.js";
+import {
+  isTrustedLegacyRemoteCategoryCover,
+  resolveLegacyLocalCategoryCoverSource
+} from "../src/modules/catalog-image/legacyCategoryCoverMigration.js";
+
+test("legacy category cover manifest has unique canonical slugs", () => {
+  const slugs = LEGACY_CATEGORY_COVER_SOURCES.map((source) => source.slug);
+  const slugSet = new Set<string>(slugs);
+  assert.equal(slugSet.size, slugs.length);
+  assert.ok(slugSet.has("coffee-milk"));
+  assert.ok(slugSet.has("juice-tea-soda-water"));
+  assert.ok(slugSet.has("snacks-confectionery"));
+  assert.ok(slugSet.has("noodles-pasta"));
+  assert.ok(slugSet.has("rice-staples"));
+  assert.ok(slugSet.has("household-supplies"));
+  assert.ok(slugSet.has("laundry-supplies"));
+  assert.equal(slugSet.has("frozen-chilled"), false);
+  assert.equal(slugSet.has("tissue-cotton"), false);
+});
+
+test("legacy local category cover resolver rejects traversal and unrelated paths", () => {
+  const repositoryRoot = path.resolve("C:/repo/YsabelleStore");
+  const valid = resolveLegacyLocalCategoryCoverSource(
+    repositoryRoot,
+    "/images/discover/essentials/canned-goods-retail-display.webp"
+  );
+
+  assert.equal(
+    valid,
+    path.join(
+      repositoryRoot,
+      "frontend",
+      "public",
+      "images",
+      "discover",
+      "essentials",
+      "canned-goods-retail-display.webp"
+    )
+  );
+
+  for (const unsafe of [
+    "/images/discover/essentials/../secret.webp",
+    "/images/discover/other/canned-goods.webp",
+    "/images/products/canned-goods.webp",
+    "C:/images/canned-goods.webp",
+    "/images/discover/essentials/canned-goods.webp?x=1"
+  ]) {
+    assert.equal(resolveLegacyLocalCategoryCoverSource(repositoryRoot, unsafe), null);
+  }
+});
+
+test("legacy remote category cover migration only trusts the curated Cloudinary account", () => {
+  assert.equal(
+    isTrustedLegacyRemoteCategoryCover(
+      "https://res.cloudinary.com/gnqoa3sp/image/upload/v1788805764/coffee-milk-premium-pexels-16444396.webp"
+    ),
+    true
+  );
+
+  for (const unsafe of [
+    "http://res.cloudinary.com/gnqoa3sp/image/upload/test.webp",
+    "https://res.cloudinary.com/other/image/upload/test.webp",
+    "https://example.com/gnqoa3sp/image/upload/test.webp",
+    "https://res.cloudinary.com/gnqoa3sp/raw/upload/test.webp",
+    "https://res.cloudinary.com/gnqoa3sp/image/upload/test.webp?redirect=https://example.com"
+  ]) {
+    assert.equal(isTrustedLegacyRemoteCategoryCover(unsafe), false);
+  }
+});
+
+test("migration manifest stays aligned with the temporary storefront fallback map", () => {
+  const presentationSource = readFileSync(
+    path.resolve(process.cwd(), "../frontend/src/utils/storefrontCategoryPresentation.ts"),
+    "utf8"
+  );
+
+  for (const source of LEGACY_CATEGORY_COVER_SOURCES) {
+    assert.match(presentationSource, new RegExp(`slug: ["']${source.slug}["']`));
+    assert.ok(
+      presentationSource.includes(source.imageUrl),
+      `temporary storefront fallback must retain ${source.slug}`
+    );
+  }
+});
+
+test("legacy migration only aliases editorial assets to semantically matching canonical categories", () => {
+  const bySlug = new Map<string, (typeof LEGACY_CATEGORY_COVER_SOURCES)[number]>(
+    LEGACY_CATEGORY_COVER_SOURCES.map((source) => [source.slug, source])
+  );
+
+  assert.equal(
+    bySlug.get("noodles-pasta")?.imageUrl,
+    "/images/discover/essentials/instant-food-retail-display.webp"
+  );
+  assert.equal(
+    bySlug.get("rice-staples")?.imageUrl,
+    "/images/discover/essentials/staples-retail-display.webp"
+  );
+  assert.equal(
+    bySlug.get("household-supplies")?.imageUrl,
+    "/images/discover/essentials/household-retail-display.webp"
+  );
+  assert.equal(
+    bySlug.get("laundry-supplies")?.imageUrl,
+    "/images/discover/essentials/household-retail-display.webp"
+  );
+
+  assert.equal(bySlug.has("frozen-chilled"), false);
+  assert.equal(bySlug.has("tissue-cotton"), false);
+});

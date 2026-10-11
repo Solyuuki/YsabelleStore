@@ -5,7 +5,7 @@ import { test } from "node:test";
 const fileUrl = (path) => new URL(`../../${path}`, import.meta.url);
 const read = (path) => readFileSync(fileUrl(path), "utf8");
 
-test("customer auth routes use the storefront auth frame without changing auth contracts", () => {
+test("customer auth routes use the storefront auth frame and preserve safe return paths", () => {
   const framePath = "frontend/src/components/customer/CustomerAuthFrame.tsx";
   assert.equal(existsSync(fileUrl(framePath)), true, "customer auth frame must exist");
 
@@ -21,7 +21,8 @@ test("customer auth routes use the storefront auth frame without changing auth c
 
   assert.match(login, /CustomerAuthFrame/);
   assert.match(login, /login\(\{ identifier: identifier\.trim\(\), password \}\)/);
-  assert.match(login, /navigate\("\/account"\)/);
+  assert.match(login, /const requestedReturnTo = getCustomerReturnPath\(search\);/);
+  assert.match(login, /navigate\(passwordReturnTo\);/);
 
   assert.match(register, /CustomerAuthFrame/);
   assert.match(register, /prepareCustomerRegistrationIntent/);
@@ -29,7 +30,11 @@ test("customer auth routes use the storefront auth frame without changing auth c
     register,
     /register\(\{\s*email: email\.trim\(\),\s*name: name\.trim\(\),\s*password,\s*phone: phone\.trim\(\) \|\| undefined,\s*username: username\.trim\(\)\s*\}\)/
   );
-  assert.match(register, /navigate\("\/account"\)/);
+  assert.match(
+    register,
+    /const requestedReturnTo = getCustomerReturnPath\(globalThis\.location\?\.search \?\? ""\);/
+  );
+  assert.match(register, /navigate\(returnTo\);/);
 });
 
 test("customer auth fields expose accessible errors and password state", () => {

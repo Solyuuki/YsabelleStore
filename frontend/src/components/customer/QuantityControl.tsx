@@ -1,13 +1,17 @@
 import { Minus, Plus } from "lucide-react";
 
+import { parseWholeUnitQuantity } from "@/utils/wholeUnitQuantity";
+
 export function QuantityControl({
   label,
   max,
+  min = 1,
   value,
   onChange
 }: {
   label: string;
   max: number;
+  min?: number;
   value: number;
   onChange: (value: number) => void;
 }) {
@@ -15,8 +19,8 @@ export function QuantityControl({
     <div className="customer-quantity" aria-label={label} role="group">
       <button
         aria-label={`Decrease ${label}`}
-        disabled={value <= 1}
-        onClick={() => onChange(value - 1)}
+        disabled={value <= min}
+        onClick={() => onChange(Math.max(min, value - 1))}
         type="button"
       >
         <Minus aria-hidden="true" size={15} />
@@ -25,15 +29,20 @@ export function QuantityControl({
         aria-label={label}
         inputMode="numeric"
         max={max}
-        min={1}
-        onChange={(event) => onChange(Number(event.target.value) || 1)}
-        type="number"
+        min={min}
+        onChange={(event) => {
+          const nextValue = parseWholeUnitQuantity(event.target.value);
+          if (nextValue === null || nextValue < min) return;
+          onChange(Math.min(max, nextValue));
+        }}
+        pattern="[0-9]*"
+        type="text"
         value={value}
       />
       <button
         aria-label={`Increase ${label}`}
         disabled={value >= max}
-        onClick={() => onChange(value + 1)}
+        onClick={() => onChange(Math.min(max, value + 1))}
         type="button"
       >
         <Plus aria-hidden="true" size={15} />

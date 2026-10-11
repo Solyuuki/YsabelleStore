@@ -97,22 +97,24 @@ test("clean short history remains usable through a fallback model", () => {
   assert.equal(eligibility.observationCount, 8);
 });
 
-test("database-primary batches fill missing products per product without losing canonical ids", () => {
-  const databaseProduct = workbookProduct("canonical-1", "Database Product");
-  databaseProduct.historical = databaseProduct.historical.slice(-8);
+test("database-primary batches prefer approved workbook history for short canonical series", () => {
+  const eligibleDatabaseProduct = workbookProduct("canonical-1", "Database Product");
+  const shortDatabaseProduct = workbookProduct("canonical-2", "Fallback Product");
+  shortDatabaseProduct.historical = shortDatabaseProduct.historical.slice(-8);
+
   const series: EffectiveProductSeries[] = [
     {
       category: "Beverages",
       eligibility: assessSarimaEligibility(
         "canonical-1",
         "Database Product",
-        databaseProduct.historical.map((point) => ({
+        eligibleDatabaseProduct.historical.map((point) => ({
           period: point.period,
           quantitySold: point.quantitySold,
           source: "POS_ACTUAL" as const
         }))
       ),
-      points: databaseProduct.historical.map((point) => ({
+      points: eligibleDatabaseProduct.historical.map((point) => ({
         period: point.period,
         quantitySold: point.quantitySold,
         source: "POS_ACTUAL" as const
@@ -124,14 +126,27 @@ test("database-primary batches fill missing products per product without losing 
     },
     {
       category: "Beverages",
-      eligibility: assessSarimaEligibility("canonical-2", "Fallback Product", []),
-      points: [],
+      eligibility: assessSarimaEligibility(
+        "canonical-2",
+        "Fallback Product",
+        shortDatabaseProduct.historical.map((point) => ({
+          period: point.period,
+          quantitySold: point.quantitySold,
+          source: "POS_ACTUAL" as const
+        }))
+      ),
+      points: shortDatabaseProduct.historical.map((point) => ({
+        period: point.period,
+        quantitySold: point.quantitySold,
+        source: "POS_ACTUAL" as const
+      })),
       productId: "canonical-2",
       productName: "Fallback Product",
       sellingPrice: 30,
       sourceProductIds: ["P002"]
     }
   ];
+
   const fallback = workbookProduct("P002", "Fallback Product");
   const reconstructed = new Map<string, HistoricalSalesPoint[]>([
     [
@@ -151,7 +166,7 @@ test("database-primary batches fill missing products per product without losing 
 
   const merged = mergeDatabaseProductsWithWorkbookFallback(
     series,
-    [databaseProduct],
+    [eligibleDatabaseProduct, shortDatabaseProduct],
     [fallback],
     reconstructed
   );
@@ -160,12 +175,45 @@ test("database-primary batches fill missing products per product without losing 
     merged.map((product) => product.productId),
     ["canonical-1", "canonical-2"]
   );
+  assert.equal(merged[0]?.historical.length, 24);
   assert.equal(merged[1]?.historical.length, 24);
   assert.ok(merged[1]?.historical.every((point) => point.productId === "canonical-2"));
   assert.equal(merged[1]?.comparisonHistorical?.[0]?.productId, "canonical-2");
   assert.equal(merged[1]?.comparisonHistorical?.[0]?.quantitySold, 15);
 });
 
+test("short canonical database history remains available only when no approved workbook match exists", () => {
+  const shortDatabaseProduct = workbookProduct("canonical-3", "Unmapped Product");
+  shortDatabaseProduct.historical = shortDatabaseProduct.historical.slice(-8);
+  const points = shortDatabaseProduct.historical.map((point) => ({
+    period: point.period,
+    quantitySold: point.quantitySold,
+    source: "POS_ACTUAL" as const
+  }));
+
+  const series: EffectiveProductSeries[] = [
+    {
+      category: "Beverages",
+      eligibility: assessSarimaEligibility("canonical-3", "Unmapped Product", points),
+      points,
+      productId: "canonical-3",
+      productName: "Unmapped Product",
+      sellingPrice: 20,
+      sourceProductIds: []
+    }
+  ];
+
+  const merged = mergeDatabaseProductsWithWorkbookFallback(
+    series,
+    [shortDatabaseProduct],
+    [],
+    new Map()
+  );
+
+  assert.equal(merged.length, 1);
+  assert.equal(merged[0]?.historical.length, 8);
+  assert.equal(merged[0]?.productId, "canonical-3");
+});
 test("reconstructed 2026 workbook is comparison-only and mirrors the 2025 seasonal baseline", async () => {
   const [verified, reconstructed] = await Promise.all([
     loadHistoricalSalesData(),

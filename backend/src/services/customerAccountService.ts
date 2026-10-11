@@ -1,6 +1,25 @@
-import { Prisma, type CustomerAccount } from "@prisma/client";
+import { Prisma, type CustomerAccount, type CustomerSocialProvider } from "@prisma/client";
 
+import { env } from "../config/env.js";
 import { prisma } from "../database/prismaClient.js";
+import {
+  CUSTOMER_PASSWORD_SETUP_MAX_CODE_ATTEMPTS,
+  createCustomerPasswordSetupGrantMaterial,
+  createCustomerPasswordSetupOtpMaterial,
+  customerPasswordSetupAttemptMarkerId,
+  customerPasswordSetupOtpMatches,
+  hashCustomerPasswordSetupAttemptMarker,
+  hashCustomerPasswordSetupGrant
+} from "../utils/customerPasswordSetupOtp.js";
+import {
+  CUSTOMER_SESSION_REVOKE_MAX_CODE_ATTEMPTS,
+  createCustomerSessionRevokeGrantMaterial,
+  createCustomerSessionRevokeOtpMaterial,
+  customerSessionRevokeAttemptMarkerId,
+  customerSessionRevokeOtpMatches,
+  hashCustomerSessionRevokeAttemptMarker,
+  hashCustomerSessionRevokeGrant
+} from "../utils/customerSessionRevokeOtp.js";
 import { HttpError } from "../utils/httpError.js";
 import {
   customerPasswordChangeSchema,
@@ -37,6 +56,28 @@ export type CustomerSessionSummary = {
   expiresAt: Date;
 };
 
+export type CustomerSecuritySummary = {
+  hasPassword: boolean;
+  linkedProviders: CustomerSocialProvider[];
+  emailQuickSignAvailable: boolean;
+};
+
+export type CustomerPasswordSetupDelivery = {
+  sendPasswordSetupEmail(input: {
+    to: string;
+    verificationCode: string;
+    expiresAt: Date;
+  }): Promise<void>;
+};
+
+export type CustomerSessionRevokeDelivery = {
+  sendSessionRevokeEmail(input: {
+    to: string;
+    verificationCode: string;
+    expiresAt: Date;
+  }): Promise<void>;
+};
+
 function toSafeCustomer(customer: CustomerAccount): SafeCustomer {
   return {
     id: customer.id,
@@ -44,6 +85,7 @@ function toSafeCustomer(customer: CustomerAccount): SafeCustomer {
     username: customer.username,
     email: customer.email,
     phone: customer.phone,
+    defaultContactPhone: customer.defaultContactPhone,
     status: customer.status
   };
 }
@@ -70,6 +112,138 @@ function usernameAlreadySet(): HttpError {
   return new HttpError(409, "Username can only be claimed once.", {
     code: "CUSTOMER_USERNAME_ALREADY_SET"
   });
+}
+
+function passwordAlreadySet(): HttpError {
+  return new HttpError(409, "A password is already set for this customer account.", {
+    code: "CUSTOMER_PASSWORD_ALREADY_SET"
+  });
+}
+
+function invalidPasswordSetupCode(): HttpError {
+  return new HttpError(400, "The verification code is invalid or expired. Request a new code.", {
+    code: "CUSTOMER_PASSWORD_SETUP_CODE_INVALID"
+  });
+}
+
+function invalidPasswordSetupGrant(): HttpError {
+  return new HttpError(400, "This password setup session is invalid or expired.", {
+    code: "CUSTOMER_PASSWORD_SETUP_INVALID"
+  });
+}
+
+function passwordSetupSecret(): string {
+  const secret = env.JWT_SECRET?.trim();
+  if (!secret) throw new Error("Customer password setup OTP secret is not configured.");
+  return secret;
+}
+
+function invalidSessionRevokeCode(): HttpError {
+  return new HttpError(400, "The verification code is invalid or expired. Request a new code.", {
+    code: "CUSTOMER_SESSION_REVOKE_CODE_INVALID"
+  });
+}
+
+function invalidSessionRevokeGrant(): HttpError {
+  return new HttpError(400, "This session security verification is invalid or expired.", {
+    code: "CUSTOMER_SESSION_REVOKE_VERIFICATION_INVALID"
+  });
+}
+
+function sessionPasswordReauthenticationRequired(): HttpError {
+  return new HttpError(409, "Use your current password to confirm this security action.", {
+    code: "CUSTOMER_SESSION_PASSWORD_REAUTHENTICATION_REQUIRED"
+  });
+}
+
+function sessionRevokeSecret(): string {
+  const secret = env.JWT_SECRET?.trim();
+  if (!secret) throw new Error("Customer session revoke OTP secret is not configured.");
+  return secret;
+}
+
+async function recordPasswordSetupFailedAttempt(
+  challenge: { id: string; customerAccountId: string; expiresAt: Date },
+  now: Date
+): Promise<never> {
+  for (let attempt = 1; attempt <= CUSTOMER_PASSWORD_SETUP_MAX_CODE_ATTEMPTS; attempt += 1) {
+    const markerId = customerPasswordSetupAttemptMarkerId(challenge.id, attempt);
+
+    try {
+      await prisma.customerPasswordResetToken.create({
+        data: {
+          id: markerId,
+          customerAccountId: challenge.customerAccountId,
+          tokenHash: hashCustomerPasswordSetupAttemptMarker(markerId),
+          expiresAt: challenge.expiresAt,
+          usedAt: now
+        }
+      });
+
+      if (attempt === CUSTOMER_PASSWORD_SETUP_MAX_CODE_ATTEMPTS) {
+        await prisma.customerPasswordResetToken.updateMany({
+          data: { usedAt: now },
+          where: { id: challenge.id, usedAt: null }
+        });
+      }
+
+      throw invalidPasswordSetupCode();
+    } catch (error) {
+      if (error instanceof HttpError) throw error;
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  await prisma.customerPasswordResetToken.updateMany({
+    data: { usedAt: now },
+    where: { id: challenge.id, usedAt: null }
+  });
+  throw invalidPasswordSetupCode();
+}
+
+async function recordSessionRevokeFailedAttempt(
+  challenge: { id: string; customerAccountId: string; expiresAt: Date },
+  now: Date
+): Promise<never> {
+  for (let attempt = 1; attempt <= CUSTOMER_SESSION_REVOKE_MAX_CODE_ATTEMPTS; attempt += 1) {
+    const markerId = customerSessionRevokeAttemptMarkerId(challenge.id, attempt);
+
+    try {
+      await prisma.customerPasswordResetToken.create({
+        data: {
+          id: markerId,
+          customerAccountId: challenge.customerAccountId,
+          tokenHash: hashCustomerSessionRevokeAttemptMarker(markerId),
+          expiresAt: challenge.expiresAt,
+          usedAt: now
+        }
+      });
+
+      if (attempt === CUSTOMER_SESSION_REVOKE_MAX_CODE_ATTEMPTS) {
+        await prisma.customerPasswordResetToken.updateMany({
+          data: { usedAt: now },
+          where: { id: challenge.id, usedAt: null }
+        });
+      }
+
+      throw invalidSessionRevokeCode();
+    } catch (error) {
+      if (error instanceof HttpError) throw error;
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  await prisma.customerPasswordResetToken.updateMany({
+    data: { usedAt: now },
+    where: { id: challenge.id, usedAt: null }
+  });
+  throw invalidSessionRevokeCode();
 }
 
 async function requireActiveCustomer(customerAccountId: string): Promise<CustomerAccount> {
@@ -108,6 +282,195 @@ async function requireCurrentPassword(
   return customer.passwordHash;
 }
 
+export async function getCustomerSecuritySummary(
+  customerAccountId: string
+): Promise<CustomerSecuritySummary> {
+  const customer = await requireActiveCustomer(customerAccountId);
+  const socialIdentities = await prisma.customerSocialIdentity.findMany({
+    select: { provider: true },
+    where: { customerAccountId }
+  });
+
+  return {
+    hasPassword: customer.passwordHash !== null,
+    linkedProviders: [...new Set(socialIdentities.map((identity) => identity.provider))],
+    emailQuickSignAvailable: true
+  };
+}
+
+export async function requestCustomerPasswordSetup(
+  customerAccountId: string,
+  delivery: CustomerPasswordSetupDelivery,
+  now = new Date()
+): Promise<void> {
+  const customer = await requireActiveCustomer(customerAccountId);
+  if (customer.passwordHash) throw passwordAlreadySet();
+
+  const otp = createCustomerPasswordSetupOtpMaterial(passwordSetupSecret(), now);
+  await prisma.$transaction(async (transaction) => {
+    await transaction.customerPasswordResetToken.updateMany({
+      data: { usedAt: now },
+      where: {
+        customerAccountId,
+        id: { startsWith: "setup-" },
+        usedAt: null
+      }
+    });
+
+    await transaction.customerPasswordResetToken.create({
+      data: {
+        id: otp.challengeId,
+        customerAccountId,
+        tokenHash: otp.otpHash,
+        expiresAt: otp.expiresAt
+      }
+    });
+  });
+
+  try {
+    await delivery.sendPasswordSetupEmail({
+      to: customer.email,
+      verificationCode: otp.verificationCode,
+      expiresAt: otp.expiresAt
+    });
+  } catch (error) {
+    await prisma.customerPasswordResetToken.deleteMany({
+      where: { id: otp.challengeId, usedAt: null }
+    });
+    throw error;
+  }
+}
+
+export async function verifyCustomerPasswordSetupCode(
+  customerAccountId: string,
+  verificationCode: string,
+  now = new Date()
+): Promise<{ setupGrant: string; expiresAt: Date }> {
+  const customer = await requireActiveCustomer(customerAccountId);
+  if (customer.passwordHash) throw passwordAlreadySet();
+
+  const challenge = await prisma.customerPasswordResetToken.findFirst({
+    where: {
+      customerAccountId,
+      id: { startsWith: "setup-otp:" },
+      usedAt: null,
+      expiresAt: { gt: now }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+  if (!challenge) throw invalidPasswordSetupCode();
+
+  if (
+    !customerPasswordSetupOtpMatches(
+      passwordSetupSecret(),
+      challenge.id,
+      verificationCode,
+      challenge.tokenHash
+    )
+  ) {
+    return recordPasswordSetupFailedAttempt(challenge, now);
+  }
+
+  const grant = createCustomerPasswordSetupGrantMaterial(now);
+  await prisma.$transaction(async (transaction) => {
+    const consumed = await transaction.customerPasswordResetToken.updateMany({
+      data: { usedAt: now },
+      where: {
+        id: challenge.id,
+        usedAt: null,
+        expiresAt: { gt: now }
+      }
+    });
+    if (consumed.count !== 1) throw invalidPasswordSetupCode();
+
+    await transaction.customerPasswordResetToken.create({
+      data: {
+        id: grant.grantId,
+        customerAccountId,
+        tokenHash: grant.grantHash,
+        expiresAt: grant.expiresAt
+      }
+    });
+  });
+
+  return { setupGrant: grant.setupGrant, expiresAt: grant.expiresAt };
+}
+
+export async function setupCustomerPassword(
+  customerAccountId: string,
+  sessionToken: string,
+  setupGrant: string,
+  newPassword: string,
+  now = new Date()
+): Promise<SafeCustomer> {
+  const currentSession = await requireActiveSession(customerAccountId, sessionToken, now);
+  const customer = await requireActiveCustomer(customerAccountId);
+  if (customer.passwordHash) throw passwordAlreadySet();
+  if (!setupGrant || setupGrant.length < 32 || newPassword.length < 8 || newPassword.length > 128) {
+    throw invalidPasswordSetupGrant();
+  }
+
+  const grantHash = hashCustomerPasswordSetupGrant(setupGrant);
+  const grant = await prisma.customerPasswordResetToken.findUnique({
+    where: { tokenHash: grantHash }
+  });
+  if (
+    !grant ||
+    !grant.id.startsWith("setup-grant:") ||
+    grant.customerAccountId !== customerAccountId ||
+    grant.usedAt !== null ||
+    grant.expiresAt.getTime() <= now.getTime()
+  ) {
+    throw invalidPasswordSetupGrant();
+  }
+
+  const nextPasswordHash = await hashPassword(newPassword);
+  const updatedCustomer = await prisma.$transaction(async (transaction) => {
+    const consumed = await transaction.customerPasswordResetToken.updateMany({
+      data: { usedAt: now },
+      where: {
+        id: grant.id,
+        customerAccountId,
+        usedAt: null,
+        expiresAt: { gt: now }
+      }
+    });
+    if (consumed.count !== 1) throw invalidPasswordSetupGrant();
+
+    const updated = await transaction.customerAccount.updateMany({
+      data: { passwordHash: nextPasswordHash },
+      where: {
+        id: customerAccountId,
+        passwordHash: null,
+        status: "ACTIVE"
+      }
+    });
+    if (updated.count !== 1) throw passwordAlreadySet();
+
+    await transaction.customerPasswordResetToken.updateMany({
+      data: { usedAt: now },
+      where: {
+        customerAccountId,
+        id: { startsWith: "setup-" },
+        usedAt: null
+      }
+    });
+
+    await transaction.customerSession.updateMany({
+      data: { revokedAt: now },
+      where: {
+        customerAccountId,
+        id: { not: currentSession.id },
+        revokedAt: null
+      }
+    });
+
+    return transaction.customerAccount.findUniqueOrThrow({ where: { id: customerAccountId } });
+  });
+
+  return toSafeCustomer(updatedCustomer);
+}
+
 export async function updateCustomerProfile(
   customerAccountId: string,
   input: CustomerProfileUpdateInput
@@ -116,7 +479,12 @@ export async function updateCustomerProfile(
   await requireActiveCustomer(customerAccountId);
 
   const customer = await prisma.customerAccount.update({
-    data: { name: parsed.name },
+    data: {
+      ...(parsed.name !== undefined ? { name: parsed.name } : {}),
+      ...(parsed.defaultContactPhone !== undefined
+        ? { defaultContactPhone: parsed.defaultContactPhone }
+        : {})
+    },
     where: { id: customerAccountId }
   });
 
@@ -209,6 +577,107 @@ export async function changeCustomerPassword(
   };
 }
 
+export async function requestCustomerSessionRevokeVerification(
+  customerAccountId: string,
+  delivery: CustomerSessionRevokeDelivery,
+  now = new Date()
+): Promise<void> {
+  const customer = await requireActiveCustomer(customerAccountId);
+  if (customer.passwordHash) throw sessionPasswordReauthenticationRequired();
+
+  const otp = createCustomerSessionRevokeOtpMaterial(sessionRevokeSecret(), now);
+  await prisma.$transaction(async (transaction) => {
+    await transaction.customerPasswordResetToken.updateMany({
+      data: { usedAt: now },
+      where: {
+        customerAccountId,
+        id: { startsWith: "session-revoke-" },
+        usedAt: null
+      }
+    });
+
+    await transaction.customerPasswordResetToken.create({
+      data: {
+        id: otp.challengeId,
+        customerAccountId,
+        tokenHash: otp.otpHash,
+        expiresAt: otp.expiresAt
+      }
+    });
+  });
+
+  try {
+    await delivery.sendSessionRevokeEmail({
+      to: customer.email,
+      verificationCode: otp.verificationCode,
+      expiresAt: otp.expiresAt
+    });
+  } catch (error) {
+    await prisma.customerPasswordResetToken.deleteMany({
+      where: { id: otp.challengeId, usedAt: null }
+    });
+    throw error;
+  }
+}
+
+export async function verifyCustomerSessionRevokeCode(
+  customerAccountId: string,
+  verificationCode: string,
+  now = new Date()
+): Promise<{ sessionRevokeGrant: string; expiresAt: Date }> {
+  const customer = await requireActiveCustomer(customerAccountId);
+  if (customer.passwordHash) throw sessionPasswordReauthenticationRequired();
+
+  const challenge = await prisma.customerPasswordResetToken.findFirst({
+    where: {
+      customerAccountId,
+      id: { startsWith: "session-revoke-otp:" },
+      usedAt: null,
+      expiresAt: { gt: now }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+  if (!challenge) throw invalidSessionRevokeCode();
+
+  if (
+    !customerSessionRevokeOtpMatches(
+      sessionRevokeSecret(),
+      challenge.id,
+      verificationCode,
+      challenge.tokenHash
+    )
+  ) {
+    return recordSessionRevokeFailedAttempt(challenge, now);
+  }
+
+  const grant = createCustomerSessionRevokeGrantMaterial(now);
+  await prisma.$transaction(async (transaction) => {
+    const consumed = await transaction.customerPasswordResetToken.updateMany({
+      data: { usedAt: now },
+      where: {
+        id: challenge.id,
+        usedAt: null,
+        expiresAt: { gt: now }
+      }
+    });
+    if (consumed.count !== 1) throw invalidSessionRevokeCode();
+
+    await transaction.customerPasswordResetToken.create({
+      data: {
+        id: grant.grantId,
+        customerAccountId,
+        tokenHash: grant.grantHash,
+        expiresAt: grant.expiresAt
+      }
+    });
+  });
+
+  return {
+    sessionRevokeGrant: grant.sessionRevokeGrant,
+    expiresAt: grant.expiresAt
+  };
+}
+
 export async function listCustomerSessions(
   customerAccountId: string,
   sessionToken: string,
@@ -238,23 +707,71 @@ export async function revokeOtherCustomerSessions(
   customerAccountId: string,
   sessionToken: string,
   input: CustomerSessionRevokeOthersInput,
+  sessionRevokeGrant = "",
   now = new Date()
 ): Promise<number> {
   const parsed = customerSessionRevokeOthersSchema.parse(input);
   const currentSession = await requireActiveSession(customerAccountId, sessionToken, now);
   const customer = await requireActiveCustomer(customerAccountId);
-  await requireCurrentPassword(customer, parsed.currentPassword);
 
-  const result = await prisma.customerSession.updateMany({
-    data: { revokedAt: now },
-    where: {
-      customerAccountId,
-      id: { not: currentSession.id },
-      revokedAt: null,
-      createdAt: { lte: now },
-      expiresAt: { gt: now }
+  let grantId: string | null = null;
+  if (customer.passwordHash) {
+    await requireCurrentPassword(customer, parsed.currentPassword ?? "");
+  } else {
+    if (!sessionRevokeGrant || sessionRevokeGrant.length < 32) throw invalidSessionRevokeGrant();
+
+    const grantHash = hashCustomerSessionRevokeGrant(sessionRevokeGrant);
+    const grant = await prisma.customerPasswordResetToken.findUnique({
+      where: { tokenHash: grantHash }
+    });
+    if (
+      !grant ||
+      !grant.id.startsWith("session-revoke-grant:") ||
+      grant.customerAccountId !== customerAccountId ||
+      grant.usedAt !== null ||
+      grant.expiresAt.getTime() <= now.getTime()
+    ) {
+      throw invalidSessionRevokeGrant();
     }
-  });
+    grantId = grant.id;
+  }
 
-  return result.count;
+  return prisma.$transaction(async (transaction) => {
+    if (grantId) {
+      const consumed = await transaction.customerPasswordResetToken.updateMany({
+        data: { usedAt: now },
+        where: {
+          id: grantId,
+          customerAccountId,
+          usedAt: null,
+          expiresAt: { gt: now }
+        }
+      });
+      if (consumed.count !== 1) throw invalidSessionRevokeGrant();
+    }
+
+    const result = await transaction.customerSession.updateMany({
+      data: { revokedAt: now },
+      where: {
+        customerAccountId,
+        id: { not: currentSession.id },
+        revokedAt: null,
+        createdAt: { lte: now },
+        expiresAt: { gt: now }
+      }
+    });
+
+    if (grantId) {
+      await transaction.customerPasswordResetToken.updateMany({
+        data: { usedAt: now },
+        where: {
+          customerAccountId,
+          id: { startsWith: "session-revoke-" },
+          usedAt: null
+        }
+      });
+    }
+
+    return result.count;
+  });
 }

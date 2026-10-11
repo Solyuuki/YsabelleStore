@@ -10,6 +10,7 @@ import {
   PaginationNext,
   PaginationPrevious
 } from "@/components/ui/pagination";
+import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 type AppPaginationProps = {
@@ -85,11 +86,10 @@ export function AppPagination({
         {showPageSizeSelector ? (
           <label className="flex items-center gap-2 text-sm text-slate-600">
             <span className="whitespace-nowrap font-medium">Rows per page</span>
-            <select
+            <Select
               aria-label="Rows per page"
-              className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none transition-colors hover:border-slate-300 focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-100 disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-10 w-auto min-w-[4.75rem]"
               disabled={isLoading}
-              style={{ colorScheme: "light" }}
               value={pageSize}
               onChange={(event) => {
                 onPageSizeChange?.(Number(event.target.value));
@@ -100,7 +100,7 @@ export function AppPagination({
                   {option}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
         ) : null}
 

@@ -1,9 +1,11 @@
-import { CircleHelp, Menu, ShoppingBasket, UserRound, X } from "lucide-react";
+import { CircleHelp, Menu, MoonStar, ShoppingBasket, Sun, UserRound, X } from "lucide-react";
 import { useState } from "react";
 
 import { useCart } from "@/context/CartContext";
+import { useAppearance } from "@/context/AppearanceContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { isCustomerShopRoute } from "@/utils/customerRoutes";
+import { preloadAboutExperience } from "@/utils/aboutExperiencePreload";
 import { CustomerLink } from "./CustomerLink";
 import { GlobalStorefrontSearch } from "./GlobalStorefrontSearch";
 import { YsabelleBrandMark } from "./YsabelleBrandMark";
@@ -20,6 +22,7 @@ export function CustomerHeader({
   pathname: string;
 }) {
   const { itemCount } = useCart();
+  const { storefrontTheme, setStorefrontTheme } = useAppearance();
   const { customer, status } = useCustomerAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const isShopRoute = isCustomerShopRoute(pathname);
@@ -56,6 +59,8 @@ export function CustomerHeader({
               href={link.href}
               key={link.href}
               navigate={navigate}
+              onFocus={link.href === "/about" ? () => preloadAboutExperience() : undefined}
+              onPointerEnter={link.href === "/about" ? () => preloadAboutExperience() : undefined}
             >
               {link.label}
             </CustomerLink>
@@ -105,6 +110,24 @@ export function CustomerHeader({
             {itemCount > 0 ? <strong>{itemCount > 99 ? "99+" : itemCount}</strong> : null}
           </CustomerLink>
           <button
+            aria-label={
+              storefrontTheme === "dark"
+                ? "Switch storefront to light mode"
+                : "Switch storefront to dark mode"
+            }
+            aria-pressed={storefrontTheme === "dark"}
+            className="customer-theme-toggle"
+            onClick={() => setStorefrontTheme(storefrontTheme === "dark" ? "light" : "dark")}
+            title={storefrontTheme === "dark" ? "Light mode" : "Dark mode"}
+            type="button"
+          >
+            {storefrontTheme === "dark" ? (
+              <Sun aria-hidden="true" size={19} />
+            ) : (
+              <MoonStar aria-hidden="true" size={19} />
+            )}
+          </button>
+          <button
             aria-expanded={menuOpen}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             className="customer-menu-button"
@@ -124,6 +147,7 @@ export function CustomerHeader({
               key={link.href}
               navigate={navigate}
               onClick={() => setMenuOpen(false)}
+              onFocus={link.href === "/about" ? () => preloadAboutExperience() : undefined}
             >
               {link.label}
             </CustomerLink>

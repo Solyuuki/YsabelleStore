@@ -347,7 +347,7 @@ export function ProductImageUploadPanel({
   }
 
   return (
-    <section className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+    <section className="ys-product-image-panel space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-slate-950">Product image</p>
@@ -533,11 +533,11 @@ function ImagePreview({
   url: string | null;
 }) {
   return (
-    <figure className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <figure className="ys-product-image-preview overflow-hidden rounded-xl border border-slate-200 bg-white">
       <figcaption className="border-b border-slate-200 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
         {title}
       </figcaption>
-      <div className="grid aspect-square place-items-center bg-slate-50 p-4">
+      <div className="ys-product-preview-canvas grid aspect-square place-items-center bg-slate-50 p-4">
         {url ? (
           <img
             alt={`${title} product preview`}

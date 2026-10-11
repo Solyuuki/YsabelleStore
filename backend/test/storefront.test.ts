@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import test from "node:test";
 
 import { InventoryBatchStatus } from "@prisma/client";
@@ -12,6 +14,7 @@ import {
   listStorefrontProducts
 } from "../src/services/storefrontService.js";
 import { getSellableStockQuantity } from "../src/services/stockDomainService.js";
+import { storefrontOrderSchema } from "../src/validators/storefront.validators.js";
 import { captureDatabaseFixtureScope } from "./helpers/databaseFixtureScope.js";
 import { ensureCanonicalStorefrontCategory } from "./helpers/storefrontCanonicalCategory.js";
 
@@ -37,19 +40,31 @@ test("sellable stock excludes expired and unavailable batches", () => {
   assert.equal(quantity, 4);
 });
 
-test("storefront merchandising only ranks available products with recorded sales", async () => {
+test("storefront merchandising keeps review-led trending separate from sales-backed best sellers", async () => {
   const merchandising = await listStorefrontMerchandising();
 
   assert.equal(merchandising.trendingWindowDays, 30);
-  for (const shelf of [merchandising.trending, merchandising.bestSellers]) {
-    assert.ok(shelf.length <= 4);
-    shelf.forEach((entry, index) => {
-      assert.equal(entry.rank, index + 1);
-      assert.ok(entry.unitsSold > 0);
-      assert.ok(entry.product.availableStock > 0);
-      if (index > 0) assert.ok((shelf[index - 1]?.unitsSold ?? 0) >= entry.unitsSold);
-    });
-  }
+  assert.ok(merchandising.trending.length <= 4);
+  merchandising.trending.forEach((entry, index) => {
+    assert.equal(entry.rank, index + 1);
+    assert.ok(entry.trendingScore > 0);
+    assert.ok(entry.recentReviewCount > 0);
+    assert.ok(entry.product.averageRating >= 4);
+    assert.ok(entry.product.availableStock > 0);
+    if (index > 0) {
+      assert.ok((merchandising.trending[index - 1]?.trendingScore ?? 0) >= entry.trendingScore);
+    }
+  });
+
+  assert.ok(merchandising.bestSellers.length <= 4);
+  merchandising.bestSellers.forEach((entry, index) => {
+    assert.equal(entry.rank, index + 1);
+    assert.ok(entry.unitsSold > 0);
+    assert.ok(entry.product.availableStock > 0);
+    if (index > 0) {
+      assert.ok((merchandising.bestSellers[index - 1]?.unitsSold ?? 0) >= entry.unitsSold);
+    }
+  });
 });
 
 test("storefront orders remain pending and do not deduct inventory", async () => {
@@ -103,14 +118,13 @@ test("storefront orders remain pending and do not deduct inventory", async () =>
     assert.equal(storefrontProduct?.imageUrl, `/images/products/storefront-test-${suffix}.webp`);
     assert.ok(storefrontCategory);
 
-    if (categoryFixture.created) {
-      assert.deepEqual(storefrontCategory.representativeProducts, [
-        {
-          id: product.id,
-          imageUrl: `/images/products/storefront-test-${suffix}.webp`,
-          name: product.name
-        }
-      ]);
+    assert.equal("representativeProducts" in storefrontCategory, false);
+    if (storefrontCategory.storefrontCover) {
+      assert.match(
+        storefrontCategory.storefrontCover.imageUrl,
+        /^\/api\/storefront\/category-images\/[^/]+\/cover$/
+      );
+      assert.ok(["LEFT", "CENTER", "RIGHT"].includes(storefrontCategory.storefrontCover.position));
     }
 
     assert.equal("costPrice" in (storefrontProduct ?? {}), false);
@@ -121,8 +135,17 @@ test("storefront orders remain pending and do not deduct inventory", async () =>
       customerName: "Storefront Test Customer",
       customerEmail: "customer@example.com",
       customerPhone: "09171234567",
-      fulfillmentMethod: "STORE_PICKUP",
-      paymentMethod: "CASH_ON_PICKUP",
+      customerAddress: {
+        addressLine1: "110 A. Mabini Street",
+        addressLine2: "",
+        barangay: "Kapitolyo",
+        cityMunicipality: "Pasig City",
+        provinceRegion: "Metro Manila",
+        postalCode: "1603",
+        country: "Philippines"
+      },
+      fulfillmentMethod: "DELIVERY",
+      paymentMethod: "CASH_ON_DELIVERY",
       items: [{ productId: product.id, quantity: 2 }]
     });
     const [inventory, batch, salesAfter] = await Promise.all([
@@ -139,4 +162,44 @@ test("storefront orders remain pending and do not deduct inventory", async () =>
   } finally {
     await scope.cleanup();
   }
+});
+
+test("storefront category serializer exposes only dedicated category cover media", async () => {
+  const serviceSource = readFileSync(
+    resolve(process.cwd(), "src/services/storefrontService.ts"),
+    "utf8"
+  );
+
+  assert.match(serviceSource, /storefrontCover:/);
+  assert.match(serviceSource, /approvedCategoryCoverUrl\(activeCoverAssetId, "cover"\)/);
+  assert.doesNotMatch(serviceSource, /representativeProducts/);
+  assert.doesNotMatch(serviceSource, /select: \{ id: true, imageUrl: true, name: true \}/);
+});
+
+test("PayMongo delivery checkout payload accepts saved customer defaults", () => {
+  const parsed = storefrontOrderSchema.safeParse({
+    customerName: "ALTHEA PERONA",
+    customerEmail: "perona_althea@plpasig.edu.ph",
+    customerPhone: "09766500867",
+    customerAddress: {
+      addressLine1: "217 C Dr. Pilapil St.",
+      addressLine2: "",
+      barangay: "San Miguel",
+      cityMunicipality: "Pasig",
+      provinceRegion: "Metro Manila",
+      postalCode: "1600",
+      country: "Philippines"
+    },
+    saveAddressToAccount: false,
+    saveContactPhoneToAccount: false,
+    notes: "",
+    fulfillmentMethod: "DELIVERY",
+    paymentMethod: "PAYMONGO",
+    items: [
+      { productId: "product-1", quantity: 2 },
+      { productId: "product-2", quantity: 1 }
+    ]
+  });
+
+  assert.equal(parsed.success, true);
 });

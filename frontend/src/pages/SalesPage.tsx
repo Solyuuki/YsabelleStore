@@ -260,7 +260,7 @@ export function SalesPage() {
           </CardHeader>
           <CardContent className="xl:flex xl:min-h-0 xl:flex-1 xl:flex-col">
             {selectedSale ? (
-              <div className="space-y-4 xl:flex xl:min-h-0 xl:flex-1 xl:flex-col xl:space-y-0">
+              <div className="space-y-4 xl:flex xl:min-h-0 xl:flex-1 xl:flex-col xl:gap-3 xl:space-y-0">
                 <div className="rounded-md border border-slate-200 bg-slate-50 p-4 xl:shrink-0">
                   <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Receipt</p>
                   <h3 className="mt-1 text-lg font-semibold text-slate-950">
@@ -280,24 +280,26 @@ export function SalesPage() {
                   </p>
                 </div>
 
-                <div className="space-y-2 xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:overscroll-contain xl:py-4 xl:pr-1">
+                <div className="ys-sales-receipt-scroll min-h-0 space-y-3 xl:flex-1 xl:overflow-y-auto xl:overscroll-contain xl:rounded-md xl:py-2 xl:pl-1 xl:pr-3">
                   {selectedSale.items.map((item) => (
                     <div
                       className="rounded-md border border-slate-200 bg-white p-3 shadow-sm"
                       key={item.id}
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="font-medium text-slate-950">{item.productName}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="break-words font-medium text-slate-950">
+                            {item.productName}
+                          </p>
                           <p className="mt-1 break-all text-xs text-slate-500">
                             {item.barcode ?? item.sku}
                           </p>
                         </div>
-                        <p className="shrink-0 text-sm font-semibold text-slate-950">
+                        <p className="shrink-0 whitespace-nowrap text-right text-sm font-semibold text-slate-950">
                           {currencyFormatter.format(Number(item.totalAmount))}
                         </p>
                       </div>
-                      <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-slate-600">
+                      <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-xs text-slate-600">
                         <span>
                           Qty {item.quantity} x {currencyFormatter.format(Number(item.unitPrice))}
                         </span>

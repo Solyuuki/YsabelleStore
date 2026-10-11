@@ -44,8 +44,8 @@ async function main() {
       id: "order-1",
       orderNumber: "YS-20260823-ABC123",
       status: "PENDING",
-      fulfillmentMethod: "STORE_PICKUP",
-      paymentMethod: "CASH_ON_PICKUP",
+      fulfillmentMethod: "DELIVERY",
+      paymentMethod: "CASH_ON_DELIVERY",
       totalAmount: "30",
       createdAt: "2026-08-23T00:00:00.000Z",
       itemCount: 2,
@@ -178,8 +178,8 @@ async function main() {
         postalCode: "1600",
         country: "Philippines"
       },
-      fulfillmentMethod: "STORE_PICKUP",
-      paymentMethod: "CASH_ON_PICKUP",
+      fulfillmentMethod: "DELIVERY",
+      paymentMethod: "CASH_ON_DELIVERY",
       items: [{ productId: "product-1", quantity: 2 }]
     });
 
@@ -201,8 +201,8 @@ async function main() {
         postalCode: "1600",
         country: "Philippines"
       },
-      fulfillmentMethod: "STORE_PICKUP",
-      paymentMethod: "CASH_ON_PICKUP",
+      fulfillmentMethod: "DELIVERY",
+      paymentMethod: "CASH_ON_DELIVERY",
       items: [{ productId: "product-1", quantity: 2 }]
     });
 

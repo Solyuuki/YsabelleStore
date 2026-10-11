@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { CustomerFooter } from "@/components/customer/CustomerFooter";
 import { CustomerHeader } from "@/components/customer/CustomerHeader";
+import { PrivacyNotice } from "@/components/customer/PrivacyNotice";
 import { DiscoverBrandIdentity } from "@/components/customer/DiscoverBrandIdentity";
 import { useCart } from "@/context/CartContext";
 import { useShoppingGuide } from "@/hooks/useShoppingGuide";
@@ -21,7 +22,7 @@ export function CustomerLayout({
   const { startGuide } = useShoppingGuide(pathname, navigate);
 
   return (
-    <div className="customer-app">
+    <div className="customer-app ys-material-canvas ys-glass-flow-background">
       <a className="customer-skip-link" href="#customer-main">
         Skip to main content
       </a>
@@ -33,7 +34,8 @@ export function CustomerLayout({
       />
       <main id="customer-main">{children}</main>
       <DiscoverBrandIdentity pathname={pathname} />
-      <CustomerFooter navigate={navigate} onStartGuide={startGuide} />
+      <CustomerFooter navigate={navigate} onStartGuide={startGuide} pathname={pathname} />
+      <PrivacyNotice navigate={navigate} pathname={pathname} />
       <div aria-live="polite" className="sr-only" role="status">
         {announcement}
       </div>

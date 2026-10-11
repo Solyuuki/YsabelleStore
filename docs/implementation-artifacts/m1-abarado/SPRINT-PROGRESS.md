@@ -60,3 +60,57 @@ M1 Sprint 2 auth behavior remains intact. Sprint 3 planning now shifts M1 into i
 | 2026-09-01 | Updated the implementation evidence and validation notes for the current branch.                                                                                | m1/v0.9/feat/customer-mobile-otp; catalog-image-engine/ciqe/**pycache**/**init**.cpython-312.pyc<br>catalog-image-engine/ciqe/**pycache**/normalize.cpython-312.pyc<br>catalog-image-engine/ciqe/**pycache**/quality.cpython-312.pyc<br>catalog-image-engine/ciqe/**pycache**/subject.cpython-312.pyc<br>catalog-image-engine/tests/**pycache**/test_auto_review.cpython-312.pyc<br>catalog-image-engine/tests/**pycache**/test_normalize.cpython-312.pyc<br>catalog-image-engine/tests/**pycache**/test_process_contract.cpython-312.pyc<br>catalog-image-engine/tests/**pycache**/test_quality.cpython-312.pyc; validation: Passed        |
 | 2026-09-06 | Updated the implementation evidence and validation notes for the current branch.                                                                                | unknown; .github/workflows/phase9-catalog-readiness.yml<br>artifacts/catalog/phase9/drive-image-metadata/baking-spreads-dessert-ingredients.json<br>artifacts/catalog/phase9/drive-image-metadata/beverages.json<br>artifacts/catalog/phase9/drive-image-metadata/bread-bakery.json<br>artifacts/catalog/phase9/drive-image-metadata/canned-goods.json<br>artifacts/catalog/phase9/drive-image-metadata/condiments-cooking-ingredients.json<br>artifacts/catalog/phase9/drive-image-metadata/frozen-chilled.json<br>artifacts/catalog/phase9/drive-image-metadata/household-supplies.json; validation: Passed                               |
 | 2026-09-10 | Updated the implementation evidence and validation notes for the current branch.                                                                                | m1/v0.9/feat/catalog-data-readiness; backend/test/data-flow.test.ts; validation: Passed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+
+## Sprint 11 Progress
+
+| Date       | Progress                                                                                                                                                                                                                           | Evidence                                                                       |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| 2026-09-18 | Bootstrapped Sprint 11 guardrails and implemented the first QoL reliability slice covering canonical HTTP statuses, 405 routing semantics, safe dependency failures, frontend transport metadata, and focused regression coverage. | `m1/v0.11/fix/http-status-contract`; PR #41; automated validation in progress. |
+
+## Sprint 11 Full-Screen Status UX
+
+| Date       | Progress                                                                                                                         | Evidence                                                                     |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| 2026-09-26 | Unified 401, 403, 404, 503, backend-unreachable, database-unavailable, offline, and timeout states on one Ysabelle status shell. | `m1/v0.11/feat/status-screen-system`; PR #43; manual visual QA remains next. |
+
+## Sprint 11 CIE White Canvas Completion
+
+| Date       | Progress                                                                                                                                            | Evidence                                                                                                                                                                                                                                      |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-27 | Completed the CIE/storefront white-canvas consistency fix and added regression coverage for opaque off-white and transparent product-image sources. | `m1/v0.11/fix/cie-white-catalog-canvas`; `catalog-image-engine/ciqe/normalize.py`; `catalog-image-engine/tests/test_normalize.py`; `frontend/src/styles/customer.css`; `scripts/test/catalog-image-white-canvas.test.mjs`; validation: Passed |
+
+## Sprint 11 Storefront Size Variant Upgrade
+
+On 2026-09-27, the storefront product detail page gained a stock-aware package-size selector without changing the existing PDP layout. The implementation groups real product records by conservative family identity, normalizes package sizes for ascending ordering, filters unavailable siblings, and uses product thumbnails with accessible selection behavior.
+
+Evidence: `backend/src/services/storefrontService.ts`, `backend/test/storefront-product-detail.test.ts`, `frontend/src/components/customer/ProductSizeSelector.tsx`, `frontend/src/pages/customer/ProductDetailPage.tsx`, `frontend/src/styles/customer.css`, and `scripts/test/storefront-size-variant-ui.test.mjs`.
+
+Validation: CI #1635 passed on implementation head `b2f0ac6954e19e15857ab320b2b99b697e9389cd`; manual visual QA is next.
+
+## Sprint 11 Product Error State Polish
+
+On 2026-09-27, the product-detail load failure state was redesigned as a compact storefront card with safe customer-facing copy, improved serif/sans hierarchy, deliberate vertical rhythm, responsive actions, and no raw backend service URL rendered to customers.
+
+Evidence: `frontend/src/pages/customer/ProductDetailPage.tsx`, `frontend/src/styles/customer.css`, and `scripts/test/storefront-product-error-state.test.mjs`.
+
+Validation: CI #1653 passed on implementation head `a46254b427c65fad8448a5c9442123687f7c4a19`; manual visual QA is next.
+
+## Sprint 11 Catalog Identity Hardening
+
+On 2026-09-27, catalog identity was hardened end-to-end: structured brand/variant/package-size import support, Owner visibility for incomplete identity, ZIP-package readiness metrics, and canonical release `g2-s2-c4-a2` with a 50-product identity manifest. Package size is populated only where approved catalog names/descriptions provide deterministic evidence; unknown sizes remain an explicit review condition rather than guessed data.
+
+Validation: CI #1693 passed on implementation head `6f148cb3b8fcc76e32608e254e1e71ab67511e51`; manual QA is next.
+
+## Sprint 11 Canonical Product Reconstruction Gap
+
+On 2026-09-27, manual QA of a freshly recovered GEN2 database exposed an upstream reconstruction gap: `g2-s2-c4-a2` holds 50/50 reviewed descriptions and 50/50 manufacturer barcodes, while the canonical seed/materialized product rows currently retain only 3 descriptions and 1 legacy barcode. This explains the Owner Products UI showing `No description` and `-` for barcode even though the authoritative release is complete.
+
+The issue is tracked as YSB-M1-CANONICAL-MATERIALIZE-007. No implementation has started yet; the repair must restore canonical release product metadata and barcode-domain records during convergence rather than re-entering or guessing product data.
+
+## Sprint 11 Premium Appearance Upgrade — October 8, 2026
+
+Built a separate Dark Mode presentation system for Storefront and Retail. Customer top bar and Retail Settings preserve independent device preferences. Four new SVG artwork assets are served only by dark styling. Dark contrast rules address reviews, product cards, checkout/payment states, cart, remembered accounts, recovery OTP, account history/security/profile, support, privacy, navigation, and retail KPI/sidebar components.
+
+About Experience scene files, motion assets, and original Light Mode textures were not modified. Existing Light Mode CSS is preserved by selectors scoped under `:root.dark`.
+
+Validation: CI run 37739767192 — frontend/backend/Electron workspace validations and independent appearance contract job passed; repository quality gates failed at `npm run format:check`, blocking subsequent root tests and verification. Manual visual and screen-reader/keyboard QA pending. Status: implemented, not release-approved.

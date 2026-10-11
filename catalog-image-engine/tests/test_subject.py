@@ -42,6 +42,22 @@ class ProductSubjectDetectionTests(unittest.TestCase):
 
         self.assertIsNone(self.detector.detect(image))
 
+    def test_ignores_tiny_disconnected_edge_artifact_when_subject_is_dominant(self) -> None:
+        image = Image.new("RGB", (800, 800), "white")
+        draw = ImageDraw.Draw(image)
+        draw.rectangle((260, 120, 540, 680), fill=(35, 80, 180))
+        draw.line((40, 0, 95, 0), fill=(55, 190, 220), width=1)
+
+        detection = self.detector.detect(image)
+
+        self.assertIsNotNone(detection)
+        assert detection is not None
+        left, top, right, bottom = detection.bounding_box
+        self.assertGreater(left, 200)
+        self.assertGreater(top, 50)
+        self.assertGreaterEqual(right, 541)
+        self.assertGreaterEqual(bottom, 681)
+
 
 if __name__ == "__main__":
     unittest.main()

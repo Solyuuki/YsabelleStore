@@ -30,6 +30,14 @@ enum UserStatus {
 enum CustomerAccountStatus {
   ACTIVE
   INACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum ProductReviewStatus {
+  VISIBLE
+  HIDDEN
+  REMOVED
 }
 
 enum CustomerSocialProvider {
@@ -89,6 +97,39 @@ enum ProductImageProcessingStatus {
   PROCESSING
   READY
   FAILED
+}
+
+enum CategoryImageQualityStatus {
+  APPROVED
+  NEEDS_REVIEW
+  REJECTED
+}
+
+enum CategoryImageProcessingStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum CategoryCoverStatus {
+  MISSING
+  PROCESSING
+  NEEDS_REVIEW
+  READY
+  FAILED
+}
+
+enum CategoryCoverPosition {
+  LEFT
+  CENTER
+  RIGHT
+  TOP
+  BOTTOM
+  TOP_LEFT
+  TOP_RIGHT
+  BOTTOM_LEFT
+  BOTTOM_RIGHT
 }
 
 enum ProductSizeUnit {
@@ -170,6 +211,12 @@ enum InventoryMovementType {
   DAMAGED
 }
 
+enum InventoryReservationStatus {
+  ACTIVE
+  CONSUMED
+  RELEASED
+}
+
 enum SaleStatus {
   DRAFT
   COMPLETED
@@ -179,17 +226,79 @@ enum SaleStatus {
 enum CustomerOrderStatus {
   PENDING
   CONFIRMED
-  READY_FOR_PICKUP
+  PROCESSING
   COMPLETED
   CANCELLED
 }
 
 enum CustomerFulfillmentMethod {
-  STORE_PICKUP
+  DELIVERY
 }
 
 enum CustomerPaymentMethod {
-  CASH_ON_PICKUP
+  CASH_ON_DELIVERY
+  PAYMONGO
+}
+
+enum CustomerDeliveryStatus {
+  ORDER_PLACED
+  PREPARING
+  READY_FOR_DELIVERY
+  OUT_FOR_DELIVERY
+  DELIVERED
+  DELIVERY_FAILED
+  CANCELLED
+}
+
+enum CustomerDeliveryActorType {
+  SYSTEM
+  STAFF
+  CUSTOMER
+}
+
+enum CustomerPaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+}
+
+enum SupportTicketStatus {
+  NEW
+  OPEN
+  WAITING_FOR_CUSTOMER
+  RESOLVED
+  CLOSED
+}
+
+enum SupportTicketCategory {
+  ORDER
+  PAYMENT
+  PRODUCT
+  PICKUP_DELIVERY
+  ACCOUNT
+  RETURN_REFUND
+  FEEDBACK
+  OTHER
+}
+
+enum SupportMessageSenderType {
+  CUSTOMER
+  STAFF
+  SYSTEM
+}
+
+enum SupportMessageChannel {
+  WEB
+  EMAIL
+  SYSTEM
+}
+
+enum SupportMessageDeliveryStatus {
+  NOT_APPLICABLE
+  PENDING
+  SENT
+  FAILED
 }
 
 enum ForecastStatus {
@@ -310,6 +419,13 @@ model User {
   invalidatedMonthlySales   HistoricalMonthlySales[]     @relation("HistoricalSalesInvalidatedBy")
   createdRestockOrders      RestockOrder[]               @relation("RestockOrderCreatedBy")
   approvedRestockOrders     RestockOrder[]               @relation("RestockOrderApprovedBy")
+  createdSalesTargets      DailySalesTarget[]           @relation("DailySalesTargetCreatedBy")
+  updatedSalesTargets      DailySalesTarget[]           @relation("DailySalesTargetUpdatedBy")
+  moderatedProductReviews  ProductReview[]               @relation("ProductReviewModeratedBy")
+  customerModerationAudits CustomerModerationAudit[]      @relation("CustomerModerationAuditActor")
+  codCollectedOrders       CustomerOrder[]                @relation("CustomerOrderCodCollectedBy")
+  customerDeliveryEvents   CustomerDeliveryEvent[]        @relation("CustomerDeliveryEventStaffActor")
+  supportMessages           SupportMessage[]                @relation("SupportMessageSenderUser")
 
   @@index([role, status], map: "idx_users_role_status")
   @@map("users")
@@ -340,6 +456,7 @@ model CustomerAccount {
   username            String?                      @unique(map: "uq_customer_accounts_username") @db.VarChar(30)
   email               String                       @unique(map: "uq_customer_accounts_email") @db.VarChar(191)
   phone               String?                      @db.VarChar(40)
+  defaultContactPhone String?                      @map("default_contact_phone") @db.VarChar(40)
   phoneNormalized     String?                      @unique(map: "uq_customer_accounts_phone_normalized") @map("phone_normalized") @db.VarChar(16)
   emailVerifiedAt     DateTime?                    @map("email_verified_at")
   phoneVerifiedAt     DateTime?                    @map("phone_verified_at")
@@ -353,9 +470,19 @@ model CustomerAccount {
   socialLinkIntents   CustomerSocialLinkIntent[]
   oauthHandoffs       CustomerOAuthHandoff[]
   orders              CustomerOrder[]
+  cartItems           CustomerCartItem[]
+  savedAddress        CustomerSavedAddress?
   rememberedAuth      CustomerRememberedAuth[]
+  favorites           CustomerFavorite[]
+  reviews             ProductReview[]
+  deliveryEvents      CustomerDeliveryEvent[]        @relation("CustomerDeliveryEventCustomerActor")
+  supportTickets      SupportTicket[]
 
   @@index([status], map: "idx_customer_accounts_status")
+  @@index([createdAt, id], map: "idx_customer_accounts_created_id")
+  @@index([status, createdAt, id], map: "idx_customer_accounts_status_created_id")
+  @@index([name, id], map: "idx_customer_accounts_name_id")
+  @@index([phone, id], map: "idx_customer_accounts_phone_id")
   @@map("customer_accounts")
 }
 
@@ -549,19 +676,26 @@ model CustomerSession {
 }
 
 model Category {
-  id                  String               @id @default(cuid()) @db.VarChar(191)
-  name                String               @unique(map: "uq_categories_name") @db.VarChar(120)
-  slug                String               @unique(map: "uq_categories_slug") @db.VarChar(140)
-  description         String?              @db.VarChar(255)
-  isActive            Boolean              @default(true) @map("is_active")
-  recordSource        CatalogRecordSource  @default(CATALOG) @map("record_source")
-  dataQualityStatus   CatalogQualityStatus @default(NEEDS_REVIEW) @map("data_quality_status")
-  isStorefrontVisible Boolean              @default(false) @map("is_storefront_visible")
-  createdAt           DateTime             @default(now()) @map("created_at")
-  updatedAt           DateTime             @updatedAt @map("updated_at")
+  id                  String                @id @default(cuid()) @db.VarChar(191)
+  name                String                @unique(map: "uq_categories_name") @db.VarChar(120)
+  slug                String                @unique(map: "uq_categories_slug") @db.VarChar(140)
+  description         String?               @db.VarChar(255)
+  isActive            Boolean               @default(true) @map("is_active")
+  recordSource        CatalogRecordSource   @default(CATALOG) @map("record_source")
+  dataQualityStatus   CatalogQualityStatus  @default(NEEDS_REVIEW) @map("data_quality_status")
+  isStorefrontVisible Boolean               @default(false) @map("is_storefront_visible")
+  activeCoverAssetId  String?               @unique(map: "uq_categories_active_cover_asset") @map("active_cover_asset_id") @db.VarChar(191)
+  coverStatus         CategoryCoverStatus   @default(MISSING) @map("cover_status")
+  coverPosition       CategoryCoverPosition @default(CENTER) @map("cover_position")
+  createdAt           DateTime              @default(now()) @map("created_at")
+  updatedAt           DateTime              @updatedAt @map("updated_at")
   products            Product[]
+  coverAssets         CategoryImageAsset[]  @relation("CategoryCoverAssets")
+  activeCoverAsset    CategoryImageAsset?   @relation("ActiveCategoryCover", fields: [activeCoverAssetId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([isActive], map: "idx_categories_is_active")
+  @@index([coverStatus], map: "idx_categories_cover_status")
+  @@index([isStorefrontVisible, coverStatus, isActive], map: "idx_categories_storefront_cover")
   @@index([isStorefrontVisible, dataQualityStatus, isActive], map: "idx_categories_storefront_quality")
   @@map("categories")
 }
@@ -584,6 +718,9 @@ model Product {
   sellingPrice              Decimal                     @map("selling_price") @db.Decimal(10, 2)
   reorderLevel              Int                         @default(0) @map("reorder_level") @db.UnsignedInt
   targetStockLevel          Int                         @default(0) @map("target_stock_level") @db.UnsignedInt
+  restockTargetApprovedLevel Int?                      @map("restock_target_approved_level") @db.UnsignedInt
+  restockTargetApprovedAt    DateTime?                 @map("restock_target_approved_at")
+  restockTargetApprovedById  String?                   @map("restock_target_approved_by_id") @db.VarChar(191)
   status                    ProductStatus               @default(ACTIVE)
   recordSource              CatalogRecordSource         @default(CATALOG) @map("record_source")
   dataQualityStatus         CatalogQualityStatus        @default(NEEDS_REVIEW) @map("data_quality_status")
@@ -596,6 +733,7 @@ model Product {
   barcodes                  ProductBarcode[]
   inventory                 Inventory?
   inventoryBatches          InventoryBatch[]
+  reservations              InventoryReservation[]
   inventoryMovements        InventoryMovement[]
   saleItems                 SaleItem[]
   forecastRecords           ForecastRecord[]
@@ -603,6 +741,8 @@ model Product {
   historicalMonthlySales    HistoricalMonthlySales[]
   historicalSalesImportRows HistoricalSalesImportRow[]
   customerOrderItems        CustomerOrderItem[]
+  customerCartItems         CustomerCartItem[]
+  customerFavorites         CustomerFavorite[]
   reviews                   ProductReview[]
   aliases                   ProductAlias[]
   sourceMapping             ProductCanonicalMapping?    @relation("SourceProductMapping")
@@ -642,6 +782,34 @@ model ProductBarcode {
   @@map("product_barcodes")
 }
 
+model CategoryImageAsset {
+  id                  String                        @id @default(cuid()) @db.VarChar(191)
+  categoryId          String                        @map("category_id") @db.VarChar(191)
+  qualityStatus       CategoryImageQualityStatus    @default(NEEDS_REVIEW) @map("quality_status")
+  processingStatus    CategoryImageProcessingStatus @default(PENDING) @map("processing_status")
+  originalStorageKey  String                        @map("original_storage_key") @db.VarChar(500)
+  processedStorageKey String?                       @map("processed_storage_key") @db.VarChar(500)
+  coverStorageKey     String?                       @map("cover_storage_key") @db.VarChar(500)
+  thumbnailStorageKey String?                       @map("thumbnail_storage_key") @db.VarChar(500)
+  sourceMimeType      String                        @map("source_mime_type") @db.VarChar(80)
+  sourceBytes         Int                           @map("source_bytes") @db.UnsignedInt
+  sourceWidth         Int?                          @map("source_width") @db.UnsignedInt
+  sourceHeight        Int?                          @map("source_height") @db.UnsignedInt
+  diagnostics         Json?
+  processingVersion   String                        @default("category-cover-v1") @map("processing_version") @db.VarChar(40)
+  approvedAt          DateTime?                     @map("approved_at")
+  rejectedAt          DateTime?                     @map("rejected_at")
+  supersededAt        DateTime?                     @map("superseded_at")
+  createdAt           DateTime                      @default(now()) @map("created_at")
+  updatedAt           DateTime                      @updatedAt @map("updated_at")
+  category            Category                      @relation("CategoryCoverAssets", fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  activeForCategory   Category?                     @relation("ActiveCategoryCover")
+
+  @@index([categoryId, createdAt], map: "idx_category_image_assets_category_created")
+  @@index([categoryId, qualityStatus, processingStatus], map: "idx_category_image_assets_quality")
+  @@map("category_image_assets")
+}
+
 model ProductImageAsset {
   id                  String                       @id @default(cuid()) @db.VarChar(191)
   productId           String                       @map("product_id") @db.VarChar(191)
@@ -671,17 +839,33 @@ model ProductImageAsset {
 }
 
 model ProductReview {
-  id                  String   @id @default(cuid()) @db.VarChar(191)
-  productId           String   @map("product_id") @db.VarChar(191)
-  reviewerDisplayName String   @map("reviewer_display_name") @db.VarChar(120)
-  rating              Int      @db.UnsignedTinyInt
-  comment             String   @db.VarChar(1000)
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
-  product             Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  id                  String              @id @default(cuid()) @db.VarChar(191)
+  productId           String              @map("product_id") @db.VarChar(191)
+  customerAccountId   String?             @map("customer_account_id") @db.VarChar(191)
+  verifiedOrderId     String?             @map("verified_order_id") @db.VarChar(191)
+  reviewerDisplayName String              @map("reviewer_display_name") @db.VarChar(120)
+  rating              Int                 @db.UnsignedTinyInt
+  comment             String              @db.VarChar(1000)
+  status              ProductReviewStatus @default(VISIBLE)
+  moderatedById       String?             @map("moderated_by_id") @db.VarChar(191)
+  moderationReason    String?             @map("moderation_reason") @db.VarChar(500)
+  moderatedAt         DateTime?           @map("moderated_at")
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+  product             Product             @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  customerAccount     CustomerAccount?    @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  verifiedOrder       CustomerOrder?      @relation("ProductReviewVerifiedOrder", fields: [verifiedOrderId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  moderatedBy         User?               @relation("ProductReviewModeratedBy", fields: [moderatedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
-  @@index([productId, createdAt], map: "idx_product_reviews_product_created")
-  @@index([productId, rating, createdAt], map: "idx_product_reviews_product_rating_created")
+  @@unique([customerAccountId, productId], map: "uq_product_reviews_customer_product")
+  @@index([productId, status, createdAt], map: "idx_product_reviews_product_status_created")
+  @@index([productId, status, rating, createdAt], map: "idx_product_reviews_product_status_rating_created")
+  @@index([customerAccountId, createdAt], map: "idx_product_reviews_customer_created")
+  @@index([createdAt, id], map: "idx_product_reviews_created_id")
+  @@index([status, createdAt, id], map: "idx_product_reviews_status_created_id")
+  @@index([reviewerDisplayName, id], map: "idx_product_reviews_reviewer_id")
+  @@index([verifiedOrderId], map: "idx_product_reviews_verified_order")
+  @@index([moderatedById], map: "idx_product_reviews_moderated_by")
   @@map("product_reviews")
 }
 
@@ -859,6 +1043,9 @@ model InventoryMovement {
 model Sale {
   id             String     @id @default(cuid()) @db.VarChar(191)
   saleNumber     String     @unique(map: "uq_sales_sale_number") @map("sale_number") @db.VarChar(80)
+  checkoutRequestKey String? @unique(map: "uq_sales_checkout_request_key") @map("checkout_request_key") @db.VarChar(191)
+  checkoutCashReceived Decimal? @map("checkout_cash_received") @db.Decimal(12, 2)
+  checkoutChange Decimal? @map("checkout_change") @db.Decimal(12, 2)
   cashierId      String?    @map("cashier_id") @db.VarChar(191)
   saleDate       DateTime   @default(now()) @map("sale_date")
   subtotalAmount Decimal    @map("subtotal_amount") @db.Decimal(12, 2)
@@ -870,6 +1057,7 @@ model Sale {
   updatedAt      DateTime   @updatedAt @map("updated_at")
   cashier        User?      @relation(fields: [cashierId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   items          SaleItem[]
+  customerOrder  CustomerOrder?
 
   @@index([saleDate], map: "idx_sales_sale_date")
   @@index([status, saleDate], map: "idx_sales_status_date")
@@ -896,28 +1084,156 @@ model SaleItem {
   @@map("sale_items")
 }
 
+model DailySalesTarget {
+  id            String   @id @default(cuid()) @db.VarChar(191)
+  businessDate  DateTime @unique(map: "uq_daily_sales_targets_business_date") @map("business_date") @db.Date
+  targetAmount  Decimal  @map("target_amount") @db.Decimal(12, 2)
+  createdById   String?  @map("created_by_id") @db.VarChar(191)
+  updatedById   String?  @map("updated_by_id") @db.VarChar(191)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  createdBy     User?    @relation("DailySalesTargetCreatedBy", fields: [createdById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  updatedBy     User?    @relation("DailySalesTargetUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([createdById], map: "idx_daily_sales_targets_created_by")
+  @@index([updatedById], map: "idx_daily_sales_targets_updated_by")
+  @@map("daily_sales_targets")
+}
+
+model CustomerFavorite {
+  id                String          @id @default(cuid()) @db.VarChar(191)
+  customerAccountId String          @map("customer_account_id") @db.VarChar(191)
+  productId         String          @map("product_id") @db.VarChar(191)
+  createdAt         DateTime        @default(now()) @map("created_at")
+  customerAccount   CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product           Product         @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([customerAccountId, productId], map: "uq_customer_favorites_customer_product")
+  @@index([customerAccountId, createdAt], map: "idx_customer_favorites_customer_created")
+  @@index([productId, createdAt], map: "idx_customer_favorites_product_created")
+  @@map("customer_favorites")
+}
+
+model CustomerCartItem {
+  id                String          @id @default(cuid()) @db.VarChar(191)
+  customerAccountId String          @map("customer_account_id") @db.VarChar(191)
+  productId         String          @map("product_id") @db.VarChar(191)
+  quantity          Int             @db.UnsignedInt
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  customerAccount   CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product           Product         @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([customerAccountId, productId], map: "uq_customer_cart_items_customer_product")
+  @@index([customerAccountId, updatedAt], map: "idx_customer_cart_items_customer_updated")
+  @@index([productId], map: "idx_customer_cart_items_product")
+  @@map("customer_cart_items")
+}
+
+model CustomerSavedAddress {
+  customerAccountId String          @id @map("customer_account_id") @db.VarChar(191)
+  addressLine1      String          @map("address_line_1") @db.VarChar(180)
+  addressLine2      String?         @map("address_line_2") @db.VarChar(180)
+  barangay          String          @db.VarChar(120)
+  cityMunicipality  String          @map("city_municipality") @db.VarChar(120)
+  provinceRegion    String          @map("province_region") @db.VarChar(120)
+  postalCode        String          @map("postal_code") @db.VarChar(20)
+  country           String          @default("Philippines") @db.VarChar(80)
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @default(now()) @updatedAt @map("updated_at")
+  customerAccount   CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("customer_saved_addresses")
+}
+
 model CustomerOrder {
-  id                String                    @id @default(cuid()) @db.VarChar(191)
-  customerAccountId String?                   @map("customer_account_id") @db.VarChar(191)
-  orderNumber       String                    @unique(map: "uq_customer_orders_order_number") @map("order_number") @db.VarChar(80)
-  customerName      String                    @map("customer_name") @db.VarChar(120)
-  customerEmail     String?                   @map("customer_email") @db.VarChar(191)
-  customerPhone     String                    @map("customer_phone") @db.VarChar(40)
-  fulfillmentMethod CustomerFulfillmentMethod @default(STORE_PICKUP) @map("fulfillment_method")
-  paymentMethod     CustomerPaymentMethod     @default(CASH_ON_PICKUP) @map("payment_method")
-  status            CustomerOrderStatus       @default(PENDING)
-  subtotalAmount    Decimal                   @map("subtotal_amount") @db.Decimal(12, 2)
-  totalAmount       Decimal                   @map("total_amount") @db.Decimal(12, 2)
-  notes             String?                   @db.VarChar(255)
-  createdAt         DateTime                  @default(now()) @map("created_at")
-  updatedAt         DateTime                  @updatedAt @map("updated_at")
-  items             CustomerOrderItem[]
-  customerAccount   CustomerAccount?          @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  id                       String                    @id @default(cuid()) @db.VarChar(191)
+  customerAccountId        String?                   @map("customer_account_id") @db.VarChar(191)
+  orderNumber              String                    @unique(map: "uq_customer_orders_order_number") @map("order_number") @db.VarChar(80)
+  deliveryTicketNumber     String                    @unique(map: "uq_customer_orders_delivery_ticket") @map("delivery_ticket_number") @db.VarChar(96)
+  customerName             String                    @map("customer_name") @db.VarChar(120)
+  customerEmail            String?                   @map("customer_email") @db.VarChar(191)
+  customerPhone            String                    @map("customer_phone") @db.VarChar(40)
+  fulfillmentMethod        CustomerFulfillmentMethod @default(DELIVERY) @map("fulfillment_method")
+  paymentMethod            CustomerPaymentMethod     @default(CASH_ON_DELIVERY) @map("payment_method")
+  paymentStatus            CustomerPaymentStatus     @default(PENDING) @map("payment_status")
+  deliveryStatus           CustomerDeliveryStatus    @default(ORDER_PLACED) @map("delivery_status")
+  courierProvider          String?                   @map("courier_provider") @db.VarChar(80)
+  courierReference         String?                   @map("courier_reference") @db.VarChar(120)
+  deliveryNotes            String?                   @map("delivery_notes") @db.VarChar(255)
+  dispatchedAt             DateTime?                 @map("dispatched_at")
+  deliveredAt              DateTime?                 @map("delivered_at")
+  customerConfirmedAt      DateTime?                 @map("customer_confirmed_at")
+  codCollectedAt           DateTime?                 @map("cod_collected_at")
+  codCollectedById         String?                   @map("cod_collected_by_id") @db.VarChar(191)
+  saleId                   String?                   @unique(map: "uq_customer_orders_sale") @map("sale_id") @db.VarChar(191)
+  paymongoCheckoutSessionId String?                  @unique(map: "uq_customer_orders_paymongo_checkout_session") @map("paymongo_checkout_session_id") @db.VarChar(191)
+  paymongoCheckoutUrl       String?                  @map("paymongo_checkout_url") @db.VarChar(2048)
+  paymongoPaymentIntentId   String?                  @map("paymongo_payment_intent_id") @db.VarChar(191)
+  paymongoPaymentId         String?                  @unique(map: "uq_customer_orders_paymongo_payment") @map("paymongo_payment_id") @db.VarChar(191)
+  paidAt                    DateTime?                 @map("paid_at")
+  status                    CustomerOrderStatus       @default(PENDING)
+  subtotalAmount            Decimal                   @map("subtotal_amount") @db.Decimal(12, 2)
+  totalAmount               Decimal                   @map("total_amount") @db.Decimal(12, 2)
+  notes                     String?                   @db.VarChar(255)
+  createdAt                 DateTime                  @default(now()) @map("created_at")
+  updatedAt                 DateTime                  @updatedAt @map("updated_at")
+  items                     CustomerOrderItem[]
+  addressSnapshot           CustomerOrderAddressSnapshot?
+  deliveryEvents            CustomerDeliveryEvent[]
+  customerAccount           CustomerAccount?          @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  codCollectedBy            User?                     @relation("CustomerOrderCodCollectedBy", fields: [codCollectedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  reservations              InventoryReservation[]
+  checkoutRequestKey        String?                   @unique(map: "uq_customer_order_checkout_key") @map("checkout_request_key") @db.VarChar(191)
+  reservationPolicyVersion Int                      @default(0) @map("reservation_policy_version") @db.UnsignedInt
+  sale                      Sale?                     @relation(fields: [saleId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  verifiedReviews           ProductReview[]            @relation("ProductReviewVerifiedOrder")
+  supportTickets              SupportTicket[]
 
   @@index([customerAccountId, createdAt], map: "idx_customer_orders_customer_created")
   @@index([status, createdAt], map: "idx_customer_orders_status_created")
+  @@index([paymentStatus, createdAt], map: "idx_customer_orders_payment_status_created")
+  @@index([deliveryStatus, updatedAt], map: "idx_customer_orders_delivery_status_updated")
   @@index([customerPhone, createdAt], map: "idx_customer_orders_phone_created")
+  @@index([codCollectedById], map: "idx_customer_orders_cod_collected_by")
   @@map("customer_orders")
+}
+
+model CustomerDeliveryEvent {
+  id                     String                    @id @default(cuid()) @db.VarChar(191)
+  orderId                String                    @map("order_id") @db.VarChar(191)
+  status                 CustomerDeliveryStatus
+  actorType              CustomerDeliveryActorType @map("actor_type")
+  actorUserId            String?                   @map("actor_user_id") @db.VarChar(191)
+  actorCustomerAccountId String?                   @map("actor_customer_account_id") @db.VarChar(191)
+  note                   String?                   @db.VarChar(255)
+  createdAt              DateTime                  @default(now()) @map("created_at")
+  order                  CustomerOrder             @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  actorUser              User?                     @relation("CustomerDeliveryEventStaffActor", fields: [actorUserId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  actorCustomerAccount   CustomerAccount?          @relation("CustomerDeliveryEventCustomerActor", fields: [actorCustomerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([orderId, createdAt], map: "idx_customer_delivery_events_order_created")
+  @@index([actorUserId], map: "idx_customer_delivery_events_user")
+  @@index([actorCustomerAccountId], map: "idx_customer_delivery_events_customer")
+  @@map("customer_delivery_events")
+}
+
+model InventoryReservation {
+  id          String                     @id @default(cuid()) @db.VarChar(191)
+  orderId     String                     @map("order_id") @db.VarChar(191)
+  productId   String                     @map("product_id") @db.VarChar(191)
+  quantity    Int                        @db.UnsignedInt
+  status      InventoryReservationStatus @default(ACTIVE)
+  consumedAt  DateTime?                  @map("consumed_at")
+  releasedAt  DateTime?                  @map("released_at")
+  createdAt   DateTime                   @default(now()) @map("created_at")
+  updatedAt   DateTime                   @updatedAt @map("updated_at")
+  order       CustomerOrder              @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  product     Product                    @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([orderId, productId], map: "uq_inventory_reservations_order_product")
+  @@index([productId, status], map: "idx_inventory_reservations_product_status")
+  @@map("inventory_reservations")
 }
 
 model CustomerOrderItem {
@@ -934,6 +1250,79 @@ model CustomerOrderItem {
   @@index([orderId], map: "idx_customer_order_items_order")
   @@index([productId], map: "idx_customer_order_items_product")
   @@map("customer_order_items")
+}
+
+model CustomerOrderAddressSnapshot {
+  orderId            String        @id @map("order_id") @db.VarChar(191)
+  addressLine1       String        @map("address_line_1") @db.VarChar(180)
+  addressLine2       String?       @map("address_line_2") @db.VarChar(180)
+  barangay           String        @db.VarChar(120)
+  cityMunicipality   String        @map("city_municipality") @db.VarChar(120)
+  provinceRegion     String        @map("province_region") @db.VarChar(120)
+  postalCode         String        @map("postal_code") @db.VarChar(20)
+  country            String        @default("Philippines") @db.VarChar(80)
+  createdAt          DateTime      @default(now()) @map("created_at")
+  order              CustomerOrder @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("customer_order_address_snapshots")
+}
+
+model SupportTicket {
+  id                    String                @id @default(cuid()) @db.VarChar(191)
+  ticketNumber          String                @unique(map: "uq_support_tickets_ticket_number") @map("ticket_number") @db.VarChar(80)
+  customerAccountId     String?               @map("customer_account_id") @db.VarChar(191)
+  customerOrderId       String?               @map("customer_order_id") @db.VarChar(191)
+  customerName          String                @map("customer_name") @db.VarChar(120)
+  customerEmail         String                @map("customer_email") @db.VarChar(191)
+  customerPhone         String?               @map("customer_phone") @db.VarChar(40)
+  category              SupportTicketCategory
+  subject               String                @db.VarChar(160)
+  status                SupportTicketStatus   @default(NEW)
+  gmailThreadId         String?               @unique(map: "uq_support_tickets_gmail_thread_id") @map("gmail_thread_id") @db.VarChar(191)
+  lastMessageAt         DateTime              @default(now()) @map("last_message_at")
+  lastCustomerMessageAt DateTime?             @map("last_customer_message_at")
+  lastStaffMessageAt    DateTime?             @map("last_staff_message_at")
+  lastReadByStaffAt     DateTime?             @map("last_read_by_staff_at")
+  resolvedAt            DateTime?             @map("resolved_at")
+  closedAt              DateTime?             @map("closed_at")
+  createdAt             DateTime              @default(now()) @map("created_at")
+  updatedAt             DateTime              @updatedAt @map("updated_at")
+  customerAccount       CustomerAccount?      @relation(fields: [customerAccountId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  customerOrder         CustomerOrder?        @relation(fields: [customerOrderId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  messages              SupportMessage[]
+
+  @@index([status, lastMessageAt], map: "idx_support_tickets_status_last_message")
+  @@index([category, status, lastMessageAt], map: "idx_support_tickets_category_status_message")
+  @@index([customerAccountId, createdAt], map: "idx_support_tickets_customer_created")
+  @@index([customerEmail, createdAt], map: "idx_support_tickets_email_created")
+  @@index([customerOrderId], map: "idx_support_tickets_order")
+  @@map("support_tickets")
+}
+
+model SupportMessage {
+  id             String                       @id @default(cuid()) @db.VarChar(191)
+  ticketId       String                       @map("ticket_id") @db.VarChar(191)
+  senderType     SupportMessageSenderType     @map("sender_type")
+  channel        SupportMessageChannel        @default(WEB)
+  senderUserId   String?                      @map("sender_user_id") @db.VarChar(191)
+  senderName     String?                      @map("sender_name") @db.VarChar(120)
+  senderEmail    String?                      @map("sender_email") @db.VarChar(191)
+  body           String                       @db.Text
+  gmailMessageId String?                      @unique(map: "uq_support_messages_gmail_message_id") @map("gmail_message_id") @db.VarChar(191)
+  gmailThreadId  String?                      @map("gmail_thread_id") @db.VarChar(191)
+  deliveryStatus SupportMessageDeliveryStatus @default(NOT_APPLICABLE) @map("delivery_status")
+  deliveryError  String?                      @map("delivery_error") @db.VarChar(500)
+  emailSentAt    DateTime?                    @map("email_sent_at")
+  createdAt      DateTime                     @default(now()) @map("created_at")
+  ticket         SupportTicket                @relation(fields: [ticketId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  senderUser     User?                        @relation("SupportMessageSenderUser", fields: [senderUserId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([ticketId, createdAt], map: "idx_support_messages_ticket_created")
+  @@index([senderType, createdAt], map: "idx_support_messages_sender_created")
+  @@index([channel, createdAt], map: "idx_support_messages_channel_created")
+  @@index([gmailThreadId], map: "idx_support_messages_gmail_thread")
+  @@index([senderUserId], map: "idx_support_messages_sender_user")
+  @@map("support_messages")
 }
 
 model ForecastRecord {
@@ -1198,4 +1587,35 @@ model RestockOrderLine {
   @@index([recommendationId], map: "idx_restock_order_lines_recommendation")
   @@index([restockOrderId, isSelected], map: "idx_restock_order_lines_order_selected")
   @@map("restock_order_lines")
+}
+
+
+model CustomerModerationAudit {
+  id                String   @id @default(cuid()) @db.VarChar(191)
+  actorUserId       String   @map("actor_user_id") @db.VarChar(191)
+  customerAccountId String?  @map("customer_account_id") @db.VarChar(191)
+  productReviewId   String?  @map("product_review_id") @db.VarChar(191)
+  action            String   @db.VarChar(80)
+  reason            String   @db.VarChar(500)
+  previousState     String?  @map("previous_state") @db.VarChar(80)
+  nextState         String?  @map("next_state") @db.VarChar(80)
+  createdAt         DateTime @default(now()) @map("created_at")
+  actor             User     @relation("CustomerModerationAuditActor", fields: [actorUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([customerAccountId, createdAt], map: "idx_customer_moderation_customer_created")
+  @@index([productReviewId, createdAt], map: "idx_customer_moderation_review_created")
+  @@index([actorUserId, createdAt], map: "idx_customer_moderation_actor_created")
+  @@map("customer_moderation_audits")
+}
+
+model SystemCanonicalState {
+  id             Int      @id @db.UnsignedInt
+  migrationEpoch Int      @map("migration_epoch") @db.UnsignedInt
+  schemaVersion  Int      @map("schema_version") @db.UnsignedInt
+  catalogVersion Int      @map("catalog_version") @db.UnsignedInt
+  assetVersion   Int      @map("asset_version") @db.UnsignedInt
+  releaseId      String   @map("release_id") @db.VarChar(80)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("system_canonical_state")
 }

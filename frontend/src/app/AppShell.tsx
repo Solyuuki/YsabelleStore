@@ -1,9 +1,19 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 
 import { canRoleAccessRoute, getRouteByPath, type AppRoute, type AppRoutePath } from "@/app/routes";
 import { LogoutConfirmationModal } from "@/components/shared/LogoutConfirmationModal";
 import { AppLayout } from "@/layouts/AppLayout";
 import { useAuth } from "@/context/AuthContext";
+import { useAppearance } from "@/context/AppearanceContext";
 import { AccessDeniedPage } from "@/pages/AccessDeniedPage";
 import { ReceiptPrintPage } from "@/pages/ReceiptPrintPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
@@ -20,6 +30,9 @@ const DashboardPage = lazy(() =>
 const ProductsPage = lazy(() =>
   import("@/pages/ProductsPage").then(({ ProductsPage }) => ({ default: ProductsPage }))
 );
+const CategoriesPage = lazy(() =>
+  import("@/pages/CategoriesPage").then(({ CategoriesPage }) => ({ default: CategoriesPage }))
+);
 const InventoryPage = lazy(() =>
   import("@/pages/InventoryPage").then(({ InventoryPage }) => ({ default: InventoryPage }))
 );
@@ -29,6 +42,14 @@ const ReceivingPage = lazy(() =>
 const PosPage = lazy(() => import("@/pages/PosPage").then(({ PosPage }) => ({ default: PosPage })));
 const SalesPage = lazy(() =>
   import("@/pages/SalesPage").then(({ SalesPage }) => ({ default: SalesPage }))
+);
+const DeliveriesPage = lazy(() =>
+  import("@/pages/DeliveriesPage").then(({ DeliveriesPage }) => ({ default: DeliveriesPage }))
+);
+const CustomerSupportInboxPage = lazy(() =>
+  import("@/pages/CustomerSupportInboxPage").then(({ CustomerSupportInboxPage }) => ({
+    default: CustomerSupportInboxPage
+  }))
 );
 const ForecastPage = lazy(() =>
   import("@/pages/ForecastPage").then(({ ForecastPage }) => ({ default: ForecastPage }))
@@ -57,9 +78,12 @@ const validRoutePaths = new Set<string>([
   "/dashboard",
   "/pos",
   "/products",
+  "/categories",
   "/inventory",
   "/receiving",
   "/sales",
+  "/deliveries",
+  "/customer-support",
   "/forecast",
   "/historical-sales",
   "/reports",
@@ -72,6 +96,18 @@ const internalRoutePaths = new Set<string>([...validRoutePaths, "/staff-login"])
 
 function getCurrentLocation() {
   return `${window.location.pathname || "/"}${window.location.search}${window.location.hash}`;
+}
+
+function shouldPreserveShopCategoryScroll(currentLocation: string, nextPath: string) {
+  const currentUrl = new URL(currentLocation, window.location.origin);
+  const nextUrl = new URL(nextPath, window.location.origin);
+  const shopBrowsePath = /^\/shop(?:\/category\/[^/]+)?$/;
+
+  return (
+    shopBrowsePath.test(currentUrl.pathname) &&
+    shopBrowsePath.test(nextUrl.pathname) &&
+    currentUrl.pathname !== nextUrl.pathname
+  );
 }
 
 function getReceiptPrintRequest() {
@@ -88,6 +124,7 @@ function getReceiptPrintRequest() {
 }
 
 export function AppShell() {
+  const { syncForPath } = useAppearance();
   const {
     error,
     continueWithTrustedDevice,
@@ -104,6 +141,9 @@ export function AppShell() {
   const [location, setLocation] = useState(getCurrentLocation);
   const path = new URL(location, window.location.origin).pathname;
   const isCustomerRoute = !internalRoutePaths.has(path);
+  useLayoutEffect(() => {
+    syncForPath(path);
+  }, [path, syncForPath]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => window.innerWidth < 1280);
   const shouldHoldForAuth = !isCustomerRoute && !isAuthReady;
   const [showLaunchSplash, setShowLaunchSplash] = useState(false);
@@ -121,7 +161,10 @@ export function AppShell() {
   }, []);
 
   const navigate = useCallback((nextPath: string) => {
-    if (getCurrentLocation() !== nextPath) {
+    const currentLocation = getCurrentLocation();
+    const preserveShopCategoryScroll = shouldPreserveShopCategoryScroll(currentLocation, nextPath);
+
+    if (currentLocation !== nextPath) {
       window.history.pushState({}, "", nextPath);
     }
 
@@ -129,7 +172,7 @@ export function AppShell() {
     const hash = new URL(nextPath, window.location.origin).hash;
     if (hash) {
       window.requestAnimationFrame(() => document.querySelector(hash)?.scrollIntoView());
-    } else {
+    } else if (!preserveShopCategoryScroll) {
       window.scrollTo({ top: 0, behavior: "auto" });
     }
   }, []);
@@ -322,12 +365,18 @@ function renderRoute(
       return <PosPage />;
     case "/products":
       return <ProductsPage />;
+    case "/categories":
+      return <CategoriesPage />;
     case "/inventory":
       return <InventoryPage />;
     case "/receiving":
       return <ReceivingPage />;
     case "/sales":
       return <SalesPage />;
+    case "/deliveries":
+      return <DeliveriesPage />;
+    case "/customer-support":
+      return <CustomerSupportInboxPage />;
     case "/forecast":
       return <ForecastPage />;
     case "/historical-sales":

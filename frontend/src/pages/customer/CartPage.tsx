@@ -5,14 +5,20 @@ import { CustomerLink } from "@/components/customer/CustomerLink";
 import { formatCurrency, formatUnit } from "@/components/customer/ProductCard";
 import { ProductVisual } from "@/components/customer/ProductVisual";
 import { QuantityControl } from "@/components/customer/QuantityControl";
+import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { useCart } from "@/context/CartContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import "@/styles/customer-cart-premium.css";
+import { buildCustomerAuthPath } from "@/utils/customerRoutes";
 
 const CART_PAGE_SIZE = 5;
 
 export function CartPage({ navigate }: { navigate: (path: string) => void }) {
-  const { items, itemCount, subtotal, removeItem, updateQuantity } = useCart();
+  const { items, itemCount, subtotal, removeItem, updateQuantity, isReady } = useCart();
+  const { status } = useCustomerAuth();
+  const checkoutHref =
+    status === "authenticated" ? "/checkout" : buildCustomerAuthPath("/login", "/checkout");
   const [page, setPage] = useState(1);
   const cartItemsRef = useRef<HTMLElement>(null);
   const totalPages = Math.max(1, Math.ceil(items.length / CART_PAGE_SIZE));
@@ -40,6 +46,9 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
 
   return (
     <div className="customer-page customer-cart-page">
+      <div aria-hidden="true" className="customer-cart-page__artwork">
+        <StorefrontGalaxyArtwork className="customer-cart-page__cosmos" />
+      </div>
       <div className="customer-container">
         <div className="customer-page-heading">
           <p className="customer-kicker">Your grocery list</p>
@@ -107,12 +116,6 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
                   totalPages={totalPages}
                 />
               ) : null}
-
-              <div className="customer-cart-actions">
-                <CustomerLink className="customer-continue-link" href="/shop" navigate={navigate}>
-                  Continue shopping
-                </CustomerLink>
-              </div>
             </section>
             <aside className="customer-order-summary">
               <p className="customer-kicker">Order summary</p>
@@ -125,11 +128,19 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
                 <span>Total</span>
                 <strong>{formatCurrency(subtotal)}</strong>
               </div>
-              <p>Final stock availability is checked when you place your pickup order.</p>
+              <p>
+                {status === "authenticated"
+                  ? "Final stock availability is checked when you place your pickup order."
+                  : "Sign in to move this guest cart into your account and continue to checkout."}
+              </p>
               <CustomerLink
                 className="customer-button customer-button--full"
-                href="/checkout"
+                href={checkoutHref}
                 navigate={navigate}
+                aria-disabled={!isReady}
+                onClick={(event) => {
+                  if (!isReady) event.preventDefault();
+                }}
               >
                 Proceed to checkout <ArrowRight aria-hidden="true" size={18} />
               </CustomerLink>

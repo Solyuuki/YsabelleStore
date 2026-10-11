@@ -108,6 +108,7 @@ export const updateProductSchema = z.object({
   sellingPrice: moneyStringSchema.optional(),
   reorderLevel: z.coerce.number().int().min(0).optional(),
   targetStockLevel: z.coerce.number().int().min(0).optional(),
+  authorizeTargetStockPolicy: z.boolean().optional(),
   status: productStatusSchema.optional(),
   description: nullableOptionalTextSchema(255),
   imageUrl: optionalCatalogImageUrlSchema,

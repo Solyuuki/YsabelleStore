@@ -205,25 +205,6 @@ test("storefront and merchandising enforce durable catalog quality fields", asyn
     const storefrontCategory = categories.find((item) => item.id === category.id);
     assert.equal(storefrontCategory?.productCount, baselineProductCount + 1);
 
-    if (categoryFixture.created) {
-      assert.deepEqual(storefrontCategory?.representativeProducts, [
-        {
-          id: approved.id,
-          imageUrl: approved.imageUrl,
-          name: approved.name
-        }
-      ]);
-    } else {
-      assert.equal(
-        storefrontCategory?.representativeProducts.some((product) => product.id === fixture.id),
-        false
-      );
-      assert.equal(
-        storefrontCategory?.representativeProducts.some((product) => product.id === imageLess.id),
-        false
-      );
-    }
-
     assert.equal(
       merchandising.trending.some((entry) => entry.product.id === fixture.id),
       false

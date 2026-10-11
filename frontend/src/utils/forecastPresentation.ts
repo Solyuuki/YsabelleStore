@@ -3,6 +3,7 @@ import type { ForecastFilters, ForecastProductSummary } from "@/types/forecast";
 export const FORECAST_PRODUCTS_COMPACT_PAGE_SIZE = 7;
 export const FORECAST_PRODUCTS_DESKTOP_PAGE_SIZE = FORECAST_PRODUCTS_COMPACT_PAGE_SIZE + 3;
 export const FORECAST_PRODUCTS_DESKTOP_QUERY = "(min-width: 1280px)";
+export const FORECAST_DETAIL_DEFAULT_WINDOW_MONTHS = 12;
 
 export function getForecastProductsPageSize(isDesktop: boolean) {
   return isDesktop ? FORECAST_PRODUCTS_DESKTOP_PAGE_SIZE : FORECAST_PRODUCTS_COMPACT_PAGE_SIZE;
@@ -46,9 +47,9 @@ export function getForecastServerSort(
     case "leastSelling":
       return { sortBy: "recentHistoricalSalesTotal", sortDirection: "asc" };
     case "mostInDemand":
-      return { sortBy: "twelveMonthForecastTotal", sortDirection: "desc" };
+      return { sortBy: "forecastHorizonTotal", sortDirection: "desc" };
     case "lowestDemand":
-      return { sortBy: "twelveMonthForecastTotal", sortDirection: "asc" };
+      return { sortBy: "forecastHorizonTotal", sortDirection: "asc" };
   }
 }
 
@@ -69,6 +70,23 @@ export function addMonths(monthKey: string, monthsToAdd: number) {
 
 export function buildMonthWindow(startMonth: string, horizon = 12) {
   return Array.from({ length: horizon }, (_, index) => addMonths(startMonth, index));
+}
+
+export function getForecastDetailWindowSizes(totalMonths: number) {
+  const normalizedTotal = Math.max(1, Math.floor(totalMonths));
+  const candidates = [12, 24, 36].filter((months) => months < normalizedTotal);
+  return [...candidates, normalizedTotal];
+}
+
+export function clampForecastWindowStart(
+  totalMonths: number,
+  windowMonths: number,
+  requestedStart: number
+) {
+  const normalizedTotal = Math.max(0, Math.floor(totalMonths));
+  const normalizedWindow = Math.max(1, Math.floor(windowMonths));
+  const maxStart = Math.max(0, normalizedTotal - normalizedWindow);
+  return Math.min(Math.max(0, Math.floor(requestedStart)), maxStart);
 }
 
 export function formatMonthLabel(period: string) {
@@ -185,15 +203,15 @@ export function deriveForecastProducts(
           break;
         case "mostInDemand":
           result = compareNullableNumbers(
-            left.product.twelveMonthForecastTotal,
-            right.product.twelveMonthForecastTotal,
+            left.product.forecastHorizonTotal,
+            right.product.forecastHorizonTotal,
             "desc"
           );
           break;
         case "lowestDemand":
           result = compareNullableNumbers(
-            left.product.twelveMonthForecastTotal,
-            right.product.twelveMonthForecastTotal,
+            left.product.forecastHorizonTotal,
+            right.product.forecastHorizonTotal,
             "asc"
           );
           break;

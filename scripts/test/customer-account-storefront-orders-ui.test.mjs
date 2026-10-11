@@ -31,38 +31,37 @@ const premiumAccountCss = fs.existsSync(premiumAccountCssPath)
   ? fs.readFileSync(premiumAccountCssPath, "utf8")
   : "";
 
-test("successful customer sign-in returns shoppers to the storefront", () => {
-  assert.match(
-    loginPage,
-    /await login\([^;]+;[\s\S]*?if \(socialLinkRequired\) \{[\s\S]*?await completeCustomerSocialLink\(\);[\s\S]*?navigate\("\/account"\);[\s\S]*?return;[\s\S]*?\}[\s\S]*?navigate\("\/"\);/
-  );
-  assert.doesNotMatch(
-    loginPage,
-    /await login\([^;]+;\s*navigate\("\/account"\);/,
-    "ordinary password sign-in must not redirect directly to the account page"
-  );
-  assert.match(
-    customerRoutes,
-    /\(pathname === "\/login" \|\| pathname === "\/register"\)[\s\S]*?return "\/";/
-  );
+test("customer sign-in preserves a safe checkout return path", () => {
+  assert.match(loginPage, /const requestedReturnTo = getCustomerReturnPath\(search\);/);
+  assert.match(loginPage, /navigate\(passwordReturnTo\);/);
+  assert.match(loginPage, /startCustomerSocialAuth\(provider, quickSignReturnTo, "login"\)/);
+  assert.match(customerRoutes, /pathname === "\/account" \|\| pathname === "\/checkout"/);
+  assert.match(customerRoutes, /buildCustomerAuthPath\("\/login", `\$\{pathname\}\$\{search\}`\)/);
+  assert.match(customerRoutes, /return getCustomerReturnPath\(search\) \?\? "\/";/);
 });
 
-test("customer account loads Orders first and keeps Profile and Security secondary", () => {
+test("customer account loads Orders first and keeps Favorites, Profile and Security secondary", () => {
   assert.match(customerApp, /customer-account-premium\.css/);
-  assert.match(customerAccountPage, /type AccountTab = "orders" \| "profile" \| "security";/);
+  assert.match(
+    customerAccountPage,
+    /type AccountTab = "orders" \| "favorites" \| "profile" \| "security";/
+  );
   assert.match(customerAccountPage, /useState<AccountTab>\("orders"\)/);
   assert.match(customerAccountPage, /role="tablist"/);
   assert.match(customerAccountPage, /aria-selected=\{activeTab === "orders"\}/);
+  assert.match(customerAccountPage, /aria-selected=\{activeTab === "favorites"\}/);
   assert.match(customerAccountPage, /aria-selected=\{activeTab === "profile"\}/);
   assert.match(customerAccountPage, /aria-selected=\{activeTab === "security"\}/);
   assert.match(customerAccountPage, /hidden=\{activeTab !== "orders"\}/);
+  assert.match(customerAccountPage, /hidden=\{activeTab !== "favorites"\}/);
   assert.match(customerAccountPage, /hidden=\{activeTab !== "profile"\}/);
   assert.match(customerAccountPage, /hidden=\{activeTab !== "security"\}/);
 });
 
 test("account tabs never use hash anchors that make the browser scroll", () => {
-  assert.doesNotMatch(customerAccountPage, /href="#(?:orders|profile|security)"/);
+  assert.doesNotMatch(customerAccountPage, /href="#(?:orders|favorites|profile|security)"/);
   assert.match(customerAccountPage, /onClick=\{\(\) => setActiveTab\("orders"\)\}/);
+  assert.match(customerAccountPage, /onClick=\{\(\) => setActiveTab\("favorites"\)\}/);
   assert.match(customerAccountPage, /onClick=\{\(\) => setActiveTab\("profile"\)\}/);
   assert.match(customerAccountPage, /onClick=\{\(\) => setActiveTab\("security"\)\}/);
   assert.doesNotMatch(premiumAccountCss, /:target/);
@@ -73,8 +72,10 @@ test("account hero changes premium context with the active account tab", () => {
   assert.match(customerAccountPage, /const ACCOUNT_HERO_CONTENT: Record<\s*AccountTab,/);
   assert.match(customerAccountPage, /orders:[\s\S]*eyebrow: "Order center"/);
   assert.match(customerAccountPage, /orders:[\s\S]*title: "Your orders, organized\."/);
+  assert.match(customerAccountPage, /favorites:[\s\S]*eyebrow: "Saved items"/);
+  assert.match(customerAccountPage, /favorites:[\s\S]*title: "Favorites, ready when you are\."/);
   assert.match(customerAccountPage, /profile:[\s\S]*eyebrow: "Profile"/);
-  assert.match(customerAccountPage, /profile:[\s\S]*title: "Your identity, your account\."/);
+  assert.match(customerAccountPage, /profile:[\s\S]*title: "Your details, ready for checkout\."/);
   assert.match(customerAccountPage, /security:[\s\S]*eyebrow: "Account security"/);
   assert.match(customerAccountPage, /security:[\s\S]*title: "Protect your account\."/);
   assert.match(customerAccountPage, /const heroContent = ACCOUNT_HERO_CONTENT\[activeTab\]/);

@@ -5,13 +5,19 @@ import { HttpError } from "../../utils/httpError.js";
 
 const CANDIDATE_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
 const ORIGINAL_EXTENSIONS = new Set([".jpg", ".png", ".webp"]);
-const VARIANT_FILE_NAMES = {
+const PRODUCT_VARIANT_FILE_NAMES = {
   card: "card.webp",
   pdp: "pdp.webp",
   processed: "processed.webp"
 } as const;
+const CATEGORY_VARIANT_FILE_NAMES = {
+  cover: "cover.webp",
+  processed: "processed.webp",
+  thumbnail: "thumbnail.webp"
+} as const;
 
-export type CatalogImageVariant = keyof typeof VARIANT_FILE_NAMES;
+export type CatalogImageVariant = keyof typeof PRODUCT_VARIANT_FILE_NAMES;
+export type CategoryImageVariant = keyof typeof CATEGORY_VARIANT_FILE_NAMES;
 
 export class CatalogImageStorage {
   private readonly root: string;
@@ -29,34 +35,37 @@ export class CatalogImageStorage {
   }
 
   public async writeOriginal(candidateId: string, extension: string, buffer: Buffer) {
-    this.assertCandidateId(candidateId);
-    if (!ORIGINAL_EXTENSIONS.has(extension)) {
-      throw this.invalidStorageKeyError();
-    }
+    return this.writeScopedOriginal("candidates", candidateId, extension, buffer);
+  }
 
-    const key = `candidates/${candidateId}/original${extension}`;
-    const destination = this.resolveStorageKey(key);
-
-    await mkdir(path.dirname(destination), { recursive: true });
-    await writeFile(destination, buffer, { flag: "wx" });
-
-    return key;
+  public async writeCategoryOriginal(candidateId: string, extension: string, buffer: Buffer) {
+    return this.writeScopedOriginal("category-candidates", candidateId, extension, buffer);
   }
 
   public async prepareCandidateOutputDirectory(candidateId: string) {
-    this.assertCandidateId(candidateId);
-    const directory = this.resolveStorageKey(`candidates/${candidateId}/processed`);
-    await mkdir(directory, { recursive: true });
-    return directory;
+    return this.prepareScopedOutputDirectory("candidates", candidateId);
+  }
+
+  public async prepareCategoryCandidateOutputDirectory(candidateId: string) {
+    return this.prepareScopedOutputDirectory("category-candidates", candidateId);
   }
 
   public variantStorageKey(candidateId: string, variant: CatalogImageVariant) {
-    this.assertCandidateId(candidateId);
-    const fileName = VARIANT_FILE_NAMES[variant];
-    if (!fileName) {
-      throw this.invalidStorageKeyError();
-    }
-    return `candidates/${candidateId}/processed/${fileName}`;
+    return this.scopedVariantStorageKey(
+      "candidates",
+      candidateId,
+      PRODUCT_VARIANT_FILE_NAMES,
+      variant
+    );
+  }
+
+  public categoryVariantStorageKey(candidateId: string, variant: CategoryImageVariant) {
+    return this.scopedVariantStorageKey(
+      "category-candidates",
+      candidateId,
+      CATEGORY_VARIANT_FILE_NAMES,
+      variant
+    );
   }
 
   public async readStorageKey(key: string) {
@@ -85,8 +94,63 @@ export class CatalogImageStorage {
   }
 
   public async removeCandidate(candidateId: string) {
+    return this.removeScopedCandidate("candidates", candidateId);
+  }
+
+  public async removeCategoryCandidate(candidateId: string) {
+    return this.removeScopedCandidate("category-candidates", candidateId);
+  }
+
+  private async writeScopedOriginal(
+    scope: "candidates" | "category-candidates",
+    candidateId: string,
+    extension: string,
+    buffer: Buffer
+  ) {
     this.assertCandidateId(candidateId);
-    const key = `candidates/${candidateId}`;
+    if (!ORIGINAL_EXTENSIONS.has(extension)) {
+      throw this.invalidStorageKeyError();
+    }
+
+    const key = `${scope}/${candidateId}/original${extension}`;
+    const destination = this.resolveStorageKey(key);
+
+    await mkdir(path.dirname(destination), { recursive: true });
+    await writeFile(destination, buffer, { flag: "wx" });
+
+    return key;
+  }
+
+  private async prepareScopedOutputDirectory(
+    scope: "candidates" | "category-candidates",
+    candidateId: string
+  ) {
+    this.assertCandidateId(candidateId);
+    const directory = this.resolveStorageKey(`${scope}/${candidateId}/processed`);
+    await mkdir(directory, { recursive: true });
+    return directory;
+  }
+
+  private scopedVariantStorageKey<TVariant extends string>(
+    scope: "candidates" | "category-candidates",
+    candidateId: string,
+    variants: Readonly<Record<TVariant, string>>,
+    variant: TVariant
+  ) {
+    this.assertCandidateId(candidateId);
+    const fileName = variants[variant];
+    if (!fileName) {
+      throw this.invalidStorageKeyError();
+    }
+    return `${scope}/${candidateId}/processed/${fileName}`;
+  }
+
+  private async removeScopedCandidate(
+    scope: "candidates" | "category-candidates",
+    candidateId: string
+  ) {
+    this.assertCandidateId(candidateId);
+    const key = `${scope}/${candidateId}`;
     const candidateDirectories = [this.root, ...this.fallbackRoots].map((storageRoot) =>
       this.resolveStorageKeyAgainstRoot(storageRoot, key)
     );

@@ -51,6 +51,9 @@ export type ProductRecord = {
   sellingPrice: string;
   reorderLevel: number;
   targetStockLevel: number;
+  restockTargetApprovedLevel: number | null;
+  restockTargetApprovedAt: string | null;
+  restockTargetApprovedById: string | null;
   status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
   availabilityStatus: "AVAILABLE" | "UNAVAILABLE";
   isAvailable: boolean;
@@ -286,6 +289,10 @@ export type ProductImportRow = {
     initialStock: number;
     status: "ACTIVE" | "INACTIVE" | "DISCONTINUED";
     description: string | null;
+    brand: string | null;
+    variant: string | null;
+    sizeValue: string | null;
+    sizeUnit: ProductSizeUnit | null;
     imageUrl: string | null;
   } | null;
   valid: boolean;
@@ -593,7 +600,7 @@ export async function updateProduct(
       | "reorderLevel"
       | "targetStockLevel"
     >
-  >
+  > & { authorizeTargetStockPolicy?: boolean }
 ) {
   return apiClient.request<ProductRecord, { code?: string; details?: unknown }>(
     `/api/catalog/products/${encodeURIComponent(productId)}`,

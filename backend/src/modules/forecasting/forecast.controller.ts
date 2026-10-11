@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express";
 
+import { HTTP_STATUS } from "../../constants/httpStatusContract.js";
 import { createSuccessResponse } from "../../utils/apiResponse.js";
 import { HttpError } from "../../utils/httpError.js";
 import { withReconstructedComparisonOverlay } from "./forecast-comparison-overlay.service.js";
@@ -43,7 +44,9 @@ export const generateForecasts: RequestHandler = async (request, response, next)
 
     const result = await requestForecastRefresh({ force: parsedBody.data.force });
 
-    response.status(202).json(createSuccessResponse("Forecast refresh accepted.", result));
+    response
+      .status(HTTP_STATUS.ACCEPTED)
+      .json(createSuccessResponse("Forecast refresh accepted.", result));
   } catch (error) {
     next(error);
   }
@@ -87,8 +90,14 @@ export const getForecastProduct: RequestHandler = async (request, response, next
     }
 
     const persistedDetail = await getForecastProductDetail(productId, parsedQuery.data.batchId);
-    const comparisonDetail = await withReconstructedComparisonOverlay(persistedDetail);
-    const result = await withRealizedAccuracyFeedback(comparisonDetail, parsedQuery.data.batchId);
+    const [comparisonDetail, accuracyDetail] = await Promise.all([
+      withReconstructedComparisonOverlay(persistedDetail),
+      withRealizedAccuracyFeedback(persistedDetail, parsedQuery.data.batchId)
+    ]);
+    const result =
+      comparisonDetail && accuracyDetail?.accuracyFeedback
+        ? { ...comparisonDetail, accuracyFeedback: accuracyDetail.accuracyFeedback }
+        : comparisonDetail;
 
     response.status(200).json(createSuccessResponse("Forecast product loaded.", result));
   } catch (error) {

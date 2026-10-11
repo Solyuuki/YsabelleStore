@@ -25,9 +25,12 @@ const mainRoutes: readonly AppRoutePath[] = [
   "/dashboard",
   "/pos",
   "/products",
+  "/categories",
   "/inventory",
   "/receiving",
-  "/sales"
+  "/sales",
+  "/deliveries",
+  "/customer-support"
 ];
 
 const ownerRoutesWithUsers: readonly AppRoutePath[] = [
@@ -112,8 +115,15 @@ export function AppSidebar({
         />
       </Button>
 
-      <div className="flex h-16 shrink-0 items-center gap-3 border-b border-violet-200/45 px-4">
-        <YsabelleBrandMark className="shrink-0" eager variant="mini" />
+      <div
+        className={cn(
+          "flex h-16 shrink-0 items-center border-b border-violet-200/45 px-4",
+          collapsed ? "gap-0" : "gap-3"
+        )}
+      >
+        <div className="flex w-12 shrink-0 items-center justify-center">
+          <YsabelleBrandMark className="shrink-0" eager variant="mini" />
+        </div>
         <div
           className={cn(
             "min-w-0 overflow-hidden transition-all duration-300 ease-out",
@@ -126,7 +136,7 @@ export function AppSidebar({
       </div>
 
       <nav
-        className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-3"
+        className="min-h-0 flex-1 space-y-5 overflow-x-hidden overflow-y-auto overscroll-contain p-3"
         aria-label="Application modules"
       >
         <SidebarSection
@@ -218,6 +228,10 @@ function getBadgeCount(path: AppRoutePath, badges: NavigationBadgeSummary | null
       return badges.receiving;
     case "/reports":
       return badges.reports;
+    case "/deliveries":
+      return badges.deliveries;
+    case "/customer-support":
+      return badges.support;
     default:
       return undefined;
   }

@@ -1,0 +1,2211 @@
+/*
+ * Ysabelle Store appearance system - internal workspace.
+ * Light mode is intentionally untouched. Never invert media or printable output.
+ */
+.ys-appearance-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+.ys-appearance-choice {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.95rem;
+  border: 1px solid #dbe0f0;
+  border-radius: 1rem;
+  background: #fafbff;
+  color: #1d2942;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+.ys-appearance-choice[data-selected="true"] {
+  border-color: #8177e9;
+  background: #f2f0ff;
+  box-shadow: 0 0 0 2px rgb(98 91 255 / 13%);
+}
+.ys-appearance-choice:focus-visible {
+  outline: 3px solid #827dff;
+  outline-offset: 3px;
+}
+.ys-appearance-swatch {
+  display: grid;
+  width: 3.1rem;
+  height: 3.1rem;
+  flex: none;
+  place-items: center;
+  border: 1px solid rgb(111 116 177 / 20%);
+  border-radius: 0.8rem;
+}
+.ys-appearance-swatch--light {
+  background: linear-gradient(135deg, #f8fbff, #e7ecff 65%, #eee4ff);
+  color: #564ddb;
+}
+.ys-appearance-swatch--dark {
+  background: linear-gradient(135deg, #111d32, #282351 85%);
+  color: #cbc1ff;
+}
+.ys-appearance-choice__copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.12rem;
+}
+.ys-appearance-choice__copy strong {
+  font-size: 0.9rem;
+}
+.ys-appearance-choice__copy small {
+  color: #667189;
+  font-size: 0.76rem;
+}
+.ys-appearance-choice__check {
+  margin-left: auto;
+  color: #5149d9;
+  font-size: 0.7rem;
+  font-weight: 750;
+}
+@media (max-width: 600px) {
+  .ys-appearance-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Shared storefront galaxy palette: original Trending → Everyday Essentials canvas.
+   Available to the About page even when its global .dark class is intentionally deferred. */
+:root {
+  --storefront-galaxy-background:
+    linear-gradient(
+      180deg,
+      #17243c 0%,
+      rgb(23 36 60 / 0%) 9%,
+      rgb(23 36 60 / 0%) 87%,
+      #17243c 100%
+    ),
+    radial-gradient(ellipse 50% 30% at 13% 13%, rgb(90 64 159 / 29%), transparent 87%),
+    radial-gradient(ellipse 52% 38% at 17% 82%, rgb(105 57 166 / 32%), transparent 90%),
+    radial-gradient(ellipse 34% 26% at 88% 79%, rgb(46 89 158 / 15%), transparent 92%),
+    linear-gradient(145deg, #17243c 0%, #141e3b 36%, #201d43 74%, #17243c 100%);
+}
+
+:root.dark {
+  --background: 221 47% 8%;
+  --foreground: 221 42% 95%;
+  --primary: 246 85% 74%;
+  --primary-foreground: 223 48% 10%;
+  --muted: 222 32% 17%;
+  --muted-foreground: 220 24% 77%;
+  --border: 222 27% 29%;
+}
+:root.dark body {
+  background: #101827;
+  color: #b8c6d8;
+}
+:root.dark .app-shell-ambient.ys-glass-flow-background {
+  --ys-glass-flow-background: url("/textures/ys-dark-midnight-velvet.svg");
+  background-color: #101827 !important;
+  background-image: var(--ys-glass-flow-background) !important;
+  background-size: min(1600px, 100%) auto !important;
+  background-repeat: repeat-y !important;
+  background-position: center top !important;
+}
+:root.dark .app-shell-ambient {
+  --retailer-positive: #a79cff;
+  --retailer-positive-strong: #c9c0ff;
+  --retailer-positive-soft: rgb(133 116 232 / 15%);
+  --retailer-positive-border: rgb(167 155 255 / 34%);
+  color: #eaf0ff;
+}
+:root.dark .app-shell-ambient [class~="bg-[rgba(248,247,255,0.92)]"] {
+  background-color: #19263d !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is([class~="bg-red-50"], [class~="bg-rose-50"], [class~="bg-red-100"]) {
+  background-color: #422738 !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is([class~="bg-amber-50"], [class~="bg-yellow-50"], [class~="bg-amber-100"]) {
+  background-color: #433520 !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="bg-emerald-50"],
+    [class~="bg-green-50"],
+    [class~="bg-blue-50"],
+    [class~="bg-indigo-50"]
+  ) {
+  background-color: #293654 !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is([class~="text-red-700"], [class~="text-red-800"], [class~="text-rose-700"]) {
+  color: #ffb9c5 !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is([class~="text-amber-700"], [class~="text-amber-800"], [class~="text-yellow-700"]) {
+  color: #f8d49b !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="text-indigo-600"],
+    [class~="text-indigo-700"],
+    [class~="text-blue-600"],
+    [class~="text-blue-700"],
+    [class~="text-violet-700"],
+    [class~="text-violet-800"]
+  ) {
+  color: #c3baff !important;
+}
+
+:root.dark .app-shell-ambient .ys-dashboard-panel-surface {
+  background-color: #1c2940 !important;
+  border-color: rgb(158 173 221 / 24%) !important;
+}
+:root.dark .app-shell-ambient .ys-dashboard-panel-surface::before {
+  background-image:
+    linear-gradient(145deg, rgb(134 144 214 / 8%), transparent 48%),
+    url("/textures/ys-dark-graphite-glass.svg") !important;
+  background-blend-mode: normal, normal !important;
+  opacity: 0.22 !important;
+}
+:root.dark .app-shell-ambient .ys-kpi-card-surface {
+  --ys-kpi-surface-base: #26324c;
+  --ys-kpi-tint-a: rgb(109 124 247 / 12%);
+  --ys-kpi-tint-b: rgb(195 110 214 / 8%);
+  background-color: var(--ys-kpi-surface-base) !important;
+  background-image:
+    radial-gradient(circle at 12% 14%, var(--ys-kpi-tint-a), transparent 46%),
+    linear-gradient(135deg, rgb(255 255 255 / 2%), transparent 63%, var(--ys-kpi-tint-b)) !important;
+}
+:root.dark .app-shell-ambient .ys-kpi-card-surface::before {
+  background-image: url("/textures/ys-dark-graphite-glass.svg") !important;
+  background-blend-mode: normal !important;
+  opacity: 0.19 !important;
+}
+/* Convert the existing light utility vocabulary without changing Light Mode. */
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="bg-white"],
+    [class~="bg-white/90"],
+    [class~="bg-white/95"],
+    [class~="bg-white/80"],
+    [class~="bg-white/85"],
+    [class~="bg-white/70"],
+    [class~="bg-white/75"],
+    [class~="bg-white/60"],
+    [class~="bg-white/98"],
+    [class~="bg-slate-50"],
+    [class~="bg-slate-50/80"],
+    [class~="bg-slate-100"],
+    [class~="bg-slate-50/90"]
+  ) {
+  background-color: #202c43 !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="text-slate-950"],
+    [class~="text-slate-900"],
+    [class~="text-slate-800"],
+    [class~="text-slate-700"]
+  ) {
+  color: #f0f3ff !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="text-slate-600"],
+    [class~="text-slate-500"],
+    [class~="text-slate-400"],
+    [class~="text-gray-500"],
+    [class~="text-gray-600"]
+  ) {
+  color: #c3cde1 !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="border-slate-100"],
+    [class~="border-slate-200"],
+    [class~="border-slate-300"],
+    [class~="border-violet-200/55"]
+  ) {
+  border-color: #43516b !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  background-color: #18243a;
+  color: #f0f3ff;
+  border-color: #485776;
+  color-scheme: dark;
+}
+:root.dark .app-shell-ambient :is(input, textarea)::placeholder {
+  color: #a8b5ce;
+}
+:root.dark .app-shell-ambient :is(input, select, textarea):focus-visible {
+  outline-color: #a29aff;
+  border-color: #a29aff;
+}
+:root.dark .app-shell-ambient :is([role="table"], table) {
+  color: #e9eeff;
+}
+:root.dark .app-shell-ambient :is(th, td) {
+  border-color: #39465e;
+}
+:root.dark .app-shell-ambient :is(tr:hover, [role="row"]:hover) {
+  background-color: rgb(131 139 204 / 8%);
+}
+:root.dark .app-shell-ambient .ys-appearance-card {
+  border-color: #465575 !important;
+  background: linear-gradient(145deg, #202c44, #1b273b) !important;
+}
+:root.dark .ys-appearance-choice {
+  background: #1b2840;
+  border-color: #465573;
+  color: #eef1ff;
+}
+:root.dark .ys-appearance-choice[data-selected="true"] {
+  background: #302d55;
+  border-color: #b0a0ff;
+  box-shadow: 0 0 0 2px rgb(165 152 255 / 16%);
+}
+:root.dark .ys-appearance-choice__copy small {
+  color: #bac7dc;
+}
+:root.dark .ys-appearance-choice__check {
+  color: #c5bdff;
+}
+/* Dialogs and sheets are portaled outside .app-shell-ambient. */
+:root.dark [role="dialog"],
+:root.dark [data-radix-popper-content-wrapper] [role="listbox"] {
+  background: #1b283e;
+  border-color: #465675;
+  color: #f0f3ff;
+}
+:root.dark
+  [role="dialog"]
+  :is([class~="text-slate-950"], [class~="text-slate-900"], [class~="text-slate-800"]) {
+  color: #f2f4ff;
+}
+:root.dark [role="dialog"] :is([class~="text-slate-600"], [class~="text-slate-500"]) {
+  color: #c3cde1;
+}
+:root.dark [role="dialog"] :is([class~="bg-white"], [class~="bg-slate-50"]) {
+  background-color: #25334d;
+}
+:root.dark [role="dialog"] :is(input, select, textarea) {
+  background-color: #121e32;
+  color: #f2f4ff;
+  border-color: #526181;
+}
+:root.dark :is(.recharts-default-tooltip, .recharts-tooltip-wrapper > div) {
+  background-color: #18253b !important;
+  border-color: #475775 !important;
+  color: #f4f6ff !important;
+}
+:root.dark .recharts-cartesian-axis-tick-value {
+  fill: #c2cde1;
+}
+:root.dark .recharts-cartesian-grid line {
+  stroke: rgb(180 192 225 / 15%);
+}
+/* Forecast detail plot: opaque dark canvas blocks material facets from
+   competing with the 1px dashed grid, without changing data or light mode. */
+:root.dark .app-shell-ambient .ys-forecast-chart {
+  background-color: #1c2b43;
+  background-image: none;
+  border-radius: 0.75rem;
+  box-shadow: inset 0 0 0 1px rgb(138 159 191 / 18%);
+}
+:root.dark .app-shell-ambient .ys-forecast-chart .recharts-cartesian-grid line {
+  stroke: #526580;
+}
+@media print {
+  :root.dark .receipt-print-page,
+  :root.dark .receipt-paper {
+    background: #fff !important;
+    color: #020617 !important;
+  }
+  :root.dark .receipt-print-page * {
+    color-scheme: light;
+  }
+}
+
+/* Workstation text and controls: muted primary ink, crisp boundaries. */
+:root.dark .app-shell-ambient {
+  --retail-text-primary: #d4deec;
+  --retail-text-body: #b8c6d8;
+  --retail-surface-card: #1b2638;
+  --retail-outline-strong: #687995;
+}
+:root.dark
+  .app-shell-ambient
+  :is(.ys-dashboard-panel-surface, .ys-kpi-card-surface, .ys-appearance-card) {
+  border-color: var(--retail-outline-strong) !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="text-slate-900"],
+    [class~="text-slate-800"],
+    [class~="text-slate-700"],
+    [class~="text-slate-950"]
+  ) {
+  color: var(--retail-text-primary) !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is([class~="text-slate-600"], [class~="text-slate-500"], [class~="text-slate-400"]) {
+  color: var(--retail-text-body) !important;
+}
+:root.dark .app-shell-ambient :is(input, textarea, select) {
+  border-color: var(--retail-outline-strong);
+  color: var(--retail-text-primary);
+}
+:root.dark .app-shell-ambient :is(a, button, input, textarea, select):focus-visible {
+  outline: 2px solid #aca0ef;
+  outline-offset: 2px;
+}
+
+/* Sidebar belongs to the workstation layer, not the light storefront. */
+:root.dark .app-shell-ambient > aside {
+  background: linear-gradient(180deg, #18243a, #1b2638) !important;
+  border-right-color: #687995 !important;
+  box-shadow: 7px 0 30px rgb(0 0 0 / 15%);
+}
+:root.dark
+  .app-shell-ambient
+  > aside
+  :is(
+    [class~="border-violet-200/45"],
+    [class~="border-violet-200/55"],
+    [class~="border-violet-200/70"]
+  ) {
+  border-color: #536580 !important;
+}
+:root.dark .app-shell-ambient > aside .group\/nav button:not(.ys-material-accent) {
+  color: #b8c6d8 !important;
+}
+:root.dark .app-shell-ambient > aside .group\/nav button:not(.ys-material-accent):hover {
+  background: #293a55 !important;
+  color: #d4deec !important;
+}
+:root.dark
+  .app-shell-ambient
+  > aside
+  :is([class~="bg-violet-50"], [class~="bg-amber-50"], [class~="hover:bg-violet-50"]) {
+  background-color: #2a3751 !important;
+}
+:root.dark .app-shell-ambient > aside :is([class~="text-[#625bff]"], [class~="text-amber-700"]) {
+  color: #dac9fc !important;
+}
+:root.dark .app-shell-ambient > aside [class~="bg-white/80"] {
+  background: #24334a !important;
+  border-color: #687995 !important;
+}
+:root.dark .app-shell-ambient .app-shell-orb {
+  opacity: 0.13;
+}
+:root.dark .app-shell-ambient .ys-kpi-card-surface::before {
+  background-image: url("/textures/ys-dark-graphite-glass.svg") !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-blend-mode: normal !important;
+}
+/* Keep positive, warning and destructive operational states distinct. */
+:root.dark .app-shell-ambient :is([class~="text-emerald-700"], [class~="text-green-700"]) {
+  color: #aedbc7 !important;
+}
+:root.dark .app-shell-ambient :is([class~="text-rose-700"], [class~="text-red-700"]) {
+  color: #f6b9c7 !important;
+}
+
+/* Limit decorative SVG panel scale: it is a material, not a stretched image. */
+:root.dark .app-shell-ambient .ys-dashboard-panel-surface::before,
+:root.dark .app-shell-ambient .ys-kpi-card-surface::before {
+  background-size: 900px auto !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Sprint 11 dark-mode surface convergence: 2026-10-09 */
+:root.dark .app-shell-ambient {
+  --retail-surface-base: #172337;
+  --retail-surface-raised: #202e45;
+  --retail-surface-inset: #142034;
+  --retail-outline-strong: #62738f;
+  --retail-text-primary: #e4eaf6;
+  --retail-text-body: #bbc8dd;
+}
+
+/* Scope replacement to the workstation, preserving status hues and printed receipts. */
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="bg-white"],
+    [class~="bg-white/95"],
+    [class~="bg-white/90"],
+    [class~="bg-white/85"],
+    [class~="bg-white/80"],
+    [class~="bg-white/75"],
+    [class~="bg-white/70"],
+    [class~="bg-slate-50"],
+    [class~="bg-slate-50/80"],
+    [class~="bg-slate-50/90"],
+    [class~="bg-gray-50"],
+    [class~="bg-gray-100"],
+    [class~="bg-neutral-50"],
+    [class~="bg-zinc-50"]
+  ) {
+  background-color: var(--retail-surface-raised) !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="bg-slate-100"],
+    [class~="bg-slate-200"],
+    [class~="bg-gray-200"],
+    [class~="bg-violet-50"],
+    [class~="bg-violet-50/80"]
+  ) {
+  background-color: var(--retail-surface-base) !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="text-gray-900"],
+    [class~="text-gray-800"],
+    [class~="text-gray-700"],
+    [class~="text-neutral-900"],
+    [class~="text-zinc-900"]
+  ) {
+  color: var(--retail-text-primary) !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="text-gray-600"],
+    [class~="text-gray-500"],
+    [class~="text-zinc-500"],
+    [class~="text-neutral-500"]
+  ) {
+  color: var(--retail-text-body) !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(
+    [class~="border-white"],
+    [class~="border-white/70"],
+    [class~="border-gray-100"],
+    [class~="border-gray-200"],
+    [class~="border-violet-100"],
+    [class~="border-slate-50"]
+  ) {
+  border-color: var(--retail-outline-strong) !important;
+}
+:root.dark
+  .app-shell-ambient
+  :is(.ys-dashboard-panel-surface, .ys-kpi-card-surface, .ys-appearance-card) {
+  background-color: var(--retail-surface-raised) !important;
+  border: 1px solid var(--retail-outline-strong) !important;
+  box-shadow:
+    inset 0 1px 0 rgb(231 236 255 / 5%),
+    0 12px 28px rgb(3 8 20 / 16%);
+}
+/* The decorative material has a fixed natural scale; it must never use cover. */
+:root.dark .app-shell-ambient :is(.ys-dashboard-panel-surface, .ys-kpi-card-surface)::before {
+  background-size: 900px auto !important;
+  background-repeat: repeat !important;
+  background-position: left top !important;
+}
+:root.dark .app-shell-ambient :is([role="dialog"], [role="menu"], [role="listbox"]) {
+  color: var(--retail-text-primary);
+  border-color: var(--retail-outline-strong);
+}
+:root.dark
+  .app-shell-ambient
+  :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) {
+  background-color: var(--retail-surface-inset);
+  border-color: var(--retail-outline-strong);
+  color: var(--retail-text-primary);
+}
+@media print {
+  :root.dark .app-shell-ambient :is(.receipt-print-page, .receipt-paper) {
+    background: #fff !important;
+    color: #020617 !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Sprint 11: unified retail workstation background, Dashboard through Settings.
+   Use the exact shared Trending → Everyday Essentials palette and SVG, without
+   stretching/tiling the former 1600px midnight texture. All module panels,
+   sidebar, inputs, and print views keep their own existing surfaces. */
+.retail-workspace__artwork {
+  display: none;
+}
+:root.dark .app-shell-ambient.ys-glass-flow-background {
+  background-color: #17243c !important;
+  background-image: none !important;
+  background-size: auto !important;
+  background-repeat: no-repeat !important;
+}
+:root.dark .app-shell-ambient .retail-workspace {
+  isolation: isolate;
+  background-color: #17243c;
+  background-image: var(--storefront-galaxy-background);
+  background-size: auto;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+:root.dark .app-shell-ambient .retail-workspace__artwork {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 12%,
+    #000 88%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(to bottom, transparent 0, #000 12%, #000 88%, transparent 100%);
+}
+:root.dark .app-shell-ambient .retail-workspace__cosmos {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Dashboard dark-mode readability: scoped operational surfaces (Sprint 11). */
+/* The sales/calendar/restock widgets still use Light Mode Tailwind fills.
+   Match their backgrounds to dark text tokens without changing light mode,
+   other retail modules, inventory status meaning, or printed receipts. */
+:root.dark .app-shell-ambient .retail-dashboard-page {
+  --dashboard-tile: #273651;
+  --dashboard-tile-raised: #2c3d59;
+  --dashboard-tile-border: #586b8a;
+  --dashboard-tile-ink: #e8effb;
+  --dashboard-tile-body: #c3d0e4;
+  --dashboard-tile-muted: #afbed6;
+}
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  :is(
+    .ys-sales-summary-tile,
+    .ys-sales-selected-day,
+    .ys-sales-mini-metric,
+    .ys-sales-performance-signal,
+    .ys-sales-chart,
+    .ys-sales-detail-chart,
+    .ys-dashboard-report-stat,
+    .ys-dashboard-pipeline-stat,
+    .ys-dashboard-monthly-batch,
+    .ys-dashboard-order,
+    .ys-dashboard-empty,
+    .ys-dashboard-placeholder
+  ) {
+  background-color: var(--dashboard-tile) !important;
+  background-image: none !important;
+  border-color: var(--dashboard-tile-border) !important;
+  color: var(--dashboard-tile-body);
+}
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  :is(
+    .ys-sales-summary-tile,
+    .ys-sales-selected-day,
+    .ys-dashboard-monthly-batch,
+    .ys-dashboard-order
+  ) {
+  background-color: var(--dashboard-tile-raised) !important;
+}
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  :is(
+    .ys-sales-summary-tile,
+    .ys-sales-selected-day,
+    .ys-sales-mini-metric,
+    .ys-sales-performance-signal,
+    .ys-sales-detail-chart,
+    .ys-dashboard-report-stat,
+    .ys-dashboard-pipeline-stat,
+    .ys-dashboard-monthly-batch,
+    .ys-dashboard-monthly-batch-stat,
+    .ys-dashboard-order
+  )
+  :is(h2, h3, h4, strong, [class~="text-slate-950"], [class~="text-slate-900"]) {
+  color: var(--dashboard-tile-ink) !important;
+}
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  :is(
+    .ys-sales-summary-tile,
+    .ys-sales-selected-day,
+    .ys-sales-mini-metric,
+    .ys-sales-performance-signal,
+    .ys-dashboard-report-stat,
+    .ys-dashboard-pipeline-stat,
+    .ys-dashboard-monthly-batch,
+    .ys-dashboard-order
+  )
+  :is([class~="text-slate-400"], [class~="text-slate-500"], [class~="text-slate-600"]) {
+  color: var(--dashboard-tile-body) !important;
+}
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  :is(.ys-sales-view-tabs, .ys-sales-month-picker, .ys-dashboard-monthly-batch-stat) {
+  background-color: #202f49 !important;
+  background-image: none !important;
+  border-color: #536786 !important;
+  color: var(--dashboard-tile-ink);
+}
+/* Only the live monthly recommendation summary uses this status chip.
+   Ensure the label stays legible against the dark dashboard tile. */
+:root.dark .app-shell-ambient .retail-dashboard-page .ys-dashboard-monthly-batch__badge {
+  background-color: #353154 !important;
+  border-color: #8275c1 !important;
+  color: #e7dfff !important;
+}
+:root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-view-tab[class~="bg-white"] {
+  background-color: #384365 !important;
+  color: #e3dbff !important;
+  border-color: #8478c5 !important;
+}
+:root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-view-tab:not([class~="bg-white"]) {
+  color: #bac9df !important;
+}
+:root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-calendar {
+  background-color: #202d45 !important;
+  border-color: #576a88 !important;
+}
+:root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-weekdays {
+  background-color: #293852 !important;
+  border-color: #536581 !important;
+}
+:root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-empty-day {
+  background-color: #1b2840 !important;
+  border-color: #425571 !important;
+}
+:root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-day {
+  background-color: #23324c !important;
+  border-color: #4b5e7a !important;
+}
+:root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-day:hover {
+  background-color: #32435f !important;
+}
+:root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-day[class~="bg-violet-50"] {
+  background-color: #37345f !important;
+  box-shadow: inset 0 0 0 1px #a396ff;
+}
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  .ys-dashboard-pipeline-stat[data-tone="warning"] {
+  background-color: #403824 !important;
+  border-color: #bda36b !important;
+}
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  .ys-dashboard-pipeline-stat[data-tone="warning"]
+  > [class~="text-amber-700"] {
+  color: #ffdc99 !important;
+}
+:root.dark .app-shell-ambient .retail-dashboard-page .ys-dashboard-all-clear {
+  background-color: #1d3a38 !important;
+  border-color: #4a9985 !important;
+}
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  .ys-dashboard-all-clear
+  :is([class~="text-emerald-950"], [class~="text-emerald-800"]) {
+  color: #c8f4e4 !important;
+}
+:root.dark .app-shell-ambient .retail-dashboard-page .ys-dashboard-progress {
+  background-color: #435374 !important;
+}
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  :is(.ys-dashboard-monthly-batch, .ys-dashboard-order)
+  [class~="text-[#625bff]"],
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  .ys-sales-selected-day
+  > [class~="text-[#625bff]"],
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  .ys-sales-performance-signal
+  > [class~="text-[#625bff]"] {
+  color: #c4b5ff !important;
+}
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  .ys-sales-detail-chart
+  :is([class~="bg-slate-50/70"], [class~="bg-slate-50/40"]) {
+  background-color: #202e47 !important;
+  border-color: #586b8a !important;
+  color: #c3d0e4 !important;
+}
+
+/* POS scanner: focus remains on the outer search field, never a second inner box. */
+:root.dark .app-shell-ambient .pos-scanner-field > .pos-scanner-input {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+:root.dark .app-shell-ambient .pos-scanner-field > .pos-scanner-input:focus-visible {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+:root.dark .app-shell-ambient .pos-scanner-field:focus-within {
+  border-color: #9b91e7 !important;
+  box-shadow: 0 0 0 1px rgb(155 145 231 / 17%);
+}
+
+/* Dashboard calendar: the native month input must not draw a second dark box. */
+:root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-month-picker > input[type="month"] {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: #e8effb !important;
+  color-scheme: dark;
+}
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  .ys-sales-month-picker
+  > input[type="month"]:focus-visible {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+:root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-month-picker:focus-within {
+  border-color: #9b91e7 !important;
+  box-shadow: 0 0 0 1px rgb(155 145 231 / 17%);
+}
+
+/* Dashboard panels: eliminate the 900px material tile seam in dark mode. */
+/* Full-width operational cards should use one uninterrupted dark surface.
+   The inherited ::before graphic repeats every 900px and leaves a vertical
+   edge in Sales Pulse / Restock / Monthly Recommendation panels. */
+:root.dark
+  .app-shell-ambient
+  .retail-dashboard-page
+  .ys-dashboard-panel-surface:not(.ys-kpi-card-surface)::before {
+  content: none !important;
+  display: none !important;
+}
+
+/* Sprint 11: Products workspace dark-mode surface and contrast convergence. */
+/* Scoped to Products only. Modal elements are portaled outside the app shell;
+   background-color alone cannot remove light gradient backgrounds. */
+:root.dark .app-shell-ambient .products-page-no-actions .ys-product-toolbar-filter {
+  background: #25354e !important;
+  border-color: #617493 !important;
+  color: #e9f0fc;
+}
+:root.dark
+  .app-shell-ambient
+  .products-page-no-actions
+  .ys-product-toolbar-filter
+  > :is(input, select) {
+  min-width: 0;
+  background: transparent !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: #e9f0fc !important;
+  color-scheme: dark;
+}
+:root.dark
+  .app-shell-ambient
+  .products-page-no-actions
+  .ys-product-toolbar-filter
+  > :is(input, select):focus-visible {
+  background: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+:root.dark .app-shell-ambient .products-page-no-actions .ys-product-toolbar-filter:focus-within {
+  border-color: #a497ff !important;
+  box-shadow: 0 0 0 1px rgb(164 151 255 / 22%);
+}
+:root.dark [role="dialog"].ys-product-modal {
+  --product-modal-bg: #1b293f;
+  --product-modal-surface: #253650;
+  --product-modal-surface-raised: #2b3d59;
+  --product-modal-border: #607491;
+  --product-modal-text: #eaf0fb;
+  --product-modal-secondary: #c5d2e7;
+  --product-modal-muted: #b7c6dc;
+  background: var(--product-modal-bg) !important;
+  border-color: #617391 !important;
+  color: var(--product-modal-text) !important;
+  color-scheme: dark;
+}
+/* Convert stale light-mode panels to dark surfaces, including slash-opacity
+   Tailwind variants omitted by the shared dialog theme. */
+:root.dark
+  [role="dialog"].ys-product-modal
+  :is(
+    [class~="bg-white"],
+    [class~="bg-white/80"],
+    [class~="bg-white/90"],
+    [class~="bg-white/95"],
+    [class~="bg-slate-50"],
+    [class~="bg-slate-50/30"],
+    [class~="bg-slate-50/60"],
+    [class~="bg-slate-50/70"],
+    [class~="bg-slate-50/80"],
+    [class~="bg-slate-100"],
+    [class~="bg-violet-50"],
+    [class~="bg-violet-50/30"],
+    [class~="bg-violet-50/35"],
+    [class~="bg-violet-50/40"],
+    [class~="bg-violet-50/60"],
+    [class~="bg-violet-50/65"],
+    [class~="bg-violet-50/70"],
+    [class~="bg-violet-100"]
+  ) {
+  background-color: var(--product-modal-surface) !important;
+  border-color: var(--product-modal-border) !important;
+}
+:root.dark
+  [role="dialog"].ys-product-modal
+  :is([class~="bg-gradient-to-br"], [class~="bg-gradient-to-r"]) {
+  background-image: none !important;
+  background-color: var(--product-modal-surface) !important;
+}
+:root.dark
+  [role="dialog"].ys-product-modal
+  :is(
+    [class~="text-slate-950"],
+    [class~="text-slate-900"],
+    [class~="text-slate-800"],
+    [class~="text-slate-700"],
+    [class~="text-violet-950"]
+  ) {
+  color: var(--product-modal-text) !important;
+}
+:root.dark
+  [role="dialog"].ys-product-modal
+  :is([class~="text-slate-600"], [class~="text-slate-500"], [class~="text-slate-400"]) {
+  color: var(--product-modal-secondary) !important;
+}
+:root.dark
+  [role="dialog"].ys-product-modal
+  :is([class~="text-violet-700"], [class~="text-violet-800"], [class~="text-[#625bff]"]) {
+  color: #c5b7ff !important;
+}
+:root.dark
+  [role="dialog"].ys-product-modal
+  :is(
+    [class~="border-slate-200"],
+    [class~="border-slate-100"],
+    [class~="border-violet-100"],
+    [class~="border-violet-200"],
+    [class~="border-violet-300"]
+  ) {
+  border-color: var(--product-modal-border) !important;
+}
+:root.dark
+  [role="dialog"].ys-product-modal
+  :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  background: #22324c !important;
+  border-color: #687b9a !important;
+  color: var(--product-modal-text) !important;
+  color-scheme: dark;
+}
+:root.dark [role="dialog"].ys-product-modal :is(input, textarea)::placeholder {
+  color: #aabbd4 !important;
+}
+:root.dark [role="dialog"].ys-product-modal :is(input, select, textarea):focus-visible {
+  outline-color: #a99bff;
+  border-color: #a99bff !important;
+}
+/* Light-mode-style secondary/ghost actions were dark ink on dark buttons. */
+:root.dark [role="dialog"].ys-product-modal button[class~="bg-white"],
+:root.dark [role="dialog"].ys-product-modal button[class~="text-slate-600"] {
+  background: #31435e !important;
+  border-color: #7184a6 !important;
+  color: #e6edfa !important;
+}
+:root.dark [role="dialog"].ys-product-modal button[class~="bg-white"]:hover:not(:disabled),
+:root.dark [role="dialog"].ys-product-modal button[class~="text-slate-600"]:hover:not(:disabled) {
+  background: #405576 !important;
+}
+:root.dark [role="dialog"].ys-product-modal button:disabled {
+  opacity: 0.7;
+}
+/* Status colors retain their meanings instead of becoming bright white slabs. */
+:root.dark [role="dialog"].ys-product-modal [class~="bg-emerald-50"] {
+  background-color: #1d403c !important;
+  border-color: #5b9a88 !important;
+}
+:root.dark [role="dialog"].ys-product-modal [class~="text-emerald-800"],
+:root.dark [role="dialog"].ys-product-modal [class~="text-emerald-950"] {
+  color: #c6f4e0 !important;
+}
+:root.dark [role="dialog"].ys-product-modal [class~="bg-amber-50"] {
+  background-color: #433923 !important;
+  border-color: #b8a16b !important;
+}
+:root.dark [role="dialog"].ys-product-modal [class~="text-amber-800"],
+:root.dark [role="dialog"].ys-product-modal [class~="text-amber-900"] {
+  color: #ffe4a5 !important;
+}
+:root.dark [role="dialog"].ys-product-modal [class~="bg-red-50"] {
+  background-color: #482b37 !important;
+  border-color: #b96d83 !important;
+}
+:root.dark [role="dialog"].ys-product-modal [class~="text-red-700"],
+:root.dark [role="dialog"].ys-product-modal [class~="text-red-800"],
+:root.dark [role="dialog"].ys-product-modal [class~="text-red-900"] {
+  color: #ffcbd6 !important;
+}
+/* Image quality and preview: render UI panels dark, but never recolor product
+   images or apply filters to actual photography. */
+:root.dark [role="dialog"].ys-product-modal .ys-product-image-panel {
+  background: #2a3c57 !important;
+  border-color: #6b7e9b !important;
+}
+:root.dark [role="dialog"].ys-product-modal .ys-product-image-panel > button[class~="bg-white"] {
+  background: #20334e !important;
+  border-color: #8c9db8 !important;
+}
+:root.dark [role="dialog"].ys-product-modal .ys-product-image-preview {
+  background: #263650 !important;
+  border-color: #657994 !important;
+}
+:root.dark [role="dialog"].ys-product-modal .ys-product-preview-canvas {
+  background: #1d2a40 !important;
+}
+/* Keep file tabs and upload/drop targets consistent, including the injected
+   selected-file state styles from ProductCatalogQoLEnhancements. */
+:root.dark [role="dialog"].ys-product-package-modal [class~="bg-slate-100"] {
+  background: #1d2d45 !important;
+}
+:root.dark [role="dialog"].ys-product-package-modal [aria-label="Upload product package"],
+:root.dark [role="dialog"].ys-product-package-modal [data-package-file-card="true"],
+:root.dark [role="dialog"].ys-product-package-modal [data-package-dropzone="selected"] {
+  background: #293c59 !important;
+  border-color: #8a80d5 !important;
+  color: #eaf0fb !important;
+}
+:root.dark [role="dialog"].ys-product-package-modal [aria-label="Upload product package"]:hover {
+  background: #324665 !important;
+}
+:root.dark [role="dialog"].ys-product-package-modal [class~="bg-violet-100"] {
+  background-color: #354263 !important;
+}
+:root.dark [role="dialog"].ys-product-modal :is([class~="bg-slate-50/90"], [class~="bg-white/80"]) {
+  background-color: #24344f !important;
+}
+/* Focus visibility remains accessible on outer controls; no light-mode flash
+   in import modal scroll regions or sticky action footers. */
+:root.dark [role="dialog"].ys-product-modal :is(button, [role="button"]):focus-visible {
+  outline: 2px solid #a99bff;
+  outline-offset: 2px;
+}
+
+/* Sprint 11: Categories dark-mode surface convergence (page and portal dialogs). */
+/* Keep styling inside Categories. Radix dialogs render outside .app-shell-ambient,
+   so page-scoped retail input overrides alone cannot style them. */
+:root.dark .app-shell-ambient .ys-category-page .ys-category-search {
+  background: #263752 !important;
+  border-color: #657895 !important;
+  color: #e9effb;
+}
+:root.dark .app-shell-ambient .ys-category-page .ys-category-search > input {
+  min-width: 0;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: #edf3ff !important;
+  color-scheme: dark;
+}
+:root.dark .app-shell-ambient .ys-category-page .ys-category-search > input:focus-visible {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+:root.dark .app-shell-ambient .ys-category-page .ys-category-search:focus-within {
+  border-color: #ad9cff !important;
+  box-shadow: 0 0 0 1px rgb(173 156 255 / 22%);
+}
+:root.dark .app-shell-ambient .ys-category-page .ys-category-filter select {
+  background-color: #263752 !important;
+  border-color: #657895 !important;
+  color: #edf3ff !important;
+  color-scheme: dark;
+}
+
+:root.dark [role="dialog"].ys-category-modal {
+  --category-panel: #253750;
+  --category-raised: #2d415e;
+  --category-border: #657a99;
+  --category-text: #edf3ff;
+  --category-body: #c9d7ec;
+  background: #1b293f !important;
+  border-color: #5d7291 !important;
+  color: var(--category-text) !important;
+  color-scheme: dark;
+}
+:root.dark
+  [role="dialog"].ys-category-modal
+  :is(
+    [class~="bg-white"],
+    [class~="bg-white/80"],
+    [class~="bg-white/90"],
+    [class~="bg-slate-50"],
+    [class~="bg-slate-50/70"],
+    [class~="bg-slate-50/80"],
+    [class~="bg-slate-100"],
+    [class~="bg-violet-50"],
+    [class~="bg-violet-50/70"],
+    [class~="bg-violet-100"]
+  ) {
+  background-color: var(--category-panel) !important;
+  border-color: var(--category-border) !important;
+}
+:root.dark
+  [role="dialog"].ys-category-modal
+  :is(
+    [class~="text-slate-950"],
+    [class~="text-slate-900"],
+    [class~="text-slate-800"],
+    [class~="text-slate-700"]
+  ) {
+  color: var(--category-text) !important;
+}
+:root.dark
+  [role="dialog"].ys-category-modal
+  :is([class~="text-slate-600"], [class~="text-slate-500"], [class~="text-slate-400"]) {
+  color: var(--category-body) !important;
+}
+:root.dark
+  [role="dialog"].ys-category-modal
+  :is(
+    [class~="border-slate-100"],
+    [class~="border-slate-200"],
+    [class~="border-slate-300"],
+    [class~="border-violet-100"],
+    [class~="border-violet-200"]
+  ) {
+  border-color: var(--category-border) !important;
+}
+:root.dark
+  [role="dialog"].ys-category-modal
+  :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) {
+  background: #23344e !important;
+  border-color: #657b9d !important;
+  color: var(--category-text) !important;
+  color-scheme: dark;
+}
+:root.dark [role="dialog"].ys-category-modal :is(input, textarea)::placeholder {
+  color: #aebed6 !important;
+}
+:root.dark [role="dialog"].ys-category-modal :is(input, select, textarea):focus-visible {
+  border-color: #b2a4ff !important;
+  outline-color: #b2a4ff;
+}
+:root.dark [role="dialog"].ys-category-modal :is(input, select):disabled {
+  opacity: 0.78;
+  color: #cbd7eb !important;
+}
+/* Keep button actions legible even where the light secondary and ghost
+   variants otherwise render slate text on a dark filled background. */
+:root.dark [role="dialog"].ys-category-modal button[class~="bg-white"],
+:root.dark [role="dialog"].ys-category-modal button[class~="text-slate-600"] {
+  background: #314461 !important;
+  border-color: #7589a6 !important;
+  color: #edf3ff !important;
+}
+:root.dark [role="dialog"].ys-category-modal button[class~="bg-white"]:hover:not(:disabled),
+:root.dark [role="dialog"].ys-category-modal button[class~="text-slate-600"]:hover:not(:disabled) {
+  background: #405777 !important;
+}
+:root.dark [role="dialog"].ys-category-modal button:disabled {
+  opacity: 0.72;
+}
+/* The preview frame is UI, not the category cover itself: darken placeholders
+   and side panels but never apply a filter to the real uploaded imagery. */
+:root.dark [role="dialog"].ys-category-modal .ys-category-presentation,
+:root.dark [role="dialog"].ys-category-modal .ys-category-cover-panel {
+  background: #283b55 !important;
+  border-color: #6d819d !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-live-preview,
+:root.dark [role="dialog"].ys-category-modal .ys-category-preview-card,
+:root.dark [role="dialog"].ys-category-modal .ys-category-image-preview {
+  background: #203149 !important;
+  border-color: #69809e !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-preview-card > div:first-child,
+:root.dark [role="dialog"].ys-category-modal .ys-category-image-canvas {
+  background: #1d2e46 !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-empty-cover {
+  background: #1d2e46 !important;
+  color: #e6effe !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-empty-cover [class~="bg-white"],
+:root.dark [role="dialog"].ys-category-modal .ys-category-empty-cover [class~="bg-slate-100"] {
+  background: #334867 !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-live-preview button[aria-pressed="true"] {
+  background: #49426e !important;
+  border-color: #a69bfa !important;
+  color: #f0eaff !important;
+}
+:root.dark
+  [role="dialog"].ys-category-modal
+  .ys-category-live-preview
+  button[aria-pressed="false"] {
+  background: transparent !important;
+  color: #cedbf0 !important;
+}
+:root.dark
+  [role="dialog"].ys-category-modal
+  .ys-category-live-preview
+  button[aria-pressed="false"]:hover {
+  background: #344863 !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-cover-panel > button[class~="bg-white"] {
+  background: #20314a !important;
+  border-color: #8294ad !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-cover-panel [class~="bg-emerald-50"] {
+  background: #20453d !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-cover-panel [class~="text-emerald-800"] {
+  color: #c8f5e0 !important;
+}
+:root.dark [role="dialog"].ys-category-modal .ys-category-cover-panel [class~="text-violet-700"] {
+  color: #cbbaff !important;
+}
+:root.dark [role="dialog"].ys-category-modal :is(button, [role="button"]):focus-visible {
+  outline: 2px solid #b2a4ff;
+  outline-offset: 2px;
+}
+
+/* Sales receipt detail list: fixed cash/register header and totals remain outside
+   the scroll viewport. Reserve the native scrollbar track instead of allowing
+   moving product cards to scrape the panel edge while scrolling. */
+@media (min-width: 1280px) {
+  .app-shell-ambient .ys-sales-receipt-scroll {
+    scrollbar-gutter: stable;
+    scroll-padding-block: 0.75rem;
+  }
+}
+
+/* Sprint 11: Inventory modal and filter dark-mode contrast convergence. */
+/* FilterSelect uses the shared Select's own chevron; outer labels handle
+   focus while the inner control remains transparent. */
+:root.dark .app-shell-ambient .ys-inventory-search,
+:root.dark .app-shell-ambient .ys-inventory-filter {
+  background: #263852 !important;
+  border-color: #607795 !important;
+  color: #e9f0fc !important;
+}
+:root.dark .app-shell-ambient .ys-inventory-search > input {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: #ecf2ff !important;
+}
+:root.dark .app-shell-ambient .ys-inventory-filter > select {
+  background-color: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: #ecf2ff !important;
+  color-scheme: dark !important;
+}
+/* The inventory toolbar uses a physical chevron slot after the native select,
+   avoiding label/arrow collisions while keeping a readable dark-mode affordance. */
+:root.dark .app-shell-ambient .ys-inventory-filter-chevron {
+  color: #cbd8ef !important;
+}
+:root.dark .app-shell-ambient :is(.ys-inventory-search, .ys-inventory-filter):focus-within {
+  border-color: #a89aff !important;
+  box-shadow: 0 0 0 1px rgb(168 154 255 / 20%);
+}
+
+/* Inventory stock details, receiving, adjustment, activity and bulk-import
+   dialogs are Radix portals and do not inherit app-shell scoped CSS. */
+:root.dark [role="dialog"].ys-inventory-modal {
+  --inventory-modal-panel: #263752;
+  --inventory-modal-raised: #2d405d;
+  --inventory-modal-border: #637895;
+  --inventory-modal-ink: #edf3ff;
+  --inventory-modal-copy: #c7d5e8;
+  background: #1b293f !important;
+  border-color: #596f8f !important;
+  color: var(--inventory-modal-ink) !important;
+  color-scheme: dark;
+}
+:root.dark
+  [role="dialog"].ys-inventory-modal
+  :is(
+    [class~="bg-white"],
+    [class~="bg-white/95"],
+    [class~="bg-white/90"],
+    [class~="bg-slate-50"],
+    [class~="bg-slate-50/60"],
+    [class~="bg-slate-50/70"],
+    [class~="bg-slate-50/80"],
+    [class~="bg-slate-100"],
+    [class~="bg-violet-50/70"],
+    [class~="bg-violet-100"],
+    [class~="bg-indigo-50/60"]
+  ) {
+  background-color: var(--inventory-modal-panel) !important;
+  border-color: var(--inventory-modal-border) !important;
+}
+:root.dark
+  [role="dialog"].ys-inventory-modal
+  :is(
+    [class~="text-slate-950"],
+    [class~="text-slate-900"],
+    [class~="text-slate-800"],
+    [class~="text-slate-700"]
+  ) {
+  color: var(--inventory-modal-ink) !important;
+}
+:root.dark
+  [role="dialog"].ys-inventory-modal
+  :is(
+    [class~="text-slate-600"],
+    [class~="text-slate-500"],
+    [class~="text-slate-400"],
+    [class~="text-slate-300"]
+  ) {
+  color: var(--inventory-modal-copy) !important;
+}
+:root.dark
+  [role="dialog"].ys-inventory-modal
+  :is(
+    [class~="border-slate-100"],
+    [class~="border-slate-200"],
+    [class~="border-slate-300"],
+    [class~="border-violet-200"],
+    [class~="border-violet-300"]
+  ) {
+  border-color: var(--inventory-modal-border) !important;
+}
+:root.dark
+  [role="dialog"].ys-inventory-modal
+  :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) {
+  background: #243550 !important;
+  border-color: #687e9e !important;
+  color: var(--inventory-modal-ink) !important;
+  color-scheme: dark;
+}
+:root.dark [role="dialog"].ys-inventory-modal :is(input, textarea)::placeholder {
+  color: #b5c4dc !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal :is(input, select, textarea):focus-visible {
+  border-color: #aa9dff !important;
+  outline-color: #aa9dff;
+}
+/* Native expiry date field uses the dark calendar indicator and popup. */
+:root.dark [role="dialog"].ys-inventory-modal input[type="date"] {
+  color-scheme: dark;
+}
+:root.dark [role="dialog"].ys-inventory-modal button[class~="bg-white"],
+:root.dark [role="dialog"].ys-inventory-modal button[class~="text-slate-600"] {
+  background: #324663 !important;
+  border-color: #8093b0 !important;
+  color: #edf3ff !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal button[class~="bg-white"]:hover:not(:disabled),
+:root.dark [role="dialog"].ys-inventory-modal button[class~="text-slate-600"]:hover:not(:disabled) {
+  background: #425979 !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal button:disabled {
+  opacity: 0.68;
+}
+:root.dark [role="dialog"].ys-inventory-modal button[aria-pressed="true"]:not(:disabled) {
+  background: #4f46e5 !important;
+  color: #fff !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal button[aria-pressed="false"] {
+  background: #2e405b !important;
+  color: #d7e3f6 !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal button[aria-pressed="false"]:hover:not(:disabled) {
+  background: #3e526f !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal [class~="text-violet-700"],
+:root.dark [role="dialog"].ys-inventory-modal [class~="text-violet-800"] {
+  color: #c9baff !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal [class~="text-emerald-700"],
+:root.dark [role="dialog"].ys-inventory-modal [class~="text-emerald-800"] {
+  color: #a4f0d5 !important;
+}
+:root.dark
+  [role="dialog"].ys-inventory-modal
+  :is([class~="bg-emerald-50"], [class~="bg-emerald-50/70"]) {
+  background-color: #204139 !important;
+  border-color: #5a9c83 !important;
+}
+:root.dark
+  [role="dialog"].ys-inventory-modal
+  :is([class~="bg-amber-50"], [class~="bg-amber-50/70"]) {
+  background-color: #413820 !important;
+  border-color: #bca069 !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal [class~="text-amber-700"],
+:root.dark [role="dialog"].ys-inventory-modal [class~="text-amber-900"] {
+  color: #ffe0a0 !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal :is([class~="bg-rose-50"], [class~="bg-rose-50/70"]) {
+  background-color: #462b3a !important;
+  border-color: #b87691 !important;
+}
+:root.dark
+  [role="dialog"].ys-inventory-modal
+  :is([class~="text-rose-800"], [class~="text-rose-900"]) {
+  color: #ffd2df !important;
+}
+/* Uploaded documents, guide and dropzone share the same premium dark surface. */
+:root.dark [role="dialog"].ys-inventory-import-modal [role="button"][class~="bg-violet-50/70"],
+:root.dark [role="dialog"].ys-inventory-import-modal [role="button"][class~="bg-violet-100"] {
+  background: #2b3d5b !important;
+  border-color: #8a7de0 !important;
+  color: #eaf0ff !important;
+}
+:root.dark [role="dialog"].ys-inventory-import-modal [role="button"]:hover {
+  background-color: #354968 !important;
+}
+:root.dark [role="dialog"].ys-inventory-modal :is(button, [role="button"]):focus-visible {
+  outline: 2px solid #aa9dff;
+  outline-offset: 2px;
+}
+
+/* Sprint 11: receiving delivery dialogs — consistent dark contrast. */
+/* Radix portals live under document.body, outside the retail app shell.
+   Only the receiving dialogs are affected; light mode and workflow logic stay unchanged. */
+:root.dark [role="dialog"].ys-receiving-dialog {
+  --receiving-panel: #263752;
+  --receiving-raised: #2d415e;
+  --receiving-border: #647a99;
+  --receiving-ink: #edf3ff;
+  --receiving-body: #cbd8ec;
+  --receiving-muted: #b3c3da;
+  background-color: #1b293f !important;
+  border-color: #536b8b !important;
+  color: var(--receiving-ink) !important;
+  color-scheme: dark;
+}
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  :is(
+    [class~="bg-white"],
+    [class~="bg-slate-50"],
+    [class~="bg-slate-50/80"],
+    [class~="bg-slate-100"],
+    [class~="bg-indigo-50/70"]
+  ) {
+  background-color: var(--receiving-panel) !important;
+  border-color: var(--receiving-border) !important;
+}
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  :is(
+    [class~="text-slate-950"],
+    [class~="text-slate-900"],
+    [class~="text-slate-800"],
+    [class~="text-slate-700"]
+  ) {
+  color: var(--receiving-ink) !important;
+}
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  :is([class~="text-slate-600"], [class~="text-slate-500"], [class~="text-slate-400"]) {
+  color: var(--receiving-body) !important;
+}
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  :is([class~="border-slate-100"], [class~="border-slate-200"], [class~="border-slate-300"]) {
+  border-color: var(--receiving-border) !important;
+}
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) {
+  background-color: #243650 !important;
+  border-color: #687f9d !important;
+  color: var(--receiving-ink) !important;
+  color-scheme: dark !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog :is(input, textarea)::placeholder {
+  color: #acbed8 !important;
+  opacity: 1;
+}
+:root.dark [role="dialog"].ys-receiving-dialog :is(input, textarea, select):focus-visible {
+  outline-color: #ab9cff;
+  border-color: #ab9cff !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog input:disabled {
+  color: #d2def0 !important;
+  opacity: 0.78;
+}
+:root.dark [role="dialog"].ys-receiving-dialog select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23c2b7ff%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22m6 9 6 6 6-6%22/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.875rem center !important;
+  background-size: 1rem 1rem !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog button[class~="bg-white"],
+:root.dark [role="dialog"].ys-receiving-dialog button[class~="text-slate-600"] {
+  background-color: #30445f !important;
+  border-color: #8395b0 !important;
+  color: #edf3ff !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog button[class~="bg-white"]:hover:not(:disabled),
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  button[class~="text-slate-600"]:hover:not(:disabled) {
+  background-color: #415777 !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog button:disabled {
+  opacity: 0.76;
+}
+:root.dark [role="dialog"].ys-receiving-dialog button:focus-visible {
+  outline: 2px solid #ab9cff;
+  outline-offset: 2px;
+}
+/* The receipt footer belongs to the dialog's dark chrome, never a white bar. */
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-dialog-footer {
+  background-color: #253650 !important;
+  border-color: #617592 !important;
+}
+/* Arrival modes and issue selection must remain dark even when selected. */
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-arrival-option:hover {
+  background-color: #344966 !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-arrival-option:focus-visible {
+  background-color: #374968 !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-exception-option {
+  background-color: #253752 !important;
+  border-color: #607796 !important;
+}
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  .ys-receiving-exception-option[data-selected="true"] {
+  background-color: #373860 !important;
+  border-color: #a699ff !important;
+  box-shadow: inset 0 0 0 1px rgb(166 153 255 / 35%);
+}
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-exception-option:hover {
+  background-color: #374962 !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog [data-checked][class~="bg-white"] {
+  background-color: #5b50d7 !important;
+  border-color: #afa4ff !important;
+  color: #fff !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-exception-row {
+  background-color: #263852 !important;
+  border-color: #637a99 !important;
+}
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  :is(.ys-receiving-cancel-panel, .ys-receiving-lot-summary) {
+  background-color: #283a55 !important;
+  border-color: #667c9b !important;
+}
+/* Warnings are amber-tinted slate, not dirty-white overlays. */
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-damage-panel {
+  background-color: #403828 !important;
+  border-color: #be9d61 !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-damage-panel label {
+  color: #ffe3a3 !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog .ys-receiving-damage-panel [class~="text-amber-800"],
+:root.dark [role="dialog"].ys-receiving-dialog [class~="text-amber-800"] {
+  color: #ffd49a !important;
+}
+:root.dark [role="dialog"].ys-receiving-dialog [class~="text-amber-700"] {
+  color: #ffdda0 !important;
+}
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  :is([class~="bg-emerald-50"], [class~="bg-emerald-50/70"]) {
+  background-color: #20423b !important;
+  border-color: #609c88 !important;
+}
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  :is(
+    [class~="text-emerald-600"],
+    [class~="text-emerald-700"],
+    [class~="text-emerald-800"],
+    [class~="text-emerald-950"]
+  ) {
+  color: #b8f4de !important;
+}
+/* When disabled, secondary/back/add-details actions must still have legible
+   labels. The disabled attribute still prevents interaction. */
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  button:disabled:is([class~="text-slate-700"], [class~="text-slate-600"]) {
+  background-color: #2b3c55 !important;
+  border-color: #556987 !important;
+  color: #c0cce0 !important;
+}
+/* Maintain the actual values and logic of batch/lot/expiry fields. */
+:root.dark [role="dialog"].ys-receiving-lot-dialog label {
+  color: #dce7f8 !important;
+}
+:root.dark [role="dialog"].ys-receiving-lot-dialog [data-checked] {
+  background-color: #5b50d7 !important;
+  border-color: #afa4ff !important;
+}
+
+/* Preserve the distinct destructive action without reverting to red-on-dark. */
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  .ys-receiving-cancel-panel
+  button[class~="text-red-700"] {
+  background-color: #492f40 !important;
+  border-color: #b2798d !important;
+  color: #ffcbd7 !important;
+}
+:root.dark
+  [role="dialog"].ys-receiving-dialog
+  .ys-receiving-cancel-panel
+  button[class~="text-red-700"]:hover:not(:disabled) {
+  background-color: #5a3749 !important;
+}
+
+/* POS Cash Payment: readable portal controls in dark mode (Sprint 11). */
+/* The POS payment modal is portaled outside .app-shell-ambient. Its secondary
+   buttons and slate labels otherwise inherit light-mode dark text. */
+:root.dark [role="dialog"].ys-pos-cash-dialog {
+  --cash-modal-text: #edf3ff;
+  --cash-modal-body: #c8d6eb;
+  --cash-modal-outline: #7386a5;
+  background-color: #1c2b42 !important;
+  border-color: #607595 !important;
+  color: var(--cash-modal-text) !important;
+  color-scheme: dark;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-card {
+  background-color: #293a55 !important;
+  background-image: none !important;
+  border-color: var(--cash-modal-outline) !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-card::before {
+  content: none !important;
+  display: none !important;
+}
+:root.dark
+  [role="dialog"].ys-pos-cash-dialog
+  :is(
+    [class~="text-slate-950"],
+    [class~="text-slate-900"],
+    [class~="text-slate-800"],
+    [class~="text-slate-700"]
+  ) {
+  color: var(--cash-modal-text) !important;
+}
+:root.dark
+  [role="dialog"].ys-pos-cash-dialog
+  :is([class~="text-slate-600"], [class~="text-slate-500"], [class~="text-slate-400"]) {
+  color: var(--cash-modal-body) !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-entry label {
+  color: #e8efff !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-entry input {
+  background-color: #23344f !important;
+  border-color: #778aae !important;
+  color: var(--cash-modal-text) !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-entry input::placeholder {
+  color: #aebed9 !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-presets button,
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-footer button[class~="bg-white"] {
+  background-color: #304360 !important;
+  border-color: #8195b5 !important;
+  color: #edf3ff !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-presets button:hover:not(:disabled),
+:root.dark
+  [role="dialog"].ys-pos-cash-dialog
+  .ys-pos-cash-footer
+  button[class~="bg-white"]:hover:not(:disabled) {
+  background-color: #425878 !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-footer {
+  border-color: #607595 !important;
+  background-color: #21314a !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog .ys-pos-cash-footer button[class~="bg-indigo-600"] {
+  color: #ffffff !important;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog button:disabled {
+  opacity: 0.72;
+}
+:root.dark [role="dialog"].ys-pos-cash-dialog button:focus-visible {
+  outline: 2px solid #b1a4ff;
+  outline-offset: 2px;
+}
+
+/* Staff Support inbox: dark-mode-only conversation surfaces (Sprint 11).
+   Light-theme translucent utility backgrounds were not normalized by the
+   shared appearance layer, leaving near-white messages with light text. */
+:root.dark .app-shell-ambient .ys-support-inbox {
+  background-color: #1d2b42 !important;
+  border-color: #52617f !important;
+  color: #eaf0ff;
+  color-scheme: dark;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-ticket {
+  border-color: #465773;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-ticket[data-active="true"] {
+  background-color: #354665 !important;
+  box-shadow: inset 3px 0 0 #b6a8ff;
+  color: #f3f6ff !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-ticket:not([data-active="true"]):hover,
+:root.dark
+  .app-shell-ambient
+  .ys-support-inbox
+  .ys-support-ticket:not([data-active="true"]):focus-visible {
+  background-color: #2b3b57 !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-ticket:focus-visible {
+  outline: 2px solid #b6a8ff;
+  outline-offset: -3px;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-thread {
+  background-color: #162339 !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-automated-email {
+  background-color: #293854 !important;
+  border-color: #687ba4 !important;
+  color: #eef3ff !important;
+}
+:root.dark
+  .app-shell-ambient
+  .ys-support-inbox
+  .ys-support-automated-email
+  [class~="text-indigo-700"] {
+  color: #d2c6ff !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-automated-email button {
+  border-color: #a79cdb;
+  color: #eee9ff;
+}
+:root.dark
+  .app-shell-ambient
+  .ys-support-inbox
+  .ys-support-automated-email
+  button:hover:not(:disabled) {
+  background-color: #3b4b6c !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-customer-message {
+  background-color: #22334c !important;
+  border-color: #4e6180 !important;
+  color: #ecf1ff !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-system-event {
+  background-color: #2a3b56 !important;
+  border-color: #5b6c8a !important;
+  color: #d7e2f5 !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-fact {
+  background-color: #24344e !important;
+  border-color: #4c5e7c !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-fact svg {
+  color: #bcc9e6;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-reply-form {
+  background-color: #1d2b42 !important;
+  border-color: #4c5d7b !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-reply-trigger {
+  background-color: #23344e !important;
+  border-color: #4e607f !important;
+  color: #eaf0ff !important;
+}
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-reply-trigger:hover:not(:disabled),
+:root.dark .app-shell-ambient .ys-support-inbox .ys-support-reply-trigger:focus-visible {
+  background-color: #2e4060 !important;
+  border-color: #9387d5 !important;
+}
+
+/* Sprint 11: Restock report rows and the next-month preview must not inherit
+   light-indigo hover/selection fills against the dark workstation text palette. */
+:root.dark .app-shell-ambient .ys-restock-product-row {
+  background-color: #202c43 !important;
+  color: #e6ecfa;
+}
+:root.dark .app-shell-ambient .ys-restock-product-row:hover:not([data-selected="true"]),
+:root.dark .app-shell-ambient .ys-restock-product-row:focus-visible:not([data-selected="true"]) {
+  background-color: #30415d !important;
+}
+:root.dark .app-shell-ambient .ys-restock-product-row[data-selected="true"] {
+  background-color: #354563 !important;
+  box-shadow: inset 3px 0 0 #afa4ff;
+}
+:root.dark .app-shell-ambient .ys-restock-product-row[data-selected="true"]:hover,
+:root.dark .app-shell-ambient .ys-restock-product-row[data-selected="true"]:focus-visible {
+  background-color: #3c4d70 !important;
+}
+:root.dark
+  .app-shell-ambient
+  .ys-restock-product-row
+  :is([class~="text-slate-950"], [class~="text-slate-900"]) {
+  color: #f2f5ff !important;
+}
+:root.dark .app-shell-ambient .ys-restock-product-row [class~="text-slate-500"] {
+  color: #ccd7eb !important;
+}
+:root.dark .app-shell-ambient .ys-restock-month-preview {
+  background-color: #273650 !important;
+  border-color: #607493 !important;
+  color: #e7edfc;
+}
+:root.dark .app-shell-ambient .ys-restock-month-preview-label {
+  color: #cdc4ff !important;
+}
+:root.dark .app-shell-ambient .ys-restock-month-preview-title {
+  color: #f3f5ff !important;
+}
+:root.dark .app-shell-ambient .ys-restock-month-preview-note {
+  color: #d2dff2 !important;
+}
+
+/* Owner/User Management uses a single dark segmented-control vocabulary.
+   The Tailwind hover:bg-white/70 class is intentionally overridden only here. */
+:root.dark .app-shell-ambient .ys-user-management-tabs {
+  background-color: #18263c !important;
+  border-color: #526583 !important;
+}
+:root.dark .app-shell-ambient .ys-user-management-tabs .ys-user-management-tab {
+  background-color: transparent !important;
+  color: #d3dff0 !important;
+}
+:root.dark .app-shell-ambient .ys-user-management-tabs .ys-user-management-tab:hover:not(:disabled),
+:root.dark .app-shell-ambient .ys-user-management-tabs .ys-user-management-tab:focus-visible {
+  background-color: #30415e !important;
+  color: #f3f5ff !important;
+}
+:root.dark .app-shell-ambient .ys-user-management-tabs .ys-user-management-tab[data-active="true"] {
+  background-color: #39365e !important;
+  color: #e7e0ff !important;
+  box-shadow: inset 0 0 0 1px #8e84d6;
+}
+:root.dark
+  .app-shell-ambient
+  .ys-user-management-tabs
+  .ys-user-management-tab[data-active="true"]:hover,
+:root.dark
+  .app-shell-ambient
+  .ys-user-management-tabs
+  .ys-user-management-tab[data-active="true"]:focus-visible {
+  background-color: #454172 !important;
+}
+
+/* Forecast restock action card: utility text-amber-900/950 etc. must never
+   render as dark ink on the darkened warning/positive/info surfaces. */
+:root.dark .app-shell-ambient .ys-restock-recommendation {
+  color: #e8edf8;
+}
+:root.dark .app-shell-ambient .ys-restock-recommendation[data-tone="amber"] {
+  --ys-restock-action-label: #ffdc9a;
+  --ys-restock-action-title: #fff1d7;
+  --ys-restock-action-body: #ebdcc3;
+  --ys-restock-action-meta: #f2d8ad;
+  background-color: #3d3123 !important;
+  border-color: #b39462 !important;
+}
+:root.dark .app-shell-ambient .ys-restock-recommendation[data-tone="emerald"] {
+  --ys-restock-action-label: #a8eacb;
+  --ys-restock-action-title: #e7fff2;
+  --ys-restock-action-body: #c8e8da;
+  --ys-restock-action-meta: #b8dfcf;
+  background-color: #233b38 !important;
+  border-color: #5d907d !important;
+}
+:root.dark .app-shell-ambient .ys-restock-recommendation[data-tone="indigo"] {
+  --ys-restock-action-label: #cbbfff;
+  --ys-restock-action-title: #f1edff;
+  --ys-restock-action-body: #d0dbf3;
+  --ys-restock-action-meta: #c1ccec;
+  background-color: #293651 !important;
+  border-color: #7783b9 !important;
+}
+:root.dark .app-shell-ambient .ys-restock-recommendation .ys-restock-recommendation-label {
+  color: var(--ys-restock-action-label) !important;
+}
+:root.dark .app-shell-ambient .ys-restock-recommendation .ys-restock-recommendation-title {
+  color: var(--ys-restock-action-title) !important;
+}
+:root.dark .app-shell-ambient .ys-restock-recommendation .ys-restock-recommendation-body {
+  color: var(--ys-restock-action-body) !important;
+}
+:root.dark .app-shell-ambient .ys-restock-recommendation .ys-restock-recommendation-meta {
+  color: var(--ys-restock-action-meta) !important;
+}
+
+/* Report export cards live in a Radix portal outside .app-shell-ambient.
+   Secondary choices must stay legible in Dark Mode without altering light mode
+   or changing the PDF / Print / CSV actions. */
+:root.dark[data-appearance-scope="retail"] [role="dialog"] .ys-report-export-option--secondary {
+  border-color: #7183a2 !important;
+  background-color: #293a55 !important;
+  color: #edf3ff !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 5%);
+}
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"]
+  .ys-report-export-option--secondary
+  .ys-report-export-option__icon {
+  color: #cbc3ff !important;
+  opacity: 1;
+}
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"]
+  .ys-report-export-option--secondary
+  .ys-report-export-option__title {
+  color: #f3f6ff !important;
+}
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"]
+  .ys-report-export-option--secondary
+  .ys-report-export-option__description {
+  color: #d0dcee !important;
+}
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"]
+  .ys-report-export-option--secondary:hover:not(:disabled) {
+  border-color: #ada5f2 !important;
+  background-color: #354765 !important;
+}
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"]
+  .ys-report-export-option--secondary:focus-visible {
+  outline: 2px solid #b3a8ff;
+  outline-offset: 3px;
+}
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"]
+  .ys-report-export-option--secondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.78;
+}
+
+/* Sprint 11: Reports > Add product is a Radix portal outside the retail shell.
+   The scoped dark palette restores legibility without changing light mode or
+   affecting other dialogs. Enabled and disabled actions remain distinguishable. */
+:root.dark[data-appearance-scope="retail"] [role="dialog"].ys-restock-product-picker {
+  background: #1b283e;
+  border-color: #667998;
+  color: #f2f5ff;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__search-input {
+  background: #17263e;
+  border-color: #7588a9;
+  color: #f2f5ff;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__search-input::placeholder {
+  color: #bfcee4;
+  opacity: 1;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__search-input:focus-visible {
+  border-color: #b7abff;
+  outline: 2px solid #b7abff;
+  outline-offset: 2px;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__secondary-action {
+  border-color: #8294b2;
+  background: #2c3d57;
+  color: #f4f6ff;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__secondary-action:hover:not(:disabled) {
+  border-color: #b0a6ff;
+  background: #3a4b6a;
+  color: #ffffff;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  button:disabled {
+  opacity: 0.86;
+  cursor: not-allowed;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__secondary-action:disabled {
+  border-color: #64738d;
+  background: #29374e;
+  color: #dce5f3;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  :is(button, input):focus-visible {
+  outline: 2px solid #b7abff;
+  outline-offset: 2px;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__empty {
+  background: #22324a;
+  border-color: #7a8bab;
+  color: #dbe5f5;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__results {
+  border-color: #596a85;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__results
+  > *
+  + * {
+  border-color: #485b79;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  [class~="border-t"] {
+  border-color: #536580;
+}
+
+/* Sprint 11: Reports dialogs render in Radix portals outside the retail app shell.
+   These scoped overrides fix dark ink/buttons on navy dialogs while leaving
+   light mode and other modules unchanged. */
+:root.dark[data-appearance-scope="retail"] [role="dialog"].ys-report-modal {
+  color: #f1f5ff;
+  border-color: #647695;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is(
+    [class~="text-slate-400"],
+    [class~="text-slate-500"],
+    [class~="text-slate-600"],
+    [class~="text-slate-700"],
+    [class~="text-slate-800"]
+  ) {
+  color: #d0dcf0 !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is([class~="text-slate-900"], [class~="text-slate-950"]) {
+  color: #f1f5ff !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is([class~="border-slate-100"], [class~="border-slate-200"], [class~="border-slate-300"]) {
+  border-color: #556985 !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is([class~="bg-white"], [class~="bg-slate-50"], [class~="bg-slate-100"]) {
+  background-color: #25354e !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  background: #17263d;
+  border-color: #7789a7;
+  color: #f2f6ff;
+  color-scheme: dark;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is(input, textarea)::placeholder {
+  color: #c3d2e7;
+  opacity: 1;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is(input, select, textarea):focus-visible {
+  outline: 2px solid #b7adff;
+  outline-offset: 2px;
+  border-color: #b7adff;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is(button[class~="bg-white"], button[class~="text-slate-600"]) {
+  background-color: #2e405c !important;
+  color: #f2f6ff !important;
+  border-color: #8295b3 !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is(button[class~="bg-white"], button[class~="text-slate-600"]):hover:not(:disabled) {
+  background-color: #3b506f !important;
+  border-color: #b8aeff !important;
+  color: #ffffff !important;
+}
+
+:root.dark[data-appearance-scope="retail"] [role="dialog"].ys-report-modal button:disabled {
+  opacity: 0.82;
+  cursor: not-allowed;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is(button, [role="button"]):focus-visible {
+  outline: 2px solid #b7adff;
+  outline-offset: 2px;
+}
+
+:root.dark[data-appearance-scope="retail"] [role="dialog"].ys-report-modal [class~="bg-amber-50"] {
+  background-color: #423525 !important;
+  border-color: #a8895f !important;
+  color: #ffe2b2 !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is([class~="text-amber-700"], [class~="text-amber-800"], [class~="text-amber-900"]) {
+  color: #ffe2b2 !important;
+}
+
+:root.dark[data-appearance-scope="retail"] [role="dialog"].ys-report-modal [class~="bg-red-50"] {
+  background-color: #402b36 !important;
+  border-color: #ab7087 !important;
+  color: #ffd2db !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is([class~="text-red-700"], [class~="text-red-800"]) {
+  color: #ffd2db !important;
+}
+
+:root.dark[data-appearance-scope="retail"] [role="dialog"].ys-report-modal [class~="bg-indigo-50"] {
+  background-color: #343457 !important;
+  border-color: #827aba !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is([class~="text-indigo-700"], [class~="text-indigo-800"]) {
+  color: #ddd5ff !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is([class~="divide-slate-100"], [class~="divide-slate-200"])
+  > :not(:first-child) {
+  border-color: #4e6381 !important;
+}
+
+/* Sprint 11: reliable native-select chevrons for the existing retail filters.
+   Browser-default arrows sit against the field border inconsistently.
+   Limit this to explicitly opted-in filters so icon-bearing/dual-chevron
+   controls (including the Inventory select with a physical ChevronDown)
+   are not affected. */
+.app-shell-ambient select.ys-retail-select-chevron {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.75rem !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23475469%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22m6 9 6 6 6-6%22/%3E%3C/svg%3E") !important;
+  background-position: right 1rem center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1rem 1rem !important;
+}
+
+:root.dark .app-shell-ambient select.ys-retail-select-chevron {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23d5e2f5%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22m6 9 6 6 6-6%22/%3E%3C/svg%3E") !important;
+}
+
+/* The category directory uses shared Select and a solid dark filter surface.
+   Its former background shorthand erased the inline SVG arrow. */
+:root.dark .app-shell-ambient .ys-category-page .ys-category-filter select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23d5e2f5%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22m6 9 6 6 6-6%22/%3E%3C/svg%3E") !important;
+  background-position: right 1rem center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1rem 1rem !important;
+  padding-right: 2.75rem !important;
+}
+
+/* Products filters have a transparent dark-mode wrapper. That older shorthand
+   must not erase the shared chevron background on the native select. */
+:root.dark
+  .app-shell-ambient
+  .products-page-no-actions
+  .ys-product-toolbar-filter
+  > select.ys-retail-select-chevron {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23d5e2f5%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22m6 9 6 6 6-6%22/%3E%3C/svg%3E") !important;
+  background-position: right 1rem center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1rem 1rem !important;
+}

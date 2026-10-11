@@ -65,6 +65,39 @@ class CatalogImageProcessContractTests(unittest.TestCase):
         self.assertTrue((output / "card.webp").is_file())
         self.assertTrue((output / "pdp.webp").is_file())
 
+    def test_category_cover_profile_generates_landscape_ready_variants(self) -> None:
+        source = self.root / "category.jpg"
+        image = Image.new("RGB", (1400, 900), (232, 226, 214))
+        draw = ImageDraw.Draw(image)
+        draw.rectangle((80, 80, 1320, 820), fill=(70, 95, 120))
+        for x in range(120, 1280, 80):
+            draw.line((x, 120, x, 780), fill=(210, 215, 220), width=4)
+        image.save(source, quality=95)
+        output = self.root / "category-output"
+
+        completed = subprocess.run(
+            [sys.executable, str(self.script)],
+            input=json.dumps(
+                {
+                    "sourcePath": str(source),
+                    "outputDirectory": str(output),
+                    "profile": "category-cover",
+                }
+            ),
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        result = json.loads(completed.stdout)
+        self.assertIn(result["status"], {"APPROVED", "NEEDS_REVIEW"})
+        self.assertEqual(result["variants"]["cover"]["fileName"], "cover.webp")
+        self.assertEqual(result["variants"]["thumbnail"]["fileName"], "thumbnail.webp")
+        self.assertTrue((output / "processed.webp").is_file())
+        self.assertTrue((output / "cover.webp").is_file())
+        self.assertTrue((output / "thumbnail.webp").is_file())
+
     def test_invalid_process_request_fails_without_emitting_fake_result(self) -> None:
         completed = subprocess.run(
             [sys.executable, str(self.script)],

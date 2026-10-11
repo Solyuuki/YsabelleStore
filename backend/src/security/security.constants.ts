@@ -128,6 +128,11 @@ export const AUTH_RATE_LIMITS = {
     windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
     maxAttempts: 3,
     scope: "customer-username-claim-target"
+  },
+  customerSupportTicketCreate: {
+    windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
+    maxAttempts: 8,
+    scope: "customer-support-ticket-create"
   }
 } as const;
 
@@ -139,6 +144,13 @@ export const SECURITY_LIMITS = {
 } as const;
 
 export const PRODUCT_IMAGE_UPLOAD_LIMITS = {
+  maxFileBytes: 8 * 1024 * 1024,
+  maxDecodedPixels: 24_000_000,
+  maxDimensionPixels: 8_000,
+  allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"]
+} as const;
+
+export const CATEGORY_COVER_UPLOAD_LIMITS = {
   maxFileBytes: 8 * 1024 * 1024,
   maxDecodedPixels: 24_000_000,
   maxDimensionPixels: 8_000,

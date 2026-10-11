@@ -2,11 +2,14 @@ import {
   Boxes,
   ChartNoAxesCombined,
   FileBarChart,
+  Headphones,
   History,
   LayoutDashboard,
   LineChart,
   Package,
+  PackageCheck,
   ReceiptText,
+  Tags,
   ScanBarcode,
   Settings,
   Truck,
@@ -21,9 +24,12 @@ export type AppRoutePath =
   | "/dashboard"
   | "/pos"
   | "/products"
+  | "/categories"
   | "/inventory"
   | "/receiving"
   | "/sales"
+  | "/deliveries"
+  | "/customer-support"
   | "/forecast"
   | "/historical-sales"
   | "/reports"
@@ -63,6 +69,13 @@ export const appRoutes: readonly AppRoute[] = [
     allowedRoles: ["OWNER"]
   },
   {
+    path: "/categories",
+    label: "Categories",
+    description: "Catalog taxonomy and storefront presentation",
+    icon: Tags,
+    allowedRoles: ["OWNER"]
+  },
+  {
     path: "/inventory",
     label: "Inventory",
     description: "Stock monitoring and movement workspace",
@@ -81,6 +94,20 @@ export const appRoutes: readonly AppRoute[] = [
     label: "Sales",
     description: "Sales history module shell",
     icon: ReceiptText,
+    allowedRoles: ["OWNER", "STAFF"]
+  },
+  {
+    path: "/deliveries",
+    label: "Deliveries",
+    description: "Customer delivery tickets, courier handoff, and COD settlement",
+    icon: PackageCheck,
+    allowedRoles: ["OWNER", "STAFF"]
+  },
+  {
+    path: "/customer-support",
+    label: "Support",
+    description: "Customer support inbox and conversation workspace",
+    icon: Headphones,
     allowedRoles: ["OWNER", "STAFF"]
   },
   {

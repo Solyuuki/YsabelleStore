@@ -9,7 +9,7 @@ test("header cart sheen keeps visible brand contrast on the light cart surface",
 
   assert.match(
     styles,
-    /\.customer-cart-link\s*\{[\s\S]*?min-height:\s*40px;[\s\S]*?padding-inline:\s*0\.72rem;[\s\S]*?background:\s*linear-gradient\(180deg, #fff, rgb\(98 91 255 \/ 7%\)\);/
+    /\.customer-cart-link\s*\{[\s\S]*?min-height:\s*44px;[\s\S]*?padding-inline:\s*0\.72rem;[\s\S]*?background:\s*linear-gradient\(180deg, #fff, rgb\(98 91 255 \/ 7%\)\);/
   );
   assert.match(
     styles,

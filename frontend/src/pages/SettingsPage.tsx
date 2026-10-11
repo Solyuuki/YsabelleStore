@@ -1,11 +1,13 @@
-import { RotateCcw, Save, ServerCog } from "lucide-react";
+import { MoonStar, RotateCcw, Save, ServerCog, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { PageHeader } from "@/components/shared/PageHeader";
+import { useAppearance } from "@/context/AppearanceContext";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchBackendReadiness, type BackendHealth } from "@/services/healthApi";
+import { fetchDashboardSummary, type DashboardSummary } from "@/services/dashboardApi";
 import {
   getWorkstationPreferences,
   resetWorkstationPreferences,
@@ -22,11 +24,14 @@ const refreshOptions: readonly { label: string; value: DashboardRefreshSeconds }
 ];
 
 export function SettingsPage() {
+  const { retailTheme, setRetailTheme } = useAppearance();
   const [preferences, setPreferences] = useState<WorkstationPreferences>(getWorkstationPreferences);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
   const [health, setHealth] = useState<BackendHealth | null>(null);
   const [healthError, setHealthError] = useState<string | null>(null);
   const [healthLoading, setHealthLoading] = useState(true);
+  const [dataIntegrity, setDataIntegrity] = useState<DashboardSummary | null>(null);
+  const [dataIntegrityError, setDataIntegrityError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -50,6 +55,28 @@ export function SettingsPage() {
     }
 
     void loadHealth();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    void fetchDashboardSummary()
+      .then((summary) => {
+        if (!active) return;
+        setDataIntegrity(summary);
+        setDataIntegrityError(null);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setDataIntegrity(null);
+        setDataIntegrityError(
+          error instanceof Error ? error.message : "Unable to load data-integrity status."
+        );
+      });
+
     return () => {
       active = false;
     };
@@ -83,6 +110,64 @@ export function SettingsPage() {
         description="Configure workstation behavior and review the current backend readiness state."
       />
 
+      <Card className="ys-appearance-card">
+        <CardHeader>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="space-y-1">
+              <CardTitle>Appearance</CardTitle>
+              <p className="text-sm text-slate-500">
+                Choose a comfortable view for this retail workstation.
+              </p>
+            </div>
+            <StatusBadge variant="info">Saved on this device</StatusBadge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div aria-label="Retail appearance" className="ys-appearance-options" role="group">
+            <button
+              aria-pressed={retailTheme === "light"}
+              className="ys-appearance-choice"
+              data-selected={retailTheme === "light"}
+              onClick={() => setRetailTheme("light")}
+              type="button"
+            >
+              <span className="ys-appearance-swatch ys-appearance-swatch--light" aria-hidden="true">
+                <Sun size={22} />
+              </span>
+              <span className="ys-appearance-choice__copy">
+                <strong>Light mode</strong>
+                <small>Soft, airy surfaces</small>
+              </span>
+              <span className="ys-appearance-choice__check" aria-hidden="true">
+                {retailTheme === "light" ? "Selected" : "Select"}
+              </span>
+            </button>
+            <button
+              aria-pressed={retailTheme === "dark"}
+              className="ys-appearance-choice"
+              data-selected={retailTheme === "dark"}
+              onClick={() => setRetailTheme("dark")}
+              type="button"
+            >
+              <span className="ys-appearance-swatch ys-appearance-swatch--dark" aria-hidden="true">
+                <MoonStar size={22} />
+              </span>
+              <span className="ys-appearance-choice__copy">
+                <strong>Dark mode</strong>
+                <small>Midnight navy &amp; violet</small>
+              </span>
+              <span className="ys-appearance-choice__check" aria-hidden="true">
+                {retailTheme === "dark" ? "Selected" : "Select"}
+              </span>
+            </button>
+          </div>
+          <p className="mt-3 text-xs text-slate-500">
+            Appearance changes immediately. Customer storefront and printed receipts keep
+            independent presentation.
+          </p>
+        </CardContent>
+      </Card>
+
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <Card>
           <CardHeader>
@@ -95,7 +180,7 @@ export function SettingsPage() {
             <label className="block space-y-2">
               <span className="text-sm font-medium text-slate-900">Dashboard refresh interval</span>
               <select
-                className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-800"
+                className="ys-retail-select-chevron h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-800"
                 value={preferences.dashboardRefreshSeconds}
                 onChange={(event) =>
                   updatePreference(
@@ -206,6 +291,87 @@ export function SettingsPage() {
           </CardContent>
         </Card>
       </section>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <CardTitle>Data integrity</CardTitle>
+              <p className="mt-1 text-sm text-slate-500">
+                Technical synchronization status is kept here so the Dashboard can stay focused on
+                owner decisions.
+              </p>
+            </div>
+            <ServerCog className="h-5 w-5 text-slate-500" aria-hidden="true" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          {dataIntegrityError ? (
+            <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              {dataIntegrityError}
+            </div>
+          ) : dataIntegrity ? (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <IntegrityMetric
+                label="Catalog products"
+                value={dataIntegrity.inventory.catalogItems}
+              />
+              <IntegrityMetric
+                label="Inventory records"
+                value={dataIntegrity.inventory.trackedItems}
+              />
+              <IntegrityMetric
+                label="Available products"
+                value={dataIntegrity.inventory.availableItems}
+              />
+              <IntegrityMetric
+                label="Unlinked catalog"
+                value={dataIntegrity.inventory.unlinkedCatalogItems}
+                warning={dataIntegrity.inventory.unlinkedCatalogItems > 0}
+              />
+              <div className="sm:col-span-2 lg:col-span-4 rounded-md border border-slate-200 bg-slate-50 px-4 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <span className="text-sm font-medium text-slate-700">Catalog → Inventory</span>
+                  <StatusBadge
+                    variant={
+                      dataIntegrity.inventory.unlinkedCatalogItems === 0 ? "success" : "warning"
+                    }
+                  >
+                    {dataIntegrity.inventory.unlinkedCatalogItems === 0
+                      ? "Synced"
+                      : "Needs attention"}
+                  </StatusBadge>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500">Loading data-integrity status...</p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function IntegrityMetric({
+  label,
+  value,
+  warning = false
+}: {
+  label: string;
+  value: number;
+  warning?: boolean;
+}) {
+  return (
+    <div
+      className={`rounded-md border px-4 py-3 ${
+        warning ? "border-amber-200 bg-amber-50" : "border-slate-200 bg-slate-50"
+      }`}
+    >
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
+      <p className={`mt-1 text-xl font-semibold ${warning ? "text-amber-800" : "text-slate-950"}`}>
+        {value.toLocaleString()}
+      </p>
     </div>
   );
 }

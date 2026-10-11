@@ -2,10 +2,15 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   ArrowRight,
+  BadgeCheck,
+  Barcode,
   Boxes,
+  ChevronDown,
+  Crop,
   ExternalLink,
   MapPin,
   Package,
+  ScanLine,
   Search,
   ShoppingBasket,
   ShoppingCart,
@@ -13,7 +18,12 @@ import {
 } from "lucide-react";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 
+import { AboutCatalogMotion } from "@/components/customer/about/AboutCatalogMotion";
+import { AboutForecastMotion } from "@/components/customer/about/AboutForecastMotion";
+import { AboutSalesInventoryMotion } from "@/components/customer/about/AboutSalesInventoryMotion";
+import { AboutWelcomeMotion } from "@/components/customer/about/AboutWelcomeMotion";
 import { CustomerLink } from "@/components/customer/CustomerLink";
+import { YsabelleBrandMark } from "@/components/customer/YsabelleBrandMark";
 import { formatCurrency } from "@/components/customer/ProductCard";
 import { ProductVisual } from "@/components/customer/ProductVisual";
 import { ProductImage } from "@/components/customer/ProductImage";
@@ -36,7 +46,16 @@ const storyScenes = [
   { id: "discover-essentials", label: "Everyday essentials" },
   { id: "discover-location", label: "Our location" },
   { id: "discover-smarter", label: "System intelligence" },
-  { id: "discover-shop", label: "Shop with Ysabelle" }
+  { id: "discover-shop", label: "Delivery operations" }
+];
+
+const aboutStoryScenes = [
+  { id: "discover-welcome", label: "Brand opening" },
+  { id: "discover-beginning", label: "Product & catalog intelligence" },
+  { id: "discover-essentials", label: "Sales & inventory" },
+  { id: "discover-location", label: "Forecast intelligence" },
+  { id: "discover-smarter", label: "System intelligence" },
+  { id: "discover-shop", label: "Delivery operations" }
 ];
 
 const storeAddress = "110 A. Mabini Street, Pasig City, Metro Manila";
@@ -97,7 +116,7 @@ function useDeferredStoryScene(sceneId: string, rootMargin: string) {
   return { isActivated, sceneRef };
 }
 
-function DeferredIntelligenceScene() {
+function DeferredIntelligenceScene({ hideSectionNumber = false }: { hideSectionNumber?: boolean }) {
   const { isActivated, sceneRef } = useDeferredStoryScene("discover-smarter", "0px 0px 220% 0px");
 
   if (!isActivated) {
@@ -117,7 +136,7 @@ function DeferredIntelligenceScene() {
         />
       }
     >
-      <DeferredSystemIntelligenceScene />
+      <DeferredSystemIntelligenceScene hideSectionNumber={hideSectionNumber} />
     </Suspense>
   );
 }
@@ -127,193 +146,139 @@ function initializeIntelligenceTimeline(
   desktop: boolean,
   settle: (timeline: gsap.core.Timeline, start?: number) => void
 ) {
-  if (desktop === false || intelligence.dataset.storyMotionInitialized === "true") return;
+  if (intelligence.dataset.storyMotionInitialized === "true") return;
 
-  const panels = Array.from(
-    intelligence.querySelectorAll<HTMLElement>("[data-intelligence-panel]")
-  );
-  const markers = Array.from(
-    intelligence.querySelectorAll<HTMLElement>("[data-intelligence-step]")
-  );
-  const markerIcons = markers
-    .map((marker) => marker.querySelector<HTMLElement>(":scope > span"))
-    .filter((icon): icon is HTMLElement => icon !== null);
-  const firstPanel = panels[0];
-  const firstMarker = markers[0];
-  const intelligenceKicker = intelligence.querySelector<HTMLElement>(".story-kicker");
-  const intelligenceHeadline = Array.from(
+  const kicker = intelligence.querySelector<HTMLElement>(".story-kicker");
+  const headline = Array.from(
     intelligence.querySelectorAll<HTMLElement>(".story-intelligence__heading .story-mask__line")
   );
-  const intelligenceCopy = intelligence.querySelector<HTMLElement>(
-    ".story-intelligence__heading p"
+  const copy = intelligence.querySelector<HTMLElement>(".story-intelligence__heading p");
+  const preview = intelligence.querySelector<HTMLElement>(".system-preview");
+  const previewNav = intelligence.querySelector<HTMLElement>(".system-preview__nav");
+  const previewWorkspace = intelligence.querySelector<HTMLElement>(".system-preview__workspace");
+  const previewButtons = Array.from(
+    intelligence.querySelectorAll<HTMLElement>(".system-preview__nav button")
   );
-  const intelligenceSystem = intelligence.querySelector<HTMLElement>(".story-intelligence__system");
-  const intelligenceProgress = intelligence.querySelector<HTMLElement>(
-    ".story-intelligence__progress"
+  const previewWorkspaceBar = intelligence.querySelector<HTMLElement>(
+    ".system-preview__workspace-bar"
   );
-  const intelligenceHandoff = intelligence.querySelector<HTMLElement>(
-    ".story-intelligence__handoff"
+  const previewWorkspaceCopy = intelligence.querySelector<HTMLElement>(
+    ".system-preview__workspace-copy"
   );
+  const previewContent = intelligence.querySelector<HTMLElement>(".system-preview__content");
 
   if (
-    !firstPanel ||
-    !firstMarker ||
-    markerIcons.length !== markers.length ||
-    !intelligenceKicker ||
-    !intelligenceHeadline.length ||
-    !intelligenceCopy ||
-    !intelligenceSystem ||
-    !intelligenceProgress ||
-    !intelligenceHandoff
+    !kicker ||
+    !headline.length ||
+    !copy ||
+    !preview ||
+    !previewNav ||
+    !previewWorkspace ||
+    !previewButtons.length ||
+    !previewWorkspaceBar ||
+    !previewWorkspaceCopy ||
+    !previewContent
   ) {
     return;
   }
 
   intelligence.dataset.storyMotionInitialized = "true";
-  panels.forEach((panel) => {
-    gsap.set(Array.from(panel.querySelectorAll<HTMLElement>("[data-intelligence-build]")), {
-      autoAlpha: 0,
-      y: 12
-    });
+  delete intelligence.dataset.storyHintDispatched;
 
-    Array.from(
-      panel.querySelectorAll<SVGGeometryElement>("[data-intelligence-chart-path]")
-    ).forEach((path) => {
-      const length = path.getTotalLength();
-      gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
-    });
-
-    gsap.set(panel.querySelectorAll("[data-intelligence-line]"), {
-      scaleX: 0,
-      transformOrigin: "left center"
-    });
-  });
-
-  gsap.set(panels, {
+  gsap.set(kicker, { autoAlpha: 0, x: -14 });
+  gsap.set(headline, { autoAlpha: 0, y: 18 });
+  gsap.set(copy, { autoAlpha: 0, y: 10 });
+  gsap.set(preview, {
     autoAlpha: 0,
-    display: "none",
-    inset: 0,
-    marginTop: 0,
-    position: "absolute",
-    scale: 1,
-    y: 18
+    scale: desktop ? 0.992 : 1,
+    y: desktop ? 18 : 10
   });
-  gsap.set(markers, { opacity: 0.42 });
-  gsap.set(firstMarker, { opacity: 1 });
-  gsap.set(markerIcons, { backgroundColor: "#202653", color: "#9ca3d9" });
-  if (markerIcons[0]) {
-    gsap.set(markerIcons[0], { backgroundColor: "#f7f9ff", color: "#625bff" });
-  }
-  gsap.set(intelligenceKicker, { autoAlpha: 0, x: -18 });
-  gsap.set(intelligenceHeadline, { autoAlpha: 0, y: 22 });
-  gsap.set(intelligenceCopy, { autoAlpha: 0, x: -16 });
-  gsap.set(intelligenceSystem, { autoAlpha: 0, scale: 0.985, y: 16 });
-  gsap.set(intelligenceProgress, { scaleY: 0.035 });
-  gsap.set(intelligenceHandoff, { scaleX: 0 });
+  gsap.set(previewNav, { autoAlpha: 0, x: -10 });
+  gsap.set(previewWorkspace, { autoAlpha: 0, x: 10 });
+  gsap.set(previewButtons, { autoAlpha: 0, x: -6 });
+  gsap.set([previewWorkspaceBar, previewWorkspaceCopy], { autoAlpha: 0, y: 6 });
+  gsap.set(previewContent, { autoAlpha: 0, y: 8 });
 
-  const intelligenceTimeline = gsap.timeline({
-    scrollTrigger: {
-      trigger: intelligence,
-      start: "top top+=76",
-      end: () => `+=${Math.max(5600, Math.round(window.innerHeight * 7.2))}`,
-      pin: intelligence,
-      pinSpacing: true,
-      anticipatePin: 1,
-      invalidateOnRefresh: true,
-      scrub: 0.35
-    }
+  const dispatchHint = () => {
+    if (intelligence.dataset.storyHintDispatched === "true") return;
+    intelligence.dataset.storyHintDispatched = "true";
+    intelligence.dispatchEvent(new CustomEvent("story:intelligence-hint"));
+  };
+
+  const timeline = gsap.timeline({
+    scrollTrigger: desktop
+      ? {
+          trigger: intelligence,
+          start: "top top+=76",
+          end: () => `+=${Math.max(920, Math.round(window.innerHeight * 1.08))}`,
+          pin: intelligence,
+          pinSpacing: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          scrub: 0.38,
+          onUpdate: (self) => {
+            if (self.progress >= 0.5) dispatchHint();
+          }
+        }
+      : {
+          trigger: intelligence,
+          start: "top 88%",
+          end: "bottom 28%",
+          invalidateOnRefresh: true,
+          scrub: 0.22,
+          onUpdate: (self) => {
+            if (self.progress >= 0.46) dispatchHint();
+          }
+        }
   });
 
-  intelligenceTimeline
-    .to(intelligenceKicker, { autoAlpha: 1, duration: 0.1, ease: "power2.out", x: 0 }, 0.02)
-    .to(intelligenceHeadline, { autoAlpha: 1, duration: 0.16, stagger: 0.035, y: 0 }, 0.1)
-    .to(intelligenceCopy, { autoAlpha: 1, duration: 0.12, x: -0 }, 0.2)
+  timeline
+    .to(kicker, { autoAlpha: 1, duration: 0.08, ease: "power2.out", x: 0 }, 0.02)
+    .to(headline, { autoAlpha: 1, duration: 0.12, ease: "power2.out", stagger: 0.025, y: 0 }, 0.08)
+    .to(copy, { autoAlpha: 1, duration: 0.09, ease: "power2.out", y: 0 }, 0.16)
+    .to(preview, { autoAlpha: 1, duration: 0.12, ease: "power2.out", scale: 1, y: 0 }, 0.22)
+    .to(previewNav, { autoAlpha: 1, duration: 0.08, ease: "power2.out", x: 0 }, 0.28)
     .to(
-      intelligenceSystem,
-      { autoAlpha: 1, duration: 0.18, ease: "power1.out", scale: 1, y: 0 },
-      0.34
-    );
+      previewButtons,
+      {
+        autoAlpha: 1,
+        duration: 0.07,
+        ease: "power2.out",
+        stagger: 0.012,
+        x: 0
+      },
+      0.31
+    )
+    .to(previewWorkspace, { autoAlpha: 1, duration: 0.09, ease: "power2.out", x: 0 }, 0.29)
+    .to(
+      [previewWorkspaceBar, previewWorkspaceCopy],
+      { autoAlpha: 1, duration: 0.07, ease: "power2.out", stagger: 0.02, y: 0 },
+      0.36
+    )
+    .to(previewContent, { autoAlpha: 1, duration: 0.1, ease: "power2.out", y: 0 }, 0.43);
 
-  panels.forEach((panel, index) => {
-    const stageStart = 0.55 + index * 0.82;
-    const buildElements = Array.from(
-      panel.querySelectorAll<HTMLElement>("[data-intelligence-build]")
-    );
-    const chartPaths = Array.from(
-      panel.querySelectorAll<SVGGeometryElement>("[data-intelligence-chart-path]")
-    );
-    const lineElements = Array.from(
-      panel.querySelectorAll<HTMLElement>("[data-intelligence-line]")
-    );
-
-    intelligenceTimeline.addLabel(`intelligence-stage-${index + 1}`, stageStart);
-
-    if (index === 0) {
-      intelligenceTimeline
-        .set(panel, { display: "block" }, stageStart - 0.06)
-        .to(panel, { autoAlpha: 1, duration: 0.14, ease: "power2.out", y: 0 }, stageStart);
-    } else {
-      const handoffStart = stageStart - 0.14;
-      const progress = index / (panels.length - 1);
-
-      intelligenceTimeline
-        .set(panel, { display: "block" }, handoffStart)
-        .to(
-          panels[index - 1]!,
-          { autoAlpha: 0, duration: 0.1, ease: "power1.in", y: -10 },
-          handoffStart
-        )
-        .to(intelligenceProgress, { duration: 0.12, ease: "none", scaleY: progress }, handoffStart)
-        .to(markers[index - 1]!, { duration: 0.1, opacity: 0.68 }, handoffStart)
-        .to(markers[index]!, { duration: 0.1, opacity: 1 }, handoffStart)
-        .set(
-          markerIcons[index - 1]!,
-          { backgroundColor: "#242a62", color: "#9c96ff" },
-          handoffStart
-        )
-        .set(markerIcons[index]!, { backgroundColor: "#f7f9ff", color: "#625bff" }, handoffStart)
-        .set(panels[index - 1]!, { display: "none" }, handoffStart + 0.11)
-        .to(panel, { autoAlpha: 1, duration: 0.14, ease: "power2.out", y: 0 }, stageStart);
-    }
-
-    if (buildElements.length) {
-      intelligenceTimeline.to(
-        buildElements,
-        { autoAlpha: 1, duration: 0.16, ease: "power2.out", stagger: 0.025, y: 0 },
-        stageStart + 0.14
-      );
-    }
-
-    if (lineElements.length) {
-      intelligenceTimeline.to(
-        lineElements,
-        { duration: 0.2, ease: "none", scaleX: 1 },
-        stageStart + 0.34
-      );
-    }
-
-    if (chartPaths.length) {
-      intelligenceTimeline.to(
-        chartPaths,
-        { duration: 0.24, ease: "none", stagger: 0.04, strokeDashoffset: 0 },
-        stageStart + 0.32
-      );
-    }
-  });
-
-  intelligenceTimeline
-    .addLabel("intelligence-complete", 6.15)
-    .to({ hold: 0 }, { duration: 1, ease: "none", hold: 1 }, 6.15)
-    .to(intelligenceHandoff, { duration: 0.18, ease: "none", scaleX: 1 }, 7.15)
-    .to({ hold: 0 }, { duration: 0.05, ease: "none", hold: 1 }, 7.35);
-  settle(intelligenceTimeline, 0.99);
+  // The visible build finishes early; the remaining pinned distance is the short hold.
+  settle(timeline, desktop ? 0.68 : 0.9);
 
   return () => {
+    timeline.scrollTrigger?.kill();
+    timeline.kill();
+    delete intelligence.dataset.storyHintDispatched;
     delete intelligence.dataset.storyMotionInitialized;
   };
 }
 
-export function DiscoverPage({ navigate }: { navigate: (path: string) => void }) {
+type DiscoverPageVariant = "discover" | "about";
+
+export function DiscoverPage({
+  navigate,
+  variant = "discover"
+}: {
+  navigate: (path: string) => void;
+  variant?: DiscoverPageVariant;
+}) {
+  const isAboutExperience = variant === "about";
+  const navigationScenes = isAboutExperience ? aboutStoryScenes : storyScenes;
   const rootRef = useRef<HTMLDivElement>(null);
   const [activeScene, setActiveScene] = useState(0);
   const [catalogProducts, setCatalogProducts] = useState<StorefrontProduct[]>([]);
@@ -346,7 +311,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
   }, [shouldPreloadShelfAssets]);
 
   useEffect(() => {
-    if (!shouldLoadCatalog) return;
+    if (!shouldLoadCatalog || isAboutExperience) return;
 
     const controller = new AbortController();
     setCatalogProducts([]);
@@ -382,7 +347,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
       });
 
     return () => controller.abort();
-  }, [catalogReloadKey, shouldLoadCatalog]);
+  }, [catalogReloadKey, isAboutExperience, shouldLoadCatalog]);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -423,6 +388,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
           }
 
           const scrub = desktop ? 0.45 : tablet ? 0.32 : 0.22;
+          const progressNav = first<HTMLElement>(".discover-progress");
           const progressFill = first<HTMLElement>(".discover-progress__fill");
 
           if (progressFill) {
@@ -430,11 +396,27 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
             progressFill.style.transformOrigin = "top";
           }
 
+          if (isAboutExperience && progressNav) {
+            progressNav.style.setProperty("--about-progress-opacity", "0");
+            progressNav.style.setProperty("--about-progress-shift", "12px");
+            progressNav.style.setProperty("--about-progress-scale", "0.965");
+          }
+
           const welcome = first<HTMLElement>(".story-welcome");
           if (welcome) {
-            gsap
-              .timeline({ defaults: { duration: 0.78, ease: "power3.out" } })
-              .from(".story-welcome__mark", { autoAlpha: 0, rotate: -8, scale: 0.55 })
+            const welcomeIntro = gsap.timeline({
+              defaults: { duration: 0.78, ease: "power3.out" }
+            });
+
+            if (!isAboutExperience) {
+              welcomeIntro.from(".story-welcome__mark", {
+                autoAlpha: 0,
+                rotate: -8,
+                scale: 0.55
+              });
+            }
+
+            welcomeIntro
               .from(
                 ".story-welcome__title .story-mask__line",
                 { autoAlpha: 0, stagger: 0.08, y: 30 },
@@ -451,7 +433,15 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
               }
             });
             welcomeTimeline
-              .to(".story-welcome__title", { duration: 0.62, scale: 0.92, yPercent: -14 }, 0)
+              .to(
+                ".story-welcome__title",
+                {
+                  duration: 0.62,
+                  scale: isAboutExperience ? 0.95 : 0.92,
+                  yPercent: isAboutExperience ? -6 : -14
+                },
+                0
+              )
               .to(
                 ".story-grocery-drift--left",
                 { duration: 0.72, rotate: -7, xPercent: -12, yPercent: -20 },
@@ -463,13 +453,30 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
                 0
               )
               .to(".story-brand-path--one", { duration: 0.72, xPercent: 9, yPercent: -8 }, 0)
-              .to(".story-brand-path--two", { duration: 0.72, xPercent: -8, yPercent: 9 }, 0)
-              .fromTo(
+              .to(".story-brand-path--two", { duration: 0.72, xPercent: -8, yPercent: 9 }, 0);
+
+            if (isAboutExperience) {
+              welcomeTimeline
+                .to(".about-welcome-motion", { duration: 0.38, ease: "none", opacity: 0.5 }, 0.6)
+                .to(
+                  ".story-welcome__stage",
+                  { autoAlpha: 0.82, duration: 0.3, ease: "none", yPercent: -2 },
+                  0.66
+                )
+                .fromTo(
+                  ".story-welcome__handoff",
+                  { autoAlpha: 0, yPercent: 28 },
+                  { autoAlpha: 1, duration: 0.34, ease: "none", yPercent: 0 },
+                  0.62
+                );
+            } else {
+              welcomeTimeline.fromTo(
                 ".story-welcome__handoff",
                 { scaleX: 0 },
                 { duration: 0.1, ease: "none", scaleX: 1 },
                 0.82
               );
+            }
             settle(welcomeTimeline);
           }
 
@@ -496,7 +503,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
             );
 
             if (
-              beginningYear &&
+              (isAboutExperience || beginningYear) &&
               beginningKicker &&
               beginningHeadline.length &&
               beginningCopy &&
@@ -510,11 +517,13 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
                 beginning.classList.toggle("is-story-active", isActive);
               };
 
-              gsap.set(beginningYear, {
-                autoAlpha: 0,
-                scale: desktop ? 1.07 : 1.03,
-                y: desktop ? 18 : 8
-              });
+              if (beginningYear) {
+                gsap.set(beginningYear, {
+                  autoAlpha: 0,
+                  scale: desktop ? 1.07 : 1.03,
+                  y: desktop ? 18 : 8
+                });
+              }
               gsap.set(beginningKicker, { autoAlpha: 0, x: -18 });
               gsap.set(beginningHeadline, { autoAlpha: 0, y: 24 });
               gsap.set(beginningCopy, { autoAlpha: 0, y: 16 });
@@ -522,7 +531,11 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
               gsap.set(originShelfSign, { autoAlpha: 0, y: 12 });
               gsap.set(originShelfLine, { scaleX: 0 });
               gsap.set(originShelfItems, { autoAlpha: 0, scale: 0.68, y: 54 });
-              gsap.set(beginningHandoff, { scaleX: 0 });
+              if (isAboutExperience) {
+                gsap.set(beginningHandoff, { autoAlpha: 0, scaleX: 1, yPercent: 28 });
+              } else {
+                gsap.set(beginningHandoff, { scaleX: 0 });
+              }
 
               const beginningTimeline = gsap.timeline({
                 scrollTrigger: desktop
@@ -546,13 +559,15 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
                     }
               });
 
-              beginningTimeline
-                .addLabel("year", 0)
-                .to(
+              beginningTimeline.addLabel("year", 0);
+              if (beginningYear) {
+                beginningTimeline.to(
                   beginningYear,
                   { autoAlpha: 1, duration: 0.12, ease: "power2.out", scale: 1, y: 0 },
                   "year+=0.02"
-                )
+                );
+              }
+              beginningTimeline
                 .addLabel("eyebrow", 0.13)
                 .to(
                   beginningKicker,
@@ -586,214 +601,627 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
                   },
                   0.64
                 )
-                .addLabel("complete", 0.81)
-                .to(beginningHandoff, { duration: 0.06, ease: "none", scaleX: 1 }, 0.93);
+                .addLabel("complete", 0.81);
+
+              if (isAboutExperience) {
+                beginningTimeline.to(
+                  beginningHandoff,
+                  { autoAlpha: 1, duration: 0.08, ease: "none", yPercent: 0 },
+                  0.9
+                );
+              } else {
+                beginningTimeline.to(
+                  beginningHandoff,
+                  { duration: 0.06, ease: "none", scaleX: 1 },
+                  0.93
+                );
+              }
               settle(beginningTimeline, 0.99);
             }
           }
 
           const essentials = first<HTMLElement>(".story-products");
           if (essentials && !mobile) {
-            const essentialsKicker = essentials.querySelector<HTMLElement>(".story-kicker");
-            const essentialsCount = essentials.querySelector<HTMLElement>(".story-products__count");
-            const essentialsHeadline = essentials.querySelector<HTMLElement>(
-              ".story-products__heading .story-mask__line"
-            );
-            const essentialsCopy = essentials.querySelector<HTMLElement>(
-              ".story-products__heading p"
-            );
-            const shelfRail = essentials.querySelector<HTMLElement>(".story-shelf__rail");
-            const shelfItems = Array.from(
-              essentials.querySelectorAll<HTMLElement>(".story-shelf__item")
-            );
-            const productsHandoff = essentials.querySelector<HTMLElement>(
-              ".story-products__handoff"
-            );
+            if (isAboutExperience) {
+              const salesKicker = essentials.querySelector<HTMLElement>(".story-kicker");
+              const salesHeadline = Array.from(
+                essentials.querySelectorAll<HTMLElement>(".story-sales__copy .story-mask__line")
+              );
+              const salesCopy = essentials.querySelector<HTMLElement>(".story-sales__copy p");
+              const salesSystem = essentials.querySelector<HTMLElement>(".story-sales__system");
+              const salesSteps = Array.from(
+                essentials.querySelectorAll<HTMLElement>(".story-sales__step")
+              );
+              const salesHandoff = essentials.querySelector<HTMLElement>(
+                ".story-products__handoff"
+              );
 
-            if (
-              essentialsKicker &&
-              essentialsCount &&
-              essentialsHeadline &&
-              essentialsCopy &&
-              shelfRail &&
-              shelfItems.length &&
-              productsHandoff
-            ) {
-              gsap.set(essentialsKicker, { autoAlpha: 0, x: -24 });
-              gsap.set(essentialsCount, { autoAlpha: 0, scale: 0.92, y: 44 });
-              gsap.set(essentialsHeadline, { autoAlpha: 0, y: 26 });
-              gsap.set(essentialsCopy, { autoAlpha: 0, y: 18 });
-              gsap.set(shelfRail, { scaleX: 0 });
-              gsap.set(shelfItems, {
-                autoAlpha: 0,
-                rotate: (index) => (index % 2 === 0 ? -2 : 2),
-                scale: 0.94,
-                x: (index) => (index % 2 === 0 ? -14 : 14),
-                y: 60
-              });
-              gsap.set(productsHandoff, { scaleX: 0 });
+              if (
+                salesKicker &&
+                salesHeadline.length &&
+                salesCopy &&
+                salesSystem &&
+                salesSteps.length &&
+                salesHandoff
+              ) {
+                gsap.set(salesKicker, { autoAlpha: 0, x: -22 });
+                gsap.set(salesHeadline, { autoAlpha: 0, y: 24 });
+                gsap.set(salesCopy, { autoAlpha: 0, y: 16 });
+                gsap.set(salesSystem, { autoAlpha: 0, scale: 0.985, y: 24 });
+                gsap.set(salesSteps, { autoAlpha: 0, y: 14 });
+                gsap.set(salesHandoff, { autoAlpha: 0 });
 
-              const productsTimeline = gsap.timeline({
-                scrollTrigger: {
-                  trigger: essentials,
-                  start: desktop ? "top top+=76" : mobile ? "top 88%" : "top 84%",
-                  end: desktop ? "bottom bottom" : "bottom 16%",
-                  invalidateOnRefresh: true,
-                  scrub
+                if (desktop) {
+                  const salesPrelude = gsap.timeline({
+                    scrollTrigger: {
+                      trigger: essentials,
+                      start: "top 94%",
+                      end: "top top+=76",
+                      invalidateOnRefresh: true,
+                      scrub: 0.2
+                    }
+                  });
+
+                  salesPrelude
+                    .to(salesKicker, { autoAlpha: 0.68, duration: 1, ease: "none", x: -6 }, 0)
+                    .to(salesHeadline, { autoAlpha: 0.62, duration: 1, ease: "none", y: 8 }, 0)
+                    .to(salesCopy, { autoAlpha: 0.52, duration: 1, ease: "none", y: 6 }, 0)
+                    .to(
+                      salesSystem,
+                      { autoAlpha: 0.68, duration: 1, ease: "none", scale: 0.994, y: 8 },
+                      0
+                    );
                 }
-              });
-              productsTimeline
-                .addLabel("entry", 0)
-                .to(
-                  essentialsKicker,
-                  { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
-                  "entry+=0.02"
-                )
-                .addLabel("headline", 0.1)
-                .to(
-                  essentialsCount,
-                  { autoAlpha: 1, duration: 0.12, ease: "power2.out", scale: 1, y: 0 },
-                  "headline"
-                )
-                .to(
-                  essentialsHeadline,
-                  { autoAlpha: 1, duration: 0.12, ease: "power2.out", y: 0 },
-                  0.23
-                )
-                .to(
-                  essentialsCopy,
-                  { autoAlpha: 1, duration: 0.09, ease: "power1.out", y: 0 },
-                  0.36
-                )
-                .addLabel("shelf", 0.47)
-                .to(shelfRail, { duration: 0.1, ease: "none", scaleX: 1 }, "shelf")
-                .addLabel("products", 0.59)
-                .to(
-                  shelfItems,
-                  {
-                    autoAlpha: 1,
-                    duration: 0.07,
-                    ease: "power2.out",
-                    rotate: 0,
-                    scale: 1,
-                    stagger: 0.023,
-                    x: 0,
-                    y: 0
-                  },
-                  "products"
-                )
-                .to(productsHandoff, { duration: 0.04, ease: "none", scaleX: 1 }, 0.83)
-                .addLabel("settled", 0.87);
-              settle(productsTimeline, 0.87);
+
+                const salesTimeline = gsap.timeline({
+                  scrollTrigger: desktop
+                    ? {
+                        trigger: essentials,
+                        start: "top top+=76",
+                        end: () => `+=${Math.max(1100, Math.round(window.innerHeight * 1.4))}`,
+                        pin: essentials,
+                        pinSpacing: true,
+                        anticipatePin: 1,
+                        invalidateOnRefresh: true,
+                        scrub: 0.45
+                      }
+                    : {
+                        trigger: essentials,
+                        start: "top 84%",
+                        end: "bottom 16%",
+                        invalidateOnRefresh: true,
+                        scrub
+                      }
+                });
+
+                salesTimeline
+                  .addLabel("entry", 0)
+                  .fromTo(
+                    salesKicker,
+                    { autoAlpha: desktop ? 0.68 : 0, x: desktop ? -6 : -22 },
+                    { autoAlpha: 1, duration: 0.08, ease: "power2.out", x: 0 },
+                    "entry+=0.02"
+                  )
+                  .fromTo(
+                    salesHeadline,
+                    { autoAlpha: desktop ? 0.62 : 0, y: desktop ? 8 : 24 },
+                    { autoAlpha: 1, duration: 0.11, ease: "power2.out", stagger: 0.025, y: 0 },
+                    0.12
+                  )
+                  .fromTo(
+                    salesCopy,
+                    { autoAlpha: desktop ? 0.52 : 0, y: desktop ? 6 : 16 },
+                    { autoAlpha: 1, duration: 0.09, ease: "power1.out", y: 0 },
+                    0.26
+                  )
+                  .fromTo(
+                    salesSystem,
+                    {
+                      autoAlpha: desktop ? 0.68 : 0,
+                      scale: desktop ? 0.994 : 0.985,
+                      y: desktop ? 8 : 24
+                    },
+                    { autoAlpha: 1, duration: 0.13, ease: "power2.out", scale: 1, y: 0 },
+                    0.34
+                  )
+                  .to(
+                    salesSteps,
+                    {
+                      autoAlpha: 1,
+                      duration: 0.08,
+                      ease: "power2.out",
+                      stagger: 0.035,
+                      y: 0
+                    },
+                    0.53
+                  )
+                  .to(salesHandoff, { autoAlpha: 0.82, duration: 0.08, ease: "none" }, 0.9);
+
+                settle(salesTimeline, 0.99);
+              }
+            } else {
+              const essentialsKicker = essentials.querySelector<HTMLElement>(".story-kicker");
+              const essentialsCount =
+                essentials.querySelector<HTMLElement>(".story-products__count");
+              const essentialsHeadline = essentials.querySelector<HTMLElement>(
+                ".story-products__heading .story-mask__line"
+              );
+              const essentialsCopy = essentials.querySelector<HTMLElement>(
+                ".story-products__heading p"
+              );
+              const shelfRail = essentials.querySelector<HTMLElement>(".story-shelf__rail");
+              const shelfItems = Array.from(
+                essentials.querySelectorAll<HTMLElement>(".story-shelf__item")
+              );
+              const productsHandoff = essentials.querySelector<HTMLElement>(
+                ".story-products__handoff"
+              );
+
+              if (
+                essentialsKicker &&
+                essentialsCount &&
+                essentialsHeadline &&
+                essentialsCopy &&
+                shelfRail &&
+                shelfItems.length &&
+                productsHandoff
+              ) {
+                gsap.set(essentialsKicker, { autoAlpha: 0, x: -24 });
+                gsap.set(essentialsCount, { autoAlpha: 0, scale: 0.92, y: 44 });
+                gsap.set(essentialsHeadline, { autoAlpha: 0, y: 26 });
+                gsap.set(essentialsCopy, { autoAlpha: 0, y: 18 });
+                gsap.set(shelfRail, { scaleX: 0 });
+                gsap.set(shelfItems, {
+                  autoAlpha: 0,
+                  rotate: (index) => (index % 2 === 0 ? -2 : 2),
+                  scale: 0.94,
+                  x: (index) => (index % 2 === 0 ? -14 : 14),
+                  y: 60
+                });
+                gsap.set(productsHandoff, { scaleX: 0 });
+
+                const productsTimeline = gsap.timeline({
+                  scrollTrigger: {
+                    trigger: essentials,
+                    start: desktop ? "top top+=76" : mobile ? "top 88%" : "top 84%",
+                    end: desktop ? "bottom bottom" : "bottom 16%",
+                    invalidateOnRefresh: true,
+                    scrub
+                  }
+                });
+                productsTimeline
+                  .addLabel("entry", 0)
+                  .to(
+                    essentialsKicker,
+                    { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
+                    "entry+=0.02"
+                  )
+                  .addLabel("headline", 0.1)
+                  .to(
+                    essentialsCount,
+                    { autoAlpha: 1, duration: 0.12, ease: "power2.out", scale: 1, y: 0 },
+                    "headline"
+                  )
+                  .to(
+                    essentialsHeadline,
+                    { autoAlpha: 1, duration: 0.12, ease: "power2.out", y: 0 },
+                    0.23
+                  )
+                  .to(
+                    essentialsCopy,
+                    { autoAlpha: 1, duration: 0.09, ease: "power1.out", y: 0 },
+                    0.36
+                  )
+                  .addLabel("shelf", 0.47)
+                  .to(shelfRail, { duration: 0.1, ease: "none", scaleX: 1 }, "shelf")
+                  .addLabel("products", 0.59)
+                  .to(
+                    shelfItems,
+                    {
+                      autoAlpha: 1,
+                      duration: 0.07,
+                      ease: "power2.out",
+                      rotate: 0,
+                      scale: 1,
+                      stagger: 0.023,
+                      x: 0,
+                      y: 0
+                    },
+                    "products"
+                  )
+                  .to(productsHandoff, { duration: 0.04, ease: "none", scaleX: 1 }, 0.83)
+                  .addLabel("settled", 0.87);
+                settle(productsTimeline, 0.87);
+              }
             }
           }
 
           const location = first<HTMLElement>(".story-location");
           if (location) {
-            const realMap = location.querySelector<HTMLElement>(".story-real-map");
-            const locationCopy = location.querySelector<HTMLElement>(".story-location__copy");
-            const locationKicker = location.querySelector<HTMLElement>(".story-kicker");
-            const locationHeadline = Array.from(
-              location.querySelectorAll<HTMLElement>(".story-mask__line")
-            );
-            const mapBadge = location.querySelector<HTMLElement>(".story-real-map__badge");
-            const mapTrace = location.querySelector<HTMLElement>(".story-real-map__trace");
-            const mapRoute = location.querySelector<SVGGeometryElement>(
-              ".story-real-map__route path"
-            );
-            const mapMarkers = Array.from(
-              location.querySelectorAll<SVGCircleElement>(".story-real-map__route circle")
-            );
-            const locationLead = location.querySelector<HTMLElement>(".story-location__lead");
-            const locationAddress = location.querySelector<HTMLElement>(".story-location__address");
-            const locationAction = location.querySelector<HTMLElement>(".story-location__action");
-            const locationHandoff = location.querySelector<HTMLElement>(".story-location__handoff");
+            if (isAboutExperience) {
+              const forecastKicker = location.querySelector<HTMLElement>(".story-kicker");
+              const forecastHeadline = Array.from(
+                location.querySelectorAll<HTMLElement>(".story-forecast__header .story-mask__line")
+              );
+              const forecastLead = location.querySelector<HTMLElement>(".story-forecast__lead");
+              const forecastVisual = location.querySelector<HTMLElement>(".story-forecast__visual");
+              const forecastModel = location.querySelector<HTMLElement>(".story-forecast__model");
+              const locationHandoff = location.querySelector<HTMLElement>(
+                ".story-location__handoff"
+              );
+              const forecastDemoTopbar = location.querySelector<HTMLElement>(
+                ".about-forecast-demo__topbar"
+              );
+              const forecastDemoMetrics = Array.from(
+                location.querySelectorAll<HTMLElement>(".about-forecast-demo__metrics article")
+              );
+              const forecastDemoChart = location.querySelector<HTMLElement>(
+                ".about-forecast-demo__chart-panel"
+              );
+              const forecastActualLine = location.querySelector<SVGPathElement>(
+                ".about-forecast-demo__actual-line"
+              );
+              const forecastProjectedLine = location.querySelector<SVGPathElement>(
+                ".about-forecast-demo__forecast-line"
+              );
+              const forecastConfidence = location.querySelector<SVGPathElement>(
+                ".about-forecast-demo__confidence"
+              );
+              const forecastDivider = location.querySelector<SVGLineElement>(
+                ".about-forecast-demo__forecast-divider"
+              );
+              const forecastDividerLabel = location.querySelector<SVGTextElement>(
+                ".about-forecast-demo__forecast-label"
+              );
+              const forecastObservedPoints = Array.from(
+                location.querySelectorAll<SVGCircleElement>(
+                  ".about-forecast-demo__points circle:not(.is-forecast)"
+                )
+              );
+              const forecastProjectedPoints = Array.from(
+                location.querySelectorAll<SVGCircleElement>(
+                  ".about-forecast-demo__points circle.is-forecast"
+                )
+              );
+              const forecastRecommendation = location.querySelector<HTMLElement>(
+                ".about-forecast-demo__recommendation"
+              );
+              const forecastRecommendationItems = Array.from(
+                location.querySelectorAll<HTMLElement>(
+                  ".about-forecast-demo__product, .about-forecast-demo__restock-value, .about-forecast-demo__recommendation-grid > div"
+                )
+              );
 
-            if (
-              realMap &&
-              locationCopy &&
-              locationKicker &&
-              locationHeadline.length &&
-              mapBadge &&
-              mapTrace &&
-              mapRoute &&
-              mapMarkers.length &&
-              locationLead &&
-              locationAddress &&
-              locationAction &&
-              locationHandoff
-            ) {
-              gsap.set(realMap, { autoAlpha: 0, scale: 0.98, y: 18 });
-              gsap.set(locationCopy, { autoAlpha: 0, scale: 0.98, y: 18 });
-              gsap.set(locationKicker, { autoAlpha: 0, x: -18 });
-              gsap.set(locationHeadline, { autoAlpha: 0, y: 24 });
-              gsap.set(mapBadge, { autoAlpha: 0, scale: 0.78, y: 14 });
-              gsap.set(mapMarkers, { autoAlpha: 0, scale: 0.72, transformOrigin: "center" });
-              gsap.set(mapTrace, { scaleX: 0 });
-              gsap.set(mapRoute, { strokeDashoffset: 1 });
-              gsap.set([locationLead, locationAddress], { autoAlpha: 0, x: 20 });
-              gsap.set(locationAction, { autoAlpha: 0, x: 16 });
-              gsap.set(locationHandoff, { scaleX: 0 });
+              if (
+                forecastKicker &&
+                forecastHeadline.length &&
+                forecastLead &&
+                forecastVisual &&
+                forecastModel &&
+                locationHandoff &&
+                forecastDemoTopbar &&
+                forecastDemoMetrics.length &&
+                forecastDemoChart &&
+                forecastActualLine &&
+                forecastProjectedLine &&
+                forecastConfidence &&
+                forecastDivider &&
+                forecastDividerLabel &&
+                forecastObservedPoints.length &&
+                forecastProjectedPoints.length &&
+                forecastRecommendation &&
+                forecastRecommendationItems.length
+              ) {
+                gsap.set(forecastKicker, { autoAlpha: 0, y: 12 });
+                gsap.set(forecastHeadline, { autoAlpha: 0, y: 22 });
+                gsap.set(forecastLead, { autoAlpha: 0, y: 14 });
+                gsap.set(forecastVisual, { autoAlpha: 0, scale: 0.985, y: 26 });
+                gsap.set(forecastModel, { autoAlpha: 0, x: -14 });
+                gsap.set(locationHandoff, { autoAlpha: 0 });
+                gsap.set(forecastDemoTopbar, { autoAlpha: 0, y: 8 });
+                gsap.set(forecastDemoMetrics, { autoAlpha: 0, y: 12 });
+                gsap.set(forecastDemoChart, { autoAlpha: 0, y: 12 });
+                gsap.set([forecastActualLine, forecastProjectedLine], {
+                  strokeDasharray: 1,
+                  strokeDashoffset: 1
+                });
+                gsap.set(forecastConfidence, { autoAlpha: 0 });
+                gsap.set([forecastDivider, forecastDividerLabel], { autoAlpha: 0 });
+                gsap.set([...forecastObservedPoints, ...forecastProjectedPoints], {
+                  autoAlpha: 0,
+                  scale: 0.72,
+                  transformOrigin: "center center"
+                });
+                gsap.set(forecastRecommendation, { autoAlpha: 0, x: 18 });
+                gsap.set(forecastRecommendationItems, { autoAlpha: 0, y: 8 });
 
-              const locationTimeline = gsap.timeline({
-                scrollTrigger: {
-                  trigger: location,
-                  start: desktop ? "top top+=76" : mobile ? "top 88%" : "top 82%",
-                  end: desktop ? "bottom bottom" : "bottom 14%",
-                  invalidateOnRefresh: true,
-                  scrub
+                if (desktop) {
+                  const forecastPrelude = gsap.timeline({
+                    scrollTrigger: {
+                      trigger: location,
+                      start: "top 94%",
+                      end: "top top+=76",
+                      invalidateOnRefresh: true,
+                      scrub: 0.2
+                    }
+                  });
+
+                  forecastPrelude
+                    .to(forecastKicker, { autoAlpha: 0.72, duration: 1, ease: "none", y: 3 }, 0)
+                    .to(forecastHeadline, { autoAlpha: 0.66, duration: 1, ease: "none", y: 7 }, 0)
+                    .to(forecastLead, { autoAlpha: 0.58, duration: 1, ease: "none", y: 5 }, 0)
+                    .to(
+                      forecastVisual,
+                      { autoAlpha: 0.7, duration: 1, ease: "none", scale: 0.994, y: 8 },
+                      0
+                    );
                 }
-              });
-              locationTimeline
-                .addLabel("map", 0)
-                .to(
-                  realMap,
-                  { autoAlpha: 1, duration: 0.1, ease: "power1.out", scale: 1, y: 0 },
-                  "map+=0.02"
-                )
-                .addLabel("copy", 0.12)
-                .to(
-                  locationCopy,
-                  { autoAlpha: 1, duration: 0.1, ease: "power1.out", scale: 1, y: 0 },
-                  "copy"
-                )
-                .to(
-                  locationKicker,
-                  { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
-                  "copy"
-                )
-                .addLabel("headline", 0.2)
-                .to(
-                  locationHeadline,
-                  { autoAlpha: 1, duration: 0.1, ease: "power2.out", stagger: 0.025, y: 0 },
-                  "headline"
-                )
-                .addLabel("marker", 0.35)
-                .to(
-                  [mapBadge, ...mapMarkers],
-                  {
-                    autoAlpha: 1,
-                    duration: 0.08,
-                    ease: "power2.out",
-                    scale: 1,
-                    stagger: 0.02,
-                    y: 0
-                  },
-                  "marker"
-                )
-                .addLabel("route", 0.44)
-                .to(mapTrace, { duration: 0.11, ease: "none", scaleX: 1 }, "route")
-                .to(mapRoute, { duration: 0.13, ease: "none", strokeDashoffset: 0 }, "route")
-                .addLabel("address", 0.58)
-                .to(
-                  [locationLead, locationAddress],
-                  { autoAlpha: 1, duration: 0.09, ease: "power1.out", stagger: 0.02, x: 0 },
-                  "address"
-                )
-                .to(locationAction, { autoAlpha: 1, duration: 0.08, ease: "power1.out", x: 0 }, 0.7)
-                .addLabel("complete", 0.8)
-                .to(locationHandoff, { duration: 0.04, ease: "none", scaleX: 1 }, 0.94);
-              settle(locationTimeline, 0.98);
+
+                const forecastTimeline = gsap.timeline({
+                  scrollTrigger: desktop
+                    ? {
+                        trigger: location,
+                        start: "top top+=76",
+                        end: () => `+=${Math.max(1500, Math.round(window.innerHeight * 1.85))}`,
+                        pin: location,
+                        pinSpacing: true,
+                        anticipatePin: 1,
+                        invalidateOnRefresh: true,
+                        scrub: 0.32
+                      }
+                    : {
+                        trigger: location,
+                        start: mobile ? "top 90%" : "top 84%",
+                        end: "bottom 14%",
+                        invalidateOnRefresh: true,
+                        scrub: tablet ? 0.22 : 0.16
+                      }
+                });
+
+                forecastTimeline
+                  .fromTo(
+                    forecastKicker,
+                    { autoAlpha: desktop ? 0.72 : 0, y: desktop ? 3 : 12 },
+                    { autoAlpha: 1, duration: 0.08, ease: "power2.out", y: 0 },
+                    0.02
+                  )
+                  .fromTo(
+                    forecastHeadline,
+                    { autoAlpha: desktop ? 0.66 : 0, y: desktop ? 7 : 22 },
+                    {
+                      autoAlpha: 1,
+                      duration: 0.12,
+                      ease: "power2.out",
+                      stagger: 0.025,
+                      y: 0
+                    },
+                    0.08
+                  )
+                  .fromTo(
+                    forecastLead,
+                    { autoAlpha: desktop ? 0.58 : 0, y: desktop ? 5 : 14 },
+                    { autoAlpha: 1, duration: 0.1, ease: "power1.out", y: 0 },
+                    0.18
+                  )
+                  .fromTo(
+                    forecastVisual,
+                    {
+                      autoAlpha: desktop ? 0.7 : 0,
+                      scale: desktop ? 0.994 : 0.985,
+                      y: desktop ? 8 : 26
+                    },
+                    {
+                      autoAlpha: 1,
+                      duration: 0.12,
+                      ease: "power2.out",
+                      scale: 1,
+                      y: 0
+                    },
+                    0.2
+                  )
+                  .to(
+                    forecastDemoTopbar,
+                    { autoAlpha: 1, duration: 0.06, ease: "power2.out", y: 0 },
+                    0.23
+                  )
+                  .to(
+                    forecastDemoMetrics,
+                    {
+                      autoAlpha: 1,
+                      duration: 0.07,
+                      ease: "power2.out",
+                      stagger: 0.018,
+                      y: 0
+                    },
+                    0.26
+                  )
+                  .to(
+                    forecastDemoChart,
+                    { autoAlpha: 1, duration: 0.07, ease: "power2.out", y: 0 },
+                    0.29
+                  )
+                  .to(
+                    forecastActualLine,
+                    { duration: 0.1, ease: "none", strokeDashoffset: 0 },
+                    0.32
+                  )
+                  .to(
+                    forecastObservedPoints,
+                    {
+                      autoAlpha: 1,
+                      duration: 0.055,
+                      ease: "back.out(1.5)",
+                      scale: 1,
+                      stagger: 0.014
+                    },
+                    0.31
+                  )
+                  .to(
+                    [forecastDivider, forecastDividerLabel],
+                    { autoAlpha: 1, duration: 0.05, ease: "power1.out" },
+                    0.39
+                  )
+                  .to(
+                    forecastConfidence,
+                    { autoAlpha: 1, duration: 0.065, ease: "power1.out" },
+                    0.41
+                  )
+                  .to(
+                    forecastProjectedLine,
+                    { duration: 0.1, ease: "none", strokeDashoffset: 0 },
+                    0.38
+                  )
+                  .to(
+                    forecastProjectedPoints,
+                    {
+                      autoAlpha: 1,
+                      duration: 0.055,
+                      ease: "back.out(1.5)",
+                      scale: 1,
+                      stagger: 0.012
+                    },
+                    0.48
+                  )
+                  .to(
+                    forecastRecommendation,
+                    { autoAlpha: 1, duration: 0.09, ease: "power2.out", x: 0 },
+                    0.36
+                  )
+                  .to(
+                    forecastRecommendationItems,
+                    {
+                      autoAlpha: 1,
+                      duration: 0.07,
+                      ease: "power2.out",
+                      stagger: 0.014,
+                      y: 0
+                    },
+                    0.43
+                  )
+                  .to(
+                    forecastModel,
+                    { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
+                    0.55
+                  )
+                  .addLabel("forecast-complete", 0.62)
+                  .to(locationHandoff, { autoAlpha: 0.82, duration: 0.06, ease: "none" }, 0.9);
+
+                settle(forecastTimeline, desktop ? 0.64 : 0.92);
+              }
+            } else {
+              const realMap = location.querySelector<HTMLElement>(".story-real-map");
+              const locationCopy = location.querySelector<HTMLElement>(".story-location__copy");
+              const locationKicker = location.querySelector<HTMLElement>(".story-kicker");
+              const locationHeadline = Array.from(
+                location.querySelectorAll<HTMLElement>(".story-mask__line")
+              );
+              const mapBadge = location.querySelector<HTMLElement>(".story-real-map__badge");
+              const mapTrace = location.querySelector<HTMLElement>(".story-real-map__trace");
+              const mapRoute = location.querySelector<SVGGeometryElement>(
+                ".story-real-map__route path"
+              );
+              const mapMarkers = Array.from(
+                location.querySelectorAll<SVGCircleElement>(".story-real-map__route circle")
+              );
+              const locationLead = location.querySelector<HTMLElement>(".story-location__lead");
+              const locationAddress = location.querySelector<HTMLElement>(
+                ".story-location__address"
+              );
+              const locationAction = location.querySelector<HTMLElement>(".story-location__action");
+              const locationHandoff = location.querySelector<HTMLElement>(
+                ".story-location__handoff"
+              );
+
+              if (
+                realMap &&
+                locationCopy &&
+                locationKicker &&
+                locationHeadline.length &&
+                mapBadge &&
+                mapTrace &&
+                mapRoute &&
+                mapMarkers.length &&
+                locationLead &&
+                locationAddress &&
+                locationAction &&
+                locationHandoff
+              ) {
+                gsap.set(realMap, { autoAlpha: 0, scale: 0.98, y: 18 });
+                gsap.set(locationCopy, { autoAlpha: 0, scale: 0.98, y: 18 });
+                gsap.set(locationKicker, { autoAlpha: 0, x: -18 });
+                gsap.set(locationHeadline, { autoAlpha: 0, y: 24 });
+                gsap.set(mapBadge, { autoAlpha: 0, scale: 0.78, y: 14 });
+                gsap.set(mapMarkers, { autoAlpha: 0, scale: 0.72, transformOrigin: "center" });
+                gsap.set(mapTrace, { scaleX: 0 });
+                gsap.set(mapRoute, { strokeDashoffset: 1 });
+                gsap.set([locationLead, locationAddress], { autoAlpha: 0, x: 20 });
+                gsap.set(locationAction, { autoAlpha: 0, x: 16 });
+                gsap.set(locationHandoff, { scaleX: 0 });
+
+                const locationTimeline = gsap.timeline({
+                  scrollTrigger: {
+                    trigger: location,
+                    start: desktop ? "top top+=76" : mobile ? "top 88%" : "top 82%",
+                    end: desktop ? "bottom bottom" : "bottom 14%",
+                    invalidateOnRefresh: true,
+                    scrub
+                  }
+                });
+                locationTimeline
+                  .addLabel("map", 0)
+                  .to(
+                    realMap,
+                    { autoAlpha: 1, duration: 0.1, ease: "power1.out", scale: 1, y: 0 },
+                    "map+=0.02"
+                  )
+                  .addLabel("copy", 0.12)
+                  .to(
+                    locationCopy,
+                    { autoAlpha: 1, duration: 0.1, ease: "power1.out", scale: 1, y: 0 },
+                    "copy"
+                  )
+                  .to(
+                    locationKicker,
+                    { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
+                    "copy"
+                  )
+                  .addLabel("headline", 0.2)
+                  .to(
+                    locationHeadline,
+                    { autoAlpha: 1, duration: 0.1, ease: "power2.out", stagger: 0.025, y: 0 },
+                    "headline"
+                  )
+                  .addLabel("marker", 0.35)
+                  .to(
+                    [mapBadge, ...mapMarkers],
+                    {
+                      autoAlpha: 1,
+                      duration: 0.08,
+                      ease: "power2.out",
+                      scale: 1,
+                      stagger: 0.02,
+                      y: 0
+                    },
+                    "marker"
+                  )
+                  .addLabel("route", 0.44)
+                  .to(mapTrace, { duration: 0.11, ease: "none", scaleX: 1 }, "route")
+                  .to(mapRoute, { duration: 0.13, ease: "none", strokeDashoffset: 0 }, "route")
+                  .addLabel("address", 0.58)
+                  .to(
+                    [locationLead, locationAddress],
+                    { autoAlpha: 1, duration: 0.09, ease: "power1.out", stagger: 0.02, x: 0 },
+                    "address"
+                  )
+                  .to(
+                    locationAction,
+                    { autoAlpha: 1, duration: 0.08, ease: "power1.out", x: 0 },
+                    0.7
+                  )
+                  .addLabel("complete", 0.8)
+                  .to(locationHandoff, { duration: 0.04, ease: "none", scaleX: 1 }, 0.94);
+                settle(locationTimeline, 0.98);
+              }
             }
           }
 
@@ -943,18 +1371,47 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
           let rootTop = 0;
           let rootBottom = 0;
           let sceneOwnershipStarts: number[] = [];
+          let trackedScenes: HTMLElement[] = [];
+          let finalSceneTop = 0;
+          let finalSceneHeight = 1;
+          const storyBoundsRoot =
+            isAboutExperience && root.closest<HTMLElement>(".about-experience")
+              ? root.closest<HTMLElement>(".about-experience")!
+              : root;
+
+          const resolveTrackedScenes = () => {
+            if (!isAboutExperience) return scenes;
+
+            return navigationScenes.flatMap((scene) => {
+              const target = document.getElementById(scene.id);
+              return target ? [target] : [];
+            });
+          };
 
           const cacheStoryLayout = () => {
-            const rootBounds = root.getBoundingClientRect();
+            trackedScenes = resolveTrackedScenes();
+
+            const rootBounds = storyBoundsRoot.getBoundingClientRect();
             const ownershipOffset = desktop ? 76 : window.innerHeight * 0.5;
             rootTop = rootBounds.top + window.scrollY;
             rootBottom = rootBounds.bottom + window.scrollY;
-            sceneOwnershipStarts = scenes.map((scene) => {
+
+            sceneOwnershipStarts = trackedScenes.map((scene) => {
               const anchor = scene.parentElement?.classList.contains("pin-spacer")
                 ? scene.parentElement
                 : scene;
               return anchor.getBoundingClientRect().top + window.scrollY - ownershipOffset;
             });
+
+            const finalScene = isAboutExperience
+              ? document.getElementById("discover-shop")
+              : (trackedScenes.at(-1) ?? null);
+
+            if (finalScene) {
+              const finalBounds = finalScene.getBoundingClientRect();
+              finalSceneTop = finalBounds.top + window.scrollY;
+              finalSceneHeight = Math.max(1, finalBounds.height);
+            }
           };
 
           const updateStoryUi = () => {
@@ -970,13 +1427,43 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
 
             if (progressFill) progressFill.style.transform = `scaleY(${progress})`;
 
-            const progressVisibilityStart = sceneOwnershipStarts[1] ?? rootTop;
-            const nextProgressActive =
-              scrollTop >= progressVisibilityStart &&
-              scrollTop <= rootBottom - viewportHeight * 0.25;
-            if (nextProgressActive !== progressActive) {
-              progressActive = nextProgressActive;
-              root.classList.toggle("story-progress-active", progressActive);
+            if (isAboutExperience && progressNav) {
+              const secondSceneStart = sceneOwnershipStarts[1] ?? rootTop;
+              const entranceStart = secondSceneStart - viewportHeight * 0.34;
+              const entranceEnd = secondSceneStart + viewportHeight * 0.08;
+              const entranceProgress = gsap.utils.clamp(
+                0,
+                1,
+                (scrollTop - entranceStart) / Math.max(1, entranceEnd - entranceStart)
+              );
+
+              const finalScrollSpan = Math.max(
+                viewportHeight * 0.24,
+                finalSceneHeight - viewportHeight
+              );
+              const finalSectionProgress = gsap.utils.clamp(
+                0,
+                1,
+                (scrollTop - finalSceneTop) / finalScrollSpan
+              );
+              const exitProgress = gsap.utils.clamp(0, 1, (finalSectionProgress - 0.7) / 0.28);
+              const visibility = entranceProgress * (1 - exitProgress);
+              const shift = (1 - visibility) * 12;
+              const scale = 0.965 + visibility * 0.035;
+
+              progressNav.style.setProperty("--about-progress-opacity", visibility.toFixed(3));
+              progressNav.style.setProperty("--about-progress-shift", `${shift.toFixed(2)}px`);
+              progressNav.style.setProperty("--about-progress-scale", scale.toFixed(4));
+              progressNav.classList.toggle("is-interactive", visibility >= 0.92);
+            } else {
+              const progressVisibilityStart = sceneOwnershipStarts[1] ?? rootTop;
+              const nextProgressActive =
+                scrollTop >= progressVisibilityStart &&
+                scrollTop <= rootBottom - viewportHeight * 0.25;
+              if (nextProgressActive !== progressActive) {
+                progressActive = nextProgressActive;
+                root.classList.toggle("story-progress-active", progressActive);
+              }
             }
 
             let nextScene = 0;
@@ -984,31 +1471,72 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
               if (sceneOwnershipStarts[index]! <= scrollTop) nextScene = index;
               else break;
             }
-            if (nextScene !== currentScene) {
+
+            if (nextScene !== currentScene && nextScene < navigationScenes.length) {
               currentScene = nextScene;
               setActiveScene(nextScene);
             }
           };
 
-          ScrollTrigger.create({
-            trigger: root,
+          let storyUiFrame = 0;
+
+          const flushStoryUi = () => {
+            if (storyUiFrame) {
+              window.cancelAnimationFrame(storyUiFrame);
+              storyUiFrame = 0;
+            }
+            updateStoryUi();
+          };
+
+          const requestStoryUiUpdate = () => {
+            if (storyUiFrame) return;
+
+            storyUiFrame = window.requestAnimationFrame(() => {
+              storyUiFrame = 0;
+              updateStoryUi();
+            });
+          };
+
+          window.addEventListener("scroll", requestStoryUiUpdate, { passive: true });
+          window.addEventListener("resize", requestStoryUiUpdate, { passive: true });
+
+          const progressTrigger = ScrollTrigger.create({
+            trigger: storyBoundsRoot,
             start: "top bottom",
             end: "bottom top",
-            onEnter: updateStoryUi,
-            onEnterBack: updateStoryUi,
+            onEnter: requestStoryUiUpdate,
+            onEnterBack: requestStoryUiUpdate,
+            onLeave: flushStoryUi,
+            onLeaveBack: flushStoryUi,
             onRefresh: () => {
               cacheStoryLayout();
-              updateStoryUi();
+              flushStoryUi();
             },
-            onUpdate: updateStoryUi
+            onUpdate: requestStoryUiUpdate
           });
 
+          cacheStoryLayout();
+          requestStoryUiUpdate();
+
           return () => {
+            progressTrigger.kill();
+            window.removeEventListener("scroll", requestStoryUiUpdate);
+            window.removeEventListener("resize", requestStoryUiUpdate);
+            if (storyUiFrame) {
+              window.cancelAnimationFrame(storyUiFrame);
+              storyUiFrame = 0;
+            }
             root.removeEventListener("story:intelligence-ready", handleIntelligenceReady);
             cleanupIntelligenceTimeline?.();
             beginning?.classList.remove("is-story-active");
             shop?.classList.remove("story-shop-motion-ready");
             root.classList.remove("story-motion-ready", "story-progress-active");
+            if (progressNav) {
+              progressNav.classList.remove("is-interactive");
+              progressNav.style.removeProperty("--about-progress-opacity");
+              progressNav.style.removeProperty("--about-progress-shift");
+              progressNav.style.removeProperty("--about-progress-scale");
+            }
             if (progressFill) {
               progressFill.style.removeProperty("transform");
               progressFill.style.removeProperty("transform-origin");
@@ -1040,20 +1568,32 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
   }, []);
 
   return (
-    <div className="customer-discover discover-story" ref={rootRef}>
+    <div
+      className={`customer-discover discover-story${isAboutExperience ? " discover-story--about" : ""}`}
+      data-story-variant={variant}
+      ref={rootRef}
+    >
       <nav aria-label="About Ysabelle story progress" className="discover-progress">
         <span aria-hidden="true" className="discover-progress__rail">
           <span className="discover-progress__fill" />
         </span>
         <ol>
-          {storyScenes.map((scene, index) => (
+          {navigationScenes.map((scene, index) => (
             <li className={activeScene === index ? "is-active" : undefined} key={scene.id}>
               <a
                 aria-current={activeScene === index ? "step" : undefined}
-                aria-label={`${String(index + 1).padStart(2, "0")}: ${scene.label}`}
+                aria-label={
+                  isAboutExperience
+                    ? scene.label
+                    : `${String(index + 1).padStart(2, "0")}: ${scene.label}`
+                }
                 href={`#${scene.id}`}
               >
-                {String(index + 1).padStart(2, "0")}
+                {isAboutExperience ? (
+                  <span aria-hidden="true" className="discover-progress__dot" />
+                ) : (
+                  String(index + 1).padStart(2, "0")
+                )}
               </a>
             </li>
           ))}
@@ -1061,6 +1601,7 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
       </nav>
 
       <section className="story-scene story-welcome" id="discover-welcome">
+        {isAboutExperience ? <AboutWelcomeMotion /> : null}
         <div aria-hidden="true" className="story-brand-canvas">
           <span className="story-brand-path story-brand-path--one" />
           <span className="story-brand-path story-brand-path--two" />
@@ -1079,10 +1620,16 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
         </div>
 
         <div className="customer-container story-welcome__stage" data-story-motion>
-          <div className="story-welcome__mark">
-            <Store aria-hidden="true" />
-          </div>
-          <span className="story-kicker">01 / Welcome</span>
+          {!isAboutExperience ? (
+            <>
+              <YsabelleBrandMark
+                className="story-welcome__mark story-welcome__mark--branded"
+                eager
+                variant="display"
+              />
+              <span className="story-kicker">01 / Welcome</span>
+            </>
+          ) : null}
           <h1 className="story-display-safe story-welcome__title">
             <span className="story-mask">
               <span className="story-mask__line">Ysabelle&apos;s</span>
@@ -1092,279 +1639,481 @@ export function DiscoverPage({ navigate }: { navigate: (path: string) => void })
             </span>
           </h1>
           <div className="story-welcome__support">
-            <p>Everyday essentials, closer to home.</p>
-            <strong>Established 2019</strong>
-            <a className="story-skip" href="#discover-location">
-              Skip story <ArrowRight aria-hidden="true" />
-            </a>
+            {isAboutExperience ? (
+              <>
+                <strong>Established 2019 · Pasig City</strong>
+                <p>Everyday essentials, closer to home.</p>
+                <span className="story-welcome__scroll-cue">
+                  <span className="story-welcome__scroll-label">Scroll to continue</span>
+                  <ChevronDown aria-hidden="true" />
+                </span>
+              </>
+            ) : (
+              <>
+                <p>Everyday essentials, closer to home.</p>
+                <strong>Established 2019</strong>
+                <a className="story-skip" href="#discover-location">
+                  Skip story <ArrowRight aria-hidden="true" />
+                </a>
+              </>
+            )}
           </div>
         </div>
         <span aria-hidden="true" className="story-welcome__handoff" />
       </section>
 
-      <section className="story-scene story-beginning" id="discover-beginning">
-        <div aria-hidden="true" className="story-beginning__atmosphere">
-          <span className="story-beginning__glow story-beginning__glow--one" />
-          <span className="story-beginning__glow story-beginning__glow--two" />
-          <span className="story-beginning__orbit" />
-        </div>
-        <div className="customer-container story-beginning__stage" data-story-motion>
-          <div className="story-beginning__year" aria-label="Established in 2019">
-            2019
-          </div>
-          <div className="story-beginning__copy">
-            <span className="story-kicker">02 / Our beginning</span>
-            <h2 className="story-display-safe">
-              <span className="story-mask">
-                <span className="story-mask__line">Where Our Story</span>
-              </span>
-              <span className="story-mask">
-                <span className="story-mask__line">Begins.</span>
-              </span>
-            </h2>
-            <p>
-              Ysabelle&apos;s Store is a local grocery retail store serving everyday consumer needs.
-            </p>
+      {isAboutExperience ? (
+        <section
+          aria-labelledby="about-catalog-title"
+          className="story-scene story-beginning story-catalog"
+          id="discover-beginning"
+        >
+          <div aria-hidden="true" className="story-beginning__atmosphere">
+            <span className="story-beginning__glow story-beginning__glow--one" />
+            <span className="story-beginning__glow story-beginning__glow--two" />
           </div>
 
           <div
-            aria-label="Abstract shelf filling with everyday essentials"
-            className="story-origin-shelf"
-            role="img"
+            className="customer-container story-beginning__stage story-catalog__stage"
+            data-story-motion
           >
-            <span aria-hidden="true" className="story-origin-shelf__line" />
-            <div aria-hidden="true" className="story-origin-shelf__items">
-              {[ShoppingBasket, Package, Boxes, Store].map((Icon, index) => (
-                <span className="story-origin-shelf__item" key={`origin-item-${index}`}>
-                  <Icon />
+            <div className="story-beginning__copy story-catalog__copy">
+              <span className="story-kicker">Product &amp; Catalog Intelligence</span>
+              <h2 className="story-display-safe" id="about-catalog-title">
+                <span className="story-mask">
+                  <span className="story-mask__line">From Product</span>
                 </span>
-              ))}
+                <span className="story-mask">
+                  <span className="story-mask__line">to Catalog Ready.</span>
+                </span>
+              </h2>
+              <p>
+                Products enter through controlled identity and image-quality checks before they
+                reach the live catalog.
+              </p>
             </div>
-            <strong className="story-origin-shelf__sign">
-              Everyday essentials take their place.
-            </strong>
-          </div>
-        </div>
-        <span aria-hidden="true" className="story-beginning__handoff" />
-      </section>
 
-      <section className="story-scene story-products" id="discover-essentials" ref={shelfSceneRef}>
-        <div className="customer-container story-products__stage" data-story-motion>
-          <div className="story-products__heading">
-            <span className="story-kicker">03 / Everyday essentials</span>
-            <h2 className="story-display-safe">
-              <span className="story-number-mask">
-                <span className="story-products__count">300+</span>
-              </span>
-              <span className="story-mask">
-                <span className="story-mask__line">Products Across the Store</span>
-              </span>
-            </h2>
-            <p>The shelf fills category by category, from daily groceries to household needs.</p>
-          </div>
+            <div
+              aria-label="Product catalog workflow from source item to catalog-ready product"
+              className="story-origin-shelf story-catalog__system story-catalog__pipeline"
+              role="group"
+            >
+              <AboutCatalogMotion />
+              <span aria-hidden="true" className="story-origin-shelf__line" />
 
-          <div className="story-shelf">
-            <ul aria-label="Store product and category shelf">
-              {essentialShelfItems.map((item, index) => (
-                <li
-                  className={`story-shelf__item story-shelf__item--${(index % 4) + 1}`}
-                  key={`shelf-slot-${index}`}
-                >
-                  <div className="story-shelf__visual">
-                    <ProductImage
-                      alt={item.alt}
-                      fallbackLabel="Image temporarily unavailable"
-                      fetchPriority={index < 2 ? "high" : "auto"}
-                      imageUrl={shouldPreloadShelfAssets ? item.imageUrl : null}
-                      loading={shouldPreloadShelfAssets ? "eager" : "lazy"}
-                    />
-                    <span aria-hidden="true" className="story-shelf__shine" />
-                  </div>
-                  <span className="story-shelf__label">
-                    <small>Store category</small>
-                    <strong>{item.category}</strong>
+              <div
+                aria-label="Catalog workflow stages"
+                className="story-origin-shelf__items story-catalog__steps"
+                role="list"
+              >
+                {[
+                  { Icon: Package, label: "Product" },
+                  { Icon: Barcode, label: "Barcode" },
+                  { Icon: ScanLine, label: "Quality check" },
+                  { Icon: Crop, label: "Normalize" },
+                  { Icon: BadgeCheck, label: "Catalog ready" }
+                ].map(({ Icon, label }) => (
+                  <span
+                    className="story-origin-shelf__item story-catalog__step"
+                    key={label}
+                    role="listitem"
+                  >
+                    <Icon aria-hidden="true" />
+                    <small>{label}</small>
                   </span>
-                  <b aria-hidden="true">{String(index + 1).padStart(2, "0")}</b>
-                </li>
-              ))}
-            </ul>
-            <span aria-hidden="true" className="story-shelf__rail" />
+                ))}
+              </div>
+
+              <strong className="story-origin-shelf__sign story-catalog__summary">
+                Identity first · quality checked · catalog ready
+              </strong>
+            </div>
           </div>
-        </div>
-        <span aria-hidden="true" className="story-products__handoff" />
-      </section>
 
-      <section className="story-scene story-location" id="discover-location">
-        <div className="customer-container story-location__stage" data-story-motion>
-          <figure className="story-real-map">
-            <iframe
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="strict-origin-when-cross-origin"
-              src={openStreetMapEmbedUrl}
-              title="OpenStreetMap showing 110 A. Mabini Street in Pasig City"
-            />
-            <span aria-hidden="true" className="story-real-map__trace" />
-            <svg aria-hidden="true" className="story-real-map__route" viewBox="0 0 640 440">
-              <path d="M320 24 V150 M320 250 V416 M24 200 H270 M370 200 H616" pathLength="1" />
-              <circle cx="320" cy="200" r="25" />
-              <circle cx="320" cy="200" r="7" />
-            </svg>
-            <figcaption className="story-real-map__badge">
-              <MapPin aria-hidden="true" />
-              <span>
-                <strong>Store location</strong>
-                <small>Pasig City</small>
-              </span>
-            </figcaption>
-          </figure>
+          <span aria-hidden="true" className="story-beginning__handoff" />
+        </section>
+      ) : (
+        <section className="story-scene story-beginning" id="discover-beginning">
+          <div aria-hidden="true" className="story-beginning__atmosphere">
+            <span className="story-beginning__glow story-beginning__glow--one" />
+            <span className="story-beginning__glow story-beginning__glow--two" />
+            <span className="story-beginning__orbit" />
+          </div>
+          <div className="customer-container story-beginning__stage" data-story-motion>
+            <div className="story-beginning__year" aria-label="Established in 2019">
+              2019
+            </div>
+            <div className="story-beginning__copy">
+              <span className="story-kicker">02 / Our beginning</span>
+              <h2 className="story-display-safe">
+                <span className="story-mask">
+                  <span className="story-mask__line">Where Our Story</span>
+                </span>
+                <span className="story-mask">
+                  <span className="story-mask__line">Begins.</span>
+                </span>
+              </h2>
+              <p>
+                Ysabelle&apos;s Store is a local grocery retail store serving everyday consumer
+                needs.
+              </p>
+            </div>
 
-          <div className="story-location__copy">
-            <span className="story-kicker">04 / Our location</span>
-            <h2 className="story-display-safe">
-              <span className="story-mask">
-                <span className="story-mask__line">Local By</span>
-              </span>
-              <span className="story-mask">
-                <span className="story-mask__line story-mask__line--accent">Design.</span>
-              </span>
-            </h2>
-            <p className="story-location__lead">Serving everyday grocery needs in Pasig City.</p>
-            <address className="story-location__address">
-              <span>110 A. Mabini Street</span>
-              <strong>Pasig City, Metro Manila</strong>
-            </address>
-            <a
-              className="story-location__action"
-              href={googleMapsUrl}
-              rel="noreferrer"
-              target="_blank"
+            <div
+              aria-label="Abstract shelf filling with everyday essentials"
+              className="story-origin-shelf"
+              role="img"
             >
-              Open in Google Maps <ExternalLink aria-hidden="true" />
-            </a>
+              <span aria-hidden="true" className="story-origin-shelf__line" />
+              <div aria-hidden="true" className="story-origin-shelf__items">
+                {[ShoppingBasket, Package, Boxes, Store].map((Icon, index) => (
+                  <span className="story-origin-shelf__item" key={`origin-item-${index}`}>
+                    <Icon />
+                  </span>
+                ))}
+              </div>
+              <strong className="story-origin-shelf__sign">
+                Everyday essentials take their place.
+              </strong>
+            </div>
           </div>
-        </div>
-        <span aria-hidden="true" className="story-location__handoff" />
-      </section>
+          <span aria-hidden="true" className="story-beginning__handoff" />
+        </section>
+      )}
 
-      <DeferredIntelligenceScene />
+      {isAboutExperience ? (
+        <section
+          aria-labelledby="about-sales-title"
+          className="story-scene story-products story-sales"
+          id="discover-essentials"
+          ref={shelfSceneRef}
+        >
+          <div className="customer-container story-sales__stage" data-story-motion>
+            <div className="story-sales__copy">
+              <span className="story-kicker">Sales &amp; Inventory</span>
+              <h2 className="story-display-safe" id="about-sales-title">
+                <span className="story-mask">
+                  <span className="story-mask__line">Every Sale</span>
+                </span>
+                <span className="story-mask">
+                  <span className="story-mask__line">Updates the Store.</span>
+                </span>
+              </h2>
+              <p>
+                Completed sales reduce available stock and become part of the store&apos;s
+                transaction history for the next operational decision.
+              </p>
+            </div>
 
-      <section className="story-scene story-shop" id="discover-shop" ref={shopSceneRef}>
-        <div className="customer-container story-shop__stage" data-story-motion>
-          <div className="story-shop__copy">
-            <span className="story-kicker">06 / Shop with Ysabelle</span>
-            <h2 className="story-display-safe">
-              <span className="story-mask">
-                <span className="story-mask__line">The Story Opens</span>
-              </span>
-              <span className="story-mask">
-                <span className="story-mask__line story-mask__line--sky">Into the Store.</span>
-              </span>
-            </h2>
-            <p>Search the live catalog, check real availability, and build your pickup order.</p>
-            <CustomerLink
-              className="customer-button customer-button--light"
-              href="/shop"
-              navigate={navigate}
+            <div
+              aria-label="Sales and inventory workflow from sale to saved transaction history"
+              className="story-sales__system"
+              role="group"
             >
-              Start shopping <ArrowRight aria-hidden="true" size={18} />
-            </CustomerLink>
+              <AboutSalesInventoryMotion />
+
+              <div
+                aria-label="Sales and inventory workflow stages"
+                className="story-sales__steps"
+                role="list"
+              >
+                {[
+                  { Icon: ShoppingCart, label: "Sale recorded" },
+                  { Icon: Package, label: "Stock deducted" },
+                  { Icon: Boxes, label: "Inventory updated" },
+                  { Icon: BadgeCheck, label: "History saved" }
+                ].map(({ Icon, label }) => (
+                  <span className="story-sales__step" key={label} role="listitem">
+                    <Icon aria-hidden="true" />
+                    <small>{label}</small>
+                  </span>
+                ))}
+              </div>
+
+              <strong className="story-sales__summary">
+                Sales history becomes the foundation for forecasting.
+              </strong>
+            </div>
           </div>
 
-          <div className="story-live-store">
-            <div className="story-live-store__bar">
-              <span>
-                <Store aria-hidden="true" />
-                <strong>Everyday store essentials</strong>
+          <span aria-hidden="true" className="story-products__handoff" />
+        </section>
+      ) : (
+        <section
+          className="story-scene story-products"
+          id="discover-essentials"
+          ref={shelfSceneRef}
+        >
+          <div className="customer-container story-products__stage" data-story-motion>
+            <div className="story-products__heading">
+              <span className="story-kicker">
+                {isAboutExperience ? "Everyday essentials" : "03 / Everyday essentials"}
               </span>
+              <h2 className="story-display-safe">
+                <span className="story-number-mask">
+                  <span className="story-products__count">300+</span>
+                </span>
+                <span className="story-mask">
+                  <span className="story-mask__line">Products Across the Store</span>
+                </span>
+              </h2>
+              <p>The shelf fills category by category, from daily groceries to household needs.</p>
+            </div>
+
+            <div className="story-shelf">
+              <ul aria-label="Store product and category shelf">
+                {essentialShelfItems.map((item, index) => (
+                  <li
+                    className={`story-shelf__item story-shelf__item--${(index % 4) + 1}`}
+                    key={`shelf-slot-${index}`}
+                  >
+                    <div className="story-shelf__visual">
+                      <ProductImage
+                        alt={item.alt}
+                        fallbackLabel="Image temporarily unavailable"
+                        fetchPriority={index < 2 ? "high" : "auto"}
+                        imageUrl={shouldPreloadShelfAssets ? item.imageUrl : null}
+                        loading={shouldPreloadShelfAssets ? "eager" : "lazy"}
+                      />
+                      <span aria-hidden="true" className="story-shelf__shine" />
+                    </div>
+                    <span className="story-shelf__label">
+                      <small>Store category</small>
+                      <strong>{item.category}</strong>
+                    </span>
+                    <b aria-hidden="true">{String(index + 1).padStart(2, "0")}</b>
+                  </li>
+                ))}
+              </ul>
+              <span aria-hidden="true" className="story-shelf__rail" />
+            </div>
+          </div>
+          <span aria-hidden="true" className="story-products__handoff" />
+        </section>
+      )}
+
+      {isAboutExperience ? (
+        <section
+          aria-labelledby="about-forecast-title"
+          className="story-scene story-location story-forecast"
+          id="discover-location"
+        >
+          <div className="customer-container story-forecast__stage" data-story-motion>
+            <header className="story-forecast__header">
+              <span className="story-kicker">Forecast Intelligence</span>
+              <h2 className="story-display-safe" id="about-forecast-title">
+                <span className="story-mask">
+                  <span className="story-mask__line">
+                    From Sales History{" "}
+                    <em className="story-forecast__emphasis">To Future Demand.</em>
+                  </span>
+                </span>
+              </h2>
+              <p className="story-forecast__lead">
+                SARIMA turns recurring sales patterns into a forward demand signal, then translates
+                that signal into a practical restock recommendation. This preview uses illustrative
+                data only.
+              </p>
+            </header>
+
+            <div
+              aria-label="Illustrative SARIMA demand forecast with next-restock recommendation"
+              className="story-forecast__visual"
+              role="img"
+            >
+              <AboutForecastMotion />
+            </div>
+
+            <footer className="story-forecast__footer">
+              <div aria-label="Forecast model" className="story-forecast__model">
+                <span>Forecast model</span>
+                <strong>SARIMA</strong>
+                <small>Illustrative demo</small>
+              </div>
+            </footer>
+          </div>
+
+          <span aria-hidden="true" className="story-location__handoff" />
+        </section>
+      ) : (
+        <section className="story-scene story-location" id="discover-location">
+          <div className="customer-container story-location__stage" data-story-motion>
+            <figure className="story-real-map">
+              <iframe
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+                src={openStreetMapEmbedUrl}
+                title="OpenStreetMap showing 110 A. Mabini Street in Pasig City"
+              />
+              <span aria-hidden="true" className="story-real-map__trace" />
+              <svg aria-hidden="true" className="story-real-map__route" viewBox="0 0 640 440">
+                <path d="M320 24 V150 M320 250 V416 M24 200 H270 M370 200 H616" pathLength="1" />
+                <circle cx="320" cy="200" r="25" />
+                <circle cx="320" cy="200" r="7" />
+              </svg>
+              <figcaption className="story-real-map__badge">
+                <MapPin aria-hidden="true" />
+                <span>
+                  <strong>Store location</strong>
+                  <small>Pasig City</small>
+                </span>
+              </figcaption>
+            </figure>
+
+            <div className="story-location__copy">
+              <span className="story-kicker">
+                {isAboutExperience ? "Our location" : "04 / Our location"}
+              </span>
+              <h2 className="story-display-safe">
+                <span className="story-mask">
+                  <span className="story-mask__line">Local By</span>
+                </span>
+                <span className="story-mask">
+                  <span className="story-mask__line story-mask__line--accent">Design.</span>
+                </span>
+              </h2>
+              <p className="story-location__lead">Serving everyday grocery needs in Pasig City.</p>
+              <address className="story-location__address">
+                <span>110 A. Mabini Street</span>
+                <strong>Pasig City, Metro Manila</strong>
+              </address>
+              <a
+                className="story-location__action"
+                href={googleMapsUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                Open in Google Maps <ExternalLink aria-hidden="true" />
+              </a>
+            </div>
+          </div>
+          <span aria-hidden="true" className="story-location__handoff" />
+        </section>
+      )}
+
+      <DeferredIntelligenceScene hideSectionNumber={isAboutExperience} />
+
+      {!isAboutExperience ? (
+        <section className="story-scene story-shop" id="discover-shop" ref={shopSceneRef}>
+          <div className="customer-container story-shop__stage" data-story-motion>
+            <div className="story-shop__copy">
+              <span className="story-kicker">
+                {isAboutExperience ? "Shop with Ysabelle" : "06 / Shop with Ysabelle"}
+              </span>
+              <h2 className="story-display-safe">
+                <span className="story-mask">
+                  <span className="story-mask__line">The Story Opens</span>
+                </span>
+                <span className="story-mask">
+                  <span className="story-mask__line story-mask__line--sky">Into the Store.</span>
+                </span>
+              </h2>
+              <p>Search the live catalog, check real availability, and build your pickup order.</p>
               <CustomerLink
-                aria-label="Open cart"
-                className="story-live-store__cart"
-                href="/cart"
+                className="customer-button customer-button--light"
+                href="/shop"
                 navigate={navigate}
               >
-                <ShoppingCart aria-hidden="true" />
+                Start shopping <ArrowRight aria-hidden="true" size={18} />
               </CustomerLink>
             </div>
-            <CustomerLink className="story-live-store__search" href="/shop" navigate={navigate}>
-              <Search aria-hidden="true" />
-              Search the real catalog
-              <ArrowRight aria-hidden="true" />
-            </CustomerLink>
 
-            {catalogStatus === "ready" && showcaseProducts.length ? (
-              <div className="story-live-store__products">
-                {showcaseProducts.map((product, slotIndex) => {
-                  const outOfStock = product.availableStock <= 0;
+            <div className="story-live-store">
+              <div className="story-live-store__bar">
+                <span>
+                  <Store aria-hidden="true" />
+                  <strong>Everyday store essentials</strong>
+                </span>
+                <CustomerLink
+                  aria-label="Open cart"
+                  className="story-live-store__cart"
+                  href="/cart"
+                  navigate={navigate}
+                >
+                  <ShoppingCart aria-hidden="true" />
+                </CustomerLink>
+              </div>
+              <CustomerLink className="story-live-store__search" href="/shop" navigate={navigate}>
+                <Search aria-hidden="true" />
+                Search the real catalog
+                <ArrowRight aria-hidden="true" />
+              </CustomerLink>
 
-                  return (
-                    <article className="story-live-product" key={`${product.id}-${slotIndex}`}>
-                      <CustomerLink href={`/product/${product.id}`} navigate={navigate}>
-                        <ProductVisual
-                          category={product.category.name}
-                          imageUrl={product.imageUrl}
-                          name={product.name}
-                        />
-                      </CustomerLink>
-                      <div className="story-live-product__body">
-                        <small>{product.category.name}</small>
+              {catalogStatus === "ready" && showcaseProducts.length ? (
+                <div className="story-live-store__products">
+                  {showcaseProducts.map((product, slotIndex) => {
+                    const outOfStock = product.availableStock <= 0;
+
+                    return (
+                      <article className="story-live-product" key={`${product.id}-${slotIndex}`}>
                         <CustomerLink href={`/product/${product.id}`} navigate={navigate}>
-                          <h3>{product.name}</h3>
+                          <ProductVisual
+                            category={product.category.name}
+                            imageUrl={product.imageUrl}
+                            name={product.name}
+                          />
                         </CustomerLink>
-                        <strong>{formatCurrency(product.sellingPrice)}</strong>
-                        <span
-                          className={`story-live-product__stock story-live-product__stock--${product.stockStatus.toLowerCase()}`}
-                        >
-                          {outOfStock
-                            ? "Out of stock"
-                            : product.stockStatus === "LOW_STOCK"
-                              ? `Only ${product.availableStock} left`
-                              : "In stock"}
-                        </span>
-                        <button
-                          disabled={outOfStock}
-                          onClick={() => addItem(product, 1)}
-                          type="button"
-                        >
-                          <ShoppingBasket aria-hidden="true" />
-                          {outOfStock ? "Unavailable" : "Quick add"}
-                        </button>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="story-live-store__unavailable" role="status">
-                <Package aria-hidden="true" />
-                <div>
-                  <strong>
-                    {catalogStatus === "loading"
-                      ? "Preparing available products"
-                      : "Live catalog preview unavailable"}
-                  </strong>
-                  <p>
-                    {catalogStatus === "loading"
-                      ? "Connecting to the store catalog and current stock."
-                      : catalogStatus === "error"
-                        ? catalogError
-                        : "No in-stock catalog products are available right now."}
-                  </p>
-                  {catalogStatus === "error" ? (
-                    <button
-                      onClick={() => setCatalogReloadKey((current) => current + 1)}
-                      type="button"
-                    >
-                      Retry connection
-                    </button>
-                  ) : null}
+                        <div className="story-live-product__body">
+                          <small>{product.category.name}</small>
+                          <CustomerLink href={`/product/${product.id}`} navigate={navigate}>
+                            <h3>{product.name}</h3>
+                          </CustomerLink>
+                          <strong>{formatCurrency(product.sellingPrice)}</strong>
+                          <span
+                            className={`story-live-product__stock story-live-product__stock--${product.stockStatus.toLowerCase()}`}
+                          >
+                            {outOfStock
+                              ? "Out of stock"
+                              : product.stockStatus === "LOW_STOCK"
+                                ? `Only ${product.availableStock} left`
+                                : "In stock"}
+                          </span>
+                          <button
+                            disabled={outOfStock}
+                            onClick={() => addItem(product, 1)}
+                            type="button"
+                          >
+                            <ShoppingBasket aria-hidden="true" />
+                            {outOfStock ? "Unavailable" : "Quick add"}
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="story-live-store__unavailable" role="status">
+                  <Package aria-hidden="true" />
+                  <div>
+                    <strong>
+                      {catalogStatus === "loading"
+                        ? "Preparing available products"
+                        : "Live catalog preview unavailable"}
+                    </strong>
+                    <p>
+                      {catalogStatus === "loading"
+                        ? "Connecting to the store catalog and current stock."
+                        : catalogStatus === "error"
+                          ? catalogError
+                          : "No in-stock catalog products are available right now."}
+                    </p>
+                    {catalogStatus === "error" ? (
+                      <button
+                        onClick={() => setCatalogReloadKey((current) => current + 1)}
+                        type="button"
+                      >
+                        Retry connection
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-        <span aria-hidden="true" className="story-shop__handoff" />
-      </section>
+          <span aria-hidden="true" className="story-shop__handoff" />
+        </section>
+      ) : null}
     </div>
   );
 }

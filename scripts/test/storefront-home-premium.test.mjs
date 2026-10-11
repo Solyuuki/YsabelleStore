@@ -1,0 +1,576 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+
+const customerAppSource = await readFile(
+  new URL("../../frontend/src/app/CustomerApp.tsx", import.meta.url),
+  "utf8"
+);
+const entranceSource = await readFile(
+  new URL("../../frontend/src/components/customer/StoreEntrance.tsx", import.meta.url),
+  "utf8"
+);
+const homeSource = await readFile(
+  new URL("../../frontend/src/pages/customer/CustomerHomePage.tsx", import.meta.url),
+  "utf8"
+);
+const categoryBackdropSource = await readFile(
+  new URL("../../frontend/src/components/customer/CategoryRetailBackdrop.tsx", import.meta.url),
+  "utf8"
+);
+const shopSource = await readFile(
+  new URL("../../frontend/src/pages/customer/ShopPage.tsx", import.meta.url),
+  "utf8"
+);
+const shopBackdropSource = await readFile(
+  new URL("../../frontend/src/components/customer/ShopCatalogBackdrop.tsx", import.meta.url),
+  "utf8"
+);
+const productCardSource = await readFile(
+  new URL("../../frontend/src/components/customer/ProductCard.tsx", import.meta.url),
+  "utf8"
+);
+const footerSource = await readFile(
+  new URL("../../frontend/src/components/customer/CustomerFooter.tsx", import.meta.url),
+  "utf8"
+);
+const customerLayoutSource = await readFile(
+  new URL("../../frontend/src/layouts/CustomerLayout.tsx", import.meta.url),
+  "utf8"
+);
+const quantitySource = await readFile(
+  new URL("../../frontend/src/components/customer/QuantityControl.tsx", import.meta.url),
+  "utf8"
+);
+const customerCss = await readFile(
+  new URL("../../frontend/src/styles/customer.css", import.meta.url),
+  "utf8"
+);
+const premiumCss = await readFile(
+  new URL("../../frontend/src/styles/customer-home-premium.css", import.meta.url),
+  "utf8"
+);
+const railCss = await readFile(
+  new URL("../../frontend/src/styles/customer-home-product-rail.css", import.meta.url),
+  "utf8"
+);
+assert.match(customerAppSource, /<StoreEntrance/);
+assert.match(customerAppSource, /sessionStorage\.setItem\(STORE_ENTRANCE_SESSION_KEY/);
+assert.match(customerAppSource, /pathname === "\/" && !storeEntranceDismissed/);
+assert.match(entranceSource, /autoPlay/);
+assert.doesNotMatch(entranceSource, /\sloop(?:\s|=|>)/);
+assert.match(entranceSource, /muted/);
+assert.match(entranceSource, /playsInline/);
+assert.match(entranceSource, /store-entrance\.mp4\?v=53360d48/);
+assert.match(entranceSource, /import \{ YsabelleBrandMark \} from "\.\/YsabelleBrandMark"/);
+assert.match(
+  entranceSource,
+  /<YsabelleBrandMark[\s\S]*className="store-entrance__brand-mark"[\s\S]*eager[\s\S]*variant="display"/
+);
+assert.doesNotMatch(
+  entranceSource,
+  /STORE_ENTRANCE_LOGO_DATA_URL|logoFailed|BrandLogo|entranceLogoUrl/
+);
+assert.doesNotMatch(entranceSource, /sceneCurtainOpacity/);
+assert.doesNotMatch(entranceSource, /requestAnimationFrame/);
+assert.doesNotMatch(entranceSource, /store-entrance__scene-curtain/);
+assert.match(entranceSource, /LOOP_FADE_LEAD_SECONDS\s*=\s*0\.55/);
+assert.match(entranceSource, /LOOP_REVEAL_DELAY_MS\s*=\s*30/);
+assert.match(entranceSource, /video\.currentTime\s*=\s*0/);
+assert.match(entranceSource, /maybeFadeForLoop/);
+assert.match(entranceSource, /store-entrance__loop-curtain/);
+assert.match(entranceSource, /Your Neighborhood Store/);
+assert.doesNotMatch(entranceSource, /Your Neighborhood Store,/);
+assert.match(entranceSource, /Now Online\./);
+assert.match(entranceSource, />Get Started</);
+assert.doesNotMatch(entranceSource, /Step inside a compact neighborhood store/);
+assert.doesNotMatch(entranceSource, /Neighborhood grocery · Pasig City/);
+assert.match(entranceSource, /prefers-reduced-motion: reduce/);
+assert.doesNotMatch(entranceSource, /controls/);
+assert.doesNotMatch(homeSource, /<section className="home-hero">/);
+assert.match(shopSource, /customer-shop-heading__backdrop/);
+assert.match(shopSource, /shopHeroWaveBlue/);
+assert.match(shopSource, /shopHeroWaveViolet/);
+assert.match(shopSource, /<ShopCatalogBackdrop \/>/);
+assert.match(shopBackdropSource, /customer-shop-catalog-backdrop/);
+assert.doesNotMatch(shopBackdropSource, /<svg|<path|<ellipse|<circle/);
+assert.match(
+  customerCss,
+  /\.customer-shop-catalog-backdrop\s*\{[\s\S]*?bottom:\s*0;[\s\S]*?42rem 30rem at -5% 24%[\s\S]*?40rem 32rem at 105% 72%[\s\S]*?var\(--shop-catalog-bottom-surface\) 100%/
+);
+assert.match(customerCss, /\.customer-shop-layout\s*\{[\s\S]*?padding-block:\s*2\.5rem 6rem;/);
+assert.match(
+  customerCss,
+  /--shop-catalog-top-surface:\s*#fafbff[\s\S]*?--shop-catalog-surface:\s*#eaf0f7[\s\S]*?--shop-catalog-mid-surface:\s*#e7ecf4[\s\S]*?--shop-catalog-bottom-surface:\s*#e5e9f7/
+);
+assert.doesNotMatch(shopSource, /customer-shop-heading__backdrop[^\n]*url\(/);
+assert.match(
+  customerCss,
+  /\.customer-shop-heading\s*\{[\s\S]*?radial-gradient\([\s\S]*?127 199 255 \/ 18%[\s\S]*?200 156 255 \/ 18%[\s\S]*?#fbfdff[\s\S]*?#f2f4ff/
+);
+assert.match(
+  customerCss,
+  /\.customer-shop-heading__backdrop\s*\{[\s\S]*?position:\s*absolute;[\s\S]*?pointer-events:\s*none;/
+);
+
+assert.match(customerLayoutSource, /<CustomerFooter[\s\S]*pathname=\{pathname\}/);
+assert.match(footerSource, /pathname:\s*string/);
+assert.match(footerSource, /pathname === "\/shop" \|\| pathname\.startsWith\("\/shop\/"\)/);
+assert.match(footerSource, /customer-footer--shop/);
+assert.match(
+  customerCss,
+  /\.customer-footer--shop\s*\{[\s\S]*?--footer-transition-surface:\s*#e5e9f7[\s\S]*?--footer-transition-blue:\s*#d2e2f5[\s\S]*?--footer-transition-violet:\s*#ddd5ef/
+);
+assert.match(
+  footerSource,
+  /className="customer-footer__tagline">Everyday essentials, closer to home\./,
+  "Footer brand should keep its approved tagline."
+);
+assert.match(
+  footerSource,
+  /className="customer-footer__description"[\s\S]*?Your Pasig City grocery for pantry staples, snacks, and more\./,
+  "Footer brand must include the approved neighborhood grocery description."
+);
+assert.match(
+  customerCss,
+  /\.customer-footer__brand-column > \.customer-footer__tagline\s*\{[^}]*font-weight:\s*700;/,
+  "Footer tagline must be emphasized without altering the layout."
+);
+assert.match(
+  customerCss,
+  /\.customer-footer__brand-column > \.customer-footer__description\s*\{[^}]*max-width:\s*35ch;[^}]*line-height:\s*1\.55;/,
+  "Footer supporting copy must wrap within the brand column."
+);
+
+/* The footer transition must belong to the shared footer. It must not
+   show the legacy horizontal SVG strip in dark mode, and its first pixel
+   must match the approved #101827 storefront/Shop/Account/Login handoff. */
+const themeCss = await readFile(
+  new URL("../../frontend/src/styles/theme-storefront.css", import.meta.url),
+  "utf8"
+);
+const formattedThemeCss = themeCss.replace(/\s+/g, " ");
+assert.match(
+  footerSource,
+  /Your Pasig City grocery for pantry staples, snacks, and more\./,
+  "Footer brand description must be concise."
+);
+assert.doesNotMatch(
+  footerSource,
+  /find the things you need in one convenient online store/,
+  "Do not restore the oversized footer description."
+);
+assert.match(
+  formattedThemeCss,
+  /:root\.dark \.customer-app \.customer-footer,[\s\S]*?linear-gradient\(180deg, #101827 0%, #101827 15%, #11192d 55%, #0d1222 100%\)/,
+  "Dark footer gradient must start with the shared #101827 boundary color."
+);
+assert.match(
+  footerSource,
+  /className="customer-footer__transition-outline"[\s\S]*?preserveAspectRatio="xMidYMid slice"/,
+  "The dark footer should restore the approved outline using a non-stretched vector."
+);
+assert.match(
+  footerSource,
+  /d="M0 18C250 42 520 51 810 31C1110 10 1335 49 1600 20"[\s\S]*?fill="none"/,
+  "The original first footer curve must be restored without an opaque fill."
+);
+assert.match(
+  footerSource,
+  /d="M0 35C300 56 600 62 900 44C1180 27 1390 64 1600 39"[\s\S]*?fill="none"/,
+  "The original second footer curve must be restored without an opaque fill."
+);
+assert.match(
+  formattedThemeCss,
+  /\.customer-footer__transition-outline\s*\{\s*display:\s*none;/,
+  "Light mode must hide the dark-only outline and keep its existing waves."
+);
+assert.match(
+  formattedThemeCss,
+  /:root\.dark \.customer-app \.customer-footer__transition svg:not\(\.customer-footer__transition-outline\)/,
+  "Only the filled original SVG should be hidden in dark mode."
+);
+assert.match(
+  formattedThemeCss,
+  /:root\.dark \.customer-app \.customer-footer__transition \.customer-footer__transition-outline,[\s\S]*?display:\s*block;/,
+  "The approved blue-violet footer outlines must remain visible in dark mode."
+);
+assert.match(
+  formattedThemeCss,
+  /:root\[data-about-chrome-theme="dark"\] \.customer-app \.customer-footer__transition \.customer-footer__transition-outline/,
+  "Dark About chrome should also use the restored outlines."
+);
+assert.match(
+  formattedThemeCss,
+  /mask-image:\s*linear-gradient\(180deg, transparent 0%, #000 20%, #000 62%, transparent 100%\)/,
+  "Restored outlines must feather out without an abrupt strip boundary."
+);
+assert.match(
+  customerCss,
+  /\.customer-footer__brand-column > \.customer-footer__description\s*\{[^}]*line-height:\s*1\.55;/,
+  "Concise footer copy should keep comfortable, compact line spacing."
+);
+
+assert.match(footerSource, /customer-footer__transition/);
+assert.match(footerSource, /footerTransitionLight/);
+assert.match(footerSource, /footerTransitionAccent/);
+assert.match(
+  customerCss,
+  /\.customer-footer\s*\{[\s\S]*?--footer-bg:\s*#101426[\s\S]*?radial-gradient\([\s\S]*?0 140 255 \/ 8%[\s\S]*?168 60 240 \/ 8%/
+);
+assert.match(
+  customerCss,
+  /\.customer-footer__transition\s*\{[\s\S]*?height:\s*clamp\(34px, 4vw, 58px\)/
+);
+assert.match(
+  customerCss,
+  /\.customer-footer h2::after\s*\{[\s\S]*?linear-gradient\(90deg, #7fc7ff, #8d8cff 58%, #c89cff\)/
+);
+assert.match(
+  customerCss,
+  /\.customer-footer__bottom\s*\{[\s\S]*?border-image:\s*linear-gradient\([\s\S]*?rgb\(98 91 255 \/ 34%\)/
+);
+
+assert.doesNotMatch(productCardSource, /"In stock"/);
+assert.match(productCardSource, /selectedQuantity/);
+assert.match(productCardSource, /min=\{1\}/);
+assert.match(productCardSource, /ShoppingCart aria-hidden="true" size=\{17\} strokeWidth=\{2\}/);
+assert.match(productCardSource, /customer-product-card__purchase-row/);
+assert.match(
+  productCardSource,
+  /data-tooltip=\{isFavorite \? "Remove from favorites" : "Save to favorites"\}/
+);
+assert.match(productCardSource, /customer-product-card__cart-button/);
+assert.match(productCardSource, /customer-product-badge__fire/);
+assert.match(productCardSource, /function BestSellerMedalIcon\(\)/);
+assert.match(productCardSource, /className="customer-product-badge__medal-icon"/);
+assert.match(productCardSource, /fill="#365BD9"/);
+assert.match(productCardSource, /fill="#D94A4A"/);
+assert.match(productCardSource, /fill="#FFD45E"/);
+assert.match(
+  productCardSource,
+  /customer-product-card__rating \$\{hasReviews \? "" : "is-empty"\}/
+);
+assert.match(productCardSource, /fill=\{hasReviews \? "currentColor" : "none"\}/);
+assert.match(productCardSource, /No reviews yet/);
+assert.match(quantitySource, /min = 1/);
+assert.match(quantitySource, /Math\.max\(min, value - 1\)/);
+
+assert.match(
+  customerCss,
+  /\.customer-header\s*\{[\s\S]*?radial-gradient\([\s\S]*?127 199 255 \/ 12%[\s\S]*?200 156 255 \/ 13%[\s\S]*?#f7fbff[\s\S]*?#fbfcff[\s\S]*?#faf7ff/
+);
+assert.match(
+  customerCss,
+  /\.customer-header::before\s*\{[\s\S]*?linear-gradient\([\s\S]*?172deg[\s\S]*?rgb\(255 255 255 \/ 72%\)[\s\S]*?rgb\(255 255 255 \/ 34%\)/
+);
+assert.match(customerCss, /\.customer-header\s*\{[\s\S]*?border-bottom:\s*0;/);
+assert.match(
+  customerCss,
+  /\.customer-header::after\s*\{[\s\S]*?height:\s*1px;[\s\S]*?transparent 0%[\s\S]*?rgb\(255 255 255 \/ 70%\)[\s\S]*?rgb\(98 91 255 \/ 16%\)[\s\S]*?rgb\(255 255 255 \/ 70%\)[\s\S]*?transparent 100%[\s\S]*?0 1px 6px rgb\(98 91 255 \/ 5%\)/
+);
+assert.match(
+  customerCss,
+  /\.customer-header__bar\s*\{[\s\S]*?position:\s*relative;[\s\S]*?z-index:\s*1;/
+);
+assert.match(premiumCss, /--customer-focus:\s*#0070c9/);
+assert.match(premiumCss, /--customer-warning:\s*#8b5100/);
+assert.doesNotMatch(premiumCss, /\.store-entrance__scene-curtain/);
+assert.match(premiumCss, /--store-entrance-shade:\s*0\.2/);
+assert.match(premiumCss, /--store-entrance-cool-blue:\s*rgb\(33 92 184 \/ 20%\)/);
+assert.match(premiumCss, /--store-entrance-cool-indigo:\s*rgb\(83 72 180 \/ 15%\)/);
+assert.match(
+  premiumCss,
+  /\.store-entrance__scrim\s*\{[\s\S]*?118deg[\s\S]*?var\(--store-entrance-cool-blue\)[\s\S]*?var\(--store-entrance-cool-indigo\)[\s\S]*?rgb\(4 8 20 \/ 46%\)/
+);
+assert.match(premiumCss, /\.store-entrance__vignette\s*\{[\s\S]*?rgb\(2 6 16 \/ 42%\) 118%/);
+assert.match(
+  premiumCss,
+  /\.store-entrance__video[\s\S]*?filter:\s*blur\(2\.8px\)[\s\S]*?transform:\s*scale\(1\.025\)/
+);
+assert.match(premiumCss, /\.store-entrance__loop-curtain[\s\S]*?transition:\s*opacity 420ms/);
+assert.match(premiumCss, /\.store-entrance__loop-curtain\.is-visible[\s\S]*?opacity:\s*1/);
+assert.match(
+  premiumCss,
+  /\.store-entrance__content[\s\S]*?align-items:\s*center[\s\S]*?justify-content:\s*center/
+);
+assert.match(
+  premiumCss,
+  /\.store-entrance__brand-mark[\s\S]*?width:\s*clamp\(132px, 10vw, 156px\)/
+);
+assert.match(
+  premiumCss,
+  /\.store-entrance h1[\s\S]*?font-size:\s*clamp\(2\.2rem, 3\.7vw, 3\.1rem\)/
+);
+assert.match(
+  premiumCss,
+  /\.store-entrance h1[\s\S]*?-webkit-text-stroke:\s*0\.55px rgb\(151 139 255 \/ 58%\)/
+);
+assert.match(premiumCss, /\.store-entrance h1[\s\S]*?0 0 12px rgb\(113 92 255 \/ 16%\)/);
+assert.match(premiumCss, /\.store-entrance__enter[\s\S]*?min-height:\s*48px/);
+assert.match(
+  premiumCss,
+  /\.store-entrance__enter[\s\S]*?border:\s*1\.5px solid transparent[\s\S]*?linear-gradient\(110deg, #5b7cff 0%, #7657f6 54%, #cf4fc8 100%\) border-box/
+);
+assert.match(
+  premiumCss,
+  /\.store-entrance__enter:hover[\s\S]*?linear-gradient\(110deg, #6d88ff 0%, #865df8 52%, #dd5fd0 100%\) border-box/
+);
+assert.match(
+  premiumCss,
+  /\.store-entrance__enter > span[\s\S]*?linear-gradient\(100deg, #243fbd 0%, #6548e8 52%, #b832b4 100%\)[\s\S]*?-webkit-text-fill-color:\s*transparent/
+);
+assert.match(premiumCss, /\.store-entrance__enter > span[\s\S]*?font-weight:\s*850/);
+assert.match(premiumCss, /\.store-entrance__enter::after[\s\S]*?store-entrance-cta-sheen 3\.8s/);
+assert.match(premiumCss, /@keyframes store-entrance-cta-sheen/);
+assert.match(premiumCss, /@keyframes store-entrance-cta-glow/);
+assert.match(
+  premiumCss,
+  /@media \(prefers-reduced-motion: no-preference\)[\s\S]*?\.store-entrance__enter::after/
+);
+assert.match(
+  premiumCss,
+  /\.customer-home\s*\{[\s\S]*?linear-gradient\(145deg, #f4f6fb 0%, #f1f0f8 50%, #f7f2f6 100%\)/
+);
+assert.match(
+  premiumCss,
+  /\.home-categories\s*\{[\s\S]*?--retail-bg-a:\s*#edf8ff[\s\S]*?--category-portal-blue:\s*#7fc7ff[\s\S]*?--category-portal-violet:\s*#c89cff[\s\S]*?var\(--retail-bg-c\)/
+);
+assert.doesNotMatch(premiumCss, /\.home-categories::(?:before|after)/);
+const homeCategoriesRule = premiumCss.match(/\.home-categories\s*\{[^}]*\}/s)?.[0] ?? "";
+assert.doesNotMatch(homeCategoriesRule, /repeating-linear-gradient|url\(["']?\//);
+assert.match(homeSource, /<CategoryRetailBackdrop \/>/);
+assert.match(homeSource, /import \{ CategoryRetailBackdrop \} from/);
+assert.match(
+  categoryBackdropSource,
+  /function CategoryRetailBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?viewBox="0 0 1600 900"[\s\S]*?home-categories__portal-ceiling[\s\S]*?home-categories__portal-side--left[\s\S]*?home-categories__portal-side--right[\s\S]*?home-categories__handoff/
+);
+assert.doesNotMatch(categoryBackdropSource, /home-categories__(?:products|podiums|leaves|shelf)/);
+assert.match(
+  premiumCss,
+  /\.home-categories__portal-scene\s*\{[\s\S]*?width:\s*100%[\s\S]*?height:\s*100%/
+);
+assert.match(
+  premiumCss,
+  /@media \(max-width: 700px\)[\s\S]*?\.home-categories__portal-ceiling[\s\S]*?opacity:\s*0\.42[\s\S]*?\.home-categories__portal-side[\s\S]*?opacity:\s*0\.38/
+);
+
+assert.match(
+  premiumCss,
+  /\.home-categories \.home-section-heading h2[\s\S]*?color:\s*var\(--customer-dark\)[\s\S]*?-webkit-text-stroke:\s*0/
+);
+assert.match(
+  premiumCss,
+  /\.home-categories \.home-section-heading p:last-child[\s\S]*?color:\s*var\(--customer-muted\)/
+);
+assert.match(
+  homeSource,
+  /<div className="home-merchandising-stage">[\s\S]*?<div className="home-merchandising-canvas">[\s\S]*?<MerchandisingArea[\s\S]*?<section className="customer-section home-essentials">[\s\S]*?<\/div>[\s\S]*?<HomeNextStep[\s\S]*?<\/div>/
+);
+assert.match(premiumCss, /\.home-merchandising-stage\s*\{[\s\S]*?background:\s*transparent/);
+assert.match(homeSource, /<div aria-hidden="true" className="home-category-merch-handoff" \/>/);
+assert.match(
+  premiumCss,
+  /\.home-category-merch-handoff\s*\{[\s\S]*?margin-top:\s*calc\(-1 \* clamp\([\s\S]*?margin-bottom:\s*calc\(-1 \* clamp\([\s\S]*?#eef7ff 100%/
+);
+assert.match(premiumCss, /\.home-category-merch-handoff::after[\s\S]*?#eef7ff 100%/);
+assert.match(
+  premiumCss,
+  /\.home-merchandising-canvas\s*\{[\s\S]*?--merch-bg-top:\s*#eef7ff[\s\S]*?--merch-wave-blue:\s*#7fc7ff[\s\S]*?--merch-wave-violet:\s*#c89cff[\s\S]*?background:\s*var\(--merch-bg-mid\)/
+);
+assert.match(homeSource, /<MerchandisingBackdrop \/>/);
+assert.match(
+  homeSource,
+  /function MerchandisingBackdrop\(\)[\s\S]*?aria-hidden="true"[\s\S]*?viewBox="0 0 1600 2400"[\s\S]*?home-merchandising-canvas__waves--top[\s\S]*?home-merchandising-canvas__waves--bottom/
+);
+assert.match(
+  premiumCss,
+  /\.home-merchandising-canvas__backdrop\s*\{[\s\S]*?position:\s*absolute[\s\S]*?inset:\s*0[\s\S]*?pointer-events:\s*none/
+);
+assert.match(
+  premiumCss,
+  /\.home-merchandising-canvas__scene\s*\{[\s\S]*?width:\s*100%[\s\S]*?height:\s*100%/
+);
+assert.match(
+  premiumCss,
+  /\.home-merchandising-canvas > \.customer-section,[\s\S]*?background:\s*transparent !important/
+);
+assert.match(
+  premiumCss,
+  /@media \(max-width: 700px\)[\s\S]*?\.home-merchandising-canvas__waves--top[\s\S]*?opacity:\s*0\.68[\s\S]*?\.home-merchandising-canvas__waves--bottom[\s\S]*?opacity:\s*0\.72/
+);
+assert.match(
+  premiumCss,
+  /\.home-merchandising-stage \.home-section-heading h2[\s\S]*?color:\s*var\(--customer-dark\)[\s\S]*?-webkit-text-stroke:\s*0/
+);
+assert.doesNotMatch(
+  premiumCss,
+  /shop-category-background\.webp|storefront-merchandising-background\.webp|home-next-step-background\.(?:avif|webp)/
+);
+assert.ok(!premiumCss.includes(".home-merchandising-canvas::before"));
+assert.ok(!premiumCss.includes(".home-merchandising-canvas::after"));
+const merchandisingCanvasRule =
+  premiumCss.split(".home-merchandising-canvas {")[1]?.split("}")[0] ?? "";
+assert.ok(
+  merchandisingCanvasRule,
+  "Home merchandising canvas must retain a defined Light Mode style"
+);
+assert.ok(!merchandisingCanvasRule.includes("repeating-linear-gradient"));
+assert.ok(!merchandisingCanvasRule.includes("background-image: url("));
+assert.doesNotMatch(premiumCss, /\.home-merchandising-stage::before/);
+assert.doesNotMatch(premiumCss, /\.home-merchandising-stage::after/);
+assert.doesNotMatch(premiumCss, /\.home-merchandising--trending::before/);
+assert.doesNotMatch(premiumCss, /\.home-merchandising--best-seller::before/);
+assert.doesNotMatch(premiumCss, /\.home-essentials::before/);
+assert.doesNotMatch(premiumCss, /\.home-next-step::before/);
+assert.doesNotMatch(premiumCss, /\.home-next-step::after/);
+assert.match(
+  homeSource,
+  /function HomeNextStep\([\s\S]*?Shop your way[\s\S]*?Pay when it&apos;s delivered\.[\s\S]*?Cash on Delivery[\s\S]*?Start shopping[\s\S]*?See our story/
+);
+assert.doesNotMatch(homeSource, /Simple store pickup|Cash on pickup|Pay When You Collect It/);
+assert.match(
+  homeSource,
+  /function HomeNextStepVisual\(\)[\s\S]*?viewBox="0 0 720 520"[\s\S]*?nextStepBasket[\s\S]*?home-next-step__cart/
+);
+assert.match(
+  premiumCss,
+  /\.home-next-step__main\s*\{[\s\S]*?grid-template-columns:[\s\S]*?border:\s*0;[\s\S]*?border-radius:\s*0;[\s\S]*?background:\s*transparent;[\s\S]*?box-shadow:\s*none;/
+);
+assert.match(
+  premiumCss,
+  /\.home-next-step\s*\{[\s\S]*?url\("\/media\/home-delivery-closing-background\.svg"\) center \/ cover no-repeat/
+);
+assert.match(
+  premiumCss,
+  /\.home-next-step__visual\s*\{[\s\S]*?position:\s*relative;[\s\S]*?min-height:\s*25rem/
+);
+assert.match(
+  premiumCss,
+  /\.home-next-step__visual-svg\s*\{[\s\S]*?width:\s*100%;[\s\S]*?height:\s*100%;[\s\S]*?overflow:\s*visible/
+);
+assert.doesNotMatch(homeSource, /className="home-next-step__story"/);
+assert.doesNotMatch(homeSource, /Start shopping\s*<ArrowRight/);
+assert.match(
+  homeSource,
+  /className="customer-button home-next-step__shop-button"[\s\S]*?>\s*Start shopping\s*<\/CustomerLink>/
+);
+assert.doesNotMatch(premiumCss, /\.home-next-step__story(?:\s|\{|:)/);
+assert.match(
+  premiumCss,
+  /\.home-next-step__shop-button::after[\s\S]*?rgb\(255 255 255 \/ 62%\)[\s\S]*?translateX\(-260%\) skewX\(-18deg\)/
+);
+assert.match(
+  premiumCss,
+  /@keyframes home-next-step-button-shine[\s\S]*?translateX\(650%\) skewX\(-18deg\)[\s\S]*?@media \(prefers-reduced-motion: no-preference\)[\s\S]*?home-next-step__shop-button::after[\s\S]*?animation:\s*home-next-step-button-shine 4\.8s ease-in-out infinite/
+);
+assert.match(
+  premiumCss,
+  /\.home-next-step__actions \.home-secondary-link\s*\{[\s\S]*?border-bottom:\s*0;/
+);
+assert.match(
+  premiumCss,
+  /@keyframes home-next-step-story-arrow-nudge[\s\S]*?translateX\(5px\)[\s\S]*?@media \(prefers-reduced-motion: no-preference\)[\s\S]*?\.home-next-step__actions \.home-secondary-link > svg[\s\S]*?animation:\s*home-next-step-story-arrow-nudge 2\.8s ease-in-out infinite/
+);
+assert.match(
+  premiumCss,
+  /\.home-merchandising-stage \.customer-product-card\s*\{[\s\S]*?border-color:\s*rgb\(98 91 255 \/ 14%\)[\s\S]*?0 4px 14px rgb\(98 91 255 \/ 5%\)/
+);
+assert.match(
+  premiumCss,
+  /\.home-merchandising-stage \.customer-product-card:hover\s*\{[\s\S]*?border-color:\s*rgb\(98 91 255 \/ 22%\)[\s\S]*?0 7px 18px rgb\(98 91 255 \/ 8%\)/
+);
+assert.doesNotMatch(
+  premiumCss,
+  /\.home-merchandising-stage \.customer-product-card[\s\S]{0,420}?rgb\(17 24 39 \/ (?:6|9)%\)/
+);
+assert.match(
+  premiumCss,
+  /\.customer-product-card__visual-link[\s\S]*?background:\s*var\(--product-media-surface\)/
+);
+assert.match(
+  premiumCss,
+  /\.customer-product-card \.customer-product-visual[\s\S]*?background:\s*var\(--product-media-surface\)/
+);
+assert.doesNotMatch(
+  premiumCss,
+  /\.customer-product-card__visual-link[\s\S]*?background:\s*#f5f4f0/
+);
+assert.match(
+  premiumCss,
+  /\.customer-product-card__favorite[\s\S]*?width:\s*44px;[\s\S]*?height:\s*44px/
+);
+assert.match(
+  premiumCss,
+  /\.customer-product-card__favorite\[aria-pressed="true"\][\s\S]*?linear-gradient\(135deg, #4f46e5 0%, #7c3aed 58%, #b832d0 100%\)/
+);
+assert.match(
+  premiumCss,
+  /\.customer-product-badge--trending[\s\S]*?linear-gradient\(110deg, #4938e8 0%, #6748f5 60%, #a13cd4 100%\)/
+);
+assert.match(premiumCss, /\.customer-product-badge__fire-outer[\s\S]*?color:\s*#ff343f/);
+assert.match(premiumCss, /\.customer-product-badge__fire-inner[\s\S]*?color:\s*#ffb020/);
+assert.match(premiumCss, /\.customer-product-badge--best-seller[\s\S]*?#ffcf5a[\s\S]*?#ffb43f/);
+assert.match(premiumCss, /\.customer-product-badge__medal-icon[\s\S]*?width:\s*20px/);
+assert.match(premiumCss, /\.customer-product-badge__medal-icon[\s\S]*?overflow:\s*visible/);
+assert.match(
+  premiumCss,
+  /\.customer-product-card__cart-button[\s\S]*?linear-gradient\(110deg, #4f46e5 0%, #7c3aed 56%, #b832d0 100%\)/
+);
+assert.match(premiumCss, /@keyframes customer-merchandising-shine/);
+assert.match(premiumCss, /\.customer-product-card__rating[\s\S]*?font-size:\s*0\.74rem/);
+assert.match(
+  premiumCss,
+  /\.customer-product-card__rating svg[\s\S]*?width:\s*15px;[\s\S]*?color:\s*#f5a623/
+);
+assert.match(
+  premiumCss,
+  /\.customer-product-card__rating span[\s\S]*?border-left:\s*1px solid #c9ceda/
+);
+assert.match(premiumCss, /\.customer-product-card__rating\.is-empty svg[\s\S]*?color:\s*#9aa6c4/);
+assert.match(premiumCss, /\.customer-product-card__rating\.is-empty span[\s\S]*?border-left:\s*0/);
+assert.match(premiumCss, /\.customer-product-card__price-row[\s\S]*?margin-top:\s*0\.54rem/);
+assert.match(
+  premiumCss,
+  /\.customer-product-card__purchase-row[\s\S]*?grid-template-columns:\s*112px minmax\(0, 1fr\)/
+);
+assert.match(premiumCss, /grid-template-columns:\s*44px minmax\(20px, 1fr\) 44px/);
+assert.match(railCss, /width:\s*44px;[\s\S]*?height:\s*44px/);
+assert.match(
+  railCss,
+  /\.home-product-rail__control:not\(:disabled\):hover,[\s\S]*?#8f84f7[\s\S]*?#9f83f4[\s\S]*?#c48ff0[\s\S]*?0 0 0 2px rgb\(255 255 255 \/ 72%\)[\s\S]*?0 0 26px rgb\(196 143 240 \/ 22%\)/
+);
+assert.match(
+  railCss,
+  /\.home-product-rail \.home-reveal\.home-reveal--product\s*\{[\s\S]*?opacity:\s*1;[\s\S]*?transform:\s*none;[\s\S]*?transition:\s*none;[\s\S]*?transition-delay:\s*0ms;[\s\S]*?will-change:\s*auto;/
+);
+
+function relativeLuminance(hex) {
+  const channels = hex
+    .replace("#", "")
+    .match(/.{2}/g)
+    .map((channel) => Number.parseInt(channel, 16) / 255)
+    .map((channel) => (channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+function contrast(left, right) {
+  const leftLuminance = relativeLuminance(left);
+  const rightLuminance = relativeLuminance(right);
+  const lighter = Math.max(leftLuminance, rightLuminance);
+  const darker = Math.min(leftLuminance, rightLuminance);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+// WCAG evidence for the primary CTA, focus ring, and semantic status colors.
+assert.ok(contrast("#625BFF", "#FFFFFF") >= 4.5);
+assert.ok(contrast("#4F46E5", "#FFFFFF") >= 4.5);
+assert.ok(contrast("#7C3AED", "#FFFFFF") >= 4.5);
+assert.ok(contrast("#B832D0", "#FFFFFF") >= 4.5);
+assert.ok(contrast("#4938E8", "#FFFFFF") >= 4.5);
+assert.ok(contrast("#A13CD4", "#FFFFFF") >= 4.5);
+assert.ok(contrast("#0070C9", "#FFFFFF") >= 3);
+assert.ok(contrast("#17765F", "#FFFFFF") >= 4.5);
+assert.ok(contrast("#8B5100", "#FFF6E5") >= 4.5);
+assert.ok(contrast("#B33B3B", "#FFFFFF") >= 4.5);
+
+console.log("Storefront premium home/accessibility contract passed.");

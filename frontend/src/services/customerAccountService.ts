@@ -1,9 +1,11 @@
 import { apiClient } from "@/services/apiClient";
 import type { CustomerAuthErrorPayload } from "@/types/customerAuth";
+import type { StorefrontFavoriteProduct } from "@/types/storefront";
 import type {
   CustomerAccountCustomerResponse,
   CustomerPasswordChangeInput,
   CustomerProfileUpdateInput,
+  CustomerSecuritySummary,
   CustomerSessionRevocationResponse,
   CustomerSessionsResponse,
   CustomerUsernameClaimInput
@@ -64,6 +66,53 @@ export async function claimCustomerUsername(input: CustomerUsernameClaimInput) {
   return data.customer;
 }
 
+export async function fetchCustomerSecuritySummary(signal?: AbortSignal) {
+  return request<CustomerSecuritySummary>("/api/customer-account/security", {
+    method: "GET",
+    signal
+  });
+}
+
+export async function requestCustomerPasswordSetup(): Promise<void> {
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-account/password/setup/request",
+    requestOptions({ method: "POST" })
+  );
+  if (!response.success) {
+    throw new CustomerAccountRequestError(
+      response.message || "A password setup code could not be requested.",
+      response.error?.code
+    );
+  }
+}
+
+export async function verifyCustomerPasswordSetup(verificationCode: string): Promise<void> {
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-account/password/setup/verify",
+    requestOptions({
+      method: "POST",
+      json: { verificationCode }
+    })
+  );
+  if (!response.success) {
+    throw new CustomerAccountRequestError(
+      response.message || "The password setup code could not be verified.",
+      response.error?.code
+    );
+  }
+}
+
+export async function setupCustomerPassword(newPassword: string) {
+  const data = await request<CustomerAccountCustomerResponse>(
+    "/api/customer-account/password/setup",
+    {
+      method: "POST",
+      json: { newPassword }
+    }
+  );
+  return data.customer;
+}
+
 export async function changeCustomerPassword(input: CustomerPasswordChangeInput) {
   const data = await request<CustomerAccountCustomerResponse>(
     "/api/customer-account/password/change",
@@ -83,12 +132,64 @@ export async function fetchCustomerSessions(signal?: AbortSignal) {
   return data.sessions;
 }
 
-export async function revokeOtherCustomerSessions(currentPassword: string) {
+export async function requestCustomerSessionRevokeVerification(): Promise<void> {
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-account/sessions/revoke-others/request",
+    requestOptions({ method: "POST" })
+  );
+  if (!response.success) {
+    throw new CustomerAccountRequestError(
+      response.message || "A security verification code could not be requested.",
+      response.error?.code
+    );
+  }
+}
+
+export async function verifyCustomerSessionRevokeVerification(
+  verificationCode: string
+): Promise<void> {
+  const response = await apiClient.request<undefined, CustomerAuthErrorPayload>(
+    "/api/customer-account/sessions/revoke-others/verify",
+    requestOptions({
+      method: "POST",
+      json: { verificationCode }
+    })
+  );
+  if (!response.success) {
+    throw new CustomerAccountRequestError(
+      response.message || "The security verification code could not be verified.",
+      response.error?.code
+    );
+  }
+}
+
+export async function revokeOtherCustomerSessions(currentPassword?: string) {
   return request<CustomerSessionRevocationResponse>(
     "/api/customer-account/sessions/revoke-others",
     {
       method: "POST",
-      json: { currentPassword }
+      json: currentPassword ? { currentPassword } : {}
     }
+  );
+}
+
+export async function fetchCustomerFavorites(signal?: AbortSignal) {
+  return request<StorefrontFavoriteProduct[]>("/api/customer-account/favorites", {
+    method: "GET",
+    signal
+  });
+}
+
+export async function addCustomerFavorite(productId: string) {
+  return request<{ productId: string; favorited: true }>(
+    `/api/customer-account/favorites/${encodeURIComponent(productId)}`,
+    { method: "PUT" }
+  );
+}
+
+export async function removeCustomerFavorite(productId: string) {
+  return request<{ productId: string; favorited: false }>(
+    `/api/customer-account/favorites/${encodeURIComponent(productId)}`,
+    { method: "DELETE" }
   );
 }

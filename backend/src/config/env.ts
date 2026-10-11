@@ -22,6 +22,11 @@ const optionalNonEmptyString = z.preprocess(
   z.string().min(1).optional()
 );
 
+const optionalEmail = z.preprocess(
+  (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+  z.string().email().optional()
+);
+
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().positive().default(3001),
@@ -30,6 +35,8 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().url().optional(),
   DATABASE_URL: z.string().url().optional(),
   JWT_SECRET: z.string().min(1).optional(),
+  PAYMONGO_SECRET_KEY: optionalNonEmptyString,
+  PAYMONGO_WEBHOOK_SECRET: optionalNonEmptyString,
   RESEND_API_KEY: z.string().min(1).optional(),
   CUSTOMER_RECOVERY_FROM_EMAIL: z.string().email().optional(),
   CUSTOMER_DEV_GMAIL_SMTP_USER: z.string().email().optional(),
@@ -38,6 +45,14 @@ const envSchema = z.object({
   CUSTOMER_OAUTH_TRANSACTION_KEY: z.string().min(32).optional(),
   GOOGLE_OAUTH_CLIENT_ID: optionalNonEmptyString,
   GOOGLE_OAUTH_CLIENT_SECRET: optionalNonEmptyString,
+  CUSTOMER_SUPPORT_EMAIL: optionalEmail,
+  CUSTOMER_SUPPORT_FROM_NAME: z
+    .string()
+    .trim()
+    .min(1)
+    .max(120)
+    .default("Ysabelle Store Customer Support"),
+  GOOGLE_GMAIL_REFRESH_TOKEN: optionalNonEmptyString,
   FACEBOOK_OAUTH_APP_ID: optionalNonEmptyString,
   FACEBOOK_OAUTH_APP_SECRET: optionalNonEmptyString,
   FACEBOOK_GRAPH_API_VERSION: z
@@ -52,6 +67,13 @@ const envSchema = z.object({
   FORECAST_SEASONAL_PERIOD: z.coerce.number().int().positive().default(12),
   FORECAST_WORKERS: z.coerce.number().int().min(1).max(4).default(4),
   SARIMA_FIT_TIMEOUT_SECONDS: z.coerce.number().positive().max(60).default(8),
+  RECOMMENDER_AI_PROVIDER: z.enum(["auto", "cloudflare", "groq", "disabled"]).default("auto"),
+  RECOMMENDER_AI_TIMEOUT_MS: z.coerce.number().int().positive().max(15_000).default(4_000),
+  CLOUDFLARE_AI_ACCOUNT_ID: optionalNonEmptyString,
+  CLOUDFLARE_AI_API_TOKEN: optionalNonEmptyString,
+  CLOUDFLARE_AI_MODEL: optionalNonEmptyString,
+  GROQ_API_KEY: optionalNonEmptyString,
+  GROQ_AI_MODEL: optionalNonEmptyString,
   FORECAST_CURRENT_MONTH: z
     .string()
     .regex(/^\d{4}-\d{2}$/)

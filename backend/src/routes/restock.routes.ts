@@ -11,6 +11,7 @@ import {
   markRestockOrderAwaitingDeliveryController,
   receiveRestockOrderController,
   replaceRestockOrderLinesController,
+  removeRestockDraftController,
   saveRestockReturnReportController,
   updateRestockOrderController
 } from "../controllers/restockController.js";
@@ -31,6 +32,8 @@ router.get("/", listRestockOrdersController);
 router.post("/", createRestockOrderController);
 router.get("/:orderId", getRestockOrderController);
 router.patch("/:orderId", updateRestockOrderController);
+// Manual unapproved draft removal only; delivered/cancelled and monthly automated tickets are protected.
+router.delete("/:orderId", removeRestockDraftController);
 router.put("/:orderId/lines", replaceRestockOrderLinesController);
 router.post("/:orderId/approve", approveRestockOrderController);
 router.post("/:orderId/await-delivery", markRestockOrderAwaitingDeliveryController);

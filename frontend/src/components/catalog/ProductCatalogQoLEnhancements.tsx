@@ -164,11 +164,11 @@ export function ProductCatalogQoLEnhancements({
       {hosts.qualityIcon ? createPortal(<QualityIcon />, hosts.qualityIcon) : null}
       {hosts.sort
         ? createPortal(
-            <label className="relative flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
+            <label className="ys-product-toolbar-filter relative flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
               <SortIcon />
               <select
                 aria-label="Product order"
-                className="w-full bg-transparent outline-none"
+                className="ys-retail-select-chevron w-full bg-transparent outline-none"
                 onChange={(event) => onSortOrderChange(event.target.value as CatalogSortOrder)}
                 value={sortOrder}
               >

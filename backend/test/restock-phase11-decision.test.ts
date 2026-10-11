@@ -1,8 +1,18 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+// Sprint 11 regression: bounded purchasing must be verified alongside concurrent checkout QA.
+
 import { buildRestockForecastDecision } from "../src/services/restockForecastDecisionService.js";
+import {
+  reconcileDraftRestockLine,
+  requiresAutomatedQuantityReview
+} from "../src/services/restockDraftReconciliation.js";
 import { classifyStockHealth } from "../src/services/stockHealthService.js";
+import {
+  assessProcurementSafety,
+  exceedsRestockOrderBudget
+} from "../src/services/restockProcurementSafety.js";
 
 const NOW = new Date("2026-09-13T00:00:00.000Z");
 const STOCK_HEALTH_NOW = new Date("2026-09-14T12:00:00.000Z");
@@ -213,4 +223,252 @@ test("automatic stock health marks positive stock with zero recent actual demand
   assert.equal(health.status, "OVERSTOCK");
   assert.equal(health.monthlyDemand, 0);
   assert.equal(health.demandSource, "RECENT_SALES");
+});
+
+test("monthly automated draft is idempotent across 10,000 identical worker runs", () => {
+  const action = {
+    quantity: 17,
+    recommendationId: "forecast-1",
+    recommendationSource: "SARIMA" as const
+  };
+  const existing = {
+    isSelected: true,
+    ownerOverrideReason: null,
+    recommendationId: "forecast-1",
+    recommendationSource: "SARIMA" as const,
+    recommendedQuantity: 17,
+    requestedQuantity: 17
+  };
+
+  for (let run = 0; run < 10_000; run += 1) {
+    assert.equal(reconcileDraftRestockLine(existing, action), null);
+  }
+  assert.equal(existing.requestedQuantity, 17);
+});
+
+test("reconciliation repairs an accumulated draft instead of incrementing it", () => {
+  const repaired = reconcileDraftRestockLine(
+    {
+      isSelected: true,
+      ownerOverrideReason: null,
+      recommendationId: "forecast-1",
+      recommendationSource: "SARIMA",
+      recommendedQuantity: 202_270,
+      requestedQuantity: 202_270
+    },
+    {
+      quantity: 17,
+      recommendationId: "forecast-1",
+      recommendationSource: "SARIMA"
+    }
+  );
+  assert.deepEqual(repaired, {
+    recommendationId: "forecast-1",
+    recommendationSource: "SARIMA",
+    recommendedQuantity: 17,
+    requestedQuantity: 17
+  });
+  assert.equal(
+    reconcileDraftRestockLine(
+      {
+        isSelected: true,
+        ownerOverrideReason: null,
+        ...repaired!
+      },
+      {
+        quantity: 17,
+        recommendationId: "forecast-1",
+        recommendationSource: "SARIMA"
+      }
+    ),
+    null
+  );
+});
+
+test("owner quantity overrides, deselections and manual lines survive worker reconciliation", () => {
+  const action = {
+    quantity: 22,
+    recommendationId: "forecast-2",
+    recommendationSource: "LOW_STOCK" as const
+  };
+  const baseline = {
+    isSelected: true,
+    ownerOverrideReason: "Confirmed supplier pallet.",
+    recommendationId: "forecast-1",
+    recommendationSource: "SARIMA" as const,
+    recommendedQuantity: 17,
+    requestedQuantity: 50
+  };
+  assert.deepEqual(reconcileDraftRestockLine(baseline, action), {
+    recommendationId: "forecast-2",
+    recommendationSource: "LOW_STOCK",
+    recommendedQuantity: 22,
+    requestedQuantity: 50
+  });
+  assert.equal(
+    reconcileDraftRestockLine({ ...baseline, recommendationSource: "MANUAL" }, action),
+    null
+  );
+  assert.equal(
+    reconcileDraftRestockLine(
+      {
+        ...baseline,
+        isSelected: false,
+        ownerOverrideReason: null,
+        recommendedQuantity: 17,
+        requestedQuantity: 17
+      },
+      action
+    )?.requestedQuantity,
+    17
+  );
+});
+
+test("automated approval blocks inflated quantities while allowing normal recommendation drift", () => {
+  assert.equal(requiresAutomatedQuantityReview(202_270, 17, null), true);
+  assert.equal(requiresAutomatedQuantityReview(17, 17, null), false);
+  assert.equal(requiresAutomatedQuantityReview(22, 17, null), false);
+  assert.equal(requiresAutomatedQuantityReview(200, 0, null), true);
+  assert.equal(
+    requiresAutomatedQuantityReview(50, 17, "Owner documented a supplier pallet."),
+    true
+  );
+});
+
+test("independent POS coverage blocks inflated and low-evidence automated purchasing", () => {
+  const baseline = {
+    requestedQuantity: 17,
+    monthlyPosDemand: 40,
+    posConfidence: "MEDIUM" as const,
+    sellableStock: 24,
+    incomingStock: 0,
+    expiryRiskQuantity: 0,
+    unitCost: 12
+  };
+
+  const valid = assessProcurementSafety(baseline);
+  assert.equal(valid.safe, true);
+  assert.equal(valid.maxAllowedQuantity, 96);
+
+  const inflated = assessProcurementSafety({ ...baseline, requestedQuantity: 202_270 });
+  assert.equal(inflated.safe, false);
+  if (!inflated.safe) assert.equal(inflated.reason, "ABSOLUTE_UNIT_LIMIT_EXCEEDED");
+
+  const excessCoverage = assessProcurementSafety({ ...baseline, requestedQuantity: 100 });
+  assert.equal(excessCoverage.safe, false);
+  if (!excessCoverage.safe) assert.equal(excessCoverage.reason, "COVERAGE_LIMIT_EXCEEDED");
+
+  const noEvidence = assessProcurementSafety({
+    ...baseline,
+    monthlyPosDemand: null,
+    posConfidence: "LOW"
+  });
+  assert.equal(noEvidence.safe, false);
+  const missingCost = assessProcurementSafety({ ...baseline, unitCost: null });
+  assert.equal(missingCost.safe, false);
+  const invalid = assessProcurementSafety({ ...baseline, requestedQuantity: Number.NaN });
+  assert.equal(invalid.safe, false);
+});
+
+test("independent purchasing budgets fail closed for excessive value", () => {
+  const baseline = {
+    requestedQuantity: 17,
+    monthlyPosDemand: 40,
+    posConfidence: "MEDIUM" as const,
+    sellableStock: 24,
+    incomingStock: 0,
+    expiryRiskQuantity: 0,
+    unitCost: 400
+  };
+  const rejected = assessProcurementSafety(baseline);
+  assert.equal(rejected.safe, false);
+  if (!rejected.safe) assert.equal(rejected.reason, "LINE_BUDGET_EXCEEDED");
+  assert.equal(exceedsRestockOrderBudget([5_000, 5_000, 10_001]), true);
+  assert.equal(exceedsRestockOrderBudget([5_000, 5_000, 10_000]), false);
+  assert.equal(exceedsRestockOrderBudget([Number.NaN]), true);
+});
+
+test("worker draft reconciliation does not inflate owner requests over 10,000 changing iterations", () => {
+  const current = {
+    isSelected: true,
+    ownerOverrideReason: null,
+    recommendationId: "same-recommendation",
+    recommendationSource: "SARIMA" as const,
+    recommendedQuantity: 17,
+    requestedQuantity: 17
+  };
+  for (let i = 0; i < 10_000; i += 1) {
+    const action = {
+      quantity: i % 2 === 0 ? 17 : 22,
+      recommendationId: "same-recommendation",
+      recommendationSource: "SARIMA" as const
+    };
+    const update = reconcileDraftRestockLine(current, action);
+    if (update) Object.assign(current, update);
+    assert.equal(current.requestedQuantity, action.quantity);
+  }
+  assert.ok(current.requestedQuantity <= 22);
+});
+
+test("owner override reasons never disable automated anomaly review", () => {
+  assert.equal(requiresAutomatedQuantityReview(202_270, 17, "Supplier said yes"), true);
+  assert.equal(requiresAutomatedQuantityReview(17, 17, null), false);
+  assert.equal(requiresAutomatedQuantityReview(25, 17, "Owner approved"), false);
+});
+
+test("Owner-signed TARGET_STOCK policy permits only current bounded inventory gaps", () => {
+  const approval = {
+    approvedTargetStockLevel: 30,
+    targetApprovalById: "verified-owner-id",
+    targetApprovedAt: new Date("2026-10-10T00:00:00.000Z")
+  };
+  const input = {
+    recommendationSource: "TARGET_STOCK" as const,
+    monthlyPosDemand: null,
+    posConfidence: "LOW" as const,
+    sellableStock: 20,
+    incomingStock: 0,
+    expiryRiskQuantity: 0,
+    requestedQuantity: 10,
+    targetStockLevel: 30,
+    unitCost: 8,
+    ...approval
+  };
+
+  const safe = assessProcurementSafety(input);
+  assert.equal(safe.safe, true);
+  assert.equal(safe.maxAllowedQuantity, 10);
+  if (safe.safe) assert.equal(safe.lineCostPHP, 80);
+
+  for (const [sellableStock, targetStockLevel, requestedQuantity, unitCost] of [
+    [15, 24, 9, 16.5],
+    [8, 10, 2, 88.5]
+  ] as const) {
+    const candidate = assessProcurementSafety({
+      ...input,
+      sellableStock,
+      targetStockLevel,
+      approvedTargetStockLevel: targetStockLevel,
+      requestedQuantity,
+      unitCost
+    });
+    assert.equal(candidate.safe, true);
+    assert.equal(candidate.maxAllowedQuantity, requestedQuantity);
+  }
+
+  const unsigned = assessProcurementSafety({ ...input, targetApprovalById: null });
+  assert.equal(unsigned.safe, false);
+  if (!unsigned.safe) assert.equal(unsigned.reason, "TARGET_POLICY_UNVERIFIED");
+
+  const drift = assessProcurementSafety({ ...input, targetStockLevel: 31 });
+  assert.equal(drift.safe, false);
+  if (!drift.safe) assert.equal(drift.reason, "TARGET_POLICY_UNVERIFIED");
+
+  const overTarget = assessProcurementSafety({ ...input, requestedQuantity: 11 });
+  assert.equal(overTarget.safe, false);
+  if (!overTarget.safe) assert.equal(overTarget.reason, "COVERAGE_LIMIT_EXCEEDED");
+
+  const bloated = assessProcurementSafety({ ...input, requestedQuantity: 202_270 });
+  assert.equal(bloated.safe, false);
+  if (!bloated.safe) assert.equal(bloated.reason, "ABSOLUTE_UNIT_LIMIT_EXCEEDED");
 });

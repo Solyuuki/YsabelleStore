@@ -91,19 +91,6 @@
   color: var(--customer-primary-strong);
 }
 
-.customer-cart-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 2.75rem;
-  padding-top: 0.35rem;
-}
-
-.customer-cart-actions .customer-continue-link {
-  margin: 0;
-  padding: 0.45rem 0;
-}
-
 .customer-order-summary {
   padding: 1.75rem;
   border-color: rgb(98 91 255 / 28%);
@@ -194,4 +181,135 @@
   .customer-order-summary {
     padding: 1.35rem;
   }
+}
+
+/* Cart shares the approved Trending → Everyday Essentials CSS galaxy
+   and vector starfield. One full-width canvas for empty, populated and
+   paginated states; no fixed-width bitmap shader, repeats or stretching. */
+.customer-app .customer-cart-page__artwork {
+  display: none;
+}
+:root.dark .customer-app .customer-cart-page {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #101827 !important;
+  background-image:
+    linear-gradient(
+      to bottom,
+      #101827 0,
+      transparent 145px,
+      transparent calc(100% - 220px),
+      #101827 100%
+    ),
+    var(--storefront-galaxy-background) !important;
+  background-size: auto !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+}
+:root.dark .customer-app .customer-cart-page__artwork {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 145px,
+    #000 calc(100% - 220px),
+    transparent 100%
+  );
+}
+:root.dark .customer-app .customer-cart-page__cosmos {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* Contents render above the non-interactive artwork in both cart states. */
+:root.dark .customer-app .customer-cart-page > .customer-container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Override the light AppPagination utilities and the Cart panel's
+   !important white backdrop, only for the dark Cart route. */
+:root.dark .customer-app .customer-cart-page .customer-cart-pagination {
+  background: #202d44 !important;
+  border: 1px solid #617391 !important;
+  box-shadow: 0 10px 24px rgb(2 8 23 / 12%);
+  backdrop-filter: none;
+}
+:root.dark .customer-app .customer-cart-page .customer-cart-pagination > p {
+  color: #d4deec !important;
+}
+:root.dark .customer-app .customer-cart-page .customer-cart-pagination nav button {
+  background: #263750 !important;
+  border: 1px solid #627495 !important;
+  color: #e3eafa !important;
+  box-shadow: none;
+}
+:root.dark
+  .customer-app
+  .customer-cart-page
+  .customer-cart-pagination
+  nav
+  button[aria-current="page"] {
+  background: #473c73 !important;
+  border-color: #a99bea !important;
+  color: #f6f0ff !important;
+  opacity: 1;
+}
+:root.dark
+  .customer-app
+  .customer-cart-page
+  .customer-cart-pagination
+  nav
+  button:disabled:not([aria-current="page"]) {
+  background: #19263c !important;
+  border-color: #435370 !important;
+  color: #8493b2 !important;
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+:root.dark
+  .customer-app
+  .customer-cart-page
+  .customer-cart-pagination
+  nav
+  button:not(:disabled):hover {
+  background: #344968 !important;
+  border-color: #a49adf !important;
+}
+:root.dark .customer-app .customer-cart-page .customer-cart-pagination nav button:focus-visible {
+  outline: 2px solid #b1a3f5;
+  outline-offset: 2px;
+}
+
+/* Reuse the uniform dark +/- input from the approved Shop layout. */
+:root.dark .customer-app .customer-cart-page .customer-quantity > input[type="number"] {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  outline: none;
+  color: #e2e9fb;
+}
+:root.dark .customer-app .customer-cart-page .customer-quantity:focus-within {
+  outline: 2px solid #b1a3f5;
+  outline-offset: 2px;
+}
+:root.dark .customer-app .customer-cart-page .customer-quantity button:disabled,
+:root.dark .customer-app .customer-cart-page .customer-quantity button:disabled:hover {
+  background: transparent;
+  opacity: 0.35;
+  cursor: not-allowed;
 }

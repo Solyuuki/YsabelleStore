@@ -86,7 +86,7 @@ export function ReturnHistoryDialog({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="max-h-[82vh] max-w-[920px] grid-rows-[auto_minmax(0,1fr)] gap-0">
+      <DialogContent className="ys-report-modal max-h-[82vh] max-w-[920px] grid-rows-[auto_minmax(0,1fr)] gap-0">
         <DialogHeader className="border-b border-slate-200 px-6 py-5">
           <div className="flex items-center gap-2">
             <RotateCcw aria-hidden="true" className="h-5 w-5 text-amber-600" />

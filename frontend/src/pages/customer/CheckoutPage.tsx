@@ -1,16 +1,36 @@
-import { ArrowLeft, CheckCircle2, MapPin, ShieldCheck, Store } from "lucide-react";
+import { Checkbox } from "@base-ui/react/checkbox";
+import {
+  ArrowLeft,
+  Banknote,
+  Check,
+  CheckCircle2,
+  CreditCard,
+  MapPin,
+  Phone,
+  ShieldCheck,
+  Truck
+} from "lucide-react";
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { formatCurrency } from "@/components/customer/ProductCard";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCart } from "@/context/CartContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { fetchCustomerAddress } from "@/services/customerAddressService";
-import { placeStorefrontOrder } from "@/services/storefrontService";
+import { placeStorefrontOrder, startPaymongoCheckout } from "@/services/storefrontService";
 import { EMPTY_CUSTOMER_ADDRESS, type CustomerAddress } from "@/types/customerAddress";
+import type { StorefrontOrder, StorefrontPaymentMethod } from "@/types/storefront";
 import { getCustomerCheckoutDefaults } from "@/utils/customerAccountState";
 
 const LAST_ORDER_KEY = "ysabelle:last-customer-order";
+
+type CheckoutValidationErrors = {
+  address?: string;
+  customerEmail?: string;
+  customerName?: string;
+  customerPhone?: string;
+};
 
 function addressSummary(address: CustomerAddress) {
   return [
@@ -25,28 +45,72 @@ function addressSummary(address: CustomerAddress) {
     .join(", ");
 }
 
+function formatContactPhone(value: string) {
+  const normalized = value.trim();
+  const digits = normalized.replace(/\D/g, "");
+
+  if (/^09\d{9}$/.test(digits)) {
+    return `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}`;
+  }
+
+  if (/^639\d{9}$/.test(digits)) {
+    return `+63 ${digits.slice(2, 5)} ${digits.slice(5, 8)} ${digits.slice(8)}`;
+  }
+
+  return normalized;
+}
+
+function normalizeCheckoutAddress(address: CustomerAddress): CustomerAddress {
+  return {
+    addressLine1: address.addressLine1.trim(),
+    addressLine2: address.addressLine2.trim(),
+    barangay: address.barangay.trim(),
+    cityMunicipality: address.cityMunicipality.trim(),
+    provinceRegion: address.provinceRegion.trim(),
+    postalCode: address.postalCode.trim(),
+    country: "Philippines"
+  };
+}
+
+function checkoutAddressIsComplete(address: CustomerAddress) {
+  return (
+    address.addressLine1.length >= 3 &&
+    address.barangay.length >= 2 &&
+    address.cityMunicipality.length >= 2 &&
+    address.provinceRegion.length >= 2 &&
+    address.postalCode.length >= 3
+  );
+}
+
 export function CheckoutPage({ navigate }: { navigate: (path: string) => void }) {
-  const { items, itemCount, subtotal, clearCart } = useCart();
-  const { customer } = useCustomerAuth();
+  const { items, itemCount, subtotal, clearCart, isReady } = useCart();
+  const { customer, status } = useCustomerAuth();
+  const savedContactPhone = customer?.defaultContactPhone ?? customer?.phone ?? "";
   const [contact, setContact] = useState(() => getCustomerCheckoutDefaults(customer));
   const [contactEdited, setContactEdited] = useState(false);
+  const [editingContactPhone, setEditingContactPhone] = useState(() => !savedContactPhone);
+  const [saveContactPhoneToAccount, setSaveContactPhoneToAccount] = useState(
+    () => !savedContactPhone
+  );
   const [address, setAddress] = useState<CustomerAddress>(EMPTY_CUSTOMER_ADDRESS);
   const [savedAddress, setSavedAddress] = useState<CustomerAddress | null>(null);
   const [editingAddress, setEditingAddress] = useState(true);
   const [addressLoading, setAddressLoading] = useState(false);
   const [addressLoadError, setAddressLoadError] = useState("");
   const [saveAddressToAccount, setSaveAddressToAccount] = useState(Boolean(customer));
+  const [paymentMethod, setPaymentMethod] = useState<StorefrontPaymentMethod>("PAYMONGO");
+  const [pendingPaymongoOrder, setPendingPaymongoOrder] = useState<StorefrontOrder | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [validationErrors, setValidationErrors] = useState<CheckoutValidationErrors>({});
 
   useEffect(() => {
-    if (!contactEdited) {
-      setContact(getCustomerCheckoutDefaults(customer));
-    }
-  }, [contactEdited, customer]);
+    if (!contactEdited) setContact(getCustomerCheckoutDefaults(customer));
+    setEditingContactPhone(!savedContactPhone);
+    setSaveContactPhoneToAccount(!savedContactPhone);
+  }, [contactEdited, customer, savedContactPhone]);
 
   useEffect(() => {
-    setSaveAddressToAccount(Boolean(customer));
     if (!customer) {
       setSavedAddress(null);
       setAddress(EMPTY_CUSTOMER_ADDRESS);
@@ -65,18 +129,23 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
           setSavedAddress(null);
           setAddress(EMPTY_CUSTOMER_ADDRESS);
           setEditingAddress(true);
+          setSaveAddressToAccount(true);
           return;
         }
         setSavedAddress(loadedAddress);
         setAddress(loadedAddress);
         setEditingAddress(false);
+        setSaveAddressToAccount(false);
       })
       .catch((reason) => {
         if (reason instanceof DOMException && reason.name === "AbortError") return;
         setSavedAddress(null);
         setAddress(EMPTY_CUSTOMER_ADDRESS);
         setEditingAddress(true);
-        setAddressLoadError("Your saved address could not be loaded. You can enter it below.");
+        setSaveAddressToAccount(true);
+        setAddressLoadError(
+          "Your saved address could not be loaded. Enter the delivery address below."
+        );
       })
       .finally(() => setAddressLoading(false));
 
@@ -85,45 +154,145 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
 
   function updateContact(event: ChangeEvent<HTMLInputElement>) {
     const field = event.currentTarget.name as keyof typeof contact;
-    setContact((current) => ({ ...current, [field]: event.currentTarget.value }));
+    const value = event.currentTarget.value;
+    setContact((current) => ({ ...current, [field]: value }));
     setContactEdited(true);
+    if (field === "customerName" || field === "customerPhone" || field === "customerEmail") {
+      setValidationErrors((current) => ({ ...current, [field]: undefined }));
+    }
   }
 
   function updateAddress(event: ChangeEvent<HTMLInputElement>) {
     const field = event.currentTarget.name as keyof CustomerAddress;
-    setAddress((current) => ({ ...current, [field]: event.currentTarget.value }));
+    const value = event.currentTarget.value;
+    setAddress((current) => ({ ...current, [field]: value }));
+    setValidationErrors((current) => ({ ...current, address: undefined }));
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!items.length || submitting) return;
+    if ((!items.length && !pendingPaymongoOrder) || submitting) return;
+
+    const form = new FormData(event.currentTarget);
+    const effectivePhone = (
+      editingContactPhone ? contact.customerPhone : savedContactPhone || contact.customerPhone
+    ).trim();
+    const effectiveAddress = normalizeCheckoutAddress(
+      editingAddress ? address : (savedAddress ?? address)
+    );
+    const customerName = contact.customerName.trim();
+    const customerEmail = contact.customerEmail.trim();
+    const notes = String(form.get("notes") ?? "").trim();
+
+    if (!pendingPaymongoOrder) {
+      const nextValidationErrors: CheckoutValidationErrors = {};
+
+      if (customerName.length < 2) {
+        nextValidationErrors.customerName = "Enter your full name.";
+      }
+      if (effectivePhone.length < 7) {
+        nextValidationErrors.customerPhone =
+          "Enter a valid mobile number for delivery coordination.";
+      }
+      if (customerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
+        nextValidationErrors.customerEmail =
+          "Enter a valid email address or leave this field blank.";
+      }
+      if (!checkoutAddressIsComplete(effectiveAddress)) {
+        nextValidationErrors.address = "Complete all required delivery address fields.";
+      }
+
+      if (Object.keys(nextValidationErrors).length) {
+        setValidationErrors(nextValidationErrors);
+        setError("Check the highlighted fields before placing your order.");
+        return;
+      }
+    }
+
+    setValidationErrors({});
     setSubmitting(true);
     setError("");
-    const form = new FormData(event.currentTarget);
+    let retryOrder = pendingPaymongoOrder;
+
     try {
-      const order = await placeStorefrontOrder({
-        customerName: String(form.get("customerName") ?? ""),
-        customerEmail: String(form.get("customerEmail") ?? ""),
-        customerPhone: String(form.get("customerPhone") ?? ""),
-        customerAddress: address,
-        saveAddressToAccount: Boolean(customer && saveAddressToAccount),
-        notes: String(form.get("notes") ?? ""),
-        fulfillmentMethod: "STORE_PICKUP",
-        paymentMethod: "CASH_ON_PICKUP",
-        items: items.map((item) => ({ productId: item.product.id, quantity: item.quantity }))
-      });
-      sessionStorage.setItem(LAST_ORDER_KEY, JSON.stringify(order));
+      let order = pendingPaymongoOrder;
+
+      if (!order) {
+        order = await placeStorefrontOrder({
+          customerName,
+          customerEmail,
+          customerPhone: effectivePhone,
+          customerAddress: effectiveAddress,
+          saveAddressToAccount: Boolean(customer && editingAddress && saveAddressToAccount),
+          saveContactPhoneToAccount: Boolean(
+            customer && editingContactPhone && saveContactPhoneToAccount
+          ),
+          notes,
+          fulfillmentMethod: "DELIVERY",
+          paymentMethod,
+          items: items.map((item) => ({
+            productId: item.product.id,
+            quantity: item.quantity
+          }))
+        });
+        sessionStorage.setItem(LAST_ORDER_KEY, JSON.stringify(order));
+      }
+
+      if (order.paymentMethod === "PAYMONGO") {
+        try {
+          const paymongoCheckout = await startPaymongoCheckout(order.orderNumber);
+          clearCart();
+          window.location.assign(paymongoCheckout.checkoutUrl);
+          return;
+        } catch (reason) {
+          retryOrder = order;
+          setPendingPaymongoOrder(order);
+          throw reason;
+        }
+      }
+
       clearCart();
       navigate(`/order-success?order=${encodeURIComponent(order.orderNumber)}`);
     } catch (reason) {
       setError(
-        reason instanceof Error
-          ? reason.message
-          : "Your order could not be placed. Please try again."
+        retryOrder
+          ? `Order ${retryOrder.orderNumber} is saved. PayMongo checkout could not be opened; retry payment without creating another order.`
+          : reason instanceof Error
+            ? reason.message
+            : "Your order could not be placed. Please try again."
       );
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (status === "authenticated" && !isReady) {
+    return (
+      <div className="customer-page customer-container">
+        <div className="customer-empty-state" role="status">
+          <h1>Syncing Your Cart</h1>
+          <p>We are moving your guest items into your account before checkout.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status !== "authenticated" || !customer) {
+    return (
+      <div className="customer-page customer-container">
+        <div className="customer-empty-state">
+          <h1>Sign In Required</h1>
+          <p>Your cart is safe. Sign in to continue with checkout.</p>
+          <CustomerLink
+            className="customer-button"
+            href="/login?returnTo=%2Fcheckout"
+            navigate={navigate}
+          >
+            Sign in to checkout
+          </CustomerLink>
+        </div>
+      </div>
+    );
   }
 
   if (!items.length) {
@@ -146,29 +315,34 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
         <CustomerLink className="customer-back-link" href="/cart" navigate={navigate}>
           <ArrowLeft aria-hidden="true" size={17} /> Back to cart
         </CustomerLink>
+
         <div className="customer-page-heading">
-          <p className="customer-kicker">Pickup order</p>
+          <p className="customer-kicker">Delivery checkout</p>
           <h1>Checkout</h1>
-          <p>Tell us who will collect this order. No online payment is required.</p>
+          <p>
+            Confirm your delivery details, then choose secure online payment or Cash on Delivery.
+          </p>
         </div>
-        <form className="customer-checkout-layout" onSubmit={submit}>
+
+        <form className="customer-checkout-layout" noValidate onSubmit={submit}>
           <div className="customer-checkout-form">
             <section>
               <div className="customer-checkout-section-title">
                 <span>1</span>
                 <div>
-                  <h2>Your Details</h2>
-                  <p>
-                    {customer
-                      ? "We prefilled your account details. You can edit them for this order."
-                      : "Used only to identify and coordinate this pickup request."}
-                  </p>
+                  <h2>Your details</h2>
+                  <p>We prefilled your account details. You can edit them for this order.</p>
                 </div>
               </div>
+
               <div className="customer-form-grid">
                 <label>
                   <span>Full name</span>
                   <input
+                    aria-describedby={
+                      validationErrors.customerName ? "checkout-name-error" : undefined
+                    }
+                    aria-invalid={Boolean(validationErrors.customerName)}
                     autoComplete="name"
                     maxLength={120}
                     minLength={2}
@@ -178,25 +352,100 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                     type="text"
                     value={contact.customerName}
                   />
+                  {validationErrors.customerName ? (
+                    <small className="customer-field-error" id="checkout-name-error">
+                      {validationErrors.customerName}
+                    </small>
+                  ) : null}
                 </label>
-                <label>
-                  <span>Mobile number</span>
-                  <input
-                    autoComplete="tel"
-                    maxLength={40}
-                    minLength={7}
-                    name="customerPhone"
-                    onChange={updateContact}
-                    required
-                    type="tel"
-                    value={contact.customerPhone}
-                  />
-                </label>
+                <div className="customer-checkout-contact-field">
+                  <span className="customer-checkout-field-label">Mobile number</span>
+                  {savedContactPhone && !editingContactPhone ? (
+                    <div className="customer-checkout-saved-phone">
+                      <Phone aria-hidden="true" />
+                      <div className="customer-checkout-saved-phone__copy">
+                        <strong>{formatContactPhone(savedContactPhone)}</strong>
+                        <button
+                          className="customer-checkout-phone-change"
+                          onClick={() => {
+                            setEditingContactPhone(true);
+                            setSaveContactPhoneToAccount(false);
+                          }}
+                          type="button"
+                        >
+                          Use a different number
+                        </button>
+                      </div>
+                      <CheckCircle2 aria-hidden="true" />
+                    </div>
+                  ) : (
+                    <div className="customer-checkout-alternate-field">
+                      <input
+                        aria-describedby={
+                          validationErrors.customerPhone ? "checkout-phone-error" : undefined
+                        }
+                        aria-invalid={Boolean(validationErrors.customerPhone)}
+                        autoComplete="tel"
+                        maxLength={40}
+                        minLength={7}
+                        name="customerPhone"
+                        onChange={updateContact}
+                        required
+                        type="tel"
+                        value={contact.customerPhone}
+                      />
+                      {validationErrors.customerPhone ? (
+                        <small className="customer-field-error" id="checkout-phone-error">
+                          {validationErrors.customerPhone}
+                        </small>
+                      ) : null}
+                      {savedContactPhone ? (
+                        <button
+                          className="customer-checkout-use-saved"
+                          onClick={() => {
+                            setContact((current) => ({
+                              ...current,
+                              customerPhone: savedContactPhone
+                            }));
+                            setEditingContactPhone(false);
+                            setSaveContactPhoneToAccount(false);
+                            setValidationErrors((current) => ({
+                              ...current,
+                              customerPhone: undefined
+                            }));
+                          }}
+                          type="button"
+                        >
+                          Use saved number
+                        </button>
+                      ) : null}
+                      <label className="customer-profile-default-option">
+                        <Checkbox.Root
+                          checked={saveContactPhoneToAccount}
+                          className="customer-address-save-checkbox"
+                          onCheckedChange={setSaveContactPhoneToAccount}
+                        >
+                          <Checkbox.Indicator>
+                            <Check aria-hidden="true" size={14} />
+                          </Checkbox.Indicator>
+                        </Checkbox.Root>
+                        <span>
+                          <strong>Save as my default contact number</strong>
+                          <small>Use this number automatically on future checkouts.</small>
+                        </span>
+                      </label>
+                    </div>
+                  )}
+                </div>
                 <label className="customer-form-grid__full">
                   <span>
                     Email <small>(optional)</small>
                   </span>
                   <input
+                    aria-describedby={
+                      validationErrors.customerEmail ? "checkout-email-error" : undefined
+                    }
+                    aria-invalid={Boolean(validationErrors.customerEmail)}
                     autoComplete="email"
                     maxLength={191}
                     name="customerEmail"
@@ -204,6 +453,11 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                     type="email"
                     value={contact.customerEmail}
                   />
+                  {validationErrors.customerEmail ? (
+                    <small className="customer-field-error" id="checkout-email-error">
+                      {validationErrors.customerEmail}
+                    </small>
+                  ) : null}
                 </label>
               </div>
             </section>
@@ -212,10 +466,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
               <div className="customer-checkout-section-title">
                 <span>2</span>
                 <div>
-                  <h2>Contact address</h2>
+                  <h2>Delivery address</h2>
                   <p>
-                    This identifies your customer record. Your order is still collected at the
-                    store.
+                    This is where your order will be delivered. Check the details before placing it.
                   </p>
                 </div>
               </div>
@@ -225,105 +478,154 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                   <MapPin aria-hidden="true" />
                   <div>
                     <strong>Loading saved address...</strong>
-                    <span>Checking your account details.</span>
+                    <span>Checking your account delivery details.</span>
                   </div>
                 </div>
               ) : savedAddress && !editingAddress ? (
                 <div className="customer-choice-card is-selected">
                   <MapPin aria-hidden="true" />
                   <div>
-                    <strong>Saved address</strong>
+                    <strong>Deliver to this address</strong>
                     <span>{addressSummary(savedAddress)}</span>
                     <button
                       className="customer-address-change"
-                      onClick={() => setEditingAddress(true)}
+                      onClick={() => {
+                        setAddress(EMPTY_CUSTOMER_ADDRESS);
+                        setEditingAddress(true);
+                        setSaveAddressToAccount(false);
+                      }}
                       type="button"
                     >
-                      Change address
+                      Use a different address
                     </button>
                   </div>
                   <CheckCircle2 aria-hidden="true" />
                 </div>
               ) : (
-                <div className="customer-form-grid customer-address-form-grid">
-                  <label className="customer-form-grid__full">
-                    <span>Address line 1</span>
-                    <input
-                      autoComplete="address-line1"
-                      maxLength={180}
-                      minLength={3}
-                      name="addressLine1"
-                      onChange={updateAddress}
-                      placeholder="House / unit number and street"
-                      required
-                      value={address.addressLine1}
-                    />
-                  </label>
-                  <label className="customer-form-grid__full">
-                    <span>
-                      Address line 2 <small>(optional)</small>
-                    </span>
-                    <input
-                      autoComplete="address-line2"
-                      maxLength={180}
-                      name="addressLine2"
-                      onChange={updateAddress}
-                      placeholder="Building, subdivision, landmark"
-                      value={address.addressLine2}
-                    />
-                  </label>
-                  <label>
-                    <span>Barangay</span>
-                    <input
-                      maxLength={120}
-                      minLength={2}
-                      name="barangay"
-                      onChange={updateAddress}
-                      required
-                      value={address.barangay}
-                    />
-                  </label>
-                  <label>
-                    <span>City / Municipality</span>
-                    <input
-                      autoComplete="address-level2"
-                      maxLength={120}
-                      minLength={2}
-                      name="cityMunicipality"
-                      onChange={updateAddress}
-                      required
-                      value={address.cityMunicipality}
-                    />
-                  </label>
-                  <label>
-                    <span>Province / Region</span>
-                    <input
-                      autoComplete="address-level1"
-                      maxLength={120}
-                      minLength={2}
-                      name="provinceRegion"
-                      onChange={updateAddress}
-                      required
-                      value={address.provinceRegion}
-                    />
-                  </label>
-                  <label>
-                    <span>Postal code</span>
-                    <input
-                      autoComplete="postal-code"
-                      inputMode="numeric"
-                      maxLength={20}
-                      minLength={3}
-                      name="postalCode"
-                      onChange={updateAddress}
-                      required
-                      value={address.postalCode}
-                    />
-                  </label>
-                  <label className="customer-form-grid__full">
-                    <span>Country</span>
-                    <input readOnly value="Philippines" />
-                  </label>
+                <div className="customer-checkout-alternate-address">
+                  {savedAddress ? (
+                    <button
+                      className="customer-checkout-use-saved"
+                      onClick={() => {
+                        setAddress(savedAddress);
+                        setEditingAddress(false);
+                        setSaveAddressToAccount(false);
+                        setValidationErrors((current) => ({ ...current, address: undefined }));
+                      }}
+                      type="button"
+                    >
+                      Use saved address
+                    </button>
+                  ) : null}
+                  {validationErrors.address ? (
+                    <div
+                      className="customer-address-validation"
+                      id="checkout-address-error"
+                      role="alert"
+                    >
+                      {validationErrors.address}
+                    </div>
+                  ) : null}
+                  <div className="customer-form-grid customer-address-form-grid">
+                    <label className="customer-form-grid__full">
+                      <span>Address line 1</span>
+                      <input
+                        autoComplete="address-line1"
+                        maxLength={180}
+                        minLength={3}
+                        aria-describedby={
+                          validationErrors.address ? "checkout-address-error" : undefined
+                        }
+                        aria-invalid={Boolean(validationErrors.address)}
+                        name="addressLine1"
+                        onChange={updateAddress}
+                        placeholder="House / unit number and street"
+                        required
+                        value={address.addressLine1}
+                      />
+                    </label>
+                    <label className="customer-form-grid__full">
+                      <span>
+                        Address line 2 <small>(optional)</small>
+                      </span>
+                      <input
+                        autoComplete="address-line2"
+                        maxLength={180}
+                        name="addressLine2"
+                        onChange={updateAddress}
+                        placeholder="Building, subdivision, landmark"
+                        value={address.addressLine2}
+                      />
+                    </label>
+                    <label>
+                      <span>Barangay</span>
+                      <input
+                        maxLength={120}
+                        minLength={2}
+                        aria-describedby={
+                          validationErrors.address ? "checkout-address-error" : undefined
+                        }
+                        aria-invalid={Boolean(validationErrors.address)}
+                        name="barangay"
+                        onChange={updateAddress}
+                        required
+                        value={address.barangay}
+                      />
+                    </label>
+                    <label>
+                      <span>City / Municipality</span>
+                      <input
+                        autoComplete="address-level2"
+                        maxLength={120}
+                        minLength={2}
+                        aria-describedby={
+                          validationErrors.address ? "checkout-address-error" : undefined
+                        }
+                        aria-invalid={Boolean(validationErrors.address)}
+                        name="cityMunicipality"
+                        onChange={updateAddress}
+                        required
+                        value={address.cityMunicipality}
+                      />
+                    </label>
+                    <label>
+                      <span>Province / Region</span>
+                      <input
+                        autoComplete="address-level1"
+                        maxLength={120}
+                        minLength={2}
+                        aria-describedby={
+                          validationErrors.address ? "checkout-address-error" : undefined
+                        }
+                        aria-invalid={Boolean(validationErrors.address)}
+                        name="provinceRegion"
+                        onChange={updateAddress}
+                        required
+                        value={address.provinceRegion}
+                      />
+                    </label>
+                    <label>
+                      <span>Postal code</span>
+                      <input
+                        autoComplete="postal-code"
+                        inputMode="numeric"
+                        maxLength={20}
+                        minLength={3}
+                        aria-describedby={
+                          validationErrors.address ? "checkout-address-error" : undefined
+                        }
+                        aria-invalid={Boolean(validationErrors.address)}
+                        name="postalCode"
+                        onChange={updateAddress}
+                        required
+                        value={address.postalCode}
+                      />
+                    </label>
+                    <label className="customer-form-grid__full">
+                      <span>Country</span>
+                      <input readOnly value="Philippines" />
+                    </label>
+                  </div>
                 </div>
               )}
 
@@ -333,18 +635,20 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                 </div>
               ) : null}
 
-              {customer ? (
+              {editingAddress ? (
                 <label className="customer-address-save-option">
-                  <input
+                  <Checkbox.Root
                     checked={saveAddressToAccount}
-                    onChange={(event) => setSaveAddressToAccount(event.target.checked)}
-                    type="checkbox"
-                  />
-                  <span>
-                    <strong>Save this address to My Account</strong>
-                    <small>
-                      Use it automatically on your next checkout. You can change it anytime.
-                    </small>
+                    className="customer-address-save-checkbox"
+                    onCheckedChange={setSaveAddressToAccount}
+                  >
+                    <Checkbox.Indicator>
+                      <Check aria-hidden="true" size={14} />
+                    </Checkbox.Indicator>
+                  </Checkbox.Root>
+                  <span className="customer-address-save-copy">
+                    <strong>Save as my default delivery address</strong>
+                    <small>Use this address automatically on future checkouts.</small>
                   </span>
                 </label>
               ) : null}
@@ -354,91 +658,175 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
               <div className="customer-checkout-section-title">
                 <span>3</span>
                 <div>
-                  <h2>Fulfillment</h2>
-                  <p>Pickup is the currently supported option.</p>
+                  <h2>Payment method</h2>
+                  <p>Pay securely online now or pay in cash when your order arrives.</p>
                 </div>
               </div>
-              <div className="customer-choice-card is-selected">
-                <Store aria-hidden="true" />
-                <div>
-                  <strong>Store pickup</strong>
+
+              <div
+                aria-label="Payment method"
+                className="customer-payment-options"
+                role="radiogroup"
+              >
+                <label
+                  className={`customer-payment-option${paymentMethod === "PAYMONGO" ? " is-selected" : ""}`}
+                >
+                  <input
+                    checked={paymentMethod === "PAYMONGO"}
+                    disabled={Boolean(pendingPaymongoOrder)}
+                    name="paymentMethod"
+                    onChange={() => setPaymentMethod("PAYMONGO")}
+                    type="radio"
+                    value="PAYMONGO"
+                  />
+                  <CreditCard aria-hidden="true" />
                   <span>
-                    <MapPin aria-hidden="true" size={15} /> 110 A. Mabini Street, Pasig City, Metro
-                    Manila
+                    <strong>PayMongo online payment</strong>
+                    <small>
+                      Secure hosted test checkout. Pay before delivery using an available PayMongo
+                      test payment method. No real money will be charged.
+                    </small>
+                  </span>
+                  {paymentMethod === "PAYMONGO" ? <CheckCircle2 aria-hidden="true" /> : null}
+                </label>
+
+                <label
+                  className={`customer-payment-option${paymentMethod === "CASH_ON_DELIVERY" ? " is-selected" : ""}`}
+                >
+                  <input
+                    checked={paymentMethod === "CASH_ON_DELIVERY"}
+                    disabled={Boolean(pendingPaymongoOrder)}
+                    name="paymentMethod"
+                    onChange={() => setPaymentMethod("CASH_ON_DELIVERY")}
+                    type="radio"
+                    value="CASH_ON_DELIVERY"
+                  />
+                  <Banknote aria-hidden="true" />
+                  <span>
+                    <strong>Cash on Delivery</strong>
+                    <small>Pay in cash when your order arrives at your delivery address.</small>
+                  </span>
+                  {paymentMethod === "CASH_ON_DELIVERY" ? (
+                    <CheckCircle2 aria-hidden="true" />
+                  ) : null}
+                </label>
+              </div>
+
+              {pendingPaymongoOrder ? (
+                <div className="customer-payment-resume" role="status">
+                  <ShieldCheck aria-hidden="true" size={18} />
+                  <span>
+                    Order <strong>{pendingPaymongoOrder.orderNumber}</strong> is already saved.
+                    Retrying will reopen payment for this same order.
                   </span>
                 </div>
-                <CheckCircle2 aria-hidden="true" />
-              </div>
+              ) : null}
             </section>
+
             <section>
               <div className="customer-checkout-section-title">
                 <span>4</span>
                 <div>
-                  <h2>Payment</h2>
-                  <p>No card or e-wallet integration is presented.</p>
+                  <h2>Order notes</h2>
+                  <p>
+                    Add delivery instructions or a short note for store staff. This is optional.
+                  </p>
                 </div>
               </div>
-              <div className="customer-choice-card is-selected">
-                <ShieldCheck aria-hidden="true" />
-                <div>
-                  <strong>Cash on pickup</strong>
-                  <span>Pay at the store when your order is collected.</span>
-                </div>
-                <CheckCircle2 aria-hidden="true" />
-              </div>
-              <label className="customer-notes-field">
+              <label className="customer-notes-field customer-notes-field--standalone">
                 <span>
-                  Order notes <small>(optional)</small>
+                  Notes <small>(optional)</small>
                 </span>
                 <textarea
                   maxLength={255}
                   name="notes"
-                  placeholder="A short note for the store"
+                  placeholder="Example: Please call before delivery."
                   rows={3}
                 />
               </label>
             </section>
           </div>
+
           <aside className="customer-order-summary customer-checkout-summary">
-            <p className="customer-kicker">Final review</p>
-            <h2>
-              {itemCount} item{itemCount === 1 ? "" : "s"}
-            </h2>
-            <div className="customer-checkout-lines">
-              {items.map((item) => (
-                <div key={item.product.id}>
-                  <span>
-                    {item.quantity} × {item.product.name}
-                  </span>
-                  <strong>
-                    {formatCurrency(Number(item.product.sellingPrice) * item.quantity)}
-                  </strong>
-                </div>
-              ))}
+            <div className="customer-order-summary__heading">
+              <p className="customer-kicker">Final review</p>
+              <h2>
+                {itemCount} item{itemCount === 1 ? "" : "s"}
+              </h2>
             </div>
-            <div>
-              <span>Pickup</span>
-              <strong>Free</strong>
+
+            <ScrollArea
+              className="customer-checkout-scroll-area"
+              style={{ height: Math.min(260, Math.max(64, items.length * 42)) }}
+              viewportClassName="customer-checkout-scroll-area__viewport"
+            >
+              <div className="customer-checkout-scroll-area__content">
+                {items.map((item) => (
+                  <div className="customer-checkout-line" key={item.product.id}>
+                    <span>
+                      {item.quantity} × {item.product.name}
+                    </span>
+                    <strong>
+                      {formatCurrency(Number(item.product.sellingPrice) * item.quantity)}
+                    </strong>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+
+            <div className="customer-order-summary__row">
+              <span>Delivery</span>
+              <strong>Store coordinated</strong>
             </div>
+
             <div className="customer-order-summary__total">
               <span>Total</span>
               <strong>{formatCurrency(subtotal)}</strong>
             </div>
-            <p>
-              Placing this order creates a pending pickup request. Inventory is deducted only when
-              the store completes the sale.
+
+            <div className="customer-order-summary__payment">
+              {paymentMethod === "PAYMONGO" ? (
+                <CreditCard aria-hidden="true" />
+              ) : (
+                <Truck aria-hidden="true" />
+              )}
+              <div>
+                <strong>
+                  {paymentMethod === "PAYMONGO" ? "PayMongo online payment" : "Cash on Delivery"}
+                </strong>
+                <span>
+                  {paymentMethod === "PAYMONGO"
+                    ? "Payment is verified before delivery."
+                    : "Payment is collected when your order arrives."}
+                </span>
+              </div>
+            </div>
+
+            <p className="customer-order-summary__helper">
+              Store staff will prepare your order and coordinate the courier. You can follow its
+              delivery status from My Account.
             </p>
+
             {error ? (
               <div aria-live="assertive" className="customer-form-error" role="alert">
                 {error}
               </div>
             ) : null}
+
             <button
-              className="customer-button customer-button--full"
+              className="customer-button customer-button--full customer-order-summary__action"
               disabled={submitting || addressLoading}
               type="submit"
             >
-              {submitting ? "Checking stock..." : "Place pickup order"}
+              {submitting
+                ? paymentMethod === "PAYMONGO"
+                  ? "Starting secure checkout..."
+                  : "Placing delivery order..."
+                : pendingPaymongoOrder
+                  ? "Retry PayMongo checkout"
+                  : paymentMethod === "PAYMONGO"
+                    ? "Continue to PayMongo"
+                    : "Place COD order"}
             </button>
           </aside>
         </form>

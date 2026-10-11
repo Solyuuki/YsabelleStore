@@ -1,6 +1,8 @@
 #!/usr/bin/env sh
 set -eu
 
-# This hook is intentionally read-only. Member and sprint metadata updates are explicit through
-# `npm run status:update -- --member m1`; the full documented workflow is `prepush:local`.
+# Pushes are fail-closed for canonical database/image state. The guard refreshes the
+# Sprint canonical ref, rejects stale bases and frozen-history rewrites, then the
+# existing read-only code verification runs the migration/state integrity suite.
+npm run state:push:guard
 npm run verify:code

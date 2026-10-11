@@ -26,6 +26,11 @@ import {
   type RestockOrderStatus,
   type RestockReceiptLineInput
 } from "@/services/restockApi";
+import {
+  isWholeUnitDraft,
+  parseWholeUnitQuantity,
+  requireWholeUnitQuantity
+} from "@/utils/wholeUnitQuantity";
 
 const ACTIVE_STATUSES: RestockOrderStatus[] = [
   "DRAFT",
@@ -83,8 +88,7 @@ function remainingQuantity(line: RestockOrderLine) {
 }
 
 function asWholeNumber(value: string) {
-  const number = Number(value);
-  return Number.isFinite(number) ? Math.max(0, Math.trunc(number)) : 0;
+  return parseWholeUnitQuantity(value) ?? 0;
 }
 
 function buildReceiptRows(order: RestockOrder) {
@@ -209,6 +213,7 @@ export function RestockReceivingPanel({
     field: "deliveredQuantity" | "damagedQuantity" | "acceptedQuantity",
     value: string
   ) {
+    if (!isWholeUnitDraft(value)) return;
     updateReceiptRow(lineId, (current) => {
       const next = { ...current, [field]: value };
       if (field === "deliveredQuantity" || field === "damagedQuantity") {
@@ -227,9 +232,18 @@ export function RestockReceivingPanel({
       const row = receiptRows[line.id];
       if (!row) continue;
 
-      const deliveredQuantity = asWholeNumber(row.deliveredQuantity);
-      const damagedQuantity = asWholeNumber(row.damagedQuantity);
-      const acceptedQuantity = asWholeNumber(row.acceptedQuantity);
+      const deliveredQuantity = requireWholeUnitQuantity(
+        row.deliveredQuantity,
+        `${line.product.name} delivered`
+      );
+      const damagedQuantity = requireWholeUnitQuantity(
+        row.damagedQuantity,
+        `${line.product.name} damaged`
+      );
+      const acceptedQuantity = requireWholeUnitQuantity(
+        row.acceptedQuantity,
+        `${line.product.name} accepted`
+      );
       if (deliveredQuantity === 0) continue;
 
       if (damagedQuantity > deliveredQuantity) {
@@ -485,7 +499,7 @@ export function RestockReceivingPanel({
           }
         }}
       >
-        <DialogContent className="flex max-h-[92vh] w-[calc(100vw-24px)] max-w-[1040px] flex-col overflow-hidden p-0">
+        <DialogContent className="ys-report-modal flex max-h-[92vh] w-[calc(100vw-24px)] max-w-[1040px] flex-col overflow-hidden p-0">
           {receiptOrder ? (
             <form className="flex min-h-0 flex-1 flex-col" onSubmit={submitReceipt}>
               <DialogHeader className="border-b border-slate-200 px-6 py-5">
@@ -548,7 +562,8 @@ export function RestockReceivingPanel({
                             <Input
                               inputMode="numeric"
                               min="0"
-                              type="number"
+                              pattern="[0-9]*"
+                              type="text"
                               value={row.deliveredQuantity}
                               onChange={(event) =>
                                 updateReceiptQuantity(
@@ -563,7 +578,8 @@ export function RestockReceivingPanel({
                             <Input
                               inputMode="numeric"
                               min="0"
-                              type="number"
+                              pattern="[0-9]*"
+                              type="text"
                               value={row.damagedQuantity}
                               onChange={(event) =>
                                 updateReceiptQuantity(
@@ -578,7 +594,8 @@ export function RestockReceivingPanel({
                             <Input
                               inputMode="numeric"
                               min="0"
-                              type="number"
+                              pattern="[0-9]*"
+                              type="text"
                               value={row.acceptedQuantity}
                               onChange={(event) =>
                                 updateReceiptQuantity(
@@ -730,7 +747,7 @@ export function RestockReceivingPanel({
           }
         }}
       >
-        <DialogContent className="max-w-[520px]">
+        <DialogContent className="ys-report-modal max-w-[520px]">
           {cancelOrder ? (
             <form onSubmit={submitCancellation}>
               <DialogHeader>

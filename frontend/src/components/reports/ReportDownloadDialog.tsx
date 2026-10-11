@@ -24,9 +24,10 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { fetchInventory, type InventoryRecord, type PaginationMeta } from "@/services/catalogApi";
-import type { DashboardSummary } from "@/services/dashboardApi";
+import { fetchDashboardSalesCalendar, type DashboardSummary } from "@/services/dashboardApi";
 import {
   listRestockOrders,
+  listRestockPlanning,
   type RestockOrder,
   type RestockOrderStatus
 } from "@/services/restockApi";
@@ -45,6 +46,7 @@ import {
 } from "@/utils/restockExport";
 
 const EXPORT_PAGE_SIZE = 100;
+const SALES_CALENDAR_MIN_MONTH = "2019-01";
 const REPORT_TYPE_SESSION_KEY = "ysabelle.report-download.type";
 const SUPPLIER_ORDER_PAGE_SIZE = 6;
 const SUPPLIER_PREVIEW_PAGE_SIZE = 5;
@@ -74,6 +76,16 @@ type Props = {
   summary: DashboardSummary | null;
 };
 
+function manilaMonthKey(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    month: "2-digit",
+    timeZone: "Asia/Manila",
+    year: "numeric"
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}`;
+}
+
 function initialReportType(): ReportType {
   if (typeof window === "undefined") return "operational";
   const saved = window.sessionStorage.getItem(REPORT_TYPE_SESSION_KEY);
@@ -92,6 +104,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
   const [supplierOrderError, setSupplierOrderError] = useState<string | null>(null);
   const [supplierPreviewOpen, setSupplierPreviewOpen] = useState(false);
   const [supplierPreviewPage, setSupplierPreviewPage] = useState(1);
+  const [operationalMonth, setOperationalMonth] = useState(manilaMonthKey());
 
   useEffect(() => {
     if (!open || reportType !== "restock") return;
@@ -179,8 +192,32 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
 
   async function prepareInternalSnapshot(): Promise<InternalReportSnapshot> {
     if (!summary) throw new Error("Report data is not ready yet.");
-    const inventory = await fetchAllInventory();
-    return { completedSales, inventory, summary };
+    const inventoryPromise = fetchAllInventory();
+
+    if (reportType !== "operational") {
+      return { completedSales, inventory: await inventoryPromise, summary };
+    }
+
+    const [inventory, salesCalendar, recommendationResult] = await Promise.all([
+      inventoryPromise,
+      fetchDashboardSalesCalendar(operationalMonth),
+      listRestockPlanning({ includeZero: true, page: 1, pageSize: 100 })
+    ]);
+
+    return {
+      completedSales,
+      inventory,
+      recommendations: recommendationResult.items
+        .filter(
+          (item) =>
+            item.recommendedQuantity > 0 ||
+            item.stockHealth.status === "OVERSTOCK" ||
+            item.expiryRiskQuantity > 0
+        )
+        .slice(0, 8),
+      salesCalendar,
+      summary
+    };
   }
 
   async function handlePdf() {
@@ -300,7 +337,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
       }}
       open={open}
     >
-      <DialogContent className="max-w-[760px]">
+      <DialogContent className="ys-report-modal max-w-[760px]">
         <DialogHeader>
           <DialogTitle>Download report</DialogTitle>
           <DialogDescription>
@@ -338,6 +375,37 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
               />
             </div>
           </div>
+
+          {reportType === "operational" ? (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <label
+                className="block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                htmlFor="operational-report-month"
+              >
+                Performance month
+              </label>
+              <input
+                className="mt-2 h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 shadow-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 sm:max-w-[240px]"
+                id="operational-report-month"
+                min={SALES_CALENDAR_MIN_MONTH}
+                onChange={(event) => {
+                  if (event.target.value) {
+                    setOperationalMonth(
+                      event.target.value < SALES_CALENDAR_MIN_MONTH
+                        ? SALES_CALENDAR_MIN_MONTH
+                        : event.target.value
+                    );
+                  }
+                }}
+                type="month"
+                value={operationalMonth}
+              />
+              <p className="mt-2 text-xs leading-5 text-slate-500">
+                Completed POS days are compared with forecast-derived targets. The current
+                incomplete day is not treated as a failed target.
+              </p>
+            </div>
+          ) : null}
 
           {reportType === "restock" ? (
             supplierOrderLoading ? (
@@ -541,36 +609,42 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
               </Button>
 
               <Button
-                className="h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
+                className="ys-report-export-option ys-report-export-option--secondary h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
                 disabled={exportDisabled}
                 onClick={() => void handlePrint()}
                 type="button"
                 variant="secondary"
               >
-                <Printer className="mt-0.5 h-5 w-5 shrink-0" />
+                <Printer
+                  aria-hidden="true"
+                  className="ys-report-export-option__icon mt-0.5 h-5 w-5 shrink-0"
+                />
                 <span>
-                  <span className="block font-semibold text-slate-950">
+                  <span className="ys-report-export-option__title block font-semibold text-slate-950">
                     {exportBusy === "print" ? "Preparing…" : "Print"}
                   </span>
-                  <span className="mt-1 block text-xs font-normal leading-5 text-slate-500">
+                  <span className="ys-report-export-option__description mt-1 block text-xs font-normal leading-5 text-slate-500">
                     Open a clean print view for paper printing.
                   </span>
                 </span>
               </Button>
 
               <Button
-                className="h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
+                className="ys-report-export-option ys-report-export-option--secondary h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
                 disabled={exportDisabled}
                 onClick={() => void handleCsv()}
                 type="button"
                 variant="secondary"
               >
-                <FileSpreadsheet className="mt-0.5 h-5 w-5 shrink-0" />
+                <FileSpreadsheet
+                  aria-hidden="true"
+                  className="ys-report-export-option__icon mt-0.5 h-5 w-5 shrink-0"
+                />
                 <span>
-                  <span className="block font-semibold text-slate-950">
+                  <span className="ys-report-export-option__title block font-semibold text-slate-950">
                     {exportBusy === "csv" ? "Preparing…" : "Excel-compatible CSV"}
                   </span>
-                  <span className="mt-1 block text-xs font-normal leading-5 text-slate-500">
+                  <span className="ys-report-export-option__description mt-1 block text-xs font-normal leading-5 text-slate-500">
                     Spreadsheet-ready copy of the selected report.
                   </span>
                 </span>

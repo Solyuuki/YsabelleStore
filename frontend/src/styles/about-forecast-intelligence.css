@@ -1,0 +1,792 @@
+/* About Scene 04: Forecast Intelligence.
+   The Gemini MP4 is the forecasting chart itself — never a page background. */
+
+.about-experience .discover-story--about {
+  --about-sales-forecast-seam: linear-gradient(
+    90deg,
+    #263c77 0%,
+    #35417f 32%,
+    #4a3c82 66%,
+    #5a3a82 100%
+  );
+}
+
+.about-experience .discover-story .story-forecast {
+  min-height: max(760px, calc(100svh - 76px));
+  padding: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 18%, rgb(0 140 255 / 10%), transparent 34%),
+    radial-gradient(circle at 88% 76%, rgb(168 60 240 / 11%), transparent 36%),
+    linear-gradient(145deg, #0b1329 0%, #101934 46%, #18173d 74%, #11162f 100%);
+  color: #ffffff;
+}
+
+.about-experience .discover-story .story-forecast::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(rgb(177 196 255 / 3.2%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(177 196 255 / 3.2%) 1px, transparent 1px);
+  background-size: 80px 80px;
+  content: "";
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 18%, #000 80%, transparent 100%);
+  pointer-events: none;
+}
+
+.about-experience .discover-story .story-forecast::after {
+  position: absolute;
+  top: -1px;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  height: clamp(4rem, 7vh, 5.25rem);
+  background: var(--about-sales-forecast-seam);
+  content: "";
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 72%) 0%,
+    rgb(0 0 0 / 30%) 34%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 72%) 0%,
+    rgb(0 0 0 / 30%) 34%,
+    transparent 100%
+  );
+}
+
+.about-experience .discover-story .story-forecast__stage {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: min(calc(100% - 5rem), 1320px);
+  min-height: calc(100svh - 76px);
+  grid-template-rows: auto auto auto;
+  align-content: center;
+  gap: clamp(0.8rem, 1.5vh, 1.2rem);
+  padding-block: clamp(1.4rem, 2.6vh, 2.2rem);
+}
+
+.about-experience .discover-story .story-forecast__header {
+  width: 100%;
+}
+
+.about-experience .discover-story .story-forecast__header .story-kicker {
+  color: #94d8ff;
+  text-shadow: 0 2px 16px rgb(0 34 90 / 34%);
+}
+
+.about-experience .discover-story .story-forecast__header h2 {
+  width: 100%;
+  max-width: none;
+  margin: 0.5rem auto 0;
+  color: #f7f9ff;
+  font-size: clamp(2.05rem, min(3.55vw, 5vh), 3.9rem);
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 5px 22px rgb(3 8 28 / 28%);
+}
+
+.about-experience .discover-story .story-forecast__header h2 .story-mask__line {
+  display: inline;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.about-experience .discover-story .story-forecast__emphasis {
+  color: #ffffff;
+  font-style: italic;
+  font-weight: inherit;
+  -webkit-text-fill-color: #ffffff;
+}
+
+.about-experience .discover-story .story-forecast__lead {
+  max-width: 42rem;
+  margin: 0.65rem auto 0;
+  color: #d4ddf2;
+  font-size: clamp(0.86rem, 0.95vw, 0.96rem);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.about-experience .discover-story .story-forecast__visual {
+  position: relative;
+  width: min(100%, 1180px);
+  margin-inline: auto;
+  overflow: hidden;
+  border-block: 1px solid rgb(149 165 255 / 18%);
+  background: #071225;
+  box-shadow:
+    0 26px 70px rgb(2 7 24 / 30%),
+    inset 0 1px 0 rgb(255 255 255 / 4%);
+  isolation: isolate;
+}
+
+/* Frontend-only SARIMA capability preview. No video or live operational data. */
+.about-experience .discover-story .story-forecast__visual {
+  width: min(100%, 1240px);
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.about-forecast-demo {
+  --forecast-ink: #14213d;
+  --forecast-blue: #2563eb;
+  --forecast-violet: #7c3aed;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid rgb(219 226 239 / 94%);
+  border-radius: clamp(1.15rem, 1.8vw, 1.65rem);
+  background: linear-gradient(180deg, #fff 0%, #f8faff 100%);
+  color: var(--forecast-ink);
+  box-shadow:
+    0 34px 80px rgb(3 10 32 / 30%),
+    0 8px 28px rgb(18 38 82 / 16%);
+}
+
+.about-forecast-demo::after {
+  position: absolute;
+  top: -7rem;
+  right: -5rem;
+  width: 20rem;
+  height: 20rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgb(124 58 237 / 10%), transparent 68%);
+  content: "";
+  pointer-events: none;
+}
+
+.about-forecast-demo__topbar,
+.about-forecast-demo__metrics,
+.about-forecast-demo__workspace {
+  position: relative;
+  z-index: 1;
+}
+
+.about-forecast-demo__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: clamp(1.05rem, 2vw, 1.5rem) clamp(1.05rem, 2.25vw, 1.75rem);
+  border-bottom: 1px solid #e7ebf3;
+}
+
+.about-forecast-demo__topbar > div:first-child,
+.about-forecast-demo__product > div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.about-forecast-demo__eyebrow {
+  color: #6b7280;
+  font-size: clamp(0.62rem, 0.75vw, 0.72rem);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.about-forecast-demo__topbar strong {
+  font-size: clamp(1rem, 1.35vw, 1.24rem);
+  letter-spacing: -0.025em;
+}
+
+.about-forecast-demo__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.52rem;
+  padding: 0.5rem 0.72rem;
+  border: 1px solid #dfe6f2;
+  border-radius: 999px;
+  background: #f7f9fd;
+  color: #4b5870;
+  font-size: clamp(0.67rem, 0.76vw, 0.76rem);
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.about-forecast-demo__status > span {
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgb(34 197 94 / 12%);
+}
+
+.about-forecast-demo__metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.6rem, 1vw, 0.85rem);
+  padding: clamp(0.8rem, 1.5vw, 1.05rem) clamp(1.05rem, 2.25vw, 1.75rem) 0;
+}
+
+.about-forecast-demo__metrics article {
+  display: grid;
+  min-width: 0;
+  gap: 0.24rem;
+  padding: clamp(0.8rem, 1.35vw, 1.05rem);
+  border: 1px solid #e0e6f0;
+  border-radius: 0.9rem;
+  background: #f8faff;
+}
+
+.about-forecast-demo__metrics span,
+.about-forecast-demo__restock-value > span,
+.about-forecast-demo__recommendation-grid span {
+  color: #68748a;
+  font-size: clamp(0.62rem, 0.73vw, 0.72rem);
+  font-weight: 780;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.about-forecast-demo__metrics strong {
+  color: #17213b;
+  font-size: clamp(1rem, 1.4vw, 1.28rem);
+  letter-spacing: -0.03em;
+}
+
+.about-forecast-demo__metrics article:nth-child(2) strong {
+  color: var(--forecast-blue);
+}
+.about-forecast-demo__metrics article:nth-child(3) strong {
+  color: #6d28d9;
+}
+
+.about-forecast-demo__metrics small {
+  overflow: hidden;
+  color: #7c879b;
+  font-size: clamp(0.68rem, 0.78vw, 0.76rem);
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.about-forecast-demo__workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(17rem, 0.72fr);
+  gap: clamp(0.85rem, 1.5vw, 1.15rem);
+  padding: clamp(0.8rem, 1.5vw, 1.05rem) clamp(1.05rem, 2.25vw, 1.75rem)
+    clamp(1.05rem, 2.25vw, 1.6rem);
+}
+
+.about-forecast-demo__chart-panel,
+.about-forecast-demo__recommendation {
+  min-width: 0;
+  border: 1px solid #e0e6f0;
+  border-radius: 1rem;
+}
+
+.about-forecast-demo__chart-panel {
+  overflow: hidden;
+  background: #fff;
+}
+
+.about-forecast-demo__chart-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: clamp(0.9rem, 1.4vw, 1.15rem) clamp(0.9rem, 1.5vw, 1.2rem) 0;
+}
+
+.about-forecast-demo__chart-heading > div:first-child {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.about-forecast-demo__chart-heading span {
+  color: #708096;
+  font-size: clamp(0.62rem, 0.72vw, 0.7rem);
+  font-weight: 760;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.about-forecast-demo__chart-heading strong {
+  font-size: clamp(0.93rem, 1.16vw, 1.08rem);
+  letter-spacing: -0.025em;
+}
+
+.about-forecast-demo__legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
+.about-forecast-demo__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34rem;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.about-forecast-demo__legend i {
+  width: 1.1rem;
+  height: 2px;
+  border-radius: 999px;
+  background: #0f766e;
+}
+
+.about-forecast-demo__legend i.is-forecast {
+  background: linear-gradient(90deg, var(--forecast-blue), var(--forecast-violet));
+}
+
+.about-forecast-demo__chart-wrap {
+  padding: 0.2rem clamp(0.65rem, 1.25vw, 1rem) clamp(0.85rem, 1.4vw, 1.1rem);
+}
+
+.about-forecast-demo__chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 18rem;
+}
+
+.about-forecast-demo__grid line {
+  stroke: #dfe5ef;
+  stroke-dasharray: 4 5;
+  stroke-width: 1;
+}
+
+.about-forecast-demo__y-labels text,
+.about-forecast-demo__forecast-label {
+  fill: #8a95a8;
+  font-family: inherit;
+  font-size: 19px;
+}
+
+.about-forecast-demo__forecast-label {
+  fill: #59677e;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.about-forecast-demo__forecast-divider {
+  stroke: #aab4c6;
+  stroke-dasharray: 5 7;
+  stroke-width: 1.4;
+}
+
+.about-forecast-demo__actual-line,
+.about-forecast-demo__forecast-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 5;
+}
+
+.about-forecast-demo__actual-line {
+  stroke: #0f766e;
+}
+.about-forecast-demo__forecast-line {
+  stroke-dasharray: 10 9;
+}
+
+.about-forecast-demo__points circle {
+  fill: #fff;
+  stroke: #0f766e;
+  stroke-width: 4;
+}
+
+.about-forecast-demo__points circle.is-forecast {
+  stroke: var(--forecast-blue);
+}
+
+.about-forecast-demo__years {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.35rem;
+  padding-inline: clamp(2.6rem, 5vw, 4.3rem) clamp(0.35rem, 1.2vw, 0.8rem);
+  transform: translateY(-0.28rem);
+}
+
+.about-forecast-demo__years > div {
+  display: grid;
+  justify-items: center;
+  gap: 0.14rem;
+  color: #6e798d;
+}
+
+.about-forecast-demo__years strong {
+  color: #25314a;
+  font-size: clamp(0.7rem, 0.84vw, 0.82rem);
+}
+
+.about-forecast-demo__years span {
+  font-size: clamp(0.66rem, 0.78vw, 0.75rem);
+}
+.about-forecast-demo__years .is-forecast strong {
+  color: var(--forecast-blue);
+}
+
+.about-forecast-demo__recommendation {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: clamp(1rem, 1.6vw, 1.3rem);
+  background:
+    radial-gradient(circle at 100% 0%, rgb(124 58 237 / 10%), transparent 38%),
+    linear-gradient(160deg, #101936 0%, #152044 54%, #1b1b49 100%);
+  color: #f8faff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 7%);
+}
+
+.about-forecast-demo__recommendation-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.about-forecast-demo__recommendation-head > span {
+  max-width: 13rem;
+  color: #a8d9ff;
+  font-size: clamp(0.66rem, 0.76vw, 0.74rem);
+  font-weight: 820;
+  letter-spacing: 0.075em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.about-forecast-demo__recommendation-head small {
+  padding: 0.28rem 0.45rem;
+  border: 1px solid rgb(167 180 255 / 24%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 5%);
+  color: #aeb9d4;
+  font-size: 0.61rem;
+  font-weight: 740;
+  white-space: nowrap;
+}
+
+.about-forecast-demo__product {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: clamp(1rem, 1.5vw, 1.3rem);
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgb(181 193 235 / 14%);
+}
+
+.about-forecast-demo__product-icon {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgb(126 176 255 / 26%);
+  border-radius: 0.72rem;
+  background: linear-gradient(145deg, rgb(37 99 235 / 24%), rgb(124 58 237 / 20%));
+  color: #d9edff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.about-forecast-demo__product small {
+  color: #909dbb;
+  font-size: 0.66rem;
+}
+
+.about-forecast-demo__product strong {
+  font-size: clamp(1rem, 1.28vw, 1.18rem);
+  letter-spacing: -0.025em;
+}
+
+.about-forecast-demo__restock-value {
+  display: grid;
+  gap: 0.34rem;
+  padding-block: clamp(1rem, 1.55vw, 1.25rem);
+}
+
+.about-forecast-demo__restock-value > span,
+.about-forecast-demo__recommendation-grid span {
+  color: #91a1c0;
+}
+
+.about-forecast-demo__restock-value > strong {
+  color: #fff;
+  font-size: clamp(2.35rem, 3.4vw, 3.25rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.about-forecast-demo__restock-value > strong small {
+  color: #aebbd5;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.about-forecast-demo__recommendation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.about-forecast-demo__recommendation-grid > div {
+  display: grid;
+  gap: 0.22rem;
+  padding: 0.7rem;
+  border: 1px solid rgb(184 195 236 / 13%);
+  border-radius: 0.72rem;
+  background: rgb(255 255 255 / 4%);
+}
+
+.about-forecast-demo__recommendation-grid strong {
+  color: #f5f7ff;
+  font-size: clamp(0.76rem, 0.9vw, 0.86rem);
+}
+
+@media (min-width: 1024px) {
+  .about-experience .discover-story .story-forecast__visual {
+    width: min(100%, 1200px);
+  }
+
+  .about-forecast-demo__topbar {
+    padding: clamp(0.72rem, 1.35vh, 1rem) clamp(1rem, 1.9vw, 1.5rem);
+  }
+
+  .about-forecast-demo__metrics {
+    gap: clamp(0.5rem, 0.8vw, 0.72rem);
+    padding: clamp(0.58rem, 1vh, 0.78rem) clamp(1rem, 1.9vw, 1.5rem) 0;
+  }
+
+  .about-forecast-demo__metrics article {
+    padding: clamp(0.62rem, 1.05vh, 0.82rem);
+  }
+
+  .about-forecast-demo__workspace {
+    gap: clamp(0.68rem, 1vw, 0.9rem);
+    padding: clamp(0.58rem, 1vh, 0.78rem) clamp(1rem, 1.9vw, 1.5rem) clamp(0.7rem, 1.3vh, 0.95rem);
+  }
+
+  .about-forecast-demo__chart-heading {
+    padding: clamp(0.65rem, 1.05vh, 0.85rem) clamp(0.72rem, 1.1vw, 0.95rem) 0;
+  }
+
+  .about-forecast-demo__chart-wrap {
+    padding: 0 clamp(0.55rem, 0.9vw, 0.8rem) clamp(0.58rem, 1vh, 0.78rem);
+  }
+
+  .about-forecast-demo__chart {
+    min-height: 14.25rem;
+  }
+
+  .about-forecast-demo__recommendation {
+    padding: clamp(0.82rem, 1.2vh, 1rem);
+  }
+
+  .about-forecast-demo__product {
+    margin-top: clamp(0.72rem, 1.1vh, 0.9rem);
+    padding-bottom: 0.72rem;
+  }
+
+  .about-forecast-demo__restock-value {
+    padding-block: clamp(0.72rem, 1.15vh, 0.9rem);
+  }
+
+  .about-experience .discover-story .story-forecast__footer {
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .about-forecast-demo__workspace {
+    grid-template-columns: 1fr;
+  }
+  .about-forecast-demo__recommendation {
+    min-height: auto;
+  }
+  .about-forecast-demo__recommendation > p {
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .about-experience .discover-story .story-forecast__header h2 .story-mask__line {
+    white-space: normal;
+  }
+
+  .about-forecast-demo__topbar {
+    align-items: flex-start;
+  }
+  .about-forecast-demo__status {
+    padding-inline: 0.55rem;
+    font-size: 0.63rem;
+  }
+  .about-forecast-demo__metrics {
+    grid-template-columns: 1fr;
+  }
+  .about-forecast-demo__metrics small {
+    white-space: normal;
+  }
+  .about-forecast-demo__chart-heading {
+    flex-direction: column;
+  }
+  .about-forecast-demo__legend {
+    justify-content: flex-start;
+  }
+  .about-forecast-demo__chart-wrap {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+  .about-forecast-demo__chart {
+    min-width: 39rem;
+    min-height: 17.5rem;
+  }
+  .about-forecast-demo__years {
+    width: 39rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .about-forecast-demo__topbar {
+    flex-direction: column;
+  }
+  .about-forecast-demo__recommendation-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.about-experience .discover-story .story-forecast__footer {
+  display: flex;
+  width: min(100%, 1180px);
+  margin-inline: auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-top: 0.1rem;
+}
+
+.about-experience .discover-story .story-forecast__model {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: #b8c5df;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.about-experience .discover-story .story-forecast__model span {
+  color: #80d0ff;
+  font-weight: 850;
+}
+
+.about-experience .discover-story .story-forecast__model strong {
+  padding: 0.28rem 0.56rem;
+  border: 1px solid rgb(145 165 255 / 28%);
+  border-radius: 999px;
+  background: rgb(13 21 50 / 38%);
+  color: #f7f9ff;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+.about-experience .discover-story .story-forecast__model small {
+  color: #98a5c5;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.about-experience .discover-story .story-forecast__takeaway {
+  max-width: 24rem;
+  margin: 0;
+  color: #d8e0f2;
+  font-size: clamp(0.72rem, 0.82vw, 0.82rem);
+  font-weight: 650;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.about-experience .discover-story .story-forecast .story-location__handoff {
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  width: auto;
+  height: clamp(7rem, 14vh, 9rem);
+  border-radius: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgb(16 20 38 / 24%) 42%,
+    var(--story-seam-45) 100%
+  );
+  box-shadow: none;
+  opacity: 0;
+  transform: none;
+}
+
+@media (max-width: 1023px) {
+  .about-experience .discover-story .story-forecast {
+    min-height: auto;
+  }
+
+  .about-experience .discover-story .story-forecast__stage {
+    width: min(100% - 2rem, 900px);
+    min-height: auto;
+    gap: 1.4rem;
+    padding-block: 5.5rem;
+  }
+
+  .about-experience .discover-story .story-forecast__header {
+    width: min(100%, 680px);
+  }
+
+  .about-experience .discover-story .story-forecast__footer {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .about-experience .discover-story .story-forecast__stage {
+    width: min(100% - 1.25rem, 720px);
+    padding-block: 4.5rem;
+  }
+
+  .about-experience .discover-story .story-forecast__header h2 {
+    max-width: 13ch;
+    font-size: clamp(2.3rem, 10.6vw, 3.55rem);
+  }
+
+  .about-experience .discover-story .story-forecast__lead {
+    font-size: 0.88rem;
+  }
+
+  .about-experience .discover-story .story-forecast__footer {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .about-experience .discover-story .story-forecast__model {
+    flex-wrap: wrap;
+    row-gap: 0.42rem;
+  }
+
+  .about-experience .discover-story .story-forecast__takeaway {
+    max-width: 19rem;
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-forecast-demo * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

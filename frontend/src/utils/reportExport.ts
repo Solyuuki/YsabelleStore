@@ -1,10 +1,13 @@
 import type { InventoryRecord } from "@/services/catalogApi";
-import type { DashboardSummary } from "@/services/dashboardApi";
+import type { DashboardSalesCalendar, DashboardSummary } from "@/services/dashboardApi";
+import type { RestockPlanningCandidate } from "@/services/restockApi";
 import type { PosSale } from "@/types/pos";
 
 export type InternalReportSnapshot = {
   completedSales: PosSale[];
   inventory: InventoryRecord[];
+  recommendations?: RestockPlanningCandidate[];
+  salesCalendar?: DashboardSalesCalendar;
   summary: DashboardSummary;
 };
 
@@ -45,6 +48,54 @@ function averageReceipt(snapshot: InternalReportSnapshot) {
   return snapshot.completedSales.length > 0
     ? recentGross(snapshot) / snapshot.completedSales.length
     : 0;
+}
+
+export function operationalPerformance(snapshot: InternalReportSnapshot) {
+  const calendar = snapshot.salesCalendar;
+  if (!calendar) return null;
+
+  const comparableDays = calendar.days.filter(
+    (day) =>
+      day.status === "PAST" &&
+      day.actualDataAvailable &&
+      day.targetAmount !== null &&
+      Number(day.targetAmount) > 0
+  );
+  const actual = comparableDays.reduce((sum, day) => sum + Number(day.actualAmount), 0);
+  const target = comparableDays.reduce((sum, day) => sum + Number(day.targetAmount ?? 0), 0);
+  const variance = actual - target;
+  const achievement = target > 0 ? (actual / target) * 100 : null;
+  const belowTargetDays = comparableDays.filter(
+    (day) => Number(day.actualAmount) < Number(day.targetAmount ?? 0)
+  ).length;
+
+  return {
+    achievement,
+    actual,
+    belowTargetDays,
+    comparableDays: comparableDays.length,
+    forecastAmount: calendar.summary.forecastAmount
+      ? Number(calendar.summary.forecastAmount)
+      : null,
+    metOrExceededDays: comparableDays.length - belowTargetDays,
+    month: calendar.month,
+    monthlyTarget: calendar.summary.targetAmount ? Number(calendar.summary.targetAmount) : null,
+    target,
+    variance
+  };
+}
+
+function recommendationAction(item: RestockPlanningCandidate) {
+  if (item.recommendedQuantity > 0) {
+    return `Restock ${item.recommendedQuantity.toLocaleString()} unit(s)`;
+  }
+  if (item.expiryRiskQuantity > 0) return "Review near-expiry stock";
+  if (item.stockHealth.status === "OVERSTOCK") return "Reduce or pause replenishment";
+  return "Monitor";
+}
+
+function percentage(value: number | null) {
+  return value === null ? "N/A" : `${value.toFixed(1)}%`;
 }
 
 function safeCsvText(value: string) {
@@ -99,9 +150,11 @@ function renderPrintDocument(printWindow: Window, html: string) {
 }
 
 export function downloadOperationalSummaryCsv(snapshot: InternalReportSnapshot) {
+  const performance = operationalPerformance(snapshot);
   const rows: Array<Array<string | number>> = [
     ["YSABELLE STORE", "OPERATIONAL SUMMARY"],
     ["Generated", formatDateTime(snapshot.summary.generatedAt)],
+    ...(performance ? [["Performance month", performance.month] as Array<string | number>] : []),
     [],
     ["Metric", "Value"],
     ["Today's sales", Number(snapshot.summary.sales.todayAmount)],
@@ -118,6 +171,40 @@ export function downloadOperationalSummaryCsv(snapshot: InternalReportSnapshot) 
     ["Near-expiry batches", snapshot.summary.expiry.nearExpiryBatches],
     ["Expired batches", snapshot.summary.expiry.expiredBatches]
   ];
+
+  if (performance) {
+    rows.push(
+      [],
+      ["FORECAST PERFORMANCE", ""],
+      ["Monthly forecast target", performance.monthlyTarget ?? "Unavailable"],
+      ["Monthly forecast amount", performance.forecastAmount ?? "Unavailable"],
+      ["Completed-day target", performance.target],
+      ["Completed-day actual", performance.actual],
+      ["Variance", performance.variance],
+      ["Achievement", percentage(performance.achievement)],
+      ["Comparable completed days", performance.comparableDays],
+      ["Days below target", performance.belowTargetDays],
+      ["Days met / exceeded target", performance.metOrExceededDays]
+    );
+  }
+
+  const recommendations = snapshot.recommendations ?? [];
+  if (recommendations.length > 0) {
+    rows.push(
+      [],
+      ["INVENTORY RECOMMENDER", ""],
+      ["Product", "Source", "Risk", "Recommended action", "Evidence"]
+    );
+    for (const recommendation of recommendations) {
+      rows.push([
+        recommendation.product.name,
+        recommendation.recommendationSource,
+        recommendation.forecastDecision?.riskLevel ?? "LOW",
+        recommendationAction(recommendation),
+        recommendation.rationale
+      ]);
+    }
+  }
 
   downloadCsv(`ysabelle-operational-summary-${fileDate(snapshot.summary.generatedAt)}.csv`, rows);
 }
@@ -162,6 +249,8 @@ export function downloadInventoryReportCsv(snapshot: InternalReportSnapshot) {
 
 export function printOperationalSummary(printWindow: Window, snapshot: InternalReportSnapshot) {
   const summary = snapshot.summary;
+  const performance = operationalPerformance(snapshot);
+  const recommendations = snapshot.recommendations ?? [];
   const healthyInventory =
     summary.inventory.lowStockItems === 0 && summary.inventory.outOfStockItems === 0;
   const expiryClear = summary.expiry.nearExpiryBatches === 0 && summary.expiry.expiredBatches === 0;
@@ -222,6 +311,37 @@ export function printOperationalSummary(printWindow: Window, snapshot: InternalR
     <div class="status"><strong>Inventory status</strong>${healthyInventory ? "No low-stock or out-of-stock products need attention." : "Inventory has products that need replenishment attention."}</div>
     <div class="status"><strong>Expiry status</strong>${expiryClear ? "No expiry issues need attention right now." : `${summary.expiry.nearExpiryBatches.toLocaleString()} near-expiry and ${summary.expiry.expiredBatches.toLocaleString()} expired batches need review.`}</div>
   </section>
+
+  ${
+    performance
+      ? `<section class="section">
+    <h2>Forecast performance — ${escapeHtml(performance.month)}</h2>
+    <div class="grid">
+      <div class="metric"><span>Completed-day actual</span><strong>${escapeHtml(currency(performance.actual))}</strong></div>
+      <div class="metric"><span>Completed-day target</span><strong>${escapeHtml(currency(performance.target))}</strong></div>
+      <div class="metric"><span>Achievement</span><strong>${escapeHtml(percentage(performance.achievement))}</strong></div>
+      <div class="metric"><span>Days below target</span><strong>${performance.belowTargetDays.toLocaleString()}</strong></div>
+    </div>
+  </section>`
+      : ""
+  }
+
+  ${
+    recommendations.length > 0
+      ? `<section class="section">
+    <h2>Inventory Recommender</h2>
+    ${recommendations
+      .slice(0, 8)
+      .map(
+        (item) =>
+          `<div class="status"><strong>${escapeHtml(item.product.name)} — ${escapeHtml(
+            item.forecastDecision?.riskLevel ?? "LOW"
+          )}</strong>${escapeHtml(item.rationale)} Action: ${escapeHtml(recommendationAction(item))}.</div>`
+      )
+      .join("")}
+  </section>`
+      : ""
+  }
 
   <p class="note">This is a management summary. Use the separate Inventory Report for product-level stock rows and Restock / Supplier Order for supplier-facing quantities.</p>
 </body>

@@ -195,7 +195,7 @@ test(
   async () => {
     const template = getProductImportTemplateCsv();
     const expectedHeaders =
-      "name,sku,barcode,category,unit,costPrice,sellingPrice,reorderLevel,targetStockLevel,initialStock,status,description,imageUrl";
+      "name,sku,barcode,category,unit,costPrice,sellingPrice,reorderLevel,targetStockLevel,initialStock,status,description,brand,variant,sizeValue,sizeUnit,imageUrl";
 
     assert.equal(template, expectedHeaders);
     assert.equal(template.split("\n").length, 1);

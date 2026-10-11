@@ -200,3 +200,39 @@ test("Return report details are validated and return history has a server-side f
   assert.match(restockServiceSource, /query\.hasReturns/);
   assert.match(restockServiceSource, /damage_reason=/);
 });
+
+test("receipt quarantines inflated monthly restock before any physical stock mutation", () => {
+  assert.match(
+    lifecycleSource,
+    /await assertAutomatedRestockQuantitySafe\(orderId, input\.expectedVersion, "RECEIPT", tx\)/
+  );
+  assert.match(restockServiceSource, /findInflatedAutomatedLine\(snapshot\.notes, selectedLines\)/);
+  assert.match(restockServiceSource, /RESTOCK_QUANTITY_ANOMALY/);
+  assert.match(
+    restockServiceSource,
+    /stage === "RECEIPT" \|\| isAutomatedMonthlyOrder\(snapshot\.notes\)/
+  );
+});
+
+test("over-delivery confirmation cannot bypass approved receiving quantity", () => {
+  assert.match(lifecycleSource, /if \(receiptLine\.acceptedQuantity > remaining\)/);
+  assert.match(lifecycleSource, /RESTOCK_OVER_DELIVERY_NOT_AUTHORIZED/);
+  assert.doesNotMatch(
+    lifecycleSource,
+    /acceptedQuantity > remaining && !receiptLine\.confirmOverDelivery/
+  );
+});
+
+test("receiving safety guard runs inside a product-locked read-committed transaction", () => {
+  const receivingBlock = lifecycleSource.slice(
+    lifecycleSource.indexOf("export async function receiveRestockOrder"),
+    lifecycleSource.indexOf("export async function saveRestockReturnReportDocument")
+  );
+  const lockIndex = receivingBlock.indexOf("FOR UPDATE");
+  const guardIndex = receivingBlock.indexOf("assertAutomatedRestockQuantitySafe(");
+  const mutationIndex = receivingBlock.indexOf("await receiveStockInTransaction");
+  assert.ok(lockIndex >= 0);
+  assert.ok(guardIndex > lockIndex);
+  assert.ok(mutationIndex > guardIndex);
+  assert.match(receivingBlock, /TransactionIsolationLevel\.ReadCommitted/);
+});

@@ -34,20 +34,49 @@ const apiSource = readFileSync(resolve(process.cwd(), "src/services/restockApi.t
 assert.doesNotMatch(reportsSource, /RestockNewProductCard/);
 assert.doesNotMatch(reportsSource, /New product restock/);
 assert.doesNotMatch(reportsSource, /Add new product/);
-assert.match(forecastSource, /Restock forecast/);
+assert.match(forecastSource, /inventory recommendation report/);
 assert.doesNotMatch(reportsSource, /Review recommendations/);
-assert.match(
-  forecastSource,
-  /See which products need restocking, when to order, and how many units to buy\./
-);
+assert.match(forecastSource, /Complete current-month view across all products/);
 assert.match(reportsSource, /RestockForecastPanel/);
-assert.match(forecastSource, /Forecast watchlist/);
+assert.match(forecastSource, /Monthly product report/);
+const forecastWatchlistBodyStart = forecastSource.indexOf("<TableBody>");
+const forecastWatchlistBodyEnd = forecastSource.indexOf("</TableBody>", forecastWatchlistBodyStart);
+assert.ok(forecastWatchlistBodyStart >= 0);
+assert.ok(forecastWatchlistBodyEnd > forecastWatchlistBodyStart);
+const forecastWatchlistBody = forecastSource.slice(
+  forecastWatchlistBodyStart,
+  forecastWatchlistBodyEnd
+);
+assert.match(forecastWatchlistBody, /role="button"/);
+assert.match(forecastWatchlistBody, /tabIndex=\{0\}/);
+assert.match(forecastWatchlistBody, /aria-pressed=\{selectedRow\}/);
+assert.match(
+  forecastWatchlistBody,
+  /onClick=\{\(\) => setSelectedProductId\(item\.product\.id\)\}/
+);
+assert.match(forecastWatchlistBody, /event\.key !== "Enter"/);
+assert.match(forecastWatchlistBody, /event\.key !== " "/);
+assert.match(forecastWatchlistBody, /cursor-pointer/);
+assert.match(forecastWatchlistBody, /select-none/);
+assert.match(forecastWatchlistBody, /focus-visible:ring-indigo-500/);
+assert.doesNotMatch(forecastWatchlistBody, /<button/);
 assert.match(forecastSource, /loadAllRestockPlanningCandidates\(controller\.signal\)/);
 assert.match(forecastViewModelSource, /includeZero:\s*true/);
 assert.match(forecastSource, /Recommended next step/);
 assert.match(forecastSource, /Expected monthly demand/);
 assert.match(forecastSource, /Gray shows recent sales\. Blue shows expected demand/);
 assert.match(forecastSource, /Forecast chart ready/);
+assert.match(forecastSource, /useLayoutEffect/);
+assert.match(forecastSource, /detailTransitionRef/);
+assert.match(forecastSource, /prefers-reduced-motion: reduce/);
+assert.match(forecastSource, /querySelectorAll<HTMLElement>\("\[data-product-transition\]"\)/);
+assert.match(forecastSource, /section\.animate/);
+assert.match(forecastSource, /translateY\(5px\)/);
+assert.match(forecastSource, /duration: 180/);
+assert.match(forecastSource, /delay: Math\.min\(index \* 22, 88\)/);
+assert.match(forecastSource, /animation\.cancel\(\)/);
+assert.match(forecastSource, /motion-reduce:transition-none/);
+assert.ok((forecastSource.match(/data-product-transition/g) ?? []).length >= 5);
 assert.doesNotMatch(forecastSource, /confidence interval/i);
 assert.doesNotMatch(forecastSource, /Projected inventory/);
 assert.match(reportsSource, /RestockPlanningPanel/);

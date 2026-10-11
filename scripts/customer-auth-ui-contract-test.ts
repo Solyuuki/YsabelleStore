@@ -13,11 +13,25 @@ assert.equal(getCustomerAuthPageKind("/register"), "register");
 assert.equal(getCustomerAuthPageKind("/account"), "account");
 assert.equal(getCustomerAuthPageKind("/shop"), null);
 
-assert.equal(resolveCustomerAuthRedirect("/account", "unauthenticated"), "/login");
+assert.equal(
+  resolveCustomerAuthRedirect("/account", "unauthenticated"),
+  "/login?returnTo=%2Faccount"
+);
 assert.equal(resolveCustomerAuthRedirect("/login", "authenticated"), "/");
-assert.equal(resolveCustomerAuthRedirect("/register", "authenticated"), "/");
+assert.equal(resolveCustomerAuthRedirect("/register", "authenticated"), "/account");
 assert.equal(resolveCustomerAuthRedirect("/shop", "unauthenticated"), null);
-assert.equal(resolveCustomerAuthRedirect("/checkout", "unauthenticated"), null);
+assert.equal(
+  resolveCustomerAuthRedirect("/checkout", "unauthenticated"),
+  "/login?returnTo=%2Fcheckout"
+);
+assert.equal(
+  resolveCustomerAuthRedirect("/login", "authenticated", "?returnTo=%2Fcheckout"),
+  "/checkout"
+);
+assert.equal(
+  resolveCustomerAuthRedirect("/register", "authenticated", "?returnTo=%2Fcheckout"),
+  "/checkout"
+);
 assert.equal(resolveCustomerAuthRedirect("/account", "loading"), null);
 
 assert.equal(resolveCustomerAuthStatus(null, true), "loading");
@@ -129,7 +143,7 @@ assert.match(registerSource, /verificationPanel === "quick-email"/);
 assert.match(registerSource, /onVerified=\{handleQuickSignVerified\}/);
 assert.match(
   registerSource,
-  /async function handleQuickSignVerified\(\)[\s\S]*?await refreshSession\(\);[\s\S]*?navigate\("\/"\);/
+  /async function handleQuickSignVerified\(\)[\s\S]*?await refreshSession\(\);[\s\S]*?navigate\(returnTo\);/
 );
 assert.doesNotMatch(registerSource, /This verified email can be used for Email Quick Sign\./);
 assert.doesNotMatch(registerSource, /mobileLabel=/);

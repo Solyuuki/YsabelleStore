@@ -1,0 +1,412 @@
+/* About Light Mode convergence: scene backgrounds, contrast and edge handoffs.
+   Never affect Dark Mode, the approved MP4s, GSAP timings or demo state.
+   Soft lavender-blue matches the approved light hero without hard color seams. */
+
+.about-experience[data-about-hero-theme="light"] .discover-story--about {
+  --story-seam-12: #e5e9fb;
+  --story-seam-23: #f0f2ff;
+  --story-seam-34: #edf4ff;
+  --story-seam-45: #f1f5ff;
+  --story-seam-56: #edf3ff;
+  --about-catalog-sales-seam: linear-gradient(
+    90deg,
+    #eef3ff 0%,
+    #eeefff 45%,
+    #f0edfc 77%,
+    #f0f2ff 100%
+  );
+  --about-sales-forecast-seam: linear-gradient(
+    90deg,
+    #edf4ff 0%,
+    #edf2ff 44%,
+    #f0edfc 80%,
+    #edf4ff 100%
+  );
+}
+
+/* Chapter 02 shares the opening hero's pastel palette, rather than
+   blending into the original hardcoded midnight ending. */
+.about-experience[data-about-hero-theme="light"] .discover-story--about .story-catalog {
+  background:
+    linear-gradient(to bottom, #e5e9fb 0%, transparent 17%, transparent 84%, #f0f2ff 100%),
+    radial-gradient(ellipse at 15% 29%, rgb(95 153 246 / 10%), transparent 43%),
+    radial-gradient(ellipse at 83% 74%, rgb(168 112 233 / 9%), transparent 46%),
+    linear-gradient(135deg, #edf4ff 0%, #f7f8ff 51%, #f5f0ff 100%);
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .discover-story--about
+  .story-catalog
+  .story-beginning__handoff {
+  background: var(--about-catalog-sales-seam);
+}
+
+/* Chapter 03: a light editorial scene around the ORIGINAL dark MP4.
+   Its video, film plate and playing/crossfade behavior are unchanged. */
+.about-experience[data-about-hero-theme="light"] .discover-story--about .story-sales {
+  background:
+    linear-gradient(to bottom, #f0f2ff 0%, transparent 17%, transparent 84%, #edf4ff 100%),
+    radial-gradient(ellipse at 14% 19%, rgb(74 154 243 / 11%), transparent 40%),
+    radial-gradient(ellipse at 88% 79%, rgb(165 100 225 / 9%), transparent 43%),
+    linear-gradient(135deg, #f1f6ff 0%, #f8f9ff 46%, #f7f1ff 100%);
+  color: #1a2540;
+}
+
+.about-experience[data-about-hero-theme="light"] .discover-story--about .story-sales::before {
+  background:
+    linear-gradient(rgb(91 105 192 / 4%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(91 105 192 / 4%) 1px, transparent 1px);
+  background-size: 78px 78px;
+}
+
+.about-experience[data-about-hero-theme="light"] .discover-story--about .story-sales::after {
+  background: linear-gradient(to bottom, rgb(240 242 255 / 85%), transparent);
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .discover-story--about
+  .story-sales__copy
+  .story-kicker {
+  color: #435eae;
+}
+
+.about-experience[data-about-hero-theme="light"] .discover-story--about .story-sales__copy h2,
+.about-experience[data-about-hero-theme="light"]
+  .discover-story--about
+  .story-sales__copy
+  .story-mask:first-child
+  .story-mask__line {
+  color: #192443;
+  -webkit-text-fill-color: #192443;
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .discover-story--about
+  .story-sales__copy
+  .story-mask:last-child
+  .story-mask__line {
+  background: linear-gradient(108deg, #3562b5 0%, #5548b7 35%, #843bb6 68%, #a43489 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.about-experience[data-about-hero-theme="light"] .discover-story--about .story-sales__copy p {
+  color: #455470;
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .discover-story--about
+  .story-sales
+  .story-products__handoff {
+  background: linear-gradient(to bottom, transparent 0%, #edf4ff 100%);
+}
+
+/* Chapter 04: eliminate the navy banner / curved overlay at the
+   Sales -> Forecast boundary and restore ink-on-pastel typography. */
+.about-experience[data-about-hero-theme="light"] .discover-story--about .story-forecast {
+  background:
+    linear-gradient(to bottom, #edf4ff 0%, transparent 17%, transparent 84%, #f1f5ff 100%),
+    radial-gradient(ellipse at 13% 27%, rgb(70 158 246 / 10%), transparent 43%),
+    radial-gradient(ellipse at 87% 72%, rgb(158 111 231 / 9%), transparent 46%),
+    linear-gradient(135deg, #edf4ff 0%, #f8faff 48%, #f7f2ff 100%);
+  color: #1c2947;
+}
+
+.about-experience[data-about-hero-theme="light"] .discover-story--about .story-forecast::before {
+  background:
+    linear-gradient(rgb(91 105 192 / 3.5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(91 105 192 / 3.5%) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+.about-experience[data-about-hero-theme="light"] .discover-story--about .story-forecast::after {
+  background: linear-gradient(to bottom, #edf4ff 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000, transparent 100%);
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .discover-story--about
+  .story-forecast__header
+  .story-kicker {
+  color: #336db5;
+  text-shadow: none;
+}
+
+.about-experience[data-about-hero-theme="light"] .discover-story--about .story-forecast__header h2,
+.about-experience[data-about-hero-theme="light"]
+  .discover-story--about
+  .story-forecast__header
+  h2
+  .story-mask__line,
+.about-experience[data-about-hero-theme="light"] .discover-story--about .story-forecast__emphasis {
+  color: #1b2845;
+  -webkit-text-fill-color: #1b2845;
+  text-shadow: none;
+}
+
+.about-experience[data-about-hero-theme="light"] .discover-story--about .story-forecast__lead {
+  color: #495974;
+}
+
+.about-experience[data-about-hero-theme="light"] .discover-story--about .story-forecast__model,
+.about-experience[data-about-hero-theme="light"]
+  .discover-story--about
+  .story-forecast__model
+  small {
+  color: #566682;
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .discover-story--about
+  .story-forecast__model
+  span {
+  color: #2659a5;
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .discover-story--about
+  .story-forecast__model
+  strong {
+  border-color: #d0d9ed;
+  background: rgb(232 237 255 / 90%);
+  color: #303e7c;
+}
+
+.about-experience[data-about-hero-theme="light"] .discover-story--about .story-forecast__takeaway {
+  color: #445571;
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .discover-story--about
+  .story-forecast
+  .story-location__handoff {
+  background: linear-gradient(to bottom, transparent, #f1f5ff);
+}
+
+/* The actual forecasting preview already has intentionally light cards.
+   Keep its graph and recommended quantity surfaces readable on this canvas. */
+.about-experience[data-about-hero-theme="light"] .about-forecast-demo {
+  border-color: #d8dff0;
+  background: linear-gradient(180deg, #fefeff, #f8faff);
+  box-shadow: 0 30px 76px rgb(62 74 129 / 14%);
+}
+
+/* Chapter 05: System Intelligence is also a light scene in Light Mode,
+   not a midnight island with a permanently dark sidebar. */
+.about-experience[data-about-hero-theme="light"] .discover-story--about .story-intelligence {
+  background:
+    linear-gradient(to bottom, #f1f5ff 0%, transparent 16%, transparent 85%, #edf3ff 100%),
+    radial-gradient(ellipse at 15% 27%, rgb(82 146 230 / 10%), transparent 44%),
+    radial-gradient(ellipse at 85% 75%, rgb(165 104 224 / 11%), transparent 47%),
+    linear-gradient(140deg, #f1f6ff 0%, #f8f9ff 49%, #f6f1ff 100%);
+  color: #1b2845;
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .discover-story--about
+  .story-intelligence::before {
+  background-image:
+    linear-gradient(rgb(95 103 184 / 3.5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(95 103 184 / 3.5%) 1px, transparent 1px);
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .discover-story--about
+  .story-intelligence
+  .story-kicker {
+  color: #2e6db2;
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .discover-story--about
+  .story-intelligence
+  h2
+  .story-mask:first-child
+  .story-mask__line {
+  color: #172442;
+  -webkit-text-fill-color: #172442;
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .discover-story--about
+  .story-intelligence
+  .story-mask__line--mint {
+  background: linear-gradient(108deg, #4b48b3, #7f3ba8 52%, #ae347b);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .story-intelligence--interactive
+  .story-intelligence__heading-grid
+  p {
+  border-left-color: #655dde;
+  color: #485973;
+}
+
+.about-experience[data-about-hero-theme="light"] .system-preview {
+  border-color: #d3dcf1;
+  background: #f7f9ff;
+  box-shadow: 0 30px 74px rgb(48 59 115 / 12%);
+}
+
+.about-experience[data-about-hero-theme="light"] .system-preview__nav {
+  border-right-color: #d7def0;
+  background: linear-gradient(180deg, #edf2ff, #f0efff);
+  color: #24314f;
+}
+
+.about-experience[data-about-hero-theme="light"] .system-preview__nav > header {
+  border-bottom-color: #d1d9ef;
+}
+
+.about-experience[data-about-hero-theme="light"] .system-preview__nav > header span,
+.about-experience[data-about-hero-theme="light"] .system-preview__nav > p {
+  color: #596a88;
+}
+
+.about-experience[data-about-hero-theme="light"] .system-preview__nav > header strong {
+  color: #4e49ba;
+}
+
+.about-experience[data-about-hero-theme="light"] .system-preview__nav button {
+  color: #3b4a66;
+}
+
+.about-experience[data-about-hero-theme="light"] .system-preview__nav button small {
+  color: #66779e;
+}
+
+.about-experience[data-about-hero-theme="light"] .system-preview__nav button:hover {
+  border-color: #c5cef2;
+  background: #f8f9ff;
+  color: #252e66;
+}
+
+.about-experience[data-about-hero-theme="light"] .system-preview__nav button.is-active {
+  border-color: #a8b1ee;
+  background: linear-gradient(90deg, #e0e7ff, #edeaff);
+  color: #272769;
+}
+
+.about-experience[data-about-hero-theme="light"] .system-preview__nav-icon {
+  border-color: #d0d8ee;
+  background: #f9fbff;
+  color: #5c61b6;
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .system-preview__nav
+  button.is-active
+  .system-preview__nav-icon {
+  border-color: #adaff3;
+  background: #5d58d9;
+  color: #fff;
+}
+
+.about-experience[data-about-hero-theme="light"] .system-preview__nav > p {
+  border-top-color: #d4dcef;
+}
+
+.about-experience[data-about-hero-theme="light"] .system-preview__workspace {
+  background: radial-gradient(circle at 100% 0%, rgb(139 113 243 / 5%), transparent 32%), #f8faff;
+  color: #17243c;
+}
+
+/* Chapter 06: reuse the same light family without modifying the delivery MP4.
+   All call-to-action and proof text must contrast against the new pale surface. */
+.about-experience[data-about-hero-theme="light"] .story-delivery,
+.about-experience[data-about-hero-theme="light"] .story-delivery--loading {
+  background:
+    linear-gradient(to bottom, #edf3ff 0%, transparent 16%, transparent 82%, #f7f9ff 100%),
+    radial-gradient(ellipse at 15% 24%, rgb(87 159 240 / 13%), transparent 42%),
+    radial-gradient(ellipse at 84% 71%, rgb(170 113 232 / 10%), transparent 44%),
+    linear-gradient(135deg, #edf4ff 0%, #f8faff 49%, #f8f2ff 100%);
+  color: #17243c;
+}
+
+.about-experience[data-about-hero-theme="light"] .story-delivery__atmosphere::before {
+  background-image:
+    linear-gradient(rgb(98 112 204 / 4%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(98 112 204 / 4%) 1px, transparent 1px);
+}
+
+.about-experience[data-about-hero-theme="light"] .story-delivery__atmosphere::after {
+  opacity: 0.2;
+}
+
+.about-experience[data-about-hero-theme="light"] .story-delivery .story-kicker {
+  color: #336aa8;
+}
+
+.about-experience[data-about-hero-theme="light"] .story-delivery__copy h2,
+.about-experience[data-about-hero-theme="light"] .story-delivery .story-mask__line {
+  color: #1a2643;
+  -webkit-text-fill-color: #1a2643;
+}
+
+.about-experience[data-about-hero-theme="light"] .story-delivery .story-mask__line--delivery {
+  color: #5253a8;
+  -webkit-text-fill-color: #5253a8;
+}
+
+.about-experience[data-about-hero-theme="light"] .story-delivery__tagline {
+  color: #4d4fb0;
+}
+
+.about-experience[data-about-hero-theme="light"] .story-delivery__lead {
+  color: #465671;
+}
+
+.about-experience[data-about-hero-theme="light"] .story-delivery__proofs li {
+  border-color: #d2dcef;
+  background: rgb(249 251 255 / 82%);
+  color: #2e4063;
+  box-shadow: 0 4px 14px rgb(43 56 108 / 5%);
+}
+
+.about-experience[data-about-hero-theme="light"] .story-delivery__proofs svg {
+  color: #3b68bc;
+}
+
+/* The global .customer-button--light forces purple text with !important.
+   Overwrite it only for the purple Light Mode Delivery CTA (including links
+   after visiting), without changing the white Dark Mode button. */
+.about-experience[data-about-hero-theme="light"]
+  .story-delivery
+  .customer-button--light.story-delivery__primary-action {
+  border-color: #574fd8;
+  background: #5953d8;
+  color: #fff !important;
+  box-shadow: 0 14px 32px rgb(71 64 165 / 18%);
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .story-delivery
+  .customer-button--light.story-delivery__primary-action:is(:hover, :focus-visible, :visited) {
+  color: #fff !important;
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .story-delivery
+  .customer-button--light.story-delivery__primary-action:hover {
+  border-color: #4843c6;
+  background: #4b46c8;
+  color: #fff !important;
+  box-shadow: 0 18px 36px rgb(71 64 165 / 21%);
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .story-delivery
+  .customer-button--light.story-delivery__primary-action:focus-visible {
+  outline: 2px solid #3f3ab3;
+  outline-offset: 3px;
+}
+
+.about-experience[data-about-hero-theme="light"] .story-delivery__frame {
+  border-color: #c9d5f1;
+  box-shadow: 0 32px 78px rgb(50 66 131 / 17%);
+}

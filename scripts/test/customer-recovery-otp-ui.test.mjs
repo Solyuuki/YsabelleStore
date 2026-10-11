@@ -22,9 +22,18 @@ test("customer recovery UI uses a verification-code stage without URL reset toke
     recoveryPage,
     /type RecoveryStage = "identify" \| "verify" \| "reset" \| "complete"/
   );
-  assert.match(recoveryPage, /autoComplete="one-time-code"/);
+  assert.match(recoveryPage, /autoComplete="section-customer one-time-code"/);
+  assert.doesNotMatch(recoveryPage, /autoComplete="section-staff/);
   assert.match(recoveryPage, /Enter verification code/);
   assert.match(recoveryPage, /Resend code/);
+  assert.match(recoveryPage, /Didn’t get the code\?/);
+  assert.match(recoveryPage, /Change account/);
+  assert.doesNotMatch(recoveryPage, /Try another identifier/);
+  assert.doesNotMatch(recoveryPage, /Verification code requested/);
+  assert.doesNotMatch(
+    recoveryPage,
+    /For privacy, this confirmation is the same whether or not an account matches your entry/
+  );
   assert.doesNotMatch(recoveryPage, /searchParams\.get\("token"\)/);
   assert.doesNotMatch(recoveryPage, /Send recovery link/);
 });
@@ -74,4 +83,34 @@ test("premium OTP slots keep empty cells visually quiet and emphasize the active
   assert.match(recoveryCss, /\.customer-recovery-code-slot--empty::after/);
   assert.match(recoveryCss, /\.customer-recovery-code-slot--active/);
   assert.match(recoveryCss, /linear-gradient\(135deg,\s*#168cff/);
+});
+
+test("verification recovery actions keep resend separate from simple navigation choices", () => {
+  assert.match(recoveryPage, /customer-recovery-resend/);
+  assert.match(recoveryPage, /customer-recovery-actions--verify/);
+  assert.match(recoveryPage, /Back to sign in/);
+  assert.match(recoveryPage, /Change account/);
+
+  assert.match(recoveryCss, /\.customer-recovery-resend\s*\{/);
+  assert.match(recoveryCss, /\.customer-recovery-actions--verify\s*\{/);
+  assert.match(recoveryCss, /\.customer-recovery-resend\s*\{[\s\S]*justify-content:\s*center/);
+  assert.match(
+    recoveryCss,
+    /\.customer-recovery-actions--verify\s*\{[\s\S]*justify-content:\s*center/
+  );
+});
+
+test("recovery surface uses subtle material texture without changing the flow", () => {
+  assert.match(recoveryCss, /var\(--ys-material-noise\)/);
+  assert.match(
+    recoveryCss,
+    /\.customer-auth-page--recovery \.customer-auth-stage__panel::before\s*\{/
+  );
+  assert.match(
+    recoveryCss,
+    /\.customer-auth-page--recovery \.customer-auth-stage__panel::after\s*\{/
+  );
+  assert.match(recoveryCss, /\.customer-recovery-icon::before\s*\{/);
+  assert.match(recoveryCss, /\.customer-recovery-icon::after\s*\{/);
+  assert.match(recoveryCss, /background-blend-mode:\s*soft-light/);
 });

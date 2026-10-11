@@ -144,7 +144,7 @@ export function ReturnReportDialog({
       }}
       open={open}
     >
-      <DialogContent className="max-w-[720px]">
+      <DialogContent className="ys-report-modal max-w-[720px]">
         <DialogHeader>
           <DialogTitle>Download return report</DialogTitle>
           <DialogDescription>

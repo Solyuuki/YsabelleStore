@@ -6,11 +6,43 @@ export type DashboardActivityBucket = {
   totalAmount: string;
 };
 
+export type DashboardSalesCalendarDay = {
+  actualAmount: string;
+  actualDataAvailable: boolean;
+  completedSales: number;
+  date: string;
+  status: "PAST" | "TODAY" | "FUTURE";
+  targetAmount: string | null;
+  unitsSold: number;
+};
+
+export type DashboardSalesDayDetail = DashboardSalesCalendarDay & {
+  activity: DashboardActivityBucket[];
+};
+
+export type DashboardSalesCalendar = {
+  days: DashboardSalesCalendarDay[];
+  generatedAt: string;
+  month: string;
+  summary: {
+    actualAmount: string;
+    actualDataDays: number;
+    completedSales: number;
+    forecastAmount: string | null;
+    forecastUnits: number | null;
+    targetAmount: string | null;
+    targetDays: number;
+    unitsSold: number;
+  };
+  timeZone: "Asia/Manila";
+};
+
 export type DashboardForecastSummary =
   | {
       access: "AVAILABLE";
       failedProducts: number;
-      forecastUnits2026: number;
+      forecastHorizonMonths: number;
+      forecastHorizonTotal: number;
       generatedAt: string | null;
       totalProductsForecasted: number;
       warningProducts: number;
@@ -18,7 +50,8 @@ export type DashboardForecastSummary =
   | {
       access: "RESTRICTED" | "UNAVAILABLE";
       failedProducts: null;
-      forecastUnits2026: null;
+      forecastHorizonMonths: null;
+      forecastHorizonTotal: null;
       generatedAt: null;
       totalProductsForecasted: null;
       warningProducts: null;
@@ -50,6 +83,7 @@ export type DashboardSummary = {
 };
 
 export type DashboardRestockRisk = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type DashboardRecommendationAction = "RESTOCK" | "REDUCE_REPLENISHMENT" | "EXPIRY_REVIEW";
 export type DashboardRestockOrderStatus =
   | "DRAFT"
   | "APPROVED"
@@ -64,6 +98,7 @@ export type DashboardRestockRecommendationSource =
   | "MANUAL";
 
 export type DashboardRestockAction = {
+  actionType: DashboardRecommendationAction;
   expiryRiskQuantity: number;
   incomingStock: number;
   product: {
@@ -82,10 +117,17 @@ export type DashboardRestockAction = {
 };
 
 export type DashboardOperations = {
+  assistant: {
+    generatedAt: string;
+    provider: "CLOUDFLARE" | "GROQ" | "DETERMINISTIC";
+    summary: string;
+  };
   generatedAt: string;
   restock: {
     actionableProducts: number;
     actions: DashboardRestockAction[];
+    restockProducts: number;
+    otherReviewProducts: number;
     latestOpenOrder: {
       automated: boolean;
       id: string;
@@ -112,10 +154,12 @@ export type DashboardOperations = {
 
 export type NavigationBadgeSummary = {
   dashboard: number;
+  deliveries: number;
   generatedAt: string;
   inventory: number;
   receiving: number;
   reports: number;
+  support: number;
 };
 
 export async function fetchDashboardSummary() {
@@ -141,6 +185,30 @@ export async function fetchDashboardOperations() {
 export async function fetchNavigationBadges() {
   const response = await apiClient.request<NavigationBadgeSummary, never>(
     "/api/dashboard/navigation-badges"
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
+export async function fetchDashboardSalesCalendar(month: string) {
+  const response = await apiClient.request<DashboardSalesCalendar, never>(
+    `/api/dashboard/sales-calendar?month=${encodeURIComponent(month)}`
+  );
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
+export async function fetchDashboardSalesDay(date: string) {
+  const response = await apiClient.request<DashboardSalesDayDetail, never>(
+    `/api/dashboard/sales-calendar/day?date=${encodeURIComponent(date)}`
   );
 
   if (!response.success || !response.data) {

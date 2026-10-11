@@ -1,15 +1,29 @@
 import { AppShell } from "@/app/AppShell";
-import { AuthProvider } from "@/context/AuthContext";
+import { GlobalAuthenticationStatusScreen } from "@/components/shared/GlobalAuthenticationStatusScreen";
+import { GlobalHttpStatusNotifier } from "@/components/shared/GlobalHttpStatusNotifier";
+import { GlobalReliabilityUI } from "@/components/shared/GlobalReliabilityUI";
 import { NotificationStack } from "@/components/shared/NotificationStack";
 import { ToastProvider } from "@/components/shared/ToastProvider";
+import { AuthProvider } from "@/context/AuthContext";
+import { AppearanceProvider } from "@/context/AppearanceContext";
+import { SystemReliabilityProvider } from "@/context/SystemReliabilityContext";
 
 export function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <AppShell />
-        <NotificationStack />
-      </AuthProvider>
-    </ToastProvider>
+    <AppearanceProvider>
+      <SystemReliabilityProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <div data-reliability-content>
+              <AppShell />
+              <NotificationStack />
+            </div>
+            <GlobalHttpStatusNotifier />
+            <GlobalAuthenticationStatusScreen />
+            <GlobalReliabilityUI />
+          </AuthProvider>
+        </ToastProvider>
+      </SystemReliabilityProvider>
+    </AppearanceProvider>
   );
 }

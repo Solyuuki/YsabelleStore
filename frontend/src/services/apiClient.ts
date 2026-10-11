@@ -1,4 +1,5 @@
 import { frontendRuntimeConfig, resolveApiUrl } from "@/config/runtime";
+import { assertSystemMutationAllowed } from "@/services/systemReliabilityGate";
 import type { ApiResponse } from "@/types/api";
 import { shouldAttachInternalBearer } from "@/utils/internalAuthRoutes";
 
@@ -20,6 +21,15 @@ export type ApiResponseInterceptor = (response: ApiResponse) => ApiResponse | Pr
 
 type ApiClientConfig = {
   baseUrl: string;
+};
+
+export type HttpErrorEventDetail = {
+  hadAuthorization?: boolean;
+  message: string;
+  method?: string;
+  path?: string;
+  retryAfterSeconds?: number;
+  status?: number;
 };
 
 export class ApiClient {
@@ -96,6 +106,16 @@ export class ApiClient {
       };
     }
 
+    if (typeof window !== "undefined") {
+      assertSystemMutationAllowed(context.init.method);
+    }
+
+    const eventContext = {
+      hadAuthorization: new Headers(context.init.headers).has("Authorization"),
+      method: (context.init.method ?? "GET").toUpperCase(),
+      path: context.url.pathname
+    };
+
     let response: Response;
 
     try {
@@ -105,17 +125,31 @@ export class ApiClient {
         throw error;
       }
 
+      if (!context.url.pathname.startsWith("/api/health")) {
+        dispatchApiUnreachable();
+      }
+
       throw new Error(
         `The store service at ${frontendRuntimeConfig.apiBaseUrl} could not be reached. Please retry when the connection is available.`,
         { cause: error }
       );
     }
+
     const payload = await this.parseResponse<TData, TError>(response);
 
     let interceptedPayload: ApiResponse = payload;
 
     for (const interceptor of this.responseInterceptors) {
       interceptedPayload = await interceptor(interceptedPayload);
+    }
+
+    if (!interceptedPayload.success) {
+      dispatchHttpError({
+        ...eventContext,
+        message: interceptedPayload.message,
+        retryAfterSeconds: interceptedPayload.retryAfterSeconds,
+        status: interceptedPayload.httpStatus
+      });
     }
 
     interceptedPayload = reconcileProductStatusMutationResponse({
@@ -131,12 +165,30 @@ export class ApiClient {
     response: Response
   ): Promise<ApiResponse<TData, TError, unknown>> {
     const contentType = response.headers.get("content-type") ?? "";
+    const retryAfterSeconds = parseRetryAfterSeconds(response.headers.get("retry-after"));
+    const transport = {
+      httpStatus: response.status,
+      ...(retryAfterSeconds === undefined ? {} : { retryAfterSeconds })
+    };
+
+    if (response.status === 204) {
+      return {
+        ...transport,
+        success: true,
+        message: "Request completed successfully."
+      };
+    }
 
     if (contentType.includes("application/json")) {
-      return (await response.json()) as ApiResponse<TData, TError>;
+      const payload = (await response.json()) as ApiResponse<TData, TError>;
+      return {
+        ...payload,
+        ...transport
+      };
     }
 
     return {
+      ...transport,
       success: false,
       message: "API response was not valid JSON.",
       error: {
@@ -157,6 +209,40 @@ function resolveUrl(path: string, baseUrl: string): URL {
   }
 
   return new URL(path, `${baseUrl.replace(/\/+$/, "")}/`);
+}
+
+function parseRetryAfterSeconds(value: string | null): number | undefined {
+  if (!value) return undefined;
+
+  const seconds = Number(value);
+
+  if (Number.isFinite(seconds) && seconds >= 0) {
+    return Math.ceil(seconds);
+  }
+
+  const retryAt = Date.parse(value);
+
+  if (Number.isNaN(retryAt)) {
+    return undefined;
+  }
+
+  return Math.max(0, Math.ceil((retryAt - Date.now()) / 1000));
+}
+
+function dispatchApiUnreachable() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("ysabelle:api-unreachable"));
+  }
+}
+
+function dispatchHttpError(detail: HttpErrorEventDetail) {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent<HttpErrorEventDetail>("ysabelle:http-error", {
+        detail
+      })
+    );
+  }
 }
 
 function reconcileProductStatusMutationResponse(input: {

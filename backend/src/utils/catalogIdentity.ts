@@ -43,6 +43,24 @@ type CatalogIdentityProduct = {
   variant?: string | null;
 };
 
+const SIZE_FAMILY_TOKEN_PATTERN = /\b\d+(?:\.\d+)?\s*(?:ml|l|g|kg|pcs?)\b/gi;
+
+export function normalizeSizeFamilyName(value: string) {
+  return normalizeProductIdentity(
+    normalizeCanonicalProductName(value).replace(SIZE_FAMILY_TOKEN_PATTERN, " ")
+  );
+}
+
+export function buildProductSizeFamilyKey(product: CatalogIdentityProduct) {
+  const brand = product.brand ? normalizeProductIdentity(product.brand) : "";
+  const variant = product.variant ? normalizeProductIdentity(product.variant) : "";
+
+  if (brand && variant) return `brand:${brand}|variant:${variant}`;
+
+  const familyName = normalizeSizeFamilyName(product.name);
+  return `brand:${brand || "unknown"}|name:${familyName}`;
+}
+
 export function isLikelySameCatalogIdentity(
   left: CatalogIdentityProduct,
   right: CatalogIdentityProduct

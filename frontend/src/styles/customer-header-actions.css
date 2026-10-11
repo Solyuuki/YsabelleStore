@@ -5,7 +5,7 @@
 .customer-help-button,
 .customer-account-link,
 .customer-cart-link {
-  min-height: 40px;
+  min-height: 44px;
   border-radius: 0.72rem;
   white-space: nowrap;
   transition:
@@ -35,7 +35,7 @@
 }
 
 .customer-account-link {
-  min-height: 40px;
+  min-height: 44px;
   padding-inline: 0.6rem;
   border: 1px solid transparent;
   background: transparent;
@@ -53,7 +53,7 @@
 }
 
 .customer-cart-link {
-  min-height: 40px;
+  min-height: 44px;
   padding-inline: 0.72rem;
   position: relative;
   isolation: isolate;
@@ -81,7 +81,7 @@
 .customer-help-button:focus-visible,
 .customer-account-link:focus-visible,
 .customer-cart-link:focus-visible {
-  outline: 3px solid var(--customer-info);
+  outline: 3px solid var(--customer-focus);
   outline-offset: 2px;
 }
 

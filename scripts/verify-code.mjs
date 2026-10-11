@@ -5,6 +5,36 @@ const steps = [
   { args: ["diff", "--check"], command: "git", label: "git diff check" },
   { args: ["run", "prisma:validate"], command: "npm", label: "Prisma validation" },
   {
+    args: ["run", "migration:security"],
+    command: "npm",
+    label: "migration security"
+  },
+  {
+    args: ["run", "state:security"],
+    command: "npm",
+    label: "canonical state security"
+  },
+  {
+    args: ["run", "release:security"],
+    command: "npm",
+    label: "canonical release security"
+  },
+  {
+    args: ["run", "candidate-reconciliation:security"],
+    command: "npm",
+    label: "canonical candidate reconciliation security"
+  },
+  {
+    args: ["run", "asset-distribution:security"],
+    command: "npm",
+    label: "canonical asset distribution security"
+  },
+  {
+    args: ["run", "changeset:security"],
+    command: "npm",
+    label: "canonical changeset security"
+  },
+  {
     args: ["run", "prisma:generate"],
     command: "npm",
     label: "Prisma client generation"

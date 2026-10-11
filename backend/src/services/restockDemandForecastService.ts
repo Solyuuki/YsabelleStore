@@ -1,3 +1,5 @@
+import type { Prisma } from "@prisma/client";
+
 import { prisma } from "../database/prismaClient.js";
 
 const DAYS_PER_MONTH = 30;
@@ -216,13 +218,17 @@ export function buildOperationalRestockForecast(
   };
 }
 
-export async function loadOperationalPosSales(productIds: string[], now = new Date()) {
+export async function loadOperationalPosSales(
+  productIds: string[],
+  now = new Date(),
+  db: Prisma.TransactionClient = prisma
+) {
   const uniqueProductIds = [...new Set(productIds)];
   const byProduct = new Map<string, RestockSalesPoint[]>();
   if (uniqueProductIds.length === 0) return byProduct;
 
   const historyStart = shiftMonths(now, -HISTORY_MONTHS);
-  const items = await prisma.saleItem.findMany({
+  const items = await db.saleItem.findMany({
     select: {
       productId: true,
       quantity: true,

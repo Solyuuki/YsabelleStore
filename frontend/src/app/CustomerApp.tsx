@@ -1,19 +1,38 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 
+import { CustomerErrorBoundary } from "@/components/customer/CustomerErrorBoundary";
+import { StoreEntrance } from "@/components/customer/StoreEntrance";
 import { CartProvider } from "@/context/CartContext";
 import { CustomerAuthProvider, useCustomerAuth } from "@/context/CustomerAuthContext";
+import { CustomerFavoritesProvider } from "@/context/CustomerFavoritesContext";
 import { CustomerLayout } from "@/layouts/CustomerLayout";
 import "driver.js/dist/driver.css";
 import "@/styles/customer.css";
 import "@/styles/customer-auth.css";
 import "@/styles/customer-account.css";
 import "@/styles/customer-account-premium.css";
+import "@/styles/customer-commerce-premium.css";
+import "@/styles/customer-support.css";
+import "@/styles/customer-privacy.css";
+import "@/styles/customer-home-premium.css";
 import "@/styles/auth-brand.css";
 import "@/styles/customer-header-actions.css";
 import "@/styles/customer-guide-route-transition.css";
 import "@/styles/brand.css";
 import "@/styles/shopping-guide.css";
-import { getCustomerAuthPageKind, resolveCustomerAuthRedirect } from "@/utils/customerRoutes";
+import "@/styles/theme-storefront.css";
+import "@/styles/theme-storefront-contrast.css";
+import {
+  getCustomerAuthPageKind,
+  isCustomerProtectedRoute,
+  resolveCustomerAuthRedirect
+} from "@/utils/customerRoutes";
+import {
+  loadAboutExperienceModule,
+  scheduleAboutExperiencePreload
+} from "@/utils/aboutExperiencePreload";
+
+const STORE_ENTRANCE_SESSION_KEY = "ysabelle-store-entrance-entered";
 
 const CustomerHomePage = lazy(() =>
   import("@/pages/customer/CustomerHomePage").then(({ CustomerHomePage }) => ({
@@ -40,7 +59,7 @@ const OrderSuccessPage = lazy(() =>
   }))
 );
 const AboutExperiencePage = lazy(() =>
-  import("@/pages/customer/AboutExperiencePage").then(({ AboutExperiencePage }) => ({
+  loadAboutExperienceModule().then(({ AboutExperiencePage }) => ({
     default: AboutExperiencePage
   }))
 );
@@ -69,6 +88,16 @@ const CustomerAccountPage = lazy(() =>
     default: CustomerAccountPage
   }))
 );
+const CustomerSupportPage = lazy(() =>
+  import("@/pages/customer/CustomerSupportPage").then(({ CustomerSupportPage }) => ({
+    default: CustomerSupportPage
+  }))
+);
+const PrivacyPolicyPage = lazy(() =>
+  import("@/pages/customer/PrivacyPolicyPage").then(({ PrivacyPolicyPage }) => ({
+    default: PrivacyPolicyPage
+  }))
+);
 const CustomerNotFoundPage = lazy(() =>
   import("@/pages/customer/CustomerNotFoundPage").then(({ CustomerNotFoundPage }) => ({
     default: CustomerNotFoundPage
@@ -84,9 +113,13 @@ export function CustomerApp({
 }) {
   return (
     <CustomerAuthProvider>
-      <CartProvider>
-        <CustomerAppRoutes location={location} navigate={navigate} />
-      </CartProvider>
+      <CustomerFavoritesProvider>
+        <CartProvider>
+          <CustomerErrorBoundary resetKey={location}>
+            <CustomerAppRoutes location={location} navigate={navigate} />
+          </CustomerErrorBoundary>
+        </CartProvider>
+      </CustomerFavoritesProvider>
     </CustomerAuthProvider>
   );
 }
@@ -98,18 +131,26 @@ function CustomerAppRoutes({
   location: string;
   navigate: (path: string) => void;
 }) {
-  const rawPathname = new URL(location, window.location.origin).pathname.replace(/\/$/, "") || "/";
+  const locationUrl = new URL(location, window.location.origin);
+  const rawPathname = locationUrl.pathname.replace(/\/$/, "") || "/";
   const pathname =
     window.location.protocol === "file:" && rawPathname.endsWith("/index.html") ? "/" : rawPathname;
   const { status } = useCustomerAuth();
-  const redirect = resolveCustomerAuthRedirect(pathname, status);
+  const redirect = resolveCustomerAuthRedirect(pathname, status, locationUrl.search);
   const authPageKind = getCustomerAuthPageKind(pathname);
+  const protectedRoute = isCustomerProtectedRoute(pathname);
+  const [storeEntranceDismissed, setStoreEntranceDismissed] = useState(readStoreEntranceState);
 
   useEffect(() => {
     if (redirect) navigate(redirect);
   }, [navigate, redirect]);
 
-  if (redirect || (authPageKind && status === "loading")) {
+  useEffect(() => {
+    if (pathname === "/about") return;
+    return scheduleAboutExperiencePreload();
+  }, [pathname]);
+
+  if (redirect || ((authPageKind || protectedRoute) && status === "loading")) {
     return (
       <CustomerLayout location={location} navigate={navigate} pathname={pathname}>
         <section className="customer-auth-page">
@@ -118,6 +159,17 @@ function CustomerAppRoutes({
           </div>
         </section>
       </CustomerLayout>
+    );
+  }
+
+  if (pathname === "/" && !storeEntranceDismissed) {
+    return (
+      <StoreEntrance
+        onEnter={() => {
+          writeStoreEntranceState();
+          setStoreEntranceDismissed(true);
+        }}
+      />
     );
   }
 
@@ -153,12 +205,31 @@ function CustomerAppRoutes({
   else if (pathname === "/account-recovery")
     page = <CustomerAccountRecoveryPage location={location} navigate={navigate} />;
   else if (pathname === "/account") page = <CustomerAccountPage navigate={navigate} />;
+  else if (pathname === "/support") page = <CustomerSupportPage navigate={navigate} />;
+  else if (pathname === "/privacy") page = <PrivacyPolicyPage navigate={navigate} />;
   else page = <CustomerNotFoundPage navigate={navigate} />;
 
   return (
     <CustomerLayout location={location} navigate={navigate} pathname={pathname}>
-      <Suspense fallback={<CustomerRouteFallback />}>{page}</Suspense>
+      <Suspense
+        fallback={pathname === "/about" ? <AboutRouteFallback /> : <CustomerRouteFallback />}
+      >
+        {page}
+      </Suspense>
     </CustomerLayout>
+  );
+}
+
+function AboutRouteFallback() {
+  return (
+    <section
+      aria-label="Opening About"
+      aria-live="polite"
+      className="about-experience-boot"
+      role="status"
+    >
+      <span className="sr-only">Opening Ysabelle Store About experience...</span>
+    </section>
   );
 }
 
@@ -171,4 +242,20 @@ function CustomerRouteFallback() {
       </div>
     </div>
   );
+}
+
+function readStoreEntranceState() {
+  try {
+    return window.sessionStorage.getItem(STORE_ENTRANCE_SESSION_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function writeStoreEntranceState() {
+  try {
+    window.sessionStorage.setItem(STORE_ENTRANCE_SESSION_KEY, "true");
+  } catch {
+    // Session storage can be unavailable in hardened/private browsing contexts.
+  }
 }

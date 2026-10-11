@@ -4,15 +4,15 @@
 
 YsabelleStore is a thesis-grade retail platform that connects POS sales, batch-aware inventory, historical-sales preparation, SARIMA demand forecasting, inventory recommendations, and a customer-facing storefront through one shared backend and data model.
 
-> **Documentation baseline:** this README describes the active `sprint/v0.10/sprint-10` branch. Current executable source, schema, migrations, tests, lockfiles, and runtime configuration remain the implementation source of truth when an older planning document disagrees.
+> **Documentation baseline:** this README describes the Sprint 11 release candidate (`staging`) for review into `main`. Current executable source, schema, migrations, tests, lockfiles, and runtime configuration remain the implementation source of truth when an older planning document disagrees.
 
 ## Project Snapshot
 
 | Field                             | Current State                                                                                |
 | --------------------------------- | -------------------------------------------------------------------------------------------- |
-| Active development branch         | `sprint/v0.10/sprint-10`                                                                     |
-| Active sprint configuration       | `config/guardrails.json` → **Sprint 10**                                                     |
-| Sprint 10 plan                    | [`docs/sprints/sprint-10/README.md`](docs/sprints/sprint-10/README.md)                       |
+| Active development branch         | `sprint/v0.11/sprint-11`                                                                     |
+| Active sprint configuration       | `config/guardrails.json` → **Sprint 11**                                                     |
+| Sprint 11 plan                    | [`docs/sprints/sprint-11/README.md`](docs/sprints/sprint-11/README.md)                       |
 | Stable release lane               | `main`                                                                                       |
 | Release-candidate / cleaning lane | `staging`                                                                                    |
 | Historical reliability baseline   | Sprint 8 server reliability/safety verification                                              |
@@ -28,6 +28,49 @@ YsabelleStore is a thesis-grade retail platform that connects POS sales, batch-a
 | Technology register               | [`SYSTEM_TECHNOLOGY_REGISTER.md`](SYSTEM_TECHNOLOGY_REGISTER.md)                             |
 | Support matrix                    | [`SYSTEM_SUPPORT_MATRIX.md`](SYSTEM_SUPPORT_MATRIX.md)                                       |
 | Third-party notices               | [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)                                           |
+
+## Sprint 11 Release Snapshot
+
+Sprint 11 delivers stability, user-experience improvements, restock safety,
+reproducible canonical catalog distribution, and committed customer-story media.
+It builds on the Sprint 10 domain baseline without changing the distinction
+between canonical master data and live retail transactions.
+
+| Release item                  | Verified baseline                                                                                                       |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Sprint / release lane         | v0.11; `staging` -> `main` via review                                                                                   |
+| Application display version   | v0.2.0 (`frontend/src/config/appVersion.ts`)                                                                            |
+| Private npm workspace version | 0.1.0 (not the application release number)                                                                              |
+| Active sprint configuration   | Sprint 11 (`config/guardrails.json`)                                                                                    |
+| Canonical database release    | Generation 2 `g2-s12-c5-a2`; schema 12 / catalog 5 / assets 2                                                           |
+| Product/image parity          | 50/50 active approved image bindings; 200/200 runtime image identities                                                  |
+| Approved motion media         | 6/6 MP4 binaries tracked in Git with SHA-256 release manifest                                                           |
+| Release CI evidence           | 6/6 successful jobs at `1885ff51`; [GitHub Actions](https://github.com/Solyuuki/YsabelleStore/actions/runs/38157320745) |
+
+### Sprint 11 Change Report
+
+| Workstream                   | Implemented improvements                                                                                                          |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 1. HTTP and reliability      | Canonical status semantics, sanitized responses, request traceability, scoped status screens and recovery UX.                     |
+| 2. Customer storefront       | Premium Light/Dark themes, accessible account/Quick Sign, Favorites, product discovery, responsive About chapters.                |
+| 3. Storefront motion         | Tracked Entrance, About Light/Dark, Catalog, Sales & Inventory and Delivery MP4s with approved integrity hashes.                  |
+| 4. Retail operations         | Readable Dashboard/Reports/Receiving/Deliveries; better list pagination, modal layout, status badges and export UX.               |
+| 5. Restock safety            | Strict automated draft safeguards; manual Owner buying advisories with acknowledgment; receiving uses approved quantities.        |
+| 6. Inventory and checkout    | POS and Storefront share stock-truth protections; batch-aware receiving, integer quantities and concurrent reservation contracts. |
+| 7. Forecasting and reporting | Monthly sales calendar, stored SARIMA forecast delivery, historical-sales validation and restock decision evidence.               |
+| 8. Customer support          | Customer/staff tickets, Gmail-threaded correspondence, delivery state and explicit resolution lifecycle.                          |
+| 9. Team data parity          | Generation 2 migration safeguards, 50 canonical product sources, 200 reconstructed image files and local QA fixtures.             |
+| 10. Release hardening        | Source-format checks, regression tests, CI, provenance checks, guarded pull/push and approved media inventory.                    |
+
+### Release Readiness
+
+| Control                    | Evidence / status                                                                                               |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Automated CI               | PASS — repository quality, frontend, backend, Electron, dark-mode and whole-unit contracts.                     |
+| Media delivery             | PASS — six tracked MP4 paths; see [approved SHA-256 manifest](docs/sprints/sprint-11/APPROVED-MP4-MEDIA-QA.md). |
+| Canonical distribution     | PASS — 50 product identities and 200 generated image variants in rehearsal.                                     |
+| Customer-story playback QA | Manual review required on target Windows/browser, including Light/Dark and reduced-motion modes.                |
+| Runtime database parity    | Run local-team verification after canonical sync; live tickets, sales and orders are not Git data.              |
 
 ## Major System Capabilities
 
@@ -47,15 +90,19 @@ YsabelleStore is a thesis-grade retail platform that connects POS sales, batch-a
 | Server Reliability        | Canonical HTTP statuses, health/liveness/readiness, safe errors, request IDs, structured logging and frontend reliability states               | Implemented; Sprint 8 reliability baseline verified                              |
 | Desktop                   | Electron runtime and Windows NSIS packaging boundary                                                                                           | Implemented/configured                                                           |
 
-## Sprint 10 Execution Boundary
+## Sprint 11 Execution Boundary
 
-Sprint 10 is defined as a phase-gated inventory, restock, forecasting, and release-integrity cycle. The sprint documentation defines fifteen phases from Inventory Truth through release gates. A phase is not considered complete merely because it appears in planning documentation; implementation source, automated verification, and applicable manual QA remain required.
+Sprint 11 prioritizes quality-of-life, stabilization and optimization. The
+verified Sprint 10 architecture remains the operational baseline; restock,
+stock/batch, POS, Receiving, Storefront and forecasting changes must preserve
+their existing domain contracts. Refer to
+[the Sprint 11 workstream and Phase 4–6 hardening evidence](docs/sprints/sprint-11/README.md)
+and [the restock policy review](docs/sprints/sprint-11/RESTOCK-POLICY-SEPARATION-QA.md).
 
-See:
-
-- [`docs/sprints/sprint-10/SPRINT-GOAL.md`](docs/sprints/sprint-10/SPRINT-GOAL.md)
-- [`docs/sprints/sprint-10/SPRINT-BACKLOG.md`](docs/sprints/sprint-10/SPRINT-BACKLOG.md)
-- [`docs/sprints/sprint-10/DEFINITION-OF-DONE.md`](docs/sprints/sprint-10/DEFINITION-OF-DONE.md)
+**Safety boundary:** Automated monthly restock is a guarded Owner-review draft,
+not autonomous purchasing. Manual Owner quantities may proceed after explicit
+purchasing-warning acknowledgment. Receiving checks saved approved quantities
+and stock safety rather than recalculating procurement policy at delivery time.
 
 ## Frontend Implementation Report
 
@@ -273,12 +320,15 @@ The official Tailwind CSS v3.4.19 MIT license text is preserved at [`docs/licens
 
 Configured service boundaries include:
 
-| Provider / Boundary               | Role                                                          |
-| --------------------------------- | ------------------------------------------------------------- |
-| Resend                            | Production customer email, OTP and password-recovery delivery |
-| Gmail SMTP                        | Development-only registration/login OTP QA                    |
-| Google OAuth                      | Customer social authentication                                |
-| Facebook / Meta OAuth + Graph API | Customer social authentication                                |
+| Provider / Boundary               | Role                                                                 |
+| --------------------------------- | -------------------------------------------------------------------- |
+| Resend                            | Production customer email, OTP and password-recovery delivery        |
+| Gmail SMTP                        | Development-only registration/login OTP QA                           |
+| Google OAuth                      | Customer social authentication                                       |
+| Facebook / Meta OAuth + Graph API | Customer social authentication                                       |
+| PayMongo (test mode)              | Hosted checkout and signed payment webhook processing                |
+| Gmail API                         | Threaded customer-support replies and inbox synchronization          |
+| Cloudflare Workers AI / Groq      | Optional summary-only recommender assistance; deterministic fallback |
 
 Credentials and secrets must remain outside committed source. See `.env.example` for non-secret configuration names and [`docs/compliance/EXTERNAL-SERVICES-REGISTER.md`](docs/compliance/EXTERNAL-SERVICES-REGISTER.md) for governance details.
 
@@ -299,59 +349,141 @@ The current deployment model is local/offline-first and Windows-focused.
 
 Do not claim macOS/Linux packaging or broad browser compatibility as officially supported without explicit QA evidence. See [`SYSTEM_SUPPORT_MATRIX.md`](SYSTEM_SUPPORT_MATRIX.md).
 
-## Local Development
+## Windows Team Pull and Data-Parity Guide
 
-Copy `.env.example` to `.env` and keep local secrets only in the ignored environment file.
+This procedure is intended for authorized teammates using **local Windows development
+databases**, not live store operations. Before any migration or database convergence,
+identify the target MySQL instance and create an independent backup when it already
+contains data.
 
-```bash
-npm install
-npm run dev
+### Prerequisites
+
+| Dependency       | Team baseline                                                                     |
+| ---------------- | --------------------------------------------------------------------------------- |
+| Operating system | Windows (primary desktop packaging target)                                        |
+| Node.js / npm    | Node.js 22 and npm 10+ recommended; root engines require Node >=20.11             |
+| Python           | 3.12; also used by SARIMA and catalog-image reconstruction                        |
+| Database         | MySQL 8.0 running locally, with its client tools available on PATH                |
+| Environment      | Local ignored `.env` based on `.env.example`; configure `DATABASE_URL` correctly  |
+| Network          | Required only for optional OAuth/email/payment providers and package installation |
+
+### 1. Obtain the Reviewed Main Release
+
+**Existing checkout** (after the Sprint 11 PR has been merged):
+
+```powershell
+git status --short
+# Preserve untracked files; resolve tracked changes before switching.
+git switch main
+git pull --ff-only origin main
+npm ci
 ```
 
-### Useful Commands
+**Fresh checkout** (after the PR has been merged):
 
-```bash
-# Browser-focused frontend + backend stack
+```powershell
+git clone --branch main https://github.com/Solyuuki/YsabelleStore.git
+cd YsabelleStore
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+# Edit .env: local MySQL URL, unique development JWT secret, optional providers.
+npm ci
+python -m pip install -r forecasting-service/requirements.txt
+python -m pip install -r catalog-image-engine/requirements.txt
+```
+
+On existing checkouts, ensure the ignored `.env` already contains valid local
+configuration **before pulling**: the Husky post-merge hook may run the canonical
+synchronizer. If a pull reports a synchronization error, the Git files may have
+updated even though the database did not; correct the environment and verify
+database state separately.
+
+### 2. Choose the Correct Database Procedure
+
+| Database condition                        | Required action                                                                                                                       |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Existing compatible Generation 2 local DB | Use normal `git pull` post-merge sync when canonical files changed; inspect the output and run verification.                          |
+| New dedicated EMPTY local QA DB           | Run the explicit initial convergence command below; review backup/recovery prompt and type `RECOVER` only for this isolated database. |
+| Existing LEGACY / populated DB            | Stop and back up independently. Recovery can reset the database; obtain the owner's approval before continuing.                       |
+| AHEAD / DRIFTED DB                        | Do not force a downgrade. The synchronizer refuses incompatible release lineage.                                                      |
+| Live transactions or shared production DB | Do not use development fixtures, forced convergence or development schema sync.                                                       |
+
+For **only a new isolated development/QA database** whose data can be replaced,
+run the initial convergence interactively after configuring MySQL:
+
+```powershell
+node --env-file=.env scripts/canonical-pull-sync.mjs --force
+```
+
+This checks migration/catalog integrity, requires a SQL backup and explicit
+confirmation on EMPTY/LEGACY recovery, reconstructs approved images and seeds
+the deterministic local QA users/50-product stock baseline. The process must
+finish with `CANONICAL_PULL_SYNC=PASS`. **Never add
+`--confirm-recovery` to bypass review, and do not run this on an active store
+database.** The local fixture re-converges stock and may neutralize previous
+development batches.
+
+`CANONICAL_PULL_SYNC=NOOP` means the automatic change-path check found nothing
+to apply; it does **not** certify a fresh database. On an existing compatible
+development database, rerunning with `--force` is also state-changing and
+requires a backup and approval to reset its QA stock baseline.
+
+### 3. Verify Canonical Data and Runtime Assets
+
+```powershell
+npm run release:security
+npm run asset-distribution:verify
+npm run team-state:verify
+npm run storefront:entrance:verify
+npm run storefront:about-origin:verify
+npm run storefront:about-delivery:verify
+```
+
+Expected: release security PASS, **200 materialized images**, **2 local QA
+accounts**, **50 products** with deterministic development stock, and valid
+approved Entrance/Origin/Delivery SHA-256 hashes. For all six MP4 hashes,
+compare `Get-FileHash -Algorithm SHA256` with the
+[approved media manifest](docs/sprints/sprint-11/APPROVED-MP4-MEDIA-QA.md).
+
+For a complete review, check the Storefront entrance and About chapters in both
+appearances, including a reduced-motion browser setting; media fallbacks alone
+do not demonstrate successful MP4 loading.
+
+### 4. Local Internal QA Accounts
+
+| Role  | Local QA email              | Development password |
+| ----- | --------------------------- | -------------------- |
+| OWNER | `owner@ysabellestore.local` | `OwnerPass#2026`     |
+| STAFF | `staff@ysabellestore.local` | `StaffPass#2026`     |
+
+These are **synthetic, development-only** accounts restored by the local team
+fixture. Never use them on a shared production deployment or reuse their
+passwords for real users. Customer/OAuth and external-provider credentials are
+not supplied by Git.
+
+### 5. Start and Validate
+
+```powershell
 npm run dev:web
-
-# Report resolved local runtime endpoints
-npm run runtime:report
-
-# Standard code-quality verification
-npm run verify:code
-
-# Active sprint / artifact verification
-npm run verify:status -- --member m1
-
-# Inventory audit / reconciliation
-npm run inventory:audit
-npm run inventory:reconcile
-
-# Forecast validation / execution / tests
-npm run forecast:validate-data
-npm run forecast:generate
-npm run forecast:smoke
-npm run forecast:test
-
-# SARIMA catalog mapping verification
-npm run catalog:sarima:verify
-
-# Catalog image pipeline tests
-npm run catalog-images:test
-npm run storefront:images:verify
-
-# Security checks
-npm run security:audit
-npm run security:audit:production
+# Alternative for desktop development, after stopping dev:web:
+# npm run dev
 ```
 
-Default local endpoints:
+| Component         | Default local address                    |
+| ----------------- | ---------------------------------------- |
+| Web frontend      | `http://localhost:5173`                  |
+| Express backend   | `http://localhost:3001`                  |
+| Backend readiness | `http://localhost:3001/api/health/ready` |
 
-| Service  | Default URL                        |
-| -------- | ---------------------------------- |
-| Frontend | `http://localhost:5173`            |
-| Backend  | `http://localhost:3001`            |
-| Health   | `http://localhost:3001/api/health` |
+The development orchestrator synchronizes the local Prisma schema before
+startup, so it should be used only with an authorized development database.
+Run `npm run verify:code` for repository checks.
+
+**Data ownership:** Canonical products, image sources, migrations and tracked
+MP4s come from Git. Actual restock tickets, receiving, POS sales, customer
+orders, payment states and customer data remain in their respective MySQL
+databases; Git pull does not replicate those live records. Teammates needing
+identical live tickets must connect to an approved shared QA database instead
+of treating Git as a transactional backup.
 
 ## Repository Context for Coding Agents
 

@@ -4,6 +4,7 @@ import test from "node:test";
 
 import { prisma } from "../src/database/prismaClient.js";
 import {
+  getStorefrontProduct,
   listStorefrontProducts,
   listStorefrontProductReviews,
   listStorefrontRelatedProducts
@@ -135,7 +136,7 @@ test("storefront reviews aggregate persisted ratings and support bounded rating 
     assert.equal(fiveStar?.count, 2);
     assert.equal(fiveStar?.percentage, 67);
     assert.equal(allReviews.reviews.length, 3);
-    assert.equal("verifiedPurchase" in (allReviews.reviews[0] ?? {}), false);
+    assert.equal(allReviews.reviews[0]?.verifiedPurchase, false);
 
     const filtered = await listStorefrontProductReviews(product.id, {
       page: 1,
@@ -156,7 +157,98 @@ test("storefront reviews aggregate persisted ratings and support bounded rating 
   }
 });
 
-test("related products exclude the current item and keep fallback products separately labeled", async () => {
+test("product detail exposes size siblings in ascending package order and keeps sold-out options visible", async () => {
+  const scope = await captureDatabaseFixtureScope(prisma);
+  const suffix = randomUUID().slice(0, 8);
+
+  try {
+    const { category } = await ensureCanonicalStorefrontCategory(0);
+    const small = await createProduct(
+      category.id,
+      `Variant Water ${suffix} 330ml`,
+      `${suffix}-330`,
+      5
+    );
+    const current = await createProduct(
+      category.id,
+      `Variant Water ${suffix} 500ml`,
+      `${suffix}-500`,
+      4
+    );
+    const large = await createProduct(
+      category.id,
+      `Variant Water ${suffix} 1L`,
+      `${suffix}-1000`,
+      3
+    );
+    const unavailable = await createProduct(
+      category.id,
+      `Variant Water ${suffix} 1.5L`,
+      `${suffix}-1500`,
+      0
+    );
+    const otherVariant = await createProduct(
+      category.id,
+      `Variant Water Zero ${suffix} 500ml`,
+      `${suffix}-zero`,
+      6
+    );
+
+    const detail = await getStorefrontProduct(current.id);
+
+    assert.deepEqual(
+      detail.sizeVariants.map((variant) => ({
+        id: variant.id,
+        sizeTier: variant.sizeTier,
+        sizeUnit: variant.sizeUnit,
+        sizeValue: variant.sizeValue,
+        stockStatus: variant.stockStatus
+      })),
+      [
+        {
+          id: small.id,
+          sizeTier: "SMALL",
+          sizeUnit: "MILLILITER",
+          sizeValue: "330",
+          stockStatus: "IN_STOCK"
+        },
+        {
+          id: current.id,
+          sizeTier: "MEDIUM",
+          sizeUnit: "MILLILITER",
+          sizeValue: "500",
+          stockStatus: "IN_STOCK"
+        },
+        {
+          id: large.id,
+          sizeTier: "LARGE",
+          sizeUnit: "LITER",
+          sizeValue: "1",
+          stockStatus: "IN_STOCK"
+        },
+        {
+          id: unavailable.id,
+          sizeTier: "LARGE",
+          sizeUnit: "LITER",
+          sizeValue: "1.5",
+          stockStatus: "OUT_OF_STOCK"
+        }
+      ]
+    );
+    assert.equal(
+      detail.sizeVariants.some((variant) => variant.id === unavailable.id),
+      true
+    );
+    assert.equal(
+      detail.sizeVariants.some((variant) => variant.id === otherVariant.id),
+      false
+    );
+  } finally {
+    await scope.cleanup();
+  }
+});
+
+test("related products stay strictly inside the current category", async () => {
   const scope = await captureDatabaseFixtureScope(prisma);
   const suffix = randomUUID().slice(0, 8);
 
@@ -203,8 +295,7 @@ test("related products exclude the current item and keep fallback products separ
     });
 
     const result = await listStorefrontRelatedProducts(current.id, 4);
-    const returned = [...result.sameCategory, ...result.fallback];
-    const returnedIds = returned.map((product) => product.id);
+    const returnedIds = result.sameCategory.map((product) => product.id);
 
     assert.equal(returnedIds.includes(current.id), false);
     assert.equal(new Set(returnedIds).size, returnedIds.length);
@@ -212,10 +303,7 @@ test("related products exclude the current item and keep fallback products separ
       result.sameCategory.every((product) => product.category.id === category.id),
       true
     );
-    assert.equal(
-      result.fallback.every((product) => product.category.id !== category.id),
-      true
-    );
+    assert.deepEqual(result.fallback, []);
     assert.ok(returnedIds.length <= 4);
 
     if (categoryFixture.created && fallbackCategoryFixture.created) {
@@ -229,11 +317,8 @@ test("related products exclude the current item and keep fallback products separ
       assert.equal(result.sameCategory[0]?.reviewCount, 2);
       assert.equal(result.sameCategory[1]?.averageRating, 0);
       assert.equal(result.sameCategory[1]?.reviewCount, 0);
-      assert.equal(
-        result.fallback.some((product) => product.id === fallbackAvailable.id),
-        true
-      );
-      assert.ok((result.fallback[0]?.availableStock ?? 0) > 0);
+      assert.equal(returnedIds.includes(fallbackAvailable.id), false);
+      assert.deepEqual(result.fallback, []);
     }
   } finally {
     await scope.cleanup();

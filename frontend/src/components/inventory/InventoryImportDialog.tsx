@@ -43,6 +43,7 @@ import {
   type BulkDeliverySessionResult
 } from "@/services/bulkDeliveryApi";
 import { listRestockOrders, type RestockOrder } from "@/services/restockApi";
+import { isWholeUnitDraft } from "@/utils/wholeUnitQuantity";
 import { formatFileSize, getImportFileType } from "@/utils/importFormatting";
 import { waitForMinimumDuration } from "@/utils/timing";
 
@@ -631,7 +632,7 @@ export function InventoryImportDialog({
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && close()}>
       <DialogContent
         aria-describedby="inventory-bulk-delivery-description"
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[1000px] flex-col overflow-hidden p-0"
+        className="ys-inventory-modal ys-inventory-import-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[1000px] flex-col overflow-hidden p-0"
         onCloseAutoFocus={(event) => {
           event.preventDefault();
           triggerRef?.current?.focus();
@@ -977,10 +978,13 @@ export function InventoryImportDialog({
                             <Input
                               id={`${row.rowId}-delivered`}
                               min={0}
-                              onChange={(event) =>
-                                updateRow(row.rowId, { deliveredQuantity: event.target.value })
-                              }
-                              type="number"
+                              onChange={(event) => {
+                                if (!isWholeUnitDraft(event.target.value)) return;
+                                updateRow(row.rowId, { deliveredQuantity: event.target.value });
+                              }}
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                              type="text"
                               value={row.deliveredQuantity}
                             />
                           </Field>
@@ -990,10 +994,13 @@ export function InventoryImportDialog({
                                 id={`${row.rowId}-damaged`}
                                 max={delivered}
                                 min={0}
-                                onChange={(event) =>
-                                  updateRow(row.rowId, { damagedQuantity: event.target.value })
-                                }
-                                type="number"
+                                onChange={(event) => {
+                                  if (!isWholeUnitDraft(event.target.value)) return;
+                                  updateRow(row.rowId, { damagedQuantity: event.target.value });
+                                }}
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                type="text"
                                 value={row.damagedQuantity}
                               />
                             </Field>

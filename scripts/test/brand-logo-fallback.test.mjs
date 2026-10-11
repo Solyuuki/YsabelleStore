@@ -6,54 +6,56 @@ async function source(path) {
   return readFile(new URL(`../../${path}`, import.meta.url), "utf8");
 }
 
-test("brand components use the bundled official logo and retain visible fallbacks", async () => {
-  const [legacySharedLogo, customerMark, header, footer, sidebar, styles] = await Promise.all([
-    source("frontend/src/components/brand/BrandLogo.tsx"),
-    source("frontend/src/components/customer/YsabelleBrandMark.tsx"),
-    source("frontend/src/components/customer/CustomerHeader.tsx"),
-    source("frontend/src/components/customer/CustomerFooter.tsx"),
-    source("frontend/src/components/app/AppSidebar.tsx"),
-    source("frontend/src/styles/brand.css")
-  ]);
-
-  for (const [name, component] of [
-    ["BrandLogo", legacySharedLogo],
-    ["YsabelleBrandMark", customerMark]
-  ]) {
-    assert.match(
-      component,
-      /import officialLogoUrl from ["']@\/assets\/brand\/ysabelle-logo-official\.webp["'];/,
-      `${name} must import the approved bundled Ysabelle logo.`
-    );
-    assert.doesNotMatch(
-      component,
-      /\/brand\/ysabelle-logo-v2\.png/,
-      `${name} must not depend on the legacy public logo path.`
-    );
-  }
+test("brand components use only the approved circular Ysabelle logo", async () => {
+  const [brandLogo, customerMark, header, footer, sidebar, statusScreen, styles] =
+    await Promise.all([
+      source("frontend/src/components/brand/BrandLogo.tsx"),
+      source("frontend/src/components/customer/YsabelleBrandMark.tsx"),
+      source("frontend/src/components/customer/CustomerHeader.tsx"),
+      source("frontend/src/components/customer/CustomerFooter.tsx"),
+      source("frontend/src/components/app/AppSidebar.tsx"),
+      source("frontend/src/components/shared/StatusScreen.tsx"),
+      source("frontend/src/styles/brand.css")
+    ]);
 
   assert.match(
-    legacySharedLogo,
-    /onError=\{[^}]*setImageFailed\(true\)/s,
-    "BrandLogo must swap to its vector fallback if the bundled image cannot render."
+    brandLogo,
+    /import officialLogoUrl from ["']@\/assets\/brand\/ysabelle-logo-official\.webp["'];/
   );
-  assert.match(legacySharedLogo, /<svg[\s>]/, "BrandLogo must contain a built-in vector fallback.");
+  assert.match(
+    brandLogo,
+    /WEB_BRAND_MARK_SRC = `\/brand\/ysabelle-store-mark-256\.png\?v=\$\{BRAND_ASSET_VERSION\}`/
+  );
+  assert.match(brandLogo, /\? officialLogoUrl\s*:\s*WEB_BRAND_MARK_SRC/);
+  assert.match(brandLogo, /src=\{source\}/);
+  assert.doesNotMatch(brandLogo, /<svg[\s>]/);
+  assert.doesNotMatch(brandLogo, /M18 21h28|#625bff|#008cff/);
+
   assert.match(
     customerMark,
-    /event\.currentTarget\.hidden = true/,
-    "YsabelleBrandMark must reveal its Store fallback if the bundled image cannot render."
+    /import officialLogoUrl from ["']@\/assets\/brand\/ysabelle-logo-official\.webp["'];/
   );
-  assert.match(customerMark, /<Store className="ysabelle-brand-mark__fallback" \/>/);
-
-  assert.match(header, /YsabelleBrandMark/, "header must render the shared customer mark.");
-  assert.match(footer, /YsabelleBrandMark/, "footer must render the shared customer mark.");
   assert.match(
-    sidebar,
-    /YsabelleBrandMark/,
-    "staff sidebar must render the canonical shared mark."
+    customerMark,
+    /WEB_BRAND_MARK_SRC = `\/brand\/ysabelle-store-mark-256\.png\?v=\$\{BRAND_ASSET_VERSION\}`/
   );
-  assert.doesNotMatch(sidebar, /\/brand\/ysabelle-logo-v2\.png/);
+  assert.match(
+    customerMark,
+    /const source = isFileProtocol \? officialLogoUrl : WEB_BRAND_MARK_SRC/
+  );
+  assert.match(customerMark, /src=\{source\}/);
+  assert.doesNotMatch(customerMark, /<BrandLogo|\bStore\b/);
+  assert.doesNotMatch(customerMark, /ysabelle-brand-mark__fallback/);
 
-  assert.match(styles, /\.ysabelle-brand-mark__fallback/);
-  assert.match(styles, /\.ysabelle-brand-mark__image\[hidden\]/);
+  for (const consumer of [header, footer, sidebar]) {
+    assert.match(consumer, /YsabelleBrandMark/);
+  }
+  assert.match(statusScreen, /BrandLogo/);
+  assert.match(statusScreen, /variant !== "system"/);
+  assert.match(statusScreen, /status-screen-main--system/);
+  assert.doesNotMatch(statusScreen, /status-system-brand-mark/);
+
+  assert.match(styles, /\.ysabelle-brand-mark[\s\S]*?background:\s*transparent/);
+  assert.doesNotMatch(styles, /ysabelle-brand-mark__fallback/);
+  assert.doesNotMatch(styles, /--ysabelle-brand-fallback/);
 });

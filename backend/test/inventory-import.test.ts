@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { test } from "node:test";
 
 import { prisma } from "../src/database/prismaClient.js";
+import { HttpError } from "../src/utils/httpError.js";
 import { createCategory, createProduct } from "../src/services/productService.js";
 import {
   getInventoryStockImportTemplateCsv,
@@ -59,6 +60,23 @@ test(
     );
   }
 );
+
+test("unsupported inventory import media returns 415", { concurrency: false }, async () => {
+  await assert.rejects(
+    () =>
+      previewInventoryStockImport({
+        originalname: "inventory.pdf",
+        mimetype: "application/pdf",
+        buffer: Buffer.from("%PDF-test")
+      }),
+    (error: unknown) => {
+      assert.ok(error instanceof HttpError);
+      assert.equal(error.statusCode, 415);
+      assert.equal(error.code, "UNSUPPORTED_IMPORT_FILE_TYPE");
+      return true;
+    }
+  );
+});
 
 test("preview accepts a valid SKU row", { concurrency: false }, async () => {
   const product = await createProduct(buildProductInput());

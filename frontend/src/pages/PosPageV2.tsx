@@ -490,12 +490,12 @@ export function PosPage() {
                   void handleSearch({ autoAddExactMatch: true });
                 }}
               >
-                <label className="flex h-12 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-4 shadow-sm focus-within:border-indigo-400 focus-within:bg-white">
+                <label className="pos-scanner-field flex h-12 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-4 shadow-sm focus-within:border-indigo-400 focus-within:bg-white">
                   <ScanBarcode className="h-5 w-5 text-slate-500" aria-hidden="true" />
                   <input
                     ref={scannerInputRef}
                     aria-label="Scan barcode or search product"
-                    className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
+                    className="pos-scanner-input w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
                     placeholder="Scan barcode or search name / SKU / price"
                     value={searchInput}
                     onChange={(event) => setSearchInput(event.target.value)}

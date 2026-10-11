@@ -14,7 +14,7 @@ test("register Email Quick Sign is email-only and authenticates or creates indep
   assert.match(register, /const \{[^}]*refreshSession[^}]*register[^}]*\} = useCustomerAuth\(\)/s);
   assert.match(
     register,
-    /async function handleQuickSignVerified\(\)[\s\S]*?await refreshSession\(\);[\s\S]*?navigate\("\/"\);/
+    /async function handleQuickSignVerified\(\)[\s\S]*?await refreshSession\(\);[\s\S]*?navigate\(returnTo\);/
   );
   assert.match(
     register,

@@ -16,6 +16,8 @@ PROCESSED_MAX_SIDE = 1600
 NORMALIZATION_INPUT_MAX_SIDE = 1480
 MAX_UPSCALE_FACTOR = 1.25
 WEBP_QUALITY = 90
+CANVAS_POLICIES = {"legacy", "white"}
+WHITE_CANVAS_RGBA = (255, 255, 255, 255)
 
 _SUBJECT_DETECTOR = EdgeConnectedBackgroundDetector()
 
@@ -41,7 +43,12 @@ def _normalization_working_copy(oriented: Image.Image) -> Image.Image:
     return oriented
 
 
-def _normalized_master(oriented: Image.Image) -> tuple[Image.Image, str]:
+def _normalized_master(
+    oriented: Image.Image, canvas_policy: str
+) -> tuple[Image.Image, str]:
+    if canvas_policy not in CANVAS_POLICIES:
+        raise ValueError(f"Unsupported catalog canvas policy: {canvas_policy}")
+
     rgba = oriented.convert("RGBA")
     has_transparency = rgba.getchannel("A").getextrema()[0] < 250
 
@@ -49,17 +56,23 @@ def _normalized_master(oriented: Image.Image) -> tuple[Image.Image, str]:
         bounding_box = rgba.getchannel("A").point(
             lambda value: 255 if value >= 24 else 0
         ).getbbox()
-        background_rgba = (255, 255, 255, 0)
+        background_rgba = (
+            WHITE_CANVAS_RGBA if canvas_policy == "white" else (255, 255, 255, 0)
+        )
         detection_state = "alpha-bounds" if bounding_box is not None else "preserved-full-frame"
     else:
         detection = _SUBJECT_DETECTOR.detect(rgba)
         if detection is None:
             bounding_box = None
-            background_rgba = (255, 255, 255, 255)
+            background_rgba = WHITE_CANVAS_RGBA
             detection_state = "preserved-full-frame"
         else:
             bounding_box = detection.bounding_box
-            background_rgba = (*detection.background_rgb, 255)
+            background_rgba = (
+                WHITE_CANVAS_RGBA
+                if canvas_policy == "white"
+                else (*detection.background_rgb, 255)
+            )
             detection_state = "detected"
 
     subject = rgba.crop(bounding_box) if bounding_box is not None else rgba
@@ -94,7 +107,10 @@ def _save_webp(image: Image.Image, path: Path) -> None:
 
 
 def normalize_image_path(
-    source_path: str | Path, output_directory: str | Path
+    source_path: str | Path,
+    output_directory: str | Path,
+    *,
+    canvas_policy: str = "legacy",
 ) -> dict[str, Any]:
     source = Path(source_path)
     output = Path(output_directory)
@@ -105,7 +121,7 @@ def normalize_image_path(
         oriented = ImageOps.exif_transpose(opened)
         oriented_size = oriented.size
         working = _normalization_working_copy(oriented)
-        master, subject_detection = _normalized_master(working)
+        master, subject_detection = _normalized_master(working, canvas_policy)
 
     if max(master.size) > PROCESSED_MAX_SIDE:
         raise RuntimeError("Normalized catalog image exceeded the processed master size limit.")

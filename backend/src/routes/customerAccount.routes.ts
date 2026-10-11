@@ -5,13 +5,30 @@ import {
   updateCustomerAddressController
 } from "../controllers/customerAddressController.js";
 import {
+  addCustomerFavoriteController,
   changeCustomerPasswordController,
   claimCustomerUsernameController,
+  confirmCustomerDeliveryReceivedController,
+  getCustomerSecuritySummaryController,
+  listCustomerFavoritesController,
   listCustomerOrdersController,
+  removeCustomerFavoriteController,
   listCustomerSessionsController,
+  requestCustomerPasswordSetupController,
+  requestCustomerSessionRevokeVerificationController,
   revokeOtherCustomerSessionsController,
-  updateCustomerProfileController
+  setupCustomerPasswordController,
+  updateCustomerProfileController,
+  verifyCustomerPasswordSetupController,
+  verifyCustomerSessionRevokeVerificationController
 } from "../controllers/customerAccountController.js";
+import {
+  clearCustomerCartController,
+  getCustomerCartController,
+  mergeCustomerCartController,
+  removeCustomerCartItemController,
+  setCustomerCartItemController
+} from "../controllers/customerCartController.js";
 import { createAuthRateLimit, derivePrivateRateLimitKey } from "../middleware/authRateLimit.js";
 import {
   getAuthenticatedCustomer,
@@ -69,6 +86,50 @@ const sensitiveMutationMiddleware = [
 
 customerAccountRouter.use(disableSensitiveResponseCaching);
 customerAccountRouter.get("/orders", requireCustomerAuth, listCustomerOrdersController);
+customerAccountRouter.post(
+  "/orders/:orderNumber/confirm-received",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  confirmCustomerDeliveryReceivedController
+);
+customerAccountRouter.get("/favorites", requireCustomerAuth, listCustomerFavoritesController);
+customerAccountRouter.put(
+  "/favorites/:productId",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  addCustomerFavoriteController
+);
+customerAccountRouter.delete(
+  "/favorites/:productId",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  removeCustomerFavoriteController
+);
+customerAccountRouter.get("/cart", requireCustomerAuth, getCustomerCartController);
+customerAccountRouter.post(
+  "/cart/merge",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  mergeCustomerCartController
+);
+customerAccountRouter.put(
+  "/cart/items/:productId",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  setCustomerCartItemController
+);
+customerAccountRouter.delete(
+  "/cart/items/:productId",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  removeCustomerCartItemController
+);
+customerAccountRouter.delete(
+  "/cart",
+  requireAllowedCustomerAuthOrigin,
+  requireCustomerAuth,
+  clearCustomerCartController
+);
 customerAccountRouter.get("/address", requireCustomerAuth, getCustomerAddressController);
 customerAccountRouter.put(
   "/address",
@@ -93,7 +154,33 @@ customerAccountRouter.post(
   ...sensitiveMutationMiddleware,
   changeCustomerPasswordController
 );
+customerAccountRouter.get("/security", requireCustomerAuth, getCustomerSecuritySummaryController);
+customerAccountRouter.post(
+  "/password/setup/request",
+  ...sensitiveMutationMiddleware,
+  requestCustomerPasswordSetupController
+);
+customerAccountRouter.post(
+  "/password/setup/verify",
+  ...sensitiveMutationMiddleware,
+  verifyCustomerPasswordSetupController
+);
+customerAccountRouter.post(
+  "/password/setup",
+  ...sensitiveMutationMiddleware,
+  setupCustomerPasswordController
+);
 customerAccountRouter.get("/sessions", requireCustomerAuth, listCustomerSessionsController);
+customerAccountRouter.post(
+  "/sessions/revoke-others/request",
+  ...sensitiveMutationMiddleware,
+  requestCustomerSessionRevokeVerificationController
+);
+customerAccountRouter.post(
+  "/sessions/revoke-others/verify",
+  ...sensitiveMutationMiddleware,
+  verifyCustomerSessionRevokeVerificationController
+);
 customerAccountRouter.post(
   "/sessions/revoke-others",
   ...sensitiveMutationMiddleware,

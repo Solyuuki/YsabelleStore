@@ -3,24 +3,24 @@ import type { RequestHandler } from "express";
 import { getAuthenticatedCustomer } from "../middleware/customerAuthMiddleware.js";
 import { resolveProductDetailImageUrl } from "../modules/catalog-image/catalogImageUrls.js";
 import {
-  saveCustomerAddress,
-  saveCustomerOrderAddressSnapshot
-} from "../services/customerAddressService.js";
-import {
   createStorefrontOrder,
+  getCustomerReviewContext,
   getStorefrontProduct,
   listStorefrontProductReviews,
   listStorefrontRelatedProducts,
   listStorefrontCategories,
   listStorefrontMerchandising,
-  listStorefrontProducts
+  listStorefrontProducts,
+  upsertCustomerProductReview
 } from "../services/storefrontService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
+import { HttpError } from "../utils/httpError.js";
 import { parseOrThrow } from "../utils/requestValidation.js";
 import {
   storefrontOrderSchema,
   storefrontProductParamsSchema,
   storefrontProductQuerySchema,
+  storefrontProductReviewMutationSchema,
   storefrontProductReviewQuerySchema,
   storefrontRelatedProductQuerySchema
 } from "../validators/storefront.validators.js";
@@ -59,6 +59,56 @@ export const listStorefrontMerchandisingController: RequestHandler = async (
   try {
     const merchandising = await listStorefrontMerchandising();
     response.json(createSuccessResponse("Storefront merchandising loaded.", merchandising));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getStorefrontProductReviewContextController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const customer = getAuthenticatedCustomer(request);
+    if (!customer) {
+      throw new HttpError(401, "Customer session is required.", {
+        code: "CUSTOMER_SESSION_REQUIRED"
+      });
+    }
+    const params = parseOrThrow(storefrontProductParamsSchema, request.params, {
+      message: "Storefront product id is invalid.",
+      code: "INVALID_STOREFRONT_PRODUCT_ID"
+    });
+    const context = await getCustomerReviewContext(customer.id, params.id);
+    response.json(createSuccessResponse("Customer review context loaded.", context));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const upsertStorefrontProductReviewController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const customer = getAuthenticatedCustomer(request);
+    if (!customer) {
+      throw new HttpError(401, "Customer session is required.", {
+        code: "CUSTOMER_SESSION_REQUIRED"
+      });
+    }
+    const params = parseOrThrow(storefrontProductParamsSchema, request.params, {
+      message: "Storefront product id is invalid.",
+      code: "INVALID_STOREFRONT_PRODUCT_ID"
+    });
+    const body = parseOrThrow(storefrontProductReviewMutationSchema, request.body, {
+      message: "Review request is invalid.",
+      code: "INVALID_STOREFRONT_REVIEW_REQUEST"
+    });
+    const review = await upsertCustomerProductReview(customer.id, params.id, body);
+    response.status(200).json(createSuccessResponse("Review saved.", review));
   } catch (error) {
     next(error);
   }
@@ -127,23 +177,26 @@ export const listStorefrontRelatedProductsController: RequestHandler = async (
 export const createStorefrontOrderController: RequestHandler = async (request, response, next) => {
   try {
     const body = parseOrThrow(storefrontOrderSchema, request.body, {
-      message: "Pickup order request is invalid.",
+      message: "Delivery order request is invalid.",
       code: "INVALID_STOREFRONT_ORDER"
     });
     const customer = getAuthenticatedCustomer(request);
-    const order = await createStorefrontOrder(
-      body,
-      customer ? { customerAccountId: customer.id } : {}
-    );
-
-    if (body.customerAddress) {
-      await saveCustomerOrderAddressSnapshot(order.id, body.customerAddress);
-      if (customer && body.saveAddressToAccount) {
-        await saveCustomerAddress(customer.id, body.customerAddress);
-      }
+    if (!customer) {
+      throw new HttpError(401, "Customer session is required.", {
+        code: "CUSTOMER_SESSION_REQUIRED"
+      });
     }
-
-    response.status(201).json(createSuccessResponse("Pickup order placed successfully.", order));
+    const requestKey = request.header("Idempotency-Key");
+    if (requestKey && !/^[a-zA-Z0-9-]{16,96}$/.test(requestKey)) {
+      throw new HttpError(422, "Checkout request key is invalid.", {
+        code: "CHECKOUT_IDEMPOTENCY_KEY_INVALID"
+      });
+    }
+    const order = await createStorefrontOrder(body, {
+      customerAccountId: customer.id,
+      checkoutRequestKey: requestKey
+    });
+    response.status(201).json(createSuccessResponse("Delivery order placed successfully.", order));
   } catch (error) {
     next(error);
   }

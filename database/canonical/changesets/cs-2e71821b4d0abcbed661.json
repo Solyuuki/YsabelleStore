@@ -1,0 +1,271 @@
+{
+  "changesetId": "cs-2e71821b4d0abcbed661",
+  "formatVersion": 1,
+  "base": {
+    "commit": "de5846d36fb8f53e0f617b013381ec60ba1a680e",
+    "releaseId": "g2-s2-c2-a2",
+    "catalogVersion": 2,
+    "assetVersion": 2,
+    "snapshotSha256": "641775b947c2842689dab432c831aa1886d7e43a910e691251bc6223d0add27a"
+  },
+  "proposed": {
+    "releaseId": "g2-s2-c3-a2",
+    "catalogVersion": 3,
+    "assetVersion": 2,
+    "snapshotSha256": "baaec8eb2ab4e830107eb31a7550d8e6baf141c726e63447b812fa4319e7247e"
+  },
+  "changes": [
+    {
+      "table": "product_image_assets",
+      "id": "sarima-p061-fce23d8079bb",
+      "field": "approved_at",
+      "beforePresent": true,
+      "before": null,
+      "afterPresent": true,
+      "after": "2026-09-23 05:15:00.000"
+    },
+    {
+      "table": "product_image_assets",
+      "id": "sarima-p061-fce23d8079bb",
+      "field": "quality_status",
+      "beforePresent": true,
+      "before": "NEEDS_REVIEW",
+      "afterPresent": true,
+      "after": "APPROVED"
+    },
+    {
+      "table": "product_image_assets",
+      "id": "sarima-p074-5a49e8292dd6",
+      "field": "approved_at",
+      "beforePresent": true,
+      "before": null,
+      "afterPresent": true,
+      "after": "2026-09-23 05:15:00.000"
+    },
+    {
+      "table": "product_image_assets",
+      "id": "sarima-p074-5a49e8292dd6",
+      "field": "quality_status",
+      "beforePresent": true,
+      "before": "NEEDS_REVIEW",
+      "afterPresent": true,
+      "after": "APPROVED"
+    },
+    {
+      "table": "product_image_assets",
+      "id": "sarima-p075-3a83afda0834",
+      "field": "approved_at",
+      "beforePresent": true,
+      "before": null,
+      "afterPresent": true,
+      "after": "2026-09-23 05:15:00.000"
+    },
+    {
+      "table": "product_image_assets",
+      "id": "sarima-p075-3a83afda0834",
+      "field": "quality_status",
+      "beforePresent": true,
+      "before": "NEEDS_REVIEW",
+      "afterPresent": true,
+      "after": "APPROVED"
+    },
+    {
+      "table": "product_image_assets",
+      "id": "sarima-p219-b7553e591e41",
+      "field": "approved_at",
+      "beforePresent": true,
+      "before": null,
+      "afterPresent": true,
+      "after": "2026-09-23 05:15:00.000"
+    },
+    {
+      "table": "product_image_assets",
+      "id": "sarima-p219-b7553e591e41",
+      "field": "quality_status",
+      "beforePresent": true,
+      "before": "NEEDS_REVIEW",
+      "afterPresent": true,
+      "after": "APPROVED"
+    },
+    {
+      "table": "product_image_assets",
+      "id": "sarima-p238-b021064db04e",
+      "field": "approved_at",
+      "beforePresent": true,
+      "before": null,
+      "afterPresent": true,
+      "after": "2026-09-23 05:15:00.000"
+    },
+    {
+      "table": "product_image_assets",
+      "id": "sarima-p238-b021064db04e",
+      "field": "quality_status",
+      "beforePresent": true,
+      "before": "NEEDS_REVIEW",
+      "afterPresent": true,
+      "after": "APPROVED"
+    },
+    {
+      "table": "product_image_assets",
+      "id": "sarima-p317-53087e7fad87",
+      "field": "approved_at",
+      "beforePresent": true,
+      "before": null,
+      "afterPresent": true,
+      "after": "2026-09-23 05:15:00.000"
+    },
+    {
+      "table": "product_image_assets",
+      "id": "sarima-p317-53087e7fad87",
+      "field": "quality_status",
+      "beforePresent": true,
+      "before": "NEEDS_REVIEW",
+      "afterPresent": true,
+      "after": "APPROVED"
+    },
+    {
+      "table": "product_image_assets",
+      "id": "sarima-p342-835dc5906f86",
+      "field": "approved_at",
+      "beforePresent": true,
+      "before": null,
+      "afterPresent": true,
+      "after": "2026-09-23 05:15:00.000"
+    },
+    {
+      "table": "product_image_assets",
+      "id": "sarima-p342-835dc5906f86",
+      "field": "quality_status",
+      "beforePresent": true,
+      "before": "NEEDS_REVIEW",
+      "afterPresent": true,
+      "after": "APPROVED"
+    },
+    {
+      "table": "products",
+      "id": "cmtk4se700069ib1gkthu04j5",
+      "field": "active_image_asset_id",
+      "beforePresent": true,
+      "before": null,
+      "afterPresent": true,
+      "after": "sarima-p061-fce23d8079bb"
+    },
+    {
+      "table": "products",
+      "id": "cmtk4se700069ib1gkthu04j5",
+      "field": "image_url",
+      "beforePresent": true,
+      "before": "/presentation-catalog-images/P061.webp",
+      "afterPresent": true,
+      "after": "/api/storefront/product-images/sarima-p061-fce23d8079bb/card"
+    },
+    {
+      "table": "products",
+      "id": "cmtk4se9t007lib1gunsvwhxr",
+      "field": "active_image_asset_id",
+      "beforePresent": true,
+      "before": null,
+      "afterPresent": true,
+      "after": "sarima-p074-5a49e8292dd6"
+    },
+    {
+      "table": "products",
+      "id": "cmtk4se9t007lib1gunsvwhxr",
+      "field": "image_url",
+      "beforePresent": true,
+      "before": "/presentation-catalog-images/P074.webp",
+      "afterPresent": true,
+      "after": "/api/storefront/product-images/sarima-p074-5a49e8292dd6/card"
+    },
+    {
+      "table": "products",
+      "id": "cmtk4sea1007pib1gbxjuxh8l",
+      "field": "active_image_asset_id",
+      "beforePresent": true,
+      "before": null,
+      "afterPresent": true,
+      "after": "sarima-p075-3a83afda0834"
+    },
+    {
+      "table": "products",
+      "id": "cmtk4sea1007pib1gbxjuxh8l",
+      "field": "image_url",
+      "beforePresent": true,
+      "before": "/presentation-catalog-images/P075.webp",
+      "afterPresent": true,
+      "after": "/api/storefront/product-images/sarima-p075-3a83afda0834/card"
+    },
+    {
+      "table": "products",
+      "id": "cmtk4sf5m00m9ib1g50dzc76m",
+      "field": "active_image_asset_id",
+      "beforePresent": true,
+      "before": null,
+      "afterPresent": true,
+      "after": "sarima-p219-b7553e591e41"
+    },
+    {
+      "table": "products",
+      "id": "cmtk4sf5m00m9ib1g50dzc76m",
+      "field": "image_url",
+      "beforePresent": true,
+      "before": "/presentation-catalog-images/P219.webp",
+      "afterPresent": true,
+      "after": "/api/storefront/product-images/sarima-p219-b7553e591e41/card"
+    },
+    {
+      "table": "products",
+      "id": "cmtk4sf9q00o9ib1ga719u9g9",
+      "field": "active_image_asset_id",
+      "beforePresent": true,
+      "before": null,
+      "afterPresent": true,
+      "after": "sarima-p238-b021064db04e"
+    },
+    {
+      "table": "products",
+      "id": "cmtk4sf9q00o9ib1ga719u9g9",
+      "field": "image_url",
+      "beforePresent": true,
+      "before": "/presentation-catalog-images/P238.webp",
+      "afterPresent": true,
+      "after": "/api/storefront/product-images/sarima-p238-b021064db04e/card"
+    },
+    {
+      "table": "products",
+      "id": "cmtk4sfus00wtib1g6dzghbwy",
+      "field": "active_image_asset_id",
+      "beforePresent": true,
+      "before": null,
+      "afterPresent": true,
+      "after": "sarima-p317-53087e7fad87"
+    },
+    {
+      "table": "products",
+      "id": "cmtk4sfus00wtib1g6dzghbwy",
+      "field": "image_url",
+      "beforePresent": true,
+      "before": "/presentation-catalog-images/P317.webp",
+      "afterPresent": true,
+      "after": "/api/storefront/product-images/sarima-p317-53087e7fad87/card"
+    },
+    {
+      "table": "products",
+      "id": "cmtk4sg0y00zlib1gefat8q3s",
+      "field": "active_image_asset_id",
+      "beforePresent": true,
+      "before": null,
+      "afterPresent": true,
+      "after": "sarima-p342-835dc5906f86"
+    },
+    {
+      "table": "products",
+      "id": "cmtk4sg0y00zlib1gefat8q3s",
+      "field": "image_url",
+      "beforePresent": true,
+      "before": "/presentation-catalog-images/P342.webp",
+      "afterPresent": true,
+      "after": "/api/storefront/product-images/sarima-p342-835dc5906f86/card"
+    }
+  ]
+}

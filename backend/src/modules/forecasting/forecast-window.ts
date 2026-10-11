@@ -14,6 +14,18 @@ export function toMonthKey(date: Date) {
   return `${date.getFullYear()}-${padMonth(date.getMonth() + 1)}`;
 }
 
+export function normalizeForecastPeriodMonth(value: string) {
+  const monthKey = value.slice(0, 7);
+  if (!MONTH_KEY_PATTERN.test(monthKey)) return null;
+
+  try {
+    parseMonthKey(monthKey);
+    return monthKey;
+  } catch {
+    return null;
+  }
+}
+
 export function parseMonthKey(monthKey: string) {
   if (!MONTH_KEY_PATTERN.test(monthKey)) {
     throw new Error(`Invalid month key: ${monthKey}`);

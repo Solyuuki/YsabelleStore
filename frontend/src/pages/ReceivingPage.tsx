@@ -43,6 +43,7 @@ import {
   TableRow
 } from "@/components/ui/table";
 import {
+  cancelRestockOrder,
   listRestockOrders,
   receiveRestockOrder,
   type RestockOrder,
@@ -51,6 +52,11 @@ import {
   type RestockReceiptLineInput
 } from "@/services/restockApi";
 import { hasRestockReturnItems } from "@/utils/restockReturnExport";
+import {
+  isWholeUnitDraft,
+  parseWholeUnitQuantity,
+  requireWholeUnitQuantity
+} from "@/utils/wholeUnitQuantity";
 
 const READY_STATUSES: RestockOrderStatus[] = ["APPROVED", "AWAITING_DELIVERY"];
 const dateFormatter = new Intl.DateTimeFormat("en-PH", {
@@ -149,8 +155,7 @@ function internalBatchReference(order: RestockOrder, line: RestockOrderLine) {
 }
 
 function asWholeNumber(value: string) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? Math.max(0, Math.trunc(parsed)) : 0;
+  return parseWholeUnitQuantity(value) ?? 0;
 }
 
 function acceptedQuantity(row: ReceiptRowState) {
@@ -193,6 +198,8 @@ export function ReceivingPage() {
   const [damageReason, setDamageReason] = useState("");
   const [receiptError, setReceiptError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
   const [lotDialogOpen, setLotDialogOpen] = useState(false);
   const [lotLineId, setLotLineId] = useState("");
   const [returnReportOrder, setReturnReportOrder] = useState<RestockOrder | null>(null);
@@ -311,18 +318,20 @@ export function ReceivingPage() {
     setExceptionLineIds([]);
     setDamageReason("");
     setReceiptError(null);
+    setCancelReason("");
     setLotDialogOpen(false);
     setLotLineId("");
   }
 
   function closeTicket() {
-    if (saving) return;
+    if (saving || cancelling) return;
     setSelectedOrder(null);
     setReceiptMode(null);
     setReceiptRows({});
     setExceptionLineIds([]);
     setDamageReason("");
     setReceiptError(null);
+    setCancelReason("");
     setLotDialogOpen(false);
     setLotLineId("");
   }
@@ -386,8 +395,11 @@ export function ReceivingPage() {
       if (!row) continue;
 
       const remaining = remainingQuantity(line);
-      const delivered = asWholeNumber(row.deliveredQuantity);
-      const damaged = asWholeNumber(row.damagedQuantity);
+      const delivered = requireWholeUnitQuantity(
+        row.deliveredQuantity,
+        `${line.product.name} delivered`
+      );
+      const damaged = requireWholeUnitQuantity(row.damagedQuantity, `${line.product.name} damaged`);
       const accepted = acceptedQuantity(row);
 
       if (damaged > delivered) {
@@ -418,16 +430,16 @@ export function ReceivingPage() {
         throw new Error(`${line.product.name}: choose an expiry date or mark no expiry printed.`);
       }
 
-      if (accepted > remaining && !row.confirmOverDelivery) {
+      if (accepted > remaining) {
         throw new Error(
-          `${line.product.name}: confirm the over-delivery before accepting extra units.`
+          `${line.product.name}: accepted units cannot exceed the remaining approved quantity. Record excess units for return or create a separately approved order.`
         );
       }
 
       lines.push({
         acceptedQuantity: accepted,
         batchCode: accepted > 0 ? row.batchCode.trim() : null,
-        confirmOverDelivery: row.confirmOverDelivery,
+        confirmOverDelivery: false,
         damagedQuantity: damaged,
         damageReason: damaged > 0 ? damageReason.trim() : null,
         deliveredQuantity: delivered,
@@ -458,6 +470,41 @@ export function ReceivingPage() {
     }
 
     return lines;
+  }
+
+  async function cancelSelectedTicket() {
+    if (!selectedOrder || cancelling || saving) return;
+    const reason = cancelReason.trim();
+    if (reason.length < 3) {
+      setReceiptError("Add a short reason before cancelling this restock ticket.");
+      return;
+    }
+
+    setCancelling(true);
+    setReceiptError(null);
+    try {
+      const cancelled = await cancelRestockOrder(selectedOrder.id, {
+        expectedVersion: selectedOrder.version,
+        reason
+      });
+      pushToast({
+        title: "Restock ticket cancelled",
+        message: `${cancelled.orderNumber} was cancelled. No inventory quantity was changed.`,
+        variant: "success"
+      });
+      setSelectedOrder(null);
+      setCancelReason("");
+      setReceiptMode(null);
+      await loadQueue();
+    } catch (requestError) {
+      setReceiptError(
+        requestError instanceof Error
+          ? requestError.message
+          : "The restock ticket could not be cancelled."
+      );
+    } finally {
+      setCancelling(false);
+    }
   }
 
   async function confirmReceipt() {
@@ -653,7 +700,7 @@ export function ReceivingPage() {
         }}
         open={Boolean(selectedOrder)}
       >
-        <DialogContent className="max-h-[85vh] max-w-[960px] grid-rows-[auto_minmax(0,1fr)_auto] gap-0">
+        <DialogContent className="ys-receiving-dialog max-h-[85vh] max-w-[960px] grid-rows-[auto_minmax(0,1fr)_auto] gap-0">
           {selectedOrder && selectedTotals ? (
             <>
               <DialogHeader className="relative border-b border-slate-200 px-6 py-5 pr-16">
@@ -671,7 +718,7 @@ export function ReceivingPage() {
                 <Button
                   aria-label="Close delivery"
                   className="absolute right-5 top-5 h-8 w-8"
-                  disabled={saving}
+                  disabled={saving || cancelling}
                   onClick={closeTicket}
                   size="icon"
                   type="button"
@@ -702,6 +749,48 @@ export function ReceivingPage() {
                     <>
                       <TicketItemsPreview order={selectedOrder} />
                       <ArrivalOptions onSelect={startReceipt} />
+                      {(selectedOrder.status === "APPROVED" ||
+                        selectedOrder.status === "AWAITING_DELIVERY") &&
+                      selectedTotals.accepted === 0 ? (
+                        <section className="ys-receiving-cancel-panel rounded-lg border border-slate-200 bg-slate-50 p-4">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                            <div className="min-w-0 flex-1">
+                              <Label htmlFor="cancel-restock-reason">Cancel ticket</Label>
+                              <p className="mt-1 text-xs leading-5 text-slate-500">
+                                Use this when the owner declines the recommended restock before any
+                                stock has been physically received. The reason remains in the audit
+                                trail.
+                              </p>
+                              <Input
+                                className="mt-2"
+                                disabled={cancelling}
+                                id="cancel-restock-reason"
+                                maxLength={500}
+                                onChange={(event) => {
+                                  setCancelReason(event.target.value);
+                                  setReceiptError(null);
+                                }}
+                                placeholder="Reason for cancelling this ticket"
+                                value={cancelReason}
+                              />
+                            </div>
+                            <Button
+                              className="border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
+                              disabled={cancelling || cancelReason.trim().length < 3}
+                              onClick={() => void cancelSelectedTicket()}
+                              type="button"
+                              variant="secondary"
+                            >
+                              {cancelling ? (
+                                <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <X aria-hidden="true" className="h-4 w-4" />
+                              )}
+                              {cancelling ? "Cancelling…" : "Cancel ticket"}
+                            </Button>
+                          </div>
+                        </section>
+                      ) : null}
                     </>
                   ) : receiptMode === "complete" ? (
                     <>
@@ -726,7 +815,7 @@ export function ReceivingPage() {
               </div>
 
               {selectedOrder.status !== "RECEIVED" && receiptMode ? (
-                <DialogFooter className="bg-white">
+                <DialogFooter className="ys-receiving-dialog-footer bg-white">
                   <Button
                     disabled={saving}
                     onClick={() => {
@@ -959,12 +1048,12 @@ function ArrivalOptions({ onSelect }: { onSelect: (mode: ReceiptMode) => void })
           Choose one. Extra fields appear only for exceptions.
         </p>
       </div>
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="ys-receiving-arrival-options overflow-hidden rounded-lg border border-slate-200 bg-white">
         {choices.map((choice, index) => {
           const Icon = choice.icon;
           return (
             <button
-              className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 ${
+              className={`ys-receiving-arrival-option flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 ${
                 index > 0 ? "border-t border-slate-100" : ""
               }`}
               key={choice.mode}
@@ -1098,7 +1187,8 @@ function ReceiptEditor({
             const checked = exceptionLineIds.includes(line.id);
             return (
               <label
-                className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-3 transition-colors ${
+                data-selected={checked}
+                className={`ys-receiving-exception-option flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-3 transition-colors ${
                   checked
                     ? "border-indigo-300 bg-indigo-50/70"
                     : "border-slate-200 bg-white hover:bg-slate-50"
@@ -1145,7 +1235,10 @@ function ReceiptEditor({
               const accepted = acceptedQuantity(row);
               const missing = Math.max(0, remaining - asWholeNumber(row.deliveredQuantity));
               return (
-                <div className="rounded-lg border border-slate-200 bg-white p-4" key={line.id}>
+                <div
+                  className="ys-receiving-exception-row rounded-lg border border-slate-200 bg-white p-4"
+                  key={line.id}
+                >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-slate-950">{line.product.name}</p>
@@ -1196,20 +1289,9 @@ function ReceiptEditor({
                     </div>
                   </div>
                   {accepted > remaining ? (
-                    <label className="mt-3 flex items-start gap-2 text-xs leading-5 text-amber-800">
-                      <input
-                        checked={row.confirmOverDelivery}
-                        className="mt-0.5"
-                        onChange={(event) =>
-                          onUpdateRow(line.id, (current) => ({
-                            ...current,
-                            confirmOverDelivery: event.target.checked
-                          }))
-                        }
-                        type="checkbox"
-                      />
-                      Confirm over-delivery
-                    </label>
+                    <p className="mt-3 text-xs leading-5 text-amber-800" role="alert">
+                      Excess units cannot be accepted without a separately approved restock order.
+                    </p>
                   ) : null}
                 </div>
               );
@@ -1219,7 +1301,7 @@ function ReceiptEditor({
       ) : null}
 
       {hasDamage ? (
-        <section className="rounded-lg border border-amber-200 bg-amber-50/70 p-4">
+        <section className="ys-receiving-damage-panel rounded-lg border border-amber-200 bg-amber-50/70 p-4">
           <Label htmlFor="damage-return-reason">Damage / return reason *</Label>
           <Input
             className="mt-1"
@@ -1236,7 +1318,7 @@ function ReceiptEditor({
         </section>
       ) : null}
 
-      <section className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <section className="ys-receiving-lot-summary flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-medium text-slate-800">Supplier lot / expiry details</p>
           <p className="mt-0.5 text-xs text-slate-500">
@@ -1267,8 +1349,11 @@ function QuantityField({
         className="mt-1 h-8 w-20 text-right"
         inputMode="numeric"
         min="0"
-        onChange={(event) => onChange(event.target.value)}
-        type="number"
+        onChange={(event) => {
+          if (isWholeUnitDraft(event.target.value)) onChange(event.target.value);
+        }}
+        pattern="[0-9]*"
+        type="text"
         value={value}
       />
     </div>
@@ -1297,7 +1382,7 @@ function LotExpiryDialog({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="max-w-[560px] gap-0">
+      <DialogContent className="ys-receiving-dialog ys-receiving-lot-dialog max-w-[560px] gap-0">
         <DialogHeader className="border-b border-slate-200 px-6 py-5">
           <DialogTitle>Supplier lot / expiry details</DialogTitle>
           <DialogDescription>

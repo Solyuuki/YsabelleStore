@@ -121,8 +121,17 @@ function orderInput(productId: string, customerName: string) {
     customerName,
     customerEmail: `${customerName.toLowerCase().replaceAll(" ", "-")}@example.com`,
     customerPhone: "09171234567",
-    fulfillmentMethod: "STORE_PICKUP",
-    paymentMethod: "CASH_ON_PICKUP",
+    customerAddress: {
+      addressLine1: "110 A. Mabini Street",
+      addressLine2: "",
+      barangay: "Kapitolyo",
+      cityMunicipality: "Pasig City",
+      provinceRegion: "Metro Manila",
+      postalCode: "1603",
+      country: "Philippines"
+    },
+    fulfillmentMethod: "DELIVERY",
+    paymentMethod: "CASH_ON_DELIVERY",
     items: [{ productId, quantity: 1 }]
   };
 }
@@ -163,11 +172,12 @@ test("customer order history is strictly isolated to the authenticated customer"
       data: {
         customerAccountId: fixture.customerA.customer.id,
         orderNumber: `YS-ACCOUNT-${randomUUID().slice(0, 8).toUpperCase()}`,
+        deliveryTicketNumber: `DEL-YS-ACCOUNT-${randomUUID().slice(0, 8).toUpperCase()}`,
         customerName: "Customer A",
         customerEmail: fixture.customerA.customer.email,
         customerPhone: "09171234567",
-        fulfillmentMethod: "STORE_PICKUP",
-        paymentMethod: "CASH_ON_PICKUP",
+        fulfillmentMethod: "DELIVERY",
+        paymentMethod: "CASH_ON_DELIVERY",
         status: "PENDING",
         subtotalAmount: "15.00",
         totalAmount: "15.00",
@@ -215,7 +225,7 @@ test("customer order history is strictly isolated to the authenticated customer"
   }
 });
 
-test("guest storefront checkout remains public and leaves customer ownership null", async () => {
+test("guest storefront checkout is rejected and cannot create an order", async () => {
   const fixture = await createFixture();
 
   try {
@@ -226,21 +236,18 @@ test("guest storefront checkout remains public and leaves customer ownership nul
         body: JSON.stringify(orderInput(fixture.product.id, "Guest Checkout"))
       });
 
-      assert.equal(response.status, 201);
-      const body = (await response.json()) as OrderApiBody;
-      assert.ok(body.data && !Array.isArray(body.data));
-      const order = await prisma.customerOrder.findUniqueOrThrow({
-        where: { id: body.data.id }
-      });
-
-      assert.equal(order.customerAccountId, null);
+      assert.equal(response.status, 401);
+      assert.equal(
+        await prisma.customerOrder.count({ where: { customerName: "Guest Checkout" } }),
+        0
+      );
     });
   } finally {
     await cleanupFixture(fixture);
   }
 });
 
-test("stale customer session falls back to guest checkout and clears the stale cookie", async () => {
+test("stale customer session is rejected at checkout and clears the stale cookie", async () => {
   const fixture = await createFixture();
 
   try {
@@ -254,18 +261,78 @@ test("stale customer session falls back to guest checkout and clears the stale c
         body: JSON.stringify(orderInput(fixture.product.id, "Expired Session Guest"))
       });
 
-      assert.equal(response.status, 201);
+      assert.equal(response.status, 401);
       const setCookie = response.headers.get("set-cookie") ?? "";
       assert.match(setCookie, new RegExp(`^${CUSTOMER_COOKIE_NAME}=`));
       assert.match(setCookie, /Max-Age=0/i);
+      assert.equal(
+        await prisma.customerOrder.count({ where: { customerName: "Expired Session Guest" } }),
+        0
+      );
+    });
+  } finally {
+    await cleanupFixture(fixture);
+  }
+});
 
-      const body = (await response.json()) as OrderApiBody;
-      assert.ok(body.data && !Array.isArray(body.data));
-      const order = await prisma.customerOrder.findUniqueOrThrow({
-        where: { id: body.data.id }
+test("authenticated cart is isolated, merges guest quantities, and clears after checkout", async () => {
+  const fixture = await createFixture();
+
+  try {
+    await withServer(async (baseUrl) => {
+      const headers = {
+        "content-type": "application/json",
+        Cookie: customerCookie(fixture.customerA.sessionToken)
+      };
+
+      const setResponse = await fetch(
+        `${baseUrl}/api/customer-account/cart/items/${fixture.product.id}`,
+        {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({ quantity: 2 })
+        }
+      );
+      assert.equal(setResponse.status, 200);
+
+      const mergeResponse = await fetch(`${baseUrl}/api/customer-account/cart/merge`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ items: [{ productId: fixture.product.id, quantity: 1 }] })
       });
+      assert.equal(mergeResponse.status, 200);
+      const merged = (await mergeResponse.json()) as {
+        data?: { items?: Array<{ productId?: string; quantity?: number }> };
+      };
+      assert.equal(merged.data?.items?.[0]?.productId, fixture.product.id);
+      assert.equal(merged.data?.items?.[0]?.quantity, 3);
 
-      assert.equal(order.customerAccountId, null);
+      const customerBCart = await fetch(`${baseUrl}/api/customer-account/cart`, {
+        headers: { Cookie: customerCookie(fixture.customerB.sessionToken) }
+      });
+      assert.equal(customerBCart.status, 200);
+      const customerBBody = (await customerBCart.json()) as {
+        data?: { items?: Array<unknown> };
+      };
+      assert.deepEqual(customerBBody.data?.items, []);
+
+      const checkout = await fetch(`${baseUrl}/api/storefront/orders`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          ...orderInput(fixture.product.id, "Customer A Cart Checkout"),
+          items: [{ productId: fixture.product.id, quantity: 3 }]
+        })
+      });
+      assert.equal(checkout.status, 201);
+
+      const cartAfterCheckout = await fetch(`${baseUrl}/api/customer-account/cart`, {
+        headers: { Cookie: customerCookie(fixture.customerA.sessionToken) }
+      });
+      const afterBody = (await cartAfterCheckout.json()) as {
+        data?: { items?: Array<unknown> };
+      };
+      assert.deepEqual(afterBody.data?.items, []);
     });
   } finally {
     await cleanupFixture(fixture);

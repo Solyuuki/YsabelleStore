@@ -56,7 +56,10 @@ class EdgeConnectedBackgroundDetector:
 
         left, top, right, bottom = bounding_box
         if left <= 0 or top <= 0 or right >= rgb.width or bottom >= rgb.height:
-            return None
+            recovered_box = _dominant_internal_component_bbox(mask)
+            if recovered_box is None:
+                return None
+            bounding_box = recovered_box
 
         confidence = max(0.0, min(1.0, 1.0 - median_deviation / 70.0))
         if confidence < 0.8:
@@ -67,6 +70,67 @@ class EdgeConnectedBackgroundDetector:
             background_rgb=background,
             confidence=round(confidence, 4),
         )
+
+
+def _dominant_internal_component_bbox(
+    mask: Image.Image, minimum_share: float = 0.995
+) -> tuple[int, int, int, int] | None:
+    """Recover a subject when a tiny disconnected speck alone touches the frame edge."""
+
+    width, height = mask.size
+    if width <= 0 or height <= 0:
+        return None
+
+    pixels = mask.load()
+    visited = bytearray(width * height)
+    components: list[tuple[int, tuple[int, int, int, int]]] = []
+
+    for y in range(height):
+        for x in range(width):
+            index = y * width + x
+            if visited[index] or pixels[x, y] == 0:
+                continue
+
+            stack = [(x, y)]
+            visited[index] = 1
+            count = 0
+            left = right = x
+            top = bottom = y
+
+            while stack:
+                current_x, current_y = stack.pop()
+                count += 1
+                left = min(left, current_x)
+                right = max(right, current_x)
+                top = min(top, current_y)
+                bottom = max(bottom, current_y)
+
+                for next_y in range(max(0, current_y - 1), min(height, current_y + 2)):
+                    for next_x in range(max(0, current_x - 1), min(width, current_x + 2)):
+                        if next_x == current_x and next_y == current_y:
+                            continue
+                        next_index = next_y * width + next_x
+                        if visited[next_index] or pixels[next_x, next_y] == 0:
+                            continue
+                        visited[next_index] = 1
+                        stack.append((next_x, next_y))
+
+            components.append((count, (left, top, right + 1, bottom + 1)))
+
+    if not components:
+        return None
+
+    components.sort(key=lambda component: component[0], reverse=True)
+    total_foreground = sum(component[0] for component in components)
+    dominant_count, dominant_box = components[0]
+    if dominant_count / total_foreground < minimum_share:
+        return None
+
+    left, top, right, bottom = dominant_box
+    if left <= 0 or top <= 0 or right >= width or bottom >= height:
+        return None
+
+    return dominant_box
 
 
 def _edge_samples(image: Image.Image) -> list[tuple[int, int, int]]:

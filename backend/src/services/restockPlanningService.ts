@@ -1,3 +1,5 @@
+import type { Prisma } from "@prisma/client";
+
 import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import { buildPaginationMeta } from "../utils/pagination.js";
@@ -9,7 +11,10 @@ import {
   buildOperationalRestockForecast,
   loadOperationalPosSales
 } from "./restockDemandForecastService.js";
+import { loadActiveInventoryForecasts } from "./inventoryForecastSourceService.js";
+import { buildRestockForecastDecision } from "./restockForecastDecisionService.js";
 import { getIncomingRestockStock } from "./restockService.js";
+import { activeReservationsByProduct } from "./stockReservationService.js";
 import { classifyStockHealth } from "./stockHealthService.js";
 import {
   calculateStockTruth,
@@ -26,13 +31,19 @@ function latestByProduct<T extends { productId: string }>(rows: T[]) {
   return byProduct;
 }
 
-export async function listRestockPlanningCandidates(query: RestockPlanningQuery) {
-  const products = await prisma.product.findMany({
+export async function listRestockPlanningCandidates(
+  query: RestockPlanningQuery,
+  requestedProductIds?: readonly string[],
+  excludeOrderId?: string,
+  db: Prisma.TransactionClient = prisma
+) {
+  const products = await db.product.findMany({
     orderBy: [{ name: "asc" }, { id: "asc" }],
     where: {
       dataQualityStatus: { not: "REJECTED" },
       recordSource: { not: "TEST_FIXTURE" },
       status: { not: "DISCONTINUED" },
+      ...(requestedProductIds ? { id: { in: [...new Set(requestedProductIds)] } } : {}),
       ...(query.search
         ? {
             OR: [
@@ -46,29 +57,37 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
     },
     select: {
       barcode: true,
+      costPrice: true,
       id: true,
       inventoryBatches: {
         select: {
           expiresAt: true,
           quantityRemaining: true,
-          status: true
+          status: true,
+          unitCost: true
         }
       },
       name: true,
       reorderLevel: true,
       sku: true,
-      targetStockLevel: true
+      targetStockLevel: true,
+      restockTargetApprovedLevel: true,
+      restockTargetApprovedById: true,
+      restockTargetApprovedAt: true
     }
   });
   const productIds = products.map((product) => product.id);
   const now = new Date();
-  const [incomingByProduct, operationalSalesByProduct] = await Promise.all([
-    getIncomingRestockStock(productIds),
-    loadOperationalPosSales(productIds, now)
-  ]);
+  const [incomingByProduct, operationalSalesByProduct, activeForecasts, activeReservations] =
+    await Promise.all([
+      getIncomingRestockStock(productIds, excludeOrderId, db),
+      loadOperationalPosSales(productIds, now, db),
+      loadActiveInventoryForecasts(productIds, db),
+      activeReservationsByProduct(db, productIds)
+    ]);
 
   const recommendations = productIds.length
-    ? await prisma.recommendationRecord.findMany({
+    ? await db.recommendationRecord.findMany({
         orderBy: [{ generatedAt: "desc" }, { id: "desc" }],
         select: {
           forecastRecordId: true,
@@ -90,6 +109,19 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
 
   const candidates = products.map((product) => {
     const stockTruth = calculateStockTruth(product.inventoryBatches, now);
+    // Pending Storefront commitments are not completed sales. Their reserved
+    // quantity reduces stock available for a NEW sale or replenishment plan.
+    const reservedStock = activeReservations.get(product.id) ?? 0;
+    const availableForNewOrders = Math.max(0, stockTruth.sellableStock - reservedStock);
+    // Use the highest known unit cost so missing/stale catalog prices
+    // cannot silently understate the estimated purchase commitment.
+    const knownUnitCosts = [
+      product.costPrice?.toNumber(),
+      ...product.inventoryBatches.map((batch) => batch.unitCost?.toNumber())
+    ].filter(
+      (price): price is number => price !== undefined && Number.isFinite(price) && price > 0
+    );
+    const conservativeUnitCost = knownUnitCosts.length > 0 ? Math.max(...knownUnitCosts) : null;
     const incomingStock = incomingByProduct.get(product.id) ?? 0;
     const salesSeries = operationalSalesByProduct.get(product.id) ?? [];
     const recommendation = latestRecommendation.get(product.id);
@@ -104,27 +136,40 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
     const stockHealth = classifyStockHealth({
       asOf: now,
       historicalSeries: salesSeries,
-      sellableStock: stockTruth.sellableStock
+      sellableStock: availableForNewOrders
     });
-    const operationalForecast = buildOperationalRestockForecast({
-      expiryRiskQuantity,
-      historicalSeries: salesSeries,
-      incomingStock,
-      now,
-      reorderLevel: product.reorderLevel,
-      sellableStock: stockTruth.sellableStock,
-      targetStockLevel: product.targetStockLevel
-    });
-    const forecastDecision = {
-      confidenceAdjustedDemand: operationalForecast.confidenceAdjustedDemand,
-      currentMonthDemand: operationalForecast.expected30d,
-      projectedEndingStock: operationalForecast.projectedEndingStock,
-      projectedStockoutDate: operationalForecast.projectedStockoutDate,
-      reason: operationalForecast.reason,
-      recommendedActionDate: operationalForecast.recommendedActionDate,
-      riskLevel: operationalForecast.riskLevel,
-      suggestedQuantity: operationalForecast.suggestedQuantity
-    };
+    const activeForecast = activeForecasts.get(product.id) ?? null;
+    const operationalForecast = activeForecast
+      ? null
+      : buildOperationalRestockForecast({
+          expiryRiskQuantity,
+          historicalSeries: salesSeries,
+          incomingStock,
+          now,
+          reorderLevel: product.reorderLevel,
+          sellableStock: availableForNewOrders,
+          targetStockLevel: product.targetStockLevel
+        });
+    const forecastDecision = activeForecast
+      ? buildRestockForecastDecision({
+          expiryRiskQuantity,
+          forecast: activeForecast.points,
+          incomingStock,
+          now,
+          reorderLevel: product.reorderLevel,
+          sellableStock: availableForNewOrders,
+          targetStockLevel: product.targetStockLevel
+        })
+      : {
+          confidenceAdjustedDemand: operationalForecast!.confidenceAdjustedDemand,
+          currentMonthDemand: operationalForecast!.expected30d,
+          projectedEndingStock: operationalForecast!.projectedEndingStock,
+          projectedStockoutDate: operationalForecast!.projectedStockoutDate,
+          reason: operationalForecast!.reason,
+          recommendedActionDate: operationalForecast!.recommendedActionDate,
+          riskLevel: operationalForecast!.riskLevel,
+          suggestedQuantity: operationalForecast!.suggestedQuantity
+        };
     const persistedOperationalRecommendation = recommendation?.forecastRecordId
       ? null
       : recommendation;
@@ -135,21 +180,27 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
         : 0;
 
     let recommendationId: string | null = null;
-    let recommendationSource: "SARIMA" | "LOW_STOCK" | "TARGET_STOCK" = "TARGET_STOCK";
-    let recommendedQuantity = operationalForecast.suggestedQuantity;
-    let rationale = operationalForecast.reason;
+    let recommendationSource: "SARIMA" | "LOW_STOCK" | "TARGET_STOCK" = activeForecast
+      ? "SARIMA"
+      : "TARGET_STOCK";
+    let recommendedQuantity = forecastDecision.suggestedQuantity;
+    let rationale = forecastDecision.reason;
 
     if (recommendedQuantity > 0) {
       const demandDrivenLowStock =
         stockHealth.status === "OUT_OF_STOCK" ||
         stockHealth.status === "LOW_STOCK" ||
-        (operationalForecast.expected30d > 0 && operationalForecast.projectedEndingStock < 0);
-      recommendationSource = demandDrivenLowStock ? "LOW_STOCK" : "TARGET_STOCK";
+        (forecastDecision.currentMonthDemand > 0 && forecastDecision.projectedEndingStock < 0);
+      recommendationSource = activeForecast
+        ? "SARIMA"
+        : demandDrivenLowStock
+          ? "LOW_STOCK"
+          : "TARGET_STOCK";
       if (
         persistedOperationalRecommendation &&
         ((recommendationSource === "LOW_STOCK" &&
           persistedOperationalRecommendation.type === "LOW_STOCK") ||
-          (recommendationSource === "TARGET_STOCK" &&
+          ((recommendationSource === "TARGET_STOCK" || recommendationSource === "SARIMA") &&
             persistedOperationalRecommendation.type === "RESTOCK"))
       ) {
         recommendationId = persistedOperationalRecommendation.id;
@@ -164,14 +215,23 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
 
     return {
       expiryRiskQuantity,
-      forecast: {
-        batchId: null,
-        currentMonthDemand: operationalForecast.expected30d,
-        generatedAt: now.toISOString(),
-        historical: operationalForecast.historical,
-        modelName: "RESTOCK_POS",
-        points: operationalForecast.points
-      },
+      forecast: activeForecast
+        ? {
+            batchId: activeForecast.batchId,
+            currentMonthDemand: forecastDecision.currentMonthDemand,
+            generatedAt: activeForecast.generatedAt,
+            historical: activeForecast.historical,
+            modelName: activeForecast.modelName,
+            points: activeForecast.points
+          }
+        : {
+            batchId: null,
+            currentMonthDemand: operationalForecast!.expected30d,
+            generatedAt: now.toISOString(),
+            historical: operationalForecast!.historical,
+            modelName: "RESTOCK_POS_FALLBACK",
+            points: operationalForecast!.points
+          },
       forecastDecision,
       incomingStock,
       physicalOnHand: stockTruth.physicalOnHand,
@@ -181,14 +241,18 @@ export async function listRestockPlanningCandidates(query: RestockPlanningQuery)
         name: product.name,
         reorderLevel: product.reorderLevel,
         sku: product.sku,
-        targetStockLevel: product.targetStockLevel
+        targetStockLevel: product.targetStockLevel,
+        approvedTargetStockLevel: product.restockTargetApprovedLevel,
+        targetApprovalById: product.restockTargetApprovedById,
+        targetApprovedAt: product.restockTargetApprovedAt,
+        unitCost: conservativeUnitCost
       },
       quarantinedStock: stockTruth.quarantinedStock,
       rationale,
       recommendationId,
       recommendationSource,
       recommendedQuantity,
-      sellableStock: stockTruth.sellableStock,
+      sellableStock: availableForNewOrders,
       stockHealth
     };
   });

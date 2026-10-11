@@ -1,7 +1,7 @@
 module.exports = {
   appId: "com.ysabellestore.desktop",
   productName: "YsabelleStore",
-  electronVersion: "42.8.1",
+  electronVersion: "42.10.0",
   directories: {
     buildResources: "build",
     output: "release"

@@ -569,7 +569,7 @@ export function InventoryPage() {
       <Card>
         <CardContent className="space-y-4 p-4 lg:p-5">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <label className="relative flex h-10 min-w-[260px] flex-1 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3">
+            <label className="ys-inventory-search relative flex h-10 min-w-[260px] flex-1 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3">
               <Search className="h-4 w-4 text-slate-500" aria-hidden="true" />
               <input
                 aria-label="Search inventory"
@@ -589,7 +589,7 @@ export function InventoryPage() {
             <FilterSelect
               icon={Filter}
               label="Stock level"
-              minWidthClassName="min-w-[166px]"
+              minWidthClassName="min-w-[190px]"
               value={stockStatus}
               onChange={(value) => {
                 setStockStatus(value as StockStatusFilter);
@@ -604,7 +604,7 @@ export function InventoryPage() {
             <FilterSelect
               icon={Tag}
               label="Category"
-              minWidthClassName="min-w-[158px]"
+              minWidthClassName="min-w-[190px]"
               value={categoryId}
               onChange={(value) => {
                 setCategoryId(value);
@@ -621,7 +621,7 @@ export function InventoryPage() {
             <FilterSelect
               icon={CircleCheck}
               label="Availability"
-              minWidthClassName="min-w-[172px]"
+              minWidthClassName="min-w-[198px]"
               value={productStatus}
               onChange={(value) => {
                 setProductStatus(value as ProductStatusFilter);
@@ -636,7 +636,7 @@ export function InventoryPage() {
             <FilterSelect
               icon={ArrowUpDown}
               label="Sort"
-              minWidthClassName="min-w-[194px]"
+              minWidthClassName="min-w-[220px]"
               value={`${sortBy}:${sortOrder}`}
               onChange={(value) => {
                 const [nextSortBy, nextSortOrder] = value.split(":") as [
@@ -809,21 +809,22 @@ function FilterSelect({
 }) {
   return (
     <label
-      className={`relative flex h-10 shrink-0 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-600 ${minWidthClassName ?? "w-auto"}`}
+      className={`ys-inventory-filter relative flex h-10 shrink-0 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 pl-3 pr-4 text-sm text-slate-600 ${minWidthClassName ?? "w-auto"}`}
     >
       <span className="sr-only">{label}</span>
       <Icon className="h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
       <Select
         aria-label={label}
-        className="h-auto w-auto min-w-0 border-0 bg-transparent px-0 py-0 pr-7 shadow-none focus-visible:ring-0"
+        className="h-auto w-full min-w-0 flex-1 border-0 bg-transparent px-0 py-0 shadow-none focus-visible:ring-0"
+        style={{ backgroundImage: "none" }}
         value={value}
         onChange={(event) => onChange(event.target.value)}
       >
         {children}
       </Select>
       <ChevronDown
-        className="pointer-events-none absolute right-3 h-4 w-4 shrink-0 text-slate-400"
         aria-hidden="true"
+        className="ys-inventory-filter-chevron pointer-events-none h-4 w-4 shrink-0 text-slate-500"
       />
     </label>
   );
@@ -979,7 +980,7 @@ function InventoryDetailsDialog({
     >
       <DialogContent
         aria-describedby="inventory-details-description"
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[860px] flex-col gap-0 p-0"
+        className="ys-inventory-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[860px] flex-col gap-0 p-0"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
           <DialogClose asChild>
@@ -1223,7 +1224,7 @@ function StockInDialog({
     >
       <DialogContent
         aria-describedby="stock-in-description"
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
+        className="ys-inventory-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
           <DialogClose asChild>
@@ -1544,7 +1545,7 @@ function StockAdjustmentDialog({
     >
       <DialogContent
         aria-describedby="stock-adjustment-description"
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
+        className="ys-inventory-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
           <DialogClose asChild>
@@ -1640,6 +1641,7 @@ function StockAdjustmentDialog({
                 inputMode="numeric"
                 value={quantity}
                 onChange={(event) => {
+                  if (!/^\d*$/.test(event.target.value)) return;
                   setQuantity(event.target.value);
                   setError(null);
                 }}
@@ -1871,7 +1873,7 @@ function StockActivityDialog({
     >
       <DialogContent
         aria-describedby="stock-activity-description"
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[1040px] flex-col gap-0 p-0"
+        className="ys-inventory-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[1040px] flex-col gap-0 p-0"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
           <DialogClose asChild>

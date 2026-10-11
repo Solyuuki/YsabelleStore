@@ -1,32 +1,46 @@
 import {
   ArrowLeft,
+  BadgeCheck,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Heart,
   MapPin,
   MessageSquareText,
+  RefreshCw,
   ShieldCheck,
   ShoppingBasket,
   Star
 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
+import { AdaptiveProductTitle } from "@/components/customer/AdaptiveProductTitle";
 import { CustomerLink } from "@/components/customer/CustomerLink";
 import { ProductCard, formatCurrency, formatUnit } from "@/components/customer/ProductCard";
+import { ProductSizeSelector } from "@/components/customer/ProductSizeSelector";
 import { ProductVisual } from "@/components/customer/ProductVisual";
+import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
 import { QuantityControl } from "@/components/customer/QuantityControl";
 import { useCart } from "@/context/CartContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
+import { useCustomerFavorites } from "@/context/CustomerFavoritesContext";
 import { useRevealOnView } from "@/hooks/useRevealOnView";
 import {
   fetchStorefrontProduct,
   fetchStorefrontProductReviews,
-  fetchStorefrontRelatedProducts
+  fetchStorefrontReviewContext,
+  fetchStorefrontRelatedProducts,
+  saveStorefrontProductReview
 } from "@/services/storefrontService";
 import type {
   StorefrontProduct,
+  StorefrontProductDetail,
   StorefrontProductReviews,
-  StorefrontRelatedProducts
+  StorefrontRelatedProducts,
+  StorefrontReviewContext
 } from "@/types/storefront";
+import { preloadCatalogImage } from "@/utils/storefrontImages";
+import { buildCustomerAuthPath } from "@/utils/customerRoutes";
 
 type Resource<T> = {
   data: T | null;
@@ -44,7 +58,10 @@ export function ProductDetailPage({
   navigate: (path: string) => void;
 }) {
   const { addItem } = useCart();
-  const [product, setProduct] = useState<StorefrontProduct | null>(null);
+  const { favoriteIds, toggleFavorite } = useCustomerFavorites();
+  const [product, setProduct] = useState<StorefrontProductDetail | null>(null);
+  const productRef = useRef<StorefrontProductDetail | null>(null);
+  const [isProductTransitioning, setIsProductTransitioning] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState("");
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
@@ -64,89 +81,170 @@ export function ProductDetailPage({
 
   useEffect(() => {
     const controller = new AbortController();
-    setProduct(null);
+    const displayedProduct = productRef.current;
+
+    if (displayedProduct?.id === productId) {
+      setError("");
+      setIsProductTransitioning(false);
+      return () => controller.abort();
+    }
+
     setError("");
-    setQuantity(1);
-    setRatingFilter(null);
-    setReviewPage(1);
-    setReviewResource({ data: null, error: "", status: "loading" });
-    fetchStorefrontProduct(productId, controller.signal)
-      .then(setProduct)
-      .catch((reason: unknown) => {
-        if (!controller.signal.aborted)
+    setIsProductTransitioning(Boolean(displayedProduct));
+
+    async function loadProduct() {
+      try {
+        const nextProduct = await fetchStorefrontProduct(productId, controller.signal);
+
+        try {
+          await preloadCatalogImage(
+            nextProduct.detailImageUrl ?? nextProduct.imageUrl,
+            controller.signal
+          );
+        } catch {
+          if (controller.signal.aborted) return;
+        }
+
+        if (controller.signal.aborted) return;
+
+        productRef.current = nextProduct;
+        setQuantity(1);
+        setRatingFilter(null);
+        setReviewPage(1);
+        setProduct(nextProduct);
+        setIsProductTransitioning(false);
+      } catch (reason: unknown) {
+        if (!controller.signal.aborted) {
+          setIsProductTransitioning(false);
           setError(reason instanceof Error ? reason.message : "Product could not be loaded.");
-      });
+        }
+      }
+    }
+
+    void loadProduct();
     return () => controller.abort();
   }, [productId]);
 
+  const displayedProductId = product?.id ?? null;
+
   useEffect(() => {
+    if (!displayedProductId) return;
+
     const controller = new AbortController();
     setReviewResource((current) => ({ ...current, error: "", status: "loading" }));
     fetchStorefrontProductReviews(
-      productId,
+      displayedProductId,
       { page: reviewPage, pageSize: 10, ...(ratingFilter ? { rating: ratingFilter } : {}) },
       controller.signal
     )
       .then((data) => setReviewResource({ data, error: "", status: "success" }))
       .catch((reason: unknown) => {
         if (!controller.signal.aborted) {
-          setReviewResource({
-            data: null,
+          setReviewResource((current) => ({
+            data: current.data,
             error: reason instanceof Error ? reason.message : "Reviews could not be loaded.",
             status: "error"
-          });
+          }));
         }
       });
     return () => controller.abort();
-  }, [productId, ratingFilter, reviewPage, reviewReload]);
+  }, [displayedProductId, ratingFilter, reviewPage, reviewReload]);
 
   useEffect(() => {
+    if (!displayedProductId) return;
+
     const controller = new AbortController();
-    setRelatedResource({ data: null, error: "", status: "loading" });
-    fetchStorefrontRelatedProducts(productId, 4, controller.signal)
+    setRelatedResource((current) => ({ ...current, error: "", status: "loading" }));
+    fetchStorefrontRelatedProducts(displayedProductId, 4, controller.signal)
       .then((data) => setRelatedResource({ data, error: "", status: "success" }))
       .catch((reason: unknown) => {
         if (!controller.signal.aborted) {
-          setRelatedResource({
-            data: null,
+          setRelatedResource((current) => ({
+            data: current.data,
             error:
               reason instanceof Error ? reason.message : "Related products could not be loaded.",
             status: "error"
-          });
+          }));
         }
       });
     return () => controller.abort();
-  }, [productId, relatedReload]);
+  }, [displayedProductId, relatedReload]);
 
-  if (error)
+  if (error) {
+    const productMissing = /(?:not found|404)/i.test(error);
+
     return (
-      <div className="customer-page customer-container">
-        <div className="customer-empty-state">
-          <h1>Product Unavailable</h1>
-          <p>{error}</p>
-          <button
-            className="customer-button"
-            onClick={() => window.location.reload()}
-            type="button"
-          >
-            Try again
-          </button>
-          <CustomerLink className="customer-button" href="/shop" navigate={navigate}>
-            Back to shop
-          </CustomerLink>
+      <div className="customer-page customer-container customer-product-error-page">
+        <section
+          aria-labelledby="product-load-error-title"
+          className="customer-product-error-state"
+          role="status"
+        >
+          <div aria-hidden="true" className="customer-product-error-state__icon">
+            <RefreshCw size={24} />
+          </div>
+
+          <p className="customer-product-error-state__eyebrow">
+            {productMissing ? "Product status" : "Store connection"}
+          </p>
+          <h1 id="product-load-error-title">
+            {productMissing ? "This product isn’t available" : "We couldn’t load this product"}
+          </h1>
+          <p className="customer-product-error-state__description">
+            {productMissing
+              ? "It may have been removed from the storefront or is no longer available."
+              : "The store connection is temporarily unavailable. Please try again in a moment."}
+          </p>
+
+          <div className="customer-product-error-state__actions">
+            <button
+              className="customer-button"
+              onClick={() => window.location.reload()}
+              type="button"
+            >
+              <RefreshCw aria-hidden="true" size={18} />
+              Try again
+            </button>
+            <CustomerLink
+              className="customer-button customer-button--secondary"
+              href="/shop"
+              navigate={navigate}
+            >
+              <ArrowLeft aria-hidden="true" size={18} />
+              Back to shop
+            </CustomerLink>
+          </div>
+        </section>
+      </div>
+    );
+  }
+  if (!product)
+    return (
+      <div className="customer-page customer-product-page">
+        <StorefrontGalaxyArtwork className="customer-product-page__cosmos" />
+        <div className="customer-container">
+          <div className="customer-inline-state">Loading product...</div>
         </div>
       </div>
     );
-  if (!product)
-    return (
-      <div className="customer-page customer-container">
-        <div className="customer-inline-state">Loading product...</div>
-      </div>
-    );
   const outOfStock = product.availableStock <= 0;
+  const activeProductId = product.id;
+  const isFavorite = favoriteIds.has(activeProductId);
+
+  async function handleFavorite() {
+    const result = await toggleFavorite(activeProductId);
+    if (result === "auth-required") {
+      navigate(buildCustomerAuthPath("/login", `/product/${activeProductId}`));
+    }
+  }
 
   return (
-    <div className="customer-page customer-product-page">
+    <div
+      aria-busy={isProductTransitioning}
+      className="customer-page customer-product-page"
+      data-product-transitioning={isProductTransitioning || undefined}
+    >
+      <StorefrontGalaxyArtwork className="customer-product-page__cosmos" />
       <div className="customer-container">
         <CustomerLink
           className="customer-back-link"
@@ -155,19 +253,35 @@ export function ProductDetailPage({
         >
           <ArrowLeft aria-hidden="true" size={17} /> Back to {product.category.name}
         </CustomerLink>
-        <section className="customer-product-detail">
-          <ProductVisual
-            category={product.category.name}
-            imageUrl={product.detailImageUrl ?? product.imageUrl}
-            large
-            name={product.name}
-          />
+        <section className="customer-product-detail" key={product.id}>
+          <div className="customer-product-detail__media">
+            <ProductVisual
+              category={product.category.name}
+              imageUrl={product.detailImageUrl ?? product.imageUrl}
+              large
+              name={product.name}
+            />
+            <ProductSizeSelector
+              currentProductId={productId}
+              navigate={navigate}
+              variants={product.sizeVariants}
+            />
+          </div>
           <div className="customer-product-detail__copy">
             <p className="customer-kicker">{product.category.name}</p>
-            <h1>{product.name}</h1>
+            <AdaptiveProductTitle name={product.name} />
             <p className="customer-product-detail__description">
               {product.description || "An everyday essential from Ysabelle's Store."}
             </p>
+            <button
+              aria-pressed={isFavorite}
+              className="customer-product-detail__favorite"
+              onClick={() => void handleFavorite()}
+              type="button"
+            >
+              <Heart aria-hidden="true" fill={isFavorite ? "currentColor" : "none"} />
+              {isFavorite ? "Saved to favorites" : "Save to favorites"}
+            </button>
             <div className="customer-product-detail__price">
               <strong>{formatCurrency(product.sellingPrice)}</strong>
               <span>per {formatUnit(product.unit)}</span>
@@ -189,6 +303,7 @@ export function ProductDetailPage({
                 />
                 <button
                   className="customer-button"
+                  disabled={isProductTransitioning}
                   onClick={() => addItem(product, quantity)}
                   type="button"
                 >
@@ -209,6 +324,9 @@ export function ProductDetailPage({
         </section>
 
         <ReviewsSection
+          navigate={navigate}
+          productId={product.id}
+          onReviewSaved={() => setReviewReload((value) => value + 1)}
           onFilterChange={(rating) => {
             setRatingFilter(rating);
             setReviewPage(1);
@@ -232,6 +350,9 @@ export function ProductDetailPage({
 }
 
 function ReviewsSection({
+  navigate,
+  productId,
+  onReviewSaved,
   onFilterChange,
   onPageChange,
   onRetry,
@@ -239,6 +360,9 @@ function ReviewsSection({
   ratingFilter,
   resource
 }: {
+  navigate: (path: string) => void;
+  productId: string;
+  onReviewSaved: () => void;
   onFilterChange: (rating: number | null) => void;
   onPageChange: (page: number) => void;
   onRetry: () => void;
@@ -246,13 +370,100 @@ function ReviewsSection({
   ratingFilter: number | null;
   resource: Resource<StorefrontProductReviews>;
 }) {
+  const { status: authStatus } = useCustomerAuth();
   const summary = resource.data?.summary;
+  const [reviewContext, setReviewContext] = useState<StorefrontReviewContext | null>(null);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSaving, setReviewSaving] = useState(false);
+  const [reviewMessage, setReviewMessage] = useState<string | null>(null);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const draft = readReviewDraft(productId);
+    if (draft) {
+      setReviewRating(draft.rating);
+      setReviewComment(draft.comment);
+    } else {
+      setReviewRating(0);
+      setReviewComment("");
+    }
+
+    if (authStatus !== "authenticated") {
+      setReviewContext(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    void fetchStorefrontReviewContext(productId, controller.signal)
+      .then((context) => {
+        setReviewContext(context);
+        if (!draft && context.review) {
+          setReviewRating(context.review.rating);
+          setReviewComment(context.review.comment);
+        }
+      })
+      .catch((reason: unknown) => {
+        if (!controller.signal.aborted) {
+          setReviewError(
+            reason instanceof Error ? reason.message : "Review eligibility could not be checked."
+          );
+        }
+      });
+
+    return () => controller.abort();
+  }, [authStatus, productId]);
+
+  async function handleReviewSubmit() {
+    setReviewMessage(null);
+    setReviewError(null);
+    const comment = reviewComment.trim();
+    if (reviewRating < 1 || reviewRating > 5) {
+      setReviewError("Choose a rating from 1 to 5 stars.");
+      return;
+    }
+    if (comment.length < 3) {
+      setReviewError("Write at least a few words about this product.");
+      return;
+    }
+
+    writeReviewDraft(productId, { rating: reviewRating, comment });
+
+    if (authStatus !== "authenticated") {
+      navigate(buildCustomerAuthPath("/login", `/product/${productId}#reviews`));
+      return;
+    }
+    if (!reviewContext?.eligible) {
+      setReviewError(
+        reviewContext?.reason ??
+          "A completed signed-in purchase is required before publishing this review."
+      );
+      return;
+    }
+
+    setReviewSaving(true);
+    try {
+      await saveStorefrontProductReview(productId, { rating: reviewRating, comment });
+      clearReviewDraft(productId);
+      setReviewMessage(
+        reviewContext.review ? "Your review was updated." : "Your review was published."
+      );
+      const nextContext = await fetchStorefrontReviewContext(productId);
+      setReviewContext(nextContext);
+      onReviewSaved();
+    } catch (reason) {
+      setReviewError(reason instanceof Error ? reason.message : "Your review could not be saved.");
+    } finally {
+      setReviewSaving(false);
+    }
+  }
 
   return (
     <section
       aria-busy={resource.status === "loading"}
       aria-labelledby="product-reviews-heading"
       className="customer-product-reviews"
+      id="reviews"
     >
       <ProductDetailReveal className="product-detail-reveal--heading">
         <header className="customer-product-section-heading">
@@ -271,7 +482,7 @@ function ReviewsSection({
           Loading ratings and reviews...
         </div>
       ) : null}
-      {resource.status === "error" ? (
+      {resource.status === "error" && !resource.data ? (
         <div className="customer-product-section-state customer-product-section-state--error">
           <div>
             <strong>Ratings and reviews could not be loaded.</strong>
@@ -318,6 +529,81 @@ function ReviewsSection({
             </div>
           </ProductDetailReveal>
 
+          <ProductDetailReveal className="customer-review-composer">
+            <div className="customer-review-composer__header">
+              <div>
+                <p className="customer-kicker">Share your experience</p>
+                <h3>{reviewContext?.review ? "Update your review" : "Write a review"}</h3>
+                <p>
+                  {authStatus === "authenticated"
+                    ? reviewContext?.eligible
+                      ? "Verified purchase detected. Your rating and comment can be published."
+                      : (reviewContext?.reason ?? "Checking your purchase eligibility.")
+                    : "Write now if you want. Your draft will be kept when you sign in."}
+                </p>
+              </div>
+              {reviewContext?.eligible ? (
+                <span className="customer-review-composer__verified">
+                  <BadgeCheck aria-hidden="true" />
+                  Verified purchase
+                </span>
+              ) : null}
+            </div>
+            <div
+              className="customer-review-composer__stars"
+              role="radiogroup"
+              aria-label="Your rating"
+            >
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  aria-checked={reviewRating === star}
+                  aria-label={`${star} star rating`}
+                  key={star}
+                  onClick={() => setReviewRating(star)}
+                  role="radio"
+                  type="button"
+                >
+                  <Star aria-hidden="true" fill={star <= reviewRating ? "currentColor" : "none"} />
+                </button>
+              ))}
+            </div>
+            <textarea
+              aria-label="Your review"
+              maxLength={1000}
+              onChange={(event) => setReviewComment(event.target.value)}
+              placeholder="What did you like about this product?"
+              rows={4}
+              value={reviewComment}
+            />
+            <div className="customer-review-composer__footer">
+              <span>{reviewComment.trim().length}/1000</span>
+              <button
+                className="customer-button customer-button--compact"
+                disabled={reviewSaving || reviewRating === 0 || reviewComment.trim().length < 3}
+                onClick={() => void handleReviewSubmit()}
+                type="button"
+              >
+                {reviewSaving
+                  ? "Saving..."
+                  : authStatus === "authenticated"
+                    ? reviewContext?.review
+                      ? "Update review"
+                      : "Publish review"
+                    : "Sign in to publish"}
+              </button>
+            </div>
+            {reviewError ? (
+              <p className="customer-review-composer__error" role="alert">
+                {reviewError}
+              </p>
+            ) : null}
+            {reviewMessage ? (
+              <p className="customer-review-composer__success" role="status">
+                {reviewMessage}
+              </p>
+            ) : null}
+          </ProductDetailReveal>
+
           <ProductDetailReveal className="product-detail-reveal--controls">
             <div
               aria-label="Filter customer reviews"
@@ -354,7 +640,16 @@ function ReviewsSection({
                     </span>
                     <div>
                       <strong>{review.reviewerDisplayName}</strong>
-                      <time dateTime={review.createdAt}>{formatReviewDate(review.createdAt)}</time>
+                      <span className="customer-review__meta">
+                        <time dateTime={review.createdAt}>
+                          {formatReviewDate(review.createdAt)}
+                        </time>
+                        {review.verifiedPurchase ? (
+                          <span className="customer-review__verified">
+                            <BadgeCheck aria-hidden="true" /> Verified purchase
+                          </span>
+                        ) : null}
+                      </span>
                     </div>
                     <RatingStars rating={review.rating} />
                   </header>
@@ -403,8 +698,8 @@ function ReviewsSection({
           ) : null}
 
           <p className="customer-review-policy-note">
-            <ShieldCheck aria-hidden="true" /> Review posting is unavailable until completed
-            customer purchases can be securely verified.
+            <ShieldCheck aria-hidden="true" /> Published reviews require a completed signed-in
+            purchase and remain subject to store moderation.
           </p>
         </>
       ) : null}
@@ -423,41 +718,36 @@ function RelatedProductsSection({
   productCategory: StorefrontProduct["category"];
   resource: Resource<StorefrontRelatedProducts>;
 }) {
-  const sameCategory = resource.data?.sameCategory ?? [];
-  const fallback = resource.data?.fallback ?? [];
-  const hasProducts = sameCategory.length + fallback.length > 0;
+  const dataMatchesCategory = resource.data?.category.id === productCategory.id;
+  const sameCategory = dataMatchesCategory ? (resource.data?.sameCategory ?? []) : [];
+  const hasProducts = sameCategory.length > 0;
+  const hasCurrentData = dataMatchesCategory && Boolean(resource.data);
+  const isRevalidating = resource.status === "loading" && hasCurrentData;
 
   return (
-    <section aria-labelledby="related-products-heading" className="customer-related-products">
+    <section
+      aria-busy={resource.status === "loading"}
+      aria-labelledby="related-products-heading"
+      className="customer-related-products"
+      data-revalidating={isRevalidating || undefined}
+    >
       <ProductDetailReveal className="product-detail-reveal--heading">
         <header className="customer-product-section-heading customer-product-section-heading--related">
           <div>
             <p className="customer-kicker">Keep browsing</p>
-            <h2 id="related-products-heading">
-              {sameCategory.length ? `More from ${productCategory.name}` : "More store picks"}
-            </h2>
+            <h2 id="related-products-heading">More from {productCategory.name}</h2>
           </div>
-          {sameCategory.length ? (
-            <CustomerLink
-              className="customer-related-products__link"
-              href={`/shop/category/${productCategory.slug}`}
-              navigate={navigate}
-            >
-              View all {productCategory.name} <ChevronRight aria-hidden="true" size={17} />
-            </CustomerLink>
-          ) : (
-            <CustomerLink
-              className="customer-related-products__link"
-              href="/shop"
-              navigate={navigate}
-            >
-              Browse the shop <ChevronRight aria-hidden="true" size={17} />
-            </CustomerLink>
-          )}
+          <CustomerLink
+            className="customer-related-products__link"
+            href={`/shop/category/${productCategory.slug}`}
+            navigate={navigate}
+          >
+            View all {productCategory.name} <ChevronRight aria-hidden="true" size={17} />
+          </CustomerLink>
         </header>
       </ProductDetailReveal>
 
-      {resource.status === "loading" ? (
+      {resource.status === "loading" && !hasCurrentData ? (
         <div aria-live="polite" className="customer-related-products__loading">
           <span>Loading related products...</span>
           <div className="customer-related-products__skeleton-grid" aria-hidden="true">
@@ -467,7 +757,7 @@ function RelatedProductsSection({
           </div>
         </div>
       ) : null}
-      {resource.status === "error" ? (
+      {resource.status === "error" && !hasCurrentData ? (
         <div className="customer-product-section-state customer-product-section-state--error">
           <div>
             <strong>Related products could not be loaded.</strong>
@@ -482,51 +772,97 @@ function RelatedProductsSection({
           </button>
         </div>
       ) : null}
-      {resource.status === "success" && hasProducts ? (
-        <>
-          {sameCategory.length ? (
-            <ProductDetailReveal
-              className="customer-product-grid customer-related-products__grid"
-              stagger
-            >
-              {sameCategory.map((relatedProduct) => (
-                <ProductCard key={relatedProduct.id} navigate={navigate} product={relatedProduct} />
-              ))}
-            </ProductDetailReveal>
-          ) : null}
-          {fallback.length ? (
-            <div
-              className={sameCategory.length ? "customer-related-products__fallback" : undefined}
-            >
-              {sameCategory.length ? (
-                <div>
-                  <p className="customer-kicker">From other aisles</p>
-                  <h3>You may also like</h3>
-                </div>
-              ) : null}
-              <ProductDetailReveal
-                className="customer-product-grid customer-related-products__grid"
-                stagger
-              >
-                {fallback.map((relatedProduct) => (
-                  <ProductCard
-                    key={relatedProduct.id}
-                    navigate={navigate}
-                    product={relatedProduct}
-                  />
-                ))}
-              </ProductDetailReveal>
-            </div>
-          ) : null}
-        </>
+      {hasCurrentData && hasProducts ? (
+        <RelatedProductsRail navigate={navigate} products={sameCategory} />
       ) : null}
-      {resource.status === "success" && !hasProducts ? (
+      {resource.status === "success" && hasCurrentData && !hasProducts ? (
         <div className="customer-product-section-state">
-          <strong>No related products are available right now.</strong>
-          <p>Browse the full shop to continue exploring the live catalog.</p>
+          <strong>No more products are available in this category right now.</strong>
+          <p>Use “View all {productCategory.name}” to return to the full category.</p>
         </div>
       ) : null}
     </section>
+  );
+}
+
+function RelatedProductsRail({
+  navigate,
+  products
+}: {
+  navigate: (path: string) => void;
+  products: StorefrontProduct[];
+}) {
+  const railRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [hasOverflow, setHasOverflow] = useState(false);
+
+  const updateState = useCallback(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const overflow = rail.scrollWidth > rail.clientWidth + 2;
+    setHasOverflow(overflow);
+    setCanScrollLeft(overflow && rail.scrollLeft > 2);
+    setCanScrollRight(overflow && rail.scrollLeft + rail.clientWidth < rail.scrollWidth - 2);
+  }, []);
+
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+
+    updateState();
+    const observer = new ResizeObserver(updateState);
+    observer.observe(rail);
+    rail.addEventListener("scroll", updateState, { passive: true });
+    window.addEventListener("resize", updateState);
+    return () => {
+      observer.disconnect();
+      rail.removeEventListener("scroll", updateState);
+      window.removeEventListener("resize", updateState);
+    };
+  }, [products.length, updateState]);
+
+  function scroll(direction: -1 | 1) {
+    const rail = railRef.current;
+    if (!rail) return;
+    rail.scrollBy({
+      behavior: "smooth",
+      left: direction * Math.max(280, rail.clientWidth * 0.82)
+    });
+  }
+
+  return (
+    <ProductDetailReveal className="customer-related-products__rail-shell">
+      {hasOverflow ? (
+        <button
+          aria-label="Previous related products"
+          className="customer-related-products__arrow customer-related-products__arrow--previous"
+          disabled={!canScrollLeft}
+          onClick={() => scroll(-1)}
+          type="button"
+        >
+          <ChevronLeft aria-hidden="true" />
+        </button>
+      ) : null}
+
+      <div className="customer-related-products__viewport" ref={railRef}>
+        {products.map((relatedProduct) => (
+          <ProductCard key={relatedProduct.id} navigate={navigate} product={relatedProduct} />
+        ))}
+      </div>
+
+      {hasOverflow ? (
+        <button
+          aria-label="Next related products"
+          className="customer-related-products__arrow customer-related-products__arrow--next"
+          disabled={!canScrollRight}
+          onClick={() => scroll(1)}
+          type="button"
+        >
+          <ChevronRight aria-hidden="true" />
+        </button>
+      ) : null}
+    </ProductDetailReveal>
   );
 }
 
@@ -568,6 +904,37 @@ function RatingStars({ rating }: { rating: number }) {
       ))}
     </span>
   );
+}
+
+function reviewDraftKey(productId: string) {
+  return `ysabelle:review-draft:${productId}`;
+}
+
+function readReviewDraft(productId: string): { rating: number; comment: string } | null {
+  try {
+    const raw = window.localStorage.getItem(reviewDraftKey(productId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { rating?: unknown; comment?: unknown };
+    if (
+      typeof parsed.rating !== "number" ||
+      parsed.rating < 1 ||
+      parsed.rating > 5 ||
+      typeof parsed.comment !== "string"
+    ) {
+      return null;
+    }
+    return { rating: parsed.rating, comment: parsed.comment };
+  } catch {
+    return null;
+  }
+}
+
+function writeReviewDraft(productId: string, draft: { rating: number; comment: string }) {
+  window.localStorage.setItem(reviewDraftKey(productId), JSON.stringify(draft));
+}
+
+function clearReviewDraft(productId: string) {
+  window.localStorage.removeItem(reviewDraftKey(productId));
 }
 
 function formatReviewDate(value: string) {

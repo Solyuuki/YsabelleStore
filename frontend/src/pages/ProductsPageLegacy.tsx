@@ -21,7 +21,6 @@ import {
 } from "react";
 
 import { ProductImageUploadPanel } from "@/components/catalog/ProductImageUploadPanel";
-import { useAuth } from "@/context/AuthContext";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -32,6 +31,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { isWholeUnitDraft } from "@/utils/wholeUnitQuantity";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import {
@@ -47,7 +47,6 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { Textarea } from "@/components/ui/textarea";
 import {
   createProduct,
-  createCategory,
   fetchCategories,
   fetchProductById,
   fetchProducts,
@@ -83,13 +82,48 @@ const CATALOG_PAGE_SIZE_MINIMUM_MS = 400;
 const CATALOG_REFRESH_MINIMUM_MS = 350;
 const PREVIEW_LOADING_MINIMUM_MS = 500;
 const IMPORT_LOADING_MINIMUM_MS = 700;
-const CATEGORY_CREATE_MINIMUM_MS = 450;
 const currencyFormatter = new Intl.NumberFormat("en-PH", {
   currency: "PHP",
   maximumFractionDigits: 2,
   minimumFractionDigits: 2,
   style: "currency"
 });
+
+function formatProductPackSize(product: ProductRecord) {
+  if (!product.sizeValue || !product.sizeUnit) return null;
+  const unitLabels: Record<ProductRecord["sizeUnit"] & string, string> = {
+    MILLILITER: "mL",
+    LITER: "L",
+    GRAM: "g",
+    KILOGRAM: "kg",
+    PIECE: "pcs"
+  };
+  const numeric = Number(product.sizeValue);
+  const value = Number.isFinite(numeric)
+    ? new Intl.NumberFormat("en-PH", { maximumFractionDigits: 3 }).format(numeric)
+    : product.sizeValue;
+  return `${value} ${unitLabels[product.sizeUnit]}`;
+}
+
+function isProductVariantReady(product: ProductRecord) {
+  return Boolean(product.brand && product.variant && product.sizeValue && product.sizeUnit);
+}
+
+function productIdentitySummary(product: ProductRecord) {
+  return [product.brand, product.variant, formatProductPackSize(product)]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+function productSizeFamilyLabel(product: ProductRecord) {
+  const identity = [product.brand, product.variant].filter(Boolean).join(" · ");
+  return identity || product.name.replace(/\b\d+(?:\.\d+)?\s*(?:ml|l|g|kg|pcs?)\b/gi, "").trim();
+}
+
+function productPackagingLabel(product: ProductRecord) {
+  const unit = String(product.unit).toLowerCase().replaceAll("_", " ");
+  return unit.charAt(0).toUpperCase() + unit.slice(1);
+}
 
 type CatalogLoadingReason =
   | "initial"
@@ -119,7 +153,6 @@ type ImportState = {
 };
 
 export function ProductsPage() {
-  const { user } = useAuth();
   const [products, setProducts] = useState<ProductRecord[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -176,7 +209,6 @@ export function ProductsPage() {
     initialized: false
   });
   const { pushToast } = useToast();
-  const isOwner = user?.role === "OWNER";
 
   const selectedProduct = useMemo(
     () => products.find((product) => product.id === selectedProductId) ?? null,
@@ -847,16 +879,7 @@ export function ProductsPage() {
         categoryLoading={categoriesLoading}
         isOpen={isCreateDialogOpen}
         onClose={() => setIsCreateDialogOpen(false)}
-        onCategoryCreated={(category) => {
-          setCategories((current) => {
-            const next = current.filter((entry) => entry.id !== category.id);
-            next.push(category);
-            next.sort((left, right) => left.name.localeCompare(right.name));
-            return next;
-          });
-        }}
         onCreated={() => void refreshCatalog()}
-        isOwner={isOwner}
       />
 
       <ImportProductsDialog
@@ -903,7 +926,7 @@ export function ProductsPage() {
           <CardContent className="px-4 pb-4 pt-2 lg:px-5">
             <div className="space-y-4">
               <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_180px]">
-                <label className="relative flex h-11 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3">
+                <label className="ys-product-toolbar-filter relative flex h-11 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3">
                   <Search className="h-4 w-4 text-slate-500" aria-hidden="true" />
                   <input
                     aria-busy={searchIsLoading}
@@ -921,11 +944,14 @@ export function ProductsPage() {
                     <LoaderCircle className="absolute right-3 h-4 w-4 animate-spin text-emerald-700" />
                   ) : null}
                 </label>
-                <label className="relative flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
+                <label className="ys-product-toolbar-filter relative flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
                   <Filter className="h-4 w-4 text-slate-500" aria-hidden="true" />
                   <select
                     aria-busy={filterIsLoading}
-                    className={["w-full bg-transparent outline-none", filterIsLoading ? "pr-6" : ""]
+                    className={[
+                      "ys-retail-select-chevron w-full bg-transparent outline-none",
+                      filterIsLoading ? "pr-6" : ""
+                    ]
                       .filter(Boolean)
                       .join(" ")}
                     value={statusFilter}
@@ -941,12 +967,15 @@ export function ProductsPage() {
                     <LoaderCircle className="pointer-events-none absolute right-3 h-4 w-4 animate-spin text-emerald-700" />
                   ) : null}
                 </label>
-                <label className="relative flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
+                <label className="ys-product-toolbar-filter relative flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
                   <Filter className="h-4 w-4 text-slate-500" aria-hidden="true" />
                   <select
                     aria-busy={filterIsLoading}
                     aria-label="Catalog quality"
-                    className={["w-full bg-transparent outline-none", filterIsLoading ? "pr-6" : ""]
+                    className={[
+                      "ys-retail-select-chevron w-full bg-transparent outline-none",
+                      filterIsLoading ? "pr-6" : ""
+                    ]
                       .filter(Boolean)
                       .join(" ")}
                     value={qualityFilter}
@@ -1020,6 +1049,8 @@ export function ProductsPage() {
                             const isSelected = selectedProductId === product.id;
                             const isStatusPending = pendingAvailabilityProductIds.has(product.id);
                             const availabilityAction = getAvailabilityAction(product.status);
+                            const variantReady = isProductVariantReady(product);
+                            const identitySummary = productIdentitySummary(product);
 
                             return (
                               <tr
@@ -1049,7 +1080,7 @@ export function ProductsPage() {
                                   <div className="mt-0.5 max-h-10 overflow-hidden text-xs leading-5 text-slate-500">
                                     {product.description ?? "No description"}
                                   </div>
-                                  <div className="mt-1.5">
+                                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                                     <StatusBadge
                                       variant={
                                         product.dataQualityStatus === "APPROVED"
@@ -1067,6 +1098,18 @@ export function ProductsPage() {
                                           ? "Rejected"
                                           : "Needs review"}
                                     </StatusBadge>
+                                    <StatusBadge variant={variantReady ? "success" : "warning"}>
+                                      {variantReady ? "Variant ready" : "Identity incomplete"}
+                                    </StatusBadge>
+                                  </div>
+                                  <div
+                                    className={[
+                                      "mt-1.5 text-xs leading-5",
+                                      variantReady ? "text-slate-600" : "font-medium text-amber-700"
+                                    ].join(" ")}
+                                  >
+                                    {identitySummary ||
+                                      "Brand, variant, and package size need catalog review."}
                                   </div>
                                   <div className="mt-2 grid gap-1 text-xs text-slate-500 lg:hidden">
                                     <div className="flex items-start justify-between gap-3">
@@ -1361,7 +1404,7 @@ function ImportProductsDialog({
     >
       <DialogContent
         aria-describedby="import-products-description"
-        className="flex max-h-[88vh] w-[calc(100vw-40px)] max-w-[700px] flex-col overflow-hidden p-0"
+        className="ys-product-modal flex max-h-[88vh] w-[calc(100vw-40px)] max-w-[700px] flex-col overflow-hidden p-0"
         onEscapeKeyDown={(event) => {
           if (isImporting) {
             event.preventDefault();
@@ -1423,7 +1466,11 @@ function ImportProductsDialog({
                 <li>Keep the headers unchanged.</li>
                 <li>Use unique SKU and barcode values.</li>
                 <li>Barcode is optional.</li>
-                <li>Categories and units must use supported values.</li>
+                <li>
+                  Include brand, variant, sizeValue, and sizeUnit for products that belong to a size
+                  or flavor family.
+                </li>
+                <li>Categories, units, and pack-size units must use supported values.</li>
               </ul>
             </div>
 
@@ -2140,18 +2187,14 @@ function CatalogTableSkeleton({ rowCount }: { rowCount: number }) {
 function CreateProductDialog({
   categories,
   categoryLoading,
-  isOwner,
   isOpen,
   onClose,
-  onCategoryCreated,
   onCreated
 }: {
   categories: ProductCategorySummary[];
   categoryLoading: boolean;
-  isOwner: boolean;
   isOpen: boolean;
   onClose: () => void;
-  onCategoryCreated: (category: ProductCategorySummary) => void;
   onCreated: () => void;
 }) {
   const { pushToast } = useToast();
@@ -2179,13 +2222,6 @@ function CreateProductDialog({
   const [createdProductId, setCreatedProductId] = useState<string | null>(null);
   const [hasSelectedImage, setHasSelectedImage] = useState(false);
   const [imageSession, setImageSession] = useState(0);
-  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
-  const [categoryForm, setCategoryForm] = useState({
-    description: "",
-    name: ""
-  });
-  const [categoryError, setCategoryError] = useState<string | null>(null);
-  const [creatingCategory, setCreatingCategory] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
@@ -2208,67 +2244,6 @@ function CreateProductDialog({
       categoryId: current.categoryId || categories[0]?.id || ""
     }));
   }, [categories, isOpen]);
-
-  useEffect(() => {
-    if (!isCategoryDialogOpen) {
-      return;
-    }
-
-    setCategoryError(null);
-  }, [isCategoryDialogOpen]);
-
-  async function handleCreateCategory(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (creatingCategory || createdProductId) {
-      return;
-    }
-
-    const name = categoryForm.name.trim();
-
-    if (!name) {
-      setCategoryError("Category name is required.");
-      return;
-    }
-
-    setCreatingCategory(true);
-    setCategoryError(null);
-
-    try {
-      const response = await waitForMinimumDuration(
-        createCategory({
-          description: categoryForm.description.trim() || null,
-          name
-        }),
-        CATEGORY_CREATE_MINIMUM_MS
-      );
-
-      if (!response.success || !response.data) {
-        setCategoryError(response.message || "Unable to create category.");
-        return;
-      }
-
-      const createdCategory = response.data;
-      onCategoryCreated(createdCategory);
-      setForm((current) => ({ ...current, categoryId: createdCategory.id }));
-      setCategoryForm({
-        description: "",
-        name: ""
-      });
-      setIsCategoryDialogOpen(false);
-      pushToast({
-        message: "The new category is ready to use.",
-        title: "Category created",
-        variant: "success"
-      });
-    } catch (creationError) {
-      setCategoryError(
-        creationError instanceof Error ? creationError.message : "Unable to create category."
-      );
-    } finally {
-      setCreatingCategory(false);
-    }
-  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -2338,7 +2313,7 @@ function CreateProductDialog({
         }
       }}
     >
-      <DialogContent className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[760px] flex-col overflow-hidden p-0">
+      <DialogContent className="ys-product-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[760px] flex-col overflow-hidden p-0">
         <DialogHeader className="border-b border-slate-200 px-6 py-5">
           <DialogTitle>Add Product</DialogTitle>
           <DialogDescription>Create a catalog record for the product.</DialogDescription>
@@ -2457,49 +2432,46 @@ function CreateProductDialog({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="product-category">Category</Label>
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                    <div className="min-w-0 flex-1">
-                      <Select
-                        id="product-category"
-                        disabled={categoryLoading || categories.length === 0}
-                        value={form.categoryId}
-                        onChange={(event) =>
-                          setForm((current) => ({ ...current, categoryId: event.target.value }))
-                        }
-                      >
-                        {categoryLoading ? (
-                          <option value="">Loading categories...</option>
-                        ) : categories.length === 0 ? (
-                          <option value="">No categories found</option>
-                        ) : (
-                          <>
-                            <option value="">Select a category</option>
-                            {categories.map((category) => (
-                              <option key={category.id} value={category.id}>
-                                {category.name}
-                              </option>
-                            ))}
-                          </>
-                        )}
-                      </Select>
-                      {!categoryLoading && categories.length === 0 ? (
-                        <p className="mt-2 text-xs leading-5 text-slate-500">No categories found</p>
-                      ) : null}
-                    </div>
-                    {isOwner ? (
-                      <Button
-                        className="shrink-0 whitespace-nowrap"
-                        type="button"
-                        variant="secondary"
-                        onClick={() => {
-                          setCategoryError(null);
-                          setIsCategoryDialogOpen(true);
-                        }}
-                      >
-                        <Plus className="h-4 w-4" aria-hidden="true" />
-                        Add category
-                      </Button>
-                    ) : null}
+                  <Select
+                    id="product-category"
+                    disabled={categoryLoading || categories.length === 0}
+                    value={form.categoryId}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, categoryId: event.target.value }))
+                    }
+                  >
+                    {categoryLoading ? (
+                      <option value="">Loading categories...</option>
+                    ) : categories.length === 0 ? (
+                      <option value="">No categories available</option>
+                    ) : (
+                      <>
+                        <option value="">Select a category</option>
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </>
+                    )}
+                  </Select>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-xs leading-5 text-slate-500">
+                      {categories.length === 0
+                        ? "Create a category first before saving this product."
+                        : "Category setup and storefront covers are managed separately."}
+                    </p>
+                    <Button
+                      className="h-auto px-0 py-1 text-xs"
+                      type="button"
+                      variant="ghost"
+                      onClick={() => {
+                        window.history.pushState({}, "", "/categories");
+                        window.dispatchEvent(new PopStateEvent("popstate"));
+                      }}
+                    >
+                      Manage categories
+                    </Button>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -2579,6 +2551,7 @@ function CreateProductDialog({
                     inputMode="numeric"
                     value={form.reorderLevel}
                     onChange={(event) =>
+                      isWholeUnitDraft(event.target.value) &&
                       setForm((current) => ({ ...current, reorderLevel: event.target.value }))
                     }
                   />
@@ -2590,6 +2563,7 @@ function CreateProductDialog({
                     inputMode="numeric"
                     value={form.targetStockLevel}
                     onChange={(event) =>
+                      isWholeUnitDraft(event.target.value) &&
                       setForm((current) => ({ ...current, targetStockLevel: event.target.value }))
                     }
                   />
@@ -2647,82 +2621,6 @@ function CreateProductDialog({
             )}
           </DialogFooter>
         </form>
-
-        <Dialog
-          open={isCategoryDialogOpen}
-          onOpenChange={(nextOpen) => {
-            if (!nextOpen) {
-              setIsCategoryDialogOpen(false);
-            }
-          }}
-        >
-          <DialogContent className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[460px] flex-col overflow-hidden p-0">
-            <DialogHeader className="border-b border-slate-200 px-6 py-5">
-              <DialogTitle>Create category</DialogTitle>
-              <DialogDescription>
-                Add a new category without closing the Add Product form.
-              </DialogDescription>
-            </DialogHeader>
-
-            <form
-              className="flex-1 space-y-4 overflow-y-auto px-6 py-5"
-              onSubmit={handleCreateCategory}
-            >
-              {categoryError ? (
-                <Alert variant="destructive">
-                  <AlertTitle>Category creation failed</AlertTitle>
-                  <AlertDescription>{categoryError}</AlertDescription>
-                </Alert>
-              ) : null}
-
-              <div className="space-y-2">
-                <Label htmlFor="category-name">Category name</Label>
-                <Input
-                  id="category-name"
-                  autoFocus
-                  value={categoryForm.name}
-                  onChange={(event) =>
-                    setCategoryForm((current) => ({ ...current, name: event.target.value }))
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="category-description">Description</Label>
-                <Textarea
-                  id="category-description"
-                  value={categoryForm.description}
-                  onChange={(event) =>
-                    setCategoryForm((current) => ({
-                      ...current,
-                      description: event.target.value
-                    }))
-                  }
-                />
-                <p className="text-xs leading-5 text-slate-500">
-                  Slug will be generated automatically from the category name.
-                </p>
-              </div>
-
-              <DialogFooter className="px-0 pb-0 pt-2">
-                <Button
-                  disabled={creatingCategory}
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setIsCategoryDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button disabled={creatingCategory || !categoryForm.name.trim()} type="submit">
-                  {creatingCategory ? (
-                    <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
-                  ) : null}
-                  {creatingCategory ? "Creating category…" : "Create category"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
       </DialogContent>
     </Dialog>
   );
@@ -2762,6 +2660,7 @@ function ProductDetailsDialog({
     sizeUnit: "" as NonNullable<ProductRecord["sizeUnit"]> | "",
     sizeValue: "",
     targetStockLevel: "0",
+    authorizeTargetStockPolicy: false,
     unit: "PIECE" as ProductRecord["unit"],
     variant: ""
   });
@@ -2784,6 +2683,7 @@ function ProductDetailsDialog({
       reorderLevel: String(product.reorderLevel),
       sellingPrice: product.sellingPrice,
       targetStockLevel: String(product.targetStockLevel),
+      authorizeTargetStockPolicy: false,
       unit: product.unit,
       variant: product.variant ?? "",
       sizeValue: product.sizeValue ?? "",
@@ -2865,6 +2765,7 @@ function ProductDetailsDialog({
         reorderLevel: Number(form.reorderLevel),
         sellingPrice: form.sellingPrice.trim(),
         targetStockLevel: Number(form.targetStockLevel),
+        authorizeTargetStockPolicy: form.authorizeTargetStockPolicy,
         unit: form.unit,
         variant: form.variant.trim() || null,
         sizeValue: form.sizeValue ? Number(form.sizeValue) : null,
@@ -2910,7 +2811,7 @@ function ProductDetailsDialog({
     >
       <DialogContent
         aria-describedby="product-details-dialog"
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[820px] flex-col overflow-hidden p-0"
+        className="ys-product-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[820px] flex-col overflow-hidden p-0"
         onCloseAutoFocus={(event) => {
           event.preventDefault();
         }}
@@ -3039,7 +2940,7 @@ function ProductDetailsDialog({
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="edit-unit">Unit</Label>
+                    <Label htmlFor="edit-unit">Selling / packaging unit</Label>
                     <Select
                       id="edit-unit"
                       value={form.unit}
@@ -3134,6 +3035,7 @@ function ProductDetailsDialog({
                       inputMode="numeric"
                       value={form.reorderLevel}
                       onChange={(event) =>
+                        isWholeUnitDraft(event.target.value) &&
                         setForm((current) => ({ ...current, reorderLevel: event.target.value }))
                       }
                     />
@@ -3145,10 +3047,31 @@ function ProductDetailsDialog({
                       inputMode="numeric"
                       value={form.targetStockLevel}
                       onChange={(event) =>
+                        isWholeUnitDraft(event.target.value) &&
                         setForm((current) => ({ ...current, targetStockLevel: event.target.value }))
                       }
                     />
                   </div>
+                  <label className="ys-product-target-policy flex items-start gap-3 rounded-lg border border-slate-200 px-3 py-3 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={form.authorizeTargetStockPolicy}
+                      onChange={(event) =>
+                        setForm((current) => ({
+                          ...current,
+                          authorizeTargetStockPolicy: event.target.checked
+                        }))
+                      }
+                    />
+                    <span>
+                      <strong>Owner authorization: Target-stock replenishment</strong>
+                      <span className="mt-1 block text-xs">
+                        Explicitly authorize this target quantity for controlled replenishment when
+                        verified actual-sales history is incomplete. This does not bypass the
+                        quantity, unit-cost, or order budget limits.
+                      </span>
+                    </span>
+                  </label>
                   <div className="space-y-2">
                     <Label htmlFor="edit-quality-status">Catalog quality</Label>
                     <Select
@@ -3197,6 +3120,8 @@ function ProductDetailsDialog({
                   <DetailLine label="Category" value={product.category.name} />
                   <DetailLine label="Brand" value={product.brand ?? "Unknown"} />
                   <DetailLine label="Variant" value={product.variant ?? "Not specified"} />
+                  <DetailLine label="Size family" value={productSizeFamilyLabel(product)} />
+                  <DetailLine label="Packaging" value={productPackagingLabel(product)} />
                   <DetailLine
                     label="Pack size"
                     value={
