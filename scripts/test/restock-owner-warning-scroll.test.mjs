@@ -24,7 +24,7 @@ function checkScrollableReview(source, id, refName) {
   assert.match(dialog, /<DialogHeader className="shrink-0 pb-4">/);
   assert.match(
     dialog,
-    /className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 pb-4"/
+    /className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain (?:px-6 pb-4|px-5 pb-4 sm:px-6)"/
   );
   assert.ok(dialog.includes(`ref={${refName}}`));
   assert.match(dialog, /role="region"/);
