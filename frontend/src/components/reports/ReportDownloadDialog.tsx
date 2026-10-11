@@ -337,7 +337,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
       }}
       open={open}
     >
-      <DialogContent className="max-w-[760px]">
+      <DialogContent className="ys-report-modal max-w-[760px]">
         <DialogHeader>
           <DialogTitle>Download report</DialogTitle>
           <DialogDescription>

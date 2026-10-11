@@ -2021,3 +2021,143 @@
   [class~="border-t"] {
   border-color: #536580;
 }
+
+
+/* Sprint 11: Reports dialogs render in Radix portals outside the retail app shell.
+   These scoped overrides fix dark ink/buttons on navy dialogs while leaving
+   light mode and other modules unchanged. */
+:root.dark[data-appearance-scope="retail"] [role="dialog"].ys-report-modal {
+  color: #f1f5ff;
+  border-color: #647695;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is(
+    [class~="text-slate-400"],
+    [class~="text-slate-500"],
+    [class~="text-slate-600"],
+    [class~="text-slate-700"],
+    [class~="text-slate-800"]
+  ) {
+  color: #d0dcf0 !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is([class~="text-slate-900"], [class~="text-slate-950"]) {
+  color: #f1f5ff !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is([class~="border-slate-100"], [class~="border-slate-200"], [class~="border-slate-300"]) {
+  border-color: #556985 !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is([class~="bg-white"], [class~="bg-slate-50"], [class~="bg-slate-100"]) {
+  background-color: #25354e !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  background: #17263d;
+  border-color: #7789a7;
+  color: #f2f6ff;
+  color-scheme: dark;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is(input, textarea)::placeholder {
+  color: #c3d2e7;
+  opacity: 1;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is(input, select, textarea):focus-visible {
+  outline: 2px solid #b7adff;
+  outline-offset: 2px;
+  border-color: #b7adff;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is(button[class~="bg-white"], button[class~="text-slate-600"]) {
+  background-color: #2e405c !important;
+  color: #f2f6ff !important;
+  border-color: #8295b3 !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is(button[class~="bg-white"], button[class~="text-slate-600"]):hover:not(:disabled) {
+  background-color: #3b506f !important;
+  border-color: #b8aeff !important;
+  color: #ffffff !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  button:disabled {
+  opacity: 0.82;
+  cursor: not-allowed;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is(button, [role="button"]):focus-visible {
+  outline: 2px solid #b7adff;
+  outline-offset: 2px;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  [class~="bg-amber-50"] {
+  background-color: #423525 !important;
+  border-color: #a8895f !important;
+  color: #ffe2b2 !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is([class~="text-amber-700"], [class~="text-amber-800"], [class~="text-amber-900"]) {
+  color: #ffe2b2 !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  [class~="bg-red-50"] {
+  background-color: #402b36 !important;
+  border-color: #ab7087 !important;
+  color: #ffd2db !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is([class~="text-red-700"], [class~="text-red-800"]) {
+  color: #ffd2db !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  [class~="bg-indigo-50"] {
+  background-color: #343457 !important;
+  border-color: #827aba !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is([class~="text-indigo-700"], [class~="text-indigo-800"]) {
+  color: #ddd5ff !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-report-modal
+  :is([class~="divide-slate-100"], [class~="divide-slate-200"]) > :not(:first-child) {
+  border-color: #4e6381 !important;
+}

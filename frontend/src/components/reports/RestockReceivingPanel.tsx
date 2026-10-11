@@ -485,7 +485,7 @@ export function RestockReceivingPanel({
           }
         }}
       >
-        <DialogContent className="flex max-h-[92vh] w-[calc(100vw-24px)] max-w-[1040px] flex-col overflow-hidden p-0">
+        <DialogContent className="ys-report-modal flex max-h-[92vh] w-[calc(100vw-24px)] max-w-[1040px] flex-col overflow-hidden p-0">
           {receiptOrder ? (
             <form className="flex min-h-0 flex-1 flex-col" onSubmit={submitReceipt}>
               <DialogHeader className="border-b border-slate-200 px-6 py-5">
@@ -730,7 +730,7 @@ export function RestockReceivingPanel({
           }
         }}
       >
-        <DialogContent className="max-w-[520px]">
+        <DialogContent className="ys-report-modal max-w-[520px]">
           {cancelOrder ? (
             <form onSubmit={submitCancellation}>
               <DialogHeader>

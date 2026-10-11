@@ -451,7 +451,7 @@ export function RestockOrderHistoryPanel({ refreshVersion = 0 }: { refreshVersio
         }}
         open={Boolean(selectedOrder)}
       >
-        <DialogContent className="max-w-[820px]">
+        <DialogContent className="ys-report-modal max-w-[820px]">
           {selectedOrder && selectedTotals ? (
             <>
               <DialogHeader>

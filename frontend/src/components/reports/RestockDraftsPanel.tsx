@@ -207,7 +207,7 @@ export function RestockDraftsPanel({
           if (!open && !confirming) setSelectedDraft(null);
         }}
       >
-        <DialogContent className="max-w-[760px]">
+        <DialogContent className="ys-report-modal max-w-[760px]">
           {selectedDraft ? (
             <>
               <DialogHeader>

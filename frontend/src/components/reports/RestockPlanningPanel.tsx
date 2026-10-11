@@ -1105,7 +1105,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
       </Dialog>
 
       <Dialog onOpenChange={setReviewOpen} open={reviewOpen}>
-        <DialogContent className="max-h-[88vh] max-w-[760px] overflow-hidden">
+        <DialogContent className="ys-report-modal max-h-[88vh] max-w-[760px] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Review restock</DialogTitle>
             <DialogDescription>
