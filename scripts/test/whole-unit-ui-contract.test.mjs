@@ -17,7 +17,7 @@ test("Storefront quantity input rejects fractions at the component boundary", ()
   assert.match(helper, /Number\.isSafeInteger/);
   assert.doesNotMatch(helper, /Math\.(round|trunc|floor)\(/);
   const css = read("frontend/src/styles/theme-storefront-contrast.css");
-  assert.match(css, /\.customer-shop-page \.customer-quantity > input \{/);
+  assert.match(css, /:root\.dark \.customer-app \.customer-quantity > input \{/);
 });
 
 test("Both receiving paths reject fractional input instead of truncating before API submit", () => {
