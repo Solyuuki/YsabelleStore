@@ -46,7 +46,7 @@ test("Sales and Forecast legibility is restored on light background", () => {
     "story-forecast__lead",
     "story-forecast__model small",
     "story-forecast__takeaway"
-  ]) assert.ok(css.includes(selector), `missing light text color for ${selector}`);
+  ]) assert.ok(css.replace(/\s+/g, " ").includes(selector), `missing light text color for ${selector}`);
   assert.match(css, /\.story-sales__copy p \{\s*color: #455470;/);
   assert.match(css, /\.story-forecast__lead \{\s*color: #495974;/);
 });
@@ -65,7 +65,7 @@ test("Interactive seven-stage System Intelligence receives pale nav and readable
     "system-preview__nav button.is-active",
     "system-preview__nav-icon",
     "system-preview__workspace"
-  ]) assert.ok(css.includes(selector), `missing ${selector}`);
+  ]) assert.ok(css.replace(/\s+/g, " ").includes(selector), `missing ${selector}`);
 
   assert.ok(css.includes(`${lightSelector} .system-preview__nav`));
   assert.match(sys, /onClick=\{\(\) => selectStage\(index\)\}/);
@@ -81,7 +81,7 @@ test("Delivery text and CTA contrast are light-themed without changing the MP4",
     "story-delivery__primary-action",
     "story-delivery__primary-action:hover",
     "story-delivery__frame"
-  ]) assert.ok(css.includes(selector), `missing ${selector}`);
+  ]) assert.ok(css.replace(/\s+/g, " ").includes(selector), `missing ${selector}`);
   assert.doesNotMatch(css, /\.story-delivery__video|\.about-sales-motion__video/);
   assert.doesNotMatch(css, /animation:|clip-path:|object-fit:|\.about-welcome-motion__video/);
 });
@@ -93,10 +93,10 @@ test("Delivery CTA overrides global !important purple text in Light Mode, includ
 
   assert.match(global, /\.customer-button--light \{[^}]*color:\s*var\(--customer-primary-strong\) !important;/);
   assert.match(delivery, /customer-button--light story-delivery__primary-action/);
-  assert.match(css, /\.story-delivery \.customer-button--light\.story-delivery__primary-action \{[^}]*background:\s*#5953d8;[^}]*color:\s*#fff !important;/);
-  assert.match(css, /story-delivery__primary-action:is\(\s*:hover,\s*:focus-visible,\s*:visited\s*\)\s*\{[^}]*color:\s*#fff !important;/);
-  assert.match(css, /story-delivery__primary-action:hover \{[^}]*background:\s*#4b46c8;[^}]*color:\s*#fff !important;/);
-  assert.match(css, /story-delivery__primary-action:focus-visible \{[^}]*outline:/);
+  assert.match(css.replace(/\s+/g, " "), /\.story-delivery \.customer-button--light\.story-delivery__primary-action \{[^}]*background:\s*#5953d8;[^}]*color:\s*#fff !important;/);
+  assert.match(css.replace(/\s+/g, " "), /story-delivery__primary-action:is\(\s*:hover,\s*:focus-visible,\s*:visited\s*\)\s*\{[^}]*color:\s*#fff !important;/);
+  assert.match(css.replace(/\s+/g, " "), /story-delivery__primary-action:hover \{[^}]*background:\s*#4b46c8;[^}]*color:\s*#fff !important;/);
+  assert.match(css.replace(/\s+/g, " "), /story-delivery__primary-action:focus-visible \{[^}]*outline:/);
 });
 
 test("Approved dark chapter rules and light story video references are preserved", () => {
