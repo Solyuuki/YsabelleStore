@@ -341,18 +341,39 @@
   color: #3b68bc;
 }
 
-.about-experience[data-about-hero-theme="light"] .story-delivery__primary-action {
+/* The global .customer-button--light forces purple text with !important.
+   Overwrite it only for the purple Light Mode Delivery CTA (including links
+   after visiting), without changing the white Dark Mode button. */
+.about-experience[data-about-hero-theme="light"]
+  .story-delivery .customer-button--light.story-delivery__primary-action {
   border-color: #574fd8;
   background: #5953d8;
-  color: #fff;
+  color: #fff !important;
   box-shadow: 0 14px 32px rgb(71 64 165 / 18%);
 }
 
-.about-experience[data-about-hero-theme="light"] .story-delivery__primary-action:hover {
+.about-experience[data-about-hero-theme="light"]
+  .story-delivery
+  .customer-button--light.story-delivery__primary-action:is(
+    :hover,
+    :focus-visible,
+    :visited
+  ) {
+  color: #fff !important;
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .story-delivery .customer-button--light.story-delivery__primary-action:hover {
   border-color: #4843c6;
   background: #4b46c8;
-  color: #fff;
+  color: #fff !important;
   box-shadow: 0 18px 36px rgb(71 64 165 / 21%);
+}
+
+.about-experience[data-about-hero-theme="light"]
+  .story-delivery .customer-button--light.story-delivery__primary-action:focus-visible {
+  outline: 2px solid #3f3ab3;
+  outline-offset: 3px;
 }
 
 .about-experience[data-about-hero-theme="light"] .story-delivery__frame {

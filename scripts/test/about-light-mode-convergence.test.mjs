@@ -86,6 +86,19 @@ test("Delivery text and CTA contrast are light-themed without changing the MP4",
   assert.doesNotMatch(css, /animation:|clip-path:|object-fit:|\.about-welcome-motion__video/);
 });
 
+test("Delivery CTA overrides global !important purple text in Light Mode, including hover and focus", () => {
+  const css = read("frontend/src/styles/about-light-chapters.css");
+  const global = read("frontend/src/styles/customer.css");
+  const delivery = read("frontend/src/components/customer/about/AboutStorefrontHandoff.tsx");
+
+  assert.match(global, /\.customer-button--light \{[^}]*color:\s*var\(--customer-primary-strong\) !important;/);
+  assert.match(delivery, /customer-button--light story-delivery__primary-action/);
+  assert.match(css, /\.story-delivery \.customer-button--light\.story-delivery__primary-action \{[^}]*background:\s*#5953d8;[^}]*color:\s*#fff !important;/);
+  assert.match(css, /story-delivery__primary-action:is\(\s*:hover,\s*:focus-visible,\s*:visited\s*\)\s*\{[^}]*color:\s*#fff !important;/);
+  assert.match(css, /story-delivery__primary-action:hover \{[^}]*background:\s*#4b46c8;[^}]*color:\s*#fff !important;/);
+  assert.match(css, /story-delivery__primary-action:focus-visible \{[^}]*outline:/);
+});
+
 test("Approved dark chapter rules and light story video references are preserved", () => {
   const dark = read("frontend/src/styles/about-intelligence-dark.css");
   const previousDark = read("frontend/src/styles/about-dark-chapters.css");
