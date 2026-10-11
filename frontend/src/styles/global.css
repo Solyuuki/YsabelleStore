@@ -1208,3 +1208,151 @@ body {
     animation: none !important;
   }
 }
+
+
+/* Sprint 11: portal-based full-screen status surfaces follow the active appearance
+   scope. The existing light-only status layout and colors remain unchanged. */
+.status-screen__cosmos-layer,
+.status-screen__system-illustration {
+  display: none;
+}
+
+.status-screen[data-status-theme="dark"] {
+  background-color: #17243c;
+  background-image: var(--storefront-galaxy-background);
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: auto;
+  color: #f0f4ff;
+  color-scheme: dark;
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__cosmos-layer {
+  display: block;
+  opacity: 0.8;
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__cosmos-artwork {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__ambient-layer {
+  opacity: 0.38;
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__grid {
+  opacity: 0.26;
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__light-wash {
+  display: none;
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__brand-logo {
+  filter: brightness(0) invert(1) drop-shadow(0 8px 20px rgb(5 10 26 / 30%));
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__status-number {
+  background-image: linear-gradient(180deg, #f0f4ff 0%, #afa7ff 56%, #879bdc 100%);
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__title {
+  color: #f0f4ff;
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__description {
+  color: #d2dff1;
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__eyebrow {
+  color: #c9c0ff;
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__footer {
+  color: #b8c9e4;
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__code-badge {
+  border-color: #7771be;
+  background: #2a2b56;
+  color: #e2ddff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%);
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__note {
+  border-color: #62748e;
+  background: rgb(37 54 80 / 96%);
+  box-shadow: 0 20px 45px -26px rgb(2 8 24 / 74%), inset 0 1px 0 rgb(255 255 255 / 5%);
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__note-title {
+  color: #f0f4ff;
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__note-description {
+  color: #d2dff1;
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__primary-action {
+  border: 1px solid #7973ec;
+  background: #4f46e5;
+  color: #ffffff;
+  box-shadow: 0 14px 35px -18px rgb(3 9 30 / 85%);
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__primary-action:hover {
+  border-color: #a99fff;
+  background: #4338ca;
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__secondary-action {
+  border: 1px solid #60718b;
+  background: #253650;
+  color: #f0f4ff;
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__secondary-action:hover {
+  border-color: #8b9ab8;
+  background: #354c69;
+}
+
+.status-screen[data-status-theme="dark"] :is(.status-screen__primary-action, .status-screen__secondary-action):focus-visible {
+  outline: 3px solid #c9c0ff;
+  outline-offset: 3px;
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__system-illustration {
+  display: block;
+  margin-bottom: 0.9rem;
+}
+
+.status-screen[data-status-theme="dark"] .status-screen__system-illustration .status-illustration {
+  width: clamp(9rem, 17vw, 11.5rem);
+  min-height: clamp(7rem, 12vw, 9rem);
+}
+
+.status-screen[data-status-theme="dark"] .status-illustration__image {
+  filter: drop-shadow(0 20px 26px rgb(5 10 30 / 45%));
+}
+
+:root.dark .reliability-banner--reconnecting {
+  border-color: #625d9f;
+  background: #263451;
+  color: #e5eaff;
+}
+
+:root.dark .reliability-banner--degraded {
+  border-color: #aa8a54;
+  background: #3a3029;
+  color: #ffe3b1;
+}
+
+:root.dark .reliability-banner--restored {
+  border-color: #518c80;
+  background: #203a38;
+  color: #cef5e5;
+}

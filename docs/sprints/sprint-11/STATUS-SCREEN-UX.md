@@ -106,3 +106,30 @@ Before Sprint 11 closure, manually verify desktop and responsive behavior for:
 10. Focus, keyboard navigation, reduced-motion, illustration motion, and recovery CTA behavior.
 
 Automated checks remain necessary but do not replace the manual visual QA above.
+
+## Appearance parity: Sprint 11 full-screen error screens
+
+All eight full-screen conditions (401, 403, 404, 503, OFFLINE, DATABASE, SERVICE, TIMEOUT)
+share the `StatusScreen` portal. Each must use the active storefront or retail appearance
+preference, including when an HTTP error interrupts an already-dark session.
+
+- `StatusScreen` reads the current scope and the saved `AppearanceContext` preference, then
+  sets `data-status-theme` on the portal root. Status theming does not depend on
+  `.customer-app` or `.app-shell-ambient` being ancestors of the portal.
+- Dark mode reuses the existing non-tiled galaxy gradient and proportional,
+  deterministic `StorefrontGalaxyArtwork` SVG. It does not stretch the artwork.
+- Titles, descriptions, labels, status numbers/badges, original official logo, icons, safety
+  notes, buttons, hover states, and keyboard-focus rings receive dark-specific contrast.
+- System conditions reveal their already bundled local SVG illustrations in dark mode.
+  The approved light-mode system layout remains unchanged.
+- The UI includes dark treatments for reconnecting, degraded, and restored banners.
+- Standalone receipt printing and the palette-locked About/Discover scenes are not modified.
+
+### Validation
+
+- Source/contrast regression command: `node --test scripts/test/status-screen-appearance.test.mjs`
+  (included in `npm run test:guardrails`).
+- Manual release QA: 8 states x 2 themes, mobile and desktop, short viewport, keyboard focus,
+  reduced motion, login redirect, reliability retry, and return navigation.
+- Browser screenshots and actual failure-path recovery verification remain **pending manual QA**;
+  this design record is not a claim that live/end-to-end scenarios passed.

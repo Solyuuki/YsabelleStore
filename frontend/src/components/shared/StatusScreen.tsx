@@ -2,8 +2,10 @@ import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
 import { StatusIllustration } from "@/components/shared/StatusIllustration";
 import { Button } from "@/components/ui/button";
+import { getAppearanceScope, useAppearance } from "@/context/AppearanceContext";
 
 type StatusScreenVariant = "auth" | "navigation" | "system";
 
@@ -52,6 +54,9 @@ export function StatusScreen({
 }: StatusScreenProps) {
   const titleId = useId();
   const descriptionId = useId();
+  const { retailTheme, storefrontTheme } = useAppearance();
+  const appearanceScope = getAppearanceScope(window.location.pathname);
+  const statusTheme = appearanceScope === "retail" ? retailTheme : storefrontTheme;
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -95,14 +100,14 @@ export function StatusScreen({
   const actions = (
     <div className="auth-footer-enter mt-7 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
       {primaryAction ? (
-        <Button className="h-11 min-w-36 px-5" onClick={primaryAction.onClick} type="button">
+        <Button className="status-screen__primary-action h-11 min-w-36 px-5" onClick={primaryAction.onClick} type="button">
           {primaryAction.icon}
           {primaryAction.label}
         </Button>
       ) : null}
       {secondaryAction ? (
         <Button
-          className="h-11 min-w-36 px-5"
+          className="status-screen__secondary-action h-11 min-w-36 px-5"
           onClick={secondaryAction.onClick}
           type="button"
           variant="secondary"
@@ -120,14 +125,21 @@ export function StatusScreen({
       aria-labelledby={titleId}
       aria-live={critical ? "assertive" : "polite"}
       aria-modal={critical ? true : undefined}
-      className="auth-page-enter fixed inset-0 z-[110] flex min-h-dvh flex-col overflow-y-auto bg-[#F7F9FF] text-[#101426]"
+      className="status-screen auth-page-enter fixed inset-0 z-[110] flex min-h-dvh flex-col overflow-y-auto bg-[#F7F9FF] text-[#101426]"
       data-status-screen
+      data-status-theme={statusTheme}
       data-status-variant={variant}
       ref={containerRef}
       role={critical ? "alertdialog" : "main"}
       tabIndex={-1}
     >
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+      <div
+        aria-hidden="true"
+        className="status-screen__cosmos-layer pointer-events-none absolute inset-0 z-0 overflow-hidden"
+      >
+        <StorefrontGalaxyArtwork className="status-screen__cosmos-artwork" />
+      </div>
+      <div className="status-screen__ambient-layer pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
         <div
           className="absolute inset-[-16%] opacity-90 blur-3xl motion-safe:[animation:reliability-orb-drift_18s_ease-in-out_infinite] motion-reduce:animate-none"
           style={{ background: STATUS_AMBIENT[variant] }}
@@ -141,7 +153,7 @@ export function StatusScreen({
           }}
         />
         <div
-          className="absolute inset-0 opacity-30"
+          className="status-screen__grid absolute inset-0 opacity-30"
           style={{
             backgroundImage:
               "linear-gradient(rgb(98 91 255 / 0.05) 1px, transparent 1px), linear-gradient(90deg, rgb(98 91 255 / 0.05) 1px, transparent 1px)",
@@ -149,13 +161,13 @@ export function StatusScreen({
             maskImage: "radial-gradient(ellipse 72% 62% at 50% 42%, black 4%, transparent 78%)"
           }}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(247,249,255,0.3))]" />
+        <div className="status-screen__light-wash absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(247,249,255,0.3))]" />
       </div>
 
       {variant !== "system" ? (
         <header className="auth-footer-enter relative z-10 flex items-center px-6 py-5 sm:px-10 sm:py-7">
           <BrandLogo
-            className="h-auto w-[10.75rem] max-w-[48vw] object-contain object-left drop-shadow-[0_8px_18px_rgba(49,46,129,0.1)]"
+            className="status-screen__brand-logo h-auto w-[10.75rem] max-w-[48vw] object-contain object-left drop-shadow-[0_8px_18px_rgba(49,46,129,0.1)]"
             variant="full"
           />
         </header>
@@ -167,27 +179,27 @@ export function StatusScreen({
             <StatusIllustration statusLabel={statusLabel} variant={variant} />
             <p
               aria-hidden="true"
-              className="mt-2 select-none bg-gradient-to-b from-[#101426] via-[#625BFF] to-slate-300 bg-clip-text text-[clamp(5.8rem,15vw,8.5rem)] font-bold leading-[0.85] tracking-[-0.07em] text-transparent drop-shadow-[0_18px_32px_rgba(98,91,255,0.09)]"
+              className="status-screen__status-number mt-2 select-none bg-gradient-to-b from-[#101426] via-[#625BFF] to-slate-300 bg-clip-text text-[clamp(5.8rem,15vw,8.5rem)] font-bold leading-[0.85] tracking-[-0.07em] text-transparent drop-shadow-[0_18px_32px_rgba(98,91,255,0.09)]"
             >
               {statusLabel}
             </p>
-            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600">
+            <p className="status-screen__eyebrow mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600">
               {eyebrow}
             </p>
             <h1
-              className="mt-3 text-3xl font-semibold tracking-[-0.025em] text-slate-950 sm:text-4xl"
+              className="status-screen__title mt-3 text-3xl font-semibold tracking-[-0.025em] text-slate-950 sm:text-4xl"
               id={titleId}
             >
               {title}
             </h1>
             <p
-              className="mx-auto mt-4 max-w-lg text-base leading-7 text-slate-600"
+              className="status-screen__description mx-auto mt-4 max-w-lg text-base leading-7 text-slate-600"
               id={descriptionId}
             >
               {description}
             </p>
             {actions}
-            {footer ? <p className="mt-6 text-xs text-slate-500">{footer}</p> : null}
+            {footer ? <p className="status-screen__footer mt-6 text-xs text-slate-500">{footer}</p> : null}
           </div>
         </main>
       ) : null}
@@ -196,26 +208,26 @@ export function StatusScreen({
         <main className="status-screen-main relative z-10 flex flex-1 items-center justify-center px-5 sm:px-8">
           <div className="auth-hero-enter w-full max-w-xl text-center">
             <StatusIllustration statusLabel={statusLabel} variant={variant} />
-            <div className="mt-4 inline-flex items-center rounded-full border border-indigo-100/80 bg-white/80 px-3.5 py-1.5 text-xs font-bold tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur-xl">
+            <div className="status-screen__code-badge mt-4 inline-flex items-center rounded-full border border-indigo-100/80 bg-white/80 px-3.5 py-1.5 text-xs font-bold tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur-xl">
               {statusLabel}
             </div>
-            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+            <p className="status-screen__eyebrow mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
               {eyebrow}
             </p>
             <h1
-              className="mt-3 text-4xl font-semibold tracking-[-0.035em] text-slate-950 sm:text-5xl"
+              className="status-screen__title mt-3 text-4xl font-semibold tracking-[-0.035em] text-slate-950 sm:text-5xl"
               id={titleId}
             >
               {title}
             </h1>
             <p
-              className="mx-auto mt-4 max-w-lg text-base leading-7 text-slate-600"
+              className="status-screen__description mx-auto mt-4 max-w-lg text-base leading-7 text-slate-600"
               id={descriptionId}
             >
               {description}
             </p>
             {actions}
-            {footer ? <p className="mt-6 text-xs text-slate-500">{footer}</p> : null}
+            {footer ? <p className="status-screen__footer mt-6 text-xs text-slate-500">{footer}</p> : null}
           </div>
         </main>
       ) : null}
@@ -223,38 +235,41 @@ export function StatusScreen({
       {variant === "system" ? (
         <main className="status-screen-main status-screen-main--system relative z-10 flex flex-1 items-center justify-center px-5 sm:px-8">
           <div className="auth-hero-enter w-full max-w-xl text-center">
-            <div className="inline-flex items-center rounded-full border border-indigo-100/80 bg-white/80 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur-xl">
+            <div className="status-screen__system-illustration">
+              <StatusIllustration statusLabel={statusLabel} variant={variant} />
+            </div>
+            <div className="status-screen__code-badge inline-flex items-center rounded-full border border-indigo-100/80 bg-white/80 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur-xl">
               {statusLabel}
             </div>
-            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+            <p className="status-screen__eyebrow mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
               {eyebrow}
             </p>
             <h1
-              className="mt-3 text-3xl font-semibold tracking-[-0.025em] text-slate-950 sm:text-4xl"
+              className="status-screen__title mt-3 text-3xl font-semibold tracking-[-0.025em] text-slate-950 sm:text-4xl"
               id={titleId}
             >
               {title}
             </h1>
             <p
-              className="mx-auto mt-4 max-w-lg text-base leading-7 text-slate-600"
+              className="status-screen__description mx-auto mt-4 max-w-lg text-base leading-7 text-slate-600"
               id={descriptionId}
             >
               {description}
             </p>
 
             {(noteTitle || noteDescription) && (
-              <div className="mx-auto mt-6 max-w-lg rounded-2xl border border-white/80 bg-white/70 p-4 text-left shadow-[0_22px_54px_-40px_rgba(98,91,255,0.32),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl">
+              <div className="status-screen__note mx-auto mt-6 max-w-lg rounded-2xl border border-white/80 bg-white/70 p-4 text-left shadow-[0_22px_54px_-40px_rgba(98,91,255,0.32),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl">
                 {noteTitle ? (
-                  <p className="text-sm font-semibold text-slate-900">{noteTitle}</p>
+                  <p className="status-screen__note-title text-sm font-semibold text-slate-900">{noteTitle}</p>
                 ) : null}
                 {noteDescription ? (
-                  <p className="mt-1.5 text-sm leading-6 text-slate-600">{noteDescription}</p>
+                  <p className="status-screen__note-description mt-1.5 text-sm leading-6 text-slate-600">{noteDescription}</p>
                 ) : null}
               </div>
             )}
 
             {actions}
-            {footer ? <p className="mt-6 text-xs text-slate-500">{footer}</p> : null}
+            {footer ? <p className="status-screen__footer mt-6 text-xs text-slate-500">{footer}</p> : null}
           </div>
         </main>
       ) : null}
