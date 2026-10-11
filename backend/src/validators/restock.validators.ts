@@ -124,6 +124,10 @@ export const updateRestockOrderSchema = z.object({
   notes: optionalTextSchema(1000)
 });
 
+export const removeRestockDraftSchema = z.object({
+  expectedVersion: z.coerce.number().int().min(0)
+});
+
 export const approveRestockOrderSchema = z.object({
   expectedVersion: z.coerce.number().int().min(0),
   acknowledgeWarnings: z.boolean().default(false)

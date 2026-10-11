@@ -330,6 +330,67 @@ export async function updateRestockOrder(orderId: string, input: UpdateRestockOr
   return await loadRestockOrder(orderId);
 }
 
+/**
+ * Owner-only permanent removal of an unapproved MANUAL draft.
+ *
+ * Automated monthly drafts retain their unique monthly identity; deleting one
+ * would allow the recommender to generate it again after a worker restart.
+ * Approval, Receiving and cancellation remain separate lifecycle operations.
+ */
+export async function removeManualRestockDraft(orderId: string, expectedVersion: number) {
+  await prisma.$transaction(async (tx) => {
+    const existing = await tx.restockOrder.findUnique({
+      select: {
+        id: true,
+        notes: true,
+        orderNumber: true,
+        status: true,
+        version: true,
+        lines: { select: { receivedQuantity: true } }
+      },
+      where: { id: orderId }
+    });
+
+    if (!existing) {
+      throw new HttpError(404, "Saved restock draft was not found.", {
+        code: "RESTOCK_ORDER_NOT_FOUND"
+      });
+    }
+    assertDraft(existing, expectedVersion);
+
+    if (isAutomatedMonthlyOrder(existing.notes) || /^RO-[A-Z]{3}-\d{4}$/.test(existing.orderNumber)) {
+      throw new HttpError(
+        409,
+        "Monthly automated recommendations cannot be permanently removed because their snapshot prevents duplicate restock batches.",
+        { code: "AUTOMATED_MONTHLY_DRAFT_PROTECTED" }
+      );
+    }
+
+    if (existing.lines.some((line) => line.receivedQuantity > 0)) {
+      throw new HttpError(409, "A restock with recorded receipts cannot be removed.", {
+        code: "RESTOCK_ORDER_HAS_RECEIPTS"
+      });
+    }
+
+    // Optimistic concurrency protects against a second tab approving or
+    // modifying the draft while this request is in progress. Prisma's
+    // RestockOrderLine.order relation cascades only the draft's own lines.
+    const removed = await tx.restockOrder.deleteMany({
+      where: {
+        id: orderId,
+        status: RestockOrderStatus.DRAFT,
+        version: expectedVersion
+      }
+    });
+
+    if (removed.count !== 1) {
+      throw new HttpError(409, "The draft changed elsewhere. Refresh and try again.", {
+        code: "RESTOCK_ORDER_VERSION_CONFLICT"
+      });
+    }
+  });
+}
+
 export async function replaceRestockOrderLines(
   orderId: string,
   input: ReplaceRestockOrderLinesRequest

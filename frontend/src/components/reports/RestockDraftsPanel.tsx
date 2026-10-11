@@ -1,4 +1,4 @@
-import { CheckCircle2, LoaderCircle, RefreshCw } from "lucide-react";
+import { CheckCircle2, LoaderCircle, RefreshCw, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useToast } from "@/components/shared/ToastProvider";
@@ -19,6 +19,7 @@ import {
   approveRestockOrder,
   listRestockOrders,
   replaceRestockOrderLines,
+  removeRestockDraft,
   RestockOwnerWarningError,
   type RestockOwnerWarning,
   type RestockOrder,
@@ -36,7 +37,8 @@ function unitCount(lines: RestockOrderLine[]) {
 function isRecommendedPlan(order: RestockOrder) {
   return (
     order.notes?.includes("[AutomatedRestockMonth:") === true ||
-    order.notes?.includes("[AutomatedRestock:") === true
+    order.notes?.includes("[AutomatedRestock:") === true ||
+    /^RO-[A-Z]{3}-\d{4}$/.test(order.orderNumber)
   );
 }
 
@@ -54,6 +56,8 @@ export function RestockDraftsPanel({
   const [error, setError] = useState<string | null>(null);
   const [selectedDraft, setSelectedDraft] = useState<RestockOrder | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const [removePromptOpen, setRemovePromptOpen] = useState(false);
   const [ownerWarnings, setOwnerWarnings] = useState<RestockOwnerWarning[]>([]);
   const draftScrollRef = useRef<HTMLDivElement>(null);
 
@@ -62,6 +66,12 @@ export function RestockDraftsPanel({
       draftScrollRef.current.scrollTop = draftScrollRef.current.scrollHeight;
     }
   }, [selectedDraft, ownerWarnings]);
+
+  useEffect(() => {
+    if (selectedDraft && removePromptOpen && draftScrollRef.current) {
+      draftScrollRef.current.scrollTop = draftScrollRef.current.scrollHeight;
+    }
+  }, [selectedDraft, removePromptOpen]);
 
   const loadDrafts = useCallback(async () => {
     setLoading(true);
@@ -87,7 +97,7 @@ export function RestockDraftsPanel({
   }, [loadDrafts, refreshVersion]);
 
   async function applySuggestedQuantity(productId: string, quantity: number) {
-    if (!selectedDraft || confirming || !Number.isSafeInteger(quantity) || quantity < 1) return;
+    if (!selectedDraft || confirming || removing || !Number.isSafeInteger(quantity) || quantity < 1) return;
     setConfirming(true);
     setError(null);
     try {
@@ -120,7 +130,7 @@ export function RestockDraftsPanel({
   }
 
   async function confirmDraft(acknowledgeWarnings = false) {
-    if (!selectedDraft || confirming) return;
+    if (!selectedDraft || confirming || removing || removePromptOpen) return;
     setConfirming(true);
     setError(null);
     try {
@@ -145,6 +155,35 @@ export function RestockDraftsPanel({
       );
     } finally {
       setConfirming(false);
+    }
+  }
+
+  async function confirmRemoveDraft() {
+    if (!selectedDraft || removing || confirming || !removePromptOpen) return;
+    if (selectedDraft.status !== "DRAFT" || isRecommendedPlan(selectedDraft)) return;
+
+    setRemoving(true);
+    setError(null);
+    try {
+      const orderNumber = selectedDraft.orderNumber;
+      await removeRestockDraft(selectedDraft.id, selectedDraft.version);
+      setSelectedDraft(null);
+      setRemovePromptOpen(false);
+      setOwnerWarnings([]);
+      pushToast({
+        title: "Draft removed",
+        message: `${orderNumber} was permanently removed from saved drafts.`,
+        variant: "success"
+      });
+      onDraftConfirmed();
+      await loadDrafts();
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error ? requestError.message : "Could not remove the saved draft."
+      );
+      setRemovePromptOpen(false);
+    } finally {
+      setRemoving(false);
     }
   }
 
@@ -231,6 +270,7 @@ export function RestockDraftsPanel({
                     <Button
                       onClick={() => {
                         setOwnerWarnings([]);
+                        setRemovePromptOpen(false);
                         setSelectedDraft(draft);
                       }}
                       size="sm"
@@ -256,9 +296,10 @@ export function RestockDraftsPanel({
       <Dialog
         open={Boolean(selectedDraft)}
         onOpenChange={(open) => {
-          if (!open && !confirming) {
+          if (!open && !confirming && !removing) {
             setSelectedDraft(null);
             setOwnerWarnings([]);
+            setRemovePromptOpen(false);
           }
         }}
       >
@@ -276,14 +317,14 @@ export function RestockDraftsPanel({
 
               <div
                 aria-label="Saved restock items and purchasing advice"
-                className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 pb-4"
+                className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-5 pb-4 sm:px-6"
                 ref={draftScrollRef}
                 role="region"
                 tabIndex={0}
               >
                 <div className="divide-y divide-slate-100 rounded-lg border border-slate-200">
                   {selectedLines(selectedDraft).map((line) => (
-                    <div className="flex items-center justify-between gap-4 py-3" key={line.id}>
+                    <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-5" key={line.id}>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium text-slate-950">
                           {line.product.name}
@@ -305,29 +346,103 @@ export function RestockDraftsPanel({
                     void applySuggestedQuantity(productId, quantity)
                   }
                 />
+                {removePromptOpen ? (
+                  <div
+                    className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-red-900 dark:border-red-400/60 dark:bg-red-950/35 dark:text-red-100"
+                    role="alert"
+                  >
+                    <p className="text-sm font-semibold">Remove this saved draft?</p>
+                    <p className="mt-1 text-xs leading-5">
+                      This permanently deletes {selectedDraft.orderNumber} and its draft product
+                      lines. It cannot be undone. No Receiving ticket or physical stock is changed.
+                    </p>
+                  </div>
+                ) : null}
+
+                {error ? (
+                  <Alert variant="destructive">
+                    <AlertTitle>Draft needs attention</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                ) : null}
               </div>
 
-              <DialogFooter className="shrink-0">
-                <Button
-                  disabled={confirming}
-                  onClick={() => { setSelectedDraft(null); setOwnerWarnings([]); }}
-                  type="button"
-                  variant="secondary"
-                >
-                  Keep draft
-                </Button>
-                <Button disabled={confirming} onClick={() => void confirmDraft(ownerWarnings.length > 0)} type="button">
-                  {confirming ? (
-                    <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
-                  ) : null}
-                  {confirming
-                    ? "Confirming…"
-                    : ownerWarnings.length > 0
-                      ? "Continue with my quantities"
-                      : isRecommendedPlan(selectedDraft)
-                        ? "Approve Recommended Plan"
-                        : "Confirm & send to Receiving"}
-                </Button>
+              <DialogFooter className="shrink-0 flex-wrap gap-2">
+                {removePromptOpen ? (
+                  <>
+                    <Button
+                      disabled={removing}
+                      onClick={() => setRemovePromptOpen(false)}
+                      type="button"
+                      variant="secondary"
+                    >
+                      Back to draft
+                    </Button>
+                    <Button
+                      disabled={removing}
+                      onClick={() => void confirmRemoveDraft()}
+                      type="button"
+                      variant="danger"
+                    >
+                      {removing ? (
+                        <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 aria-hidden="true" className="h-4 w-4" />
+                      )}
+                      {removing ? "Removing…" : "Yes, remove draft"}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    {selectedDraft.status === "DRAFT" && !isRecommendedPlan(selectedDraft) ? (
+                      <Button
+                        className="sm:mr-auto"
+                        disabled={confirming || removing}
+                        onClick={() => {
+                          setError(null);
+                          setRemovePromptOpen(true);
+                          draftScrollRef.current?.scrollTo({
+                            top: draftScrollRef.current.scrollHeight,
+                            behavior: "smooth"
+                          });
+                        }}
+                        type="button"
+                        variant="danger"
+                      >
+                        <Trash2 aria-hidden="true" className="h-4 w-4" />
+                        Remove draft
+                      </Button>
+                    ) : null}
+                    <Button
+                      disabled={confirming || removing}
+                      onClick={() => {
+                        setSelectedDraft(null);
+                        setOwnerWarnings([]);
+                        setRemovePromptOpen(false);
+                      }}
+                      type="button"
+                      variant="secondary"
+                    >
+                      Keep draft
+                    </Button>
+                    <Button
+                      disabled={confirming || removing}
+                      onClick={() => void confirmDraft(ownerWarnings.length > 0)}
+                      type="button"
+                    >
+                      {confirming ? (
+                        <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
+                      ) : null}
+                      {confirming
+                        ? "Confirming…"
+                        : ownerWarnings.length > 0
+                          ? "Continue with my quantities"
+                          : isRecommendedPlan(selectedDraft)
+                            ? "Approve Recommended Plan"
+                            : "Confirm & send to Receiving"}
+                    </Button>
+                  </>
+                )}
               </DialogFooter>
             </>
           ) : null}

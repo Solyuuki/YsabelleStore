@@ -100,3 +100,35 @@ Owner decision buttons.
 - `node --test scripts/test/restock-owner-warning-scroll.test.mjs`
 - No quantity, approval, supplier ticket, or physical inventory logic changed
   in this layout fix.
+
+## Saved Draft review spacing and permanent removal
+
+- Manual saved-draft review rows reserve horizontal breathing room with
+  `px-4 sm:px-5`, inside the existing `px-5 sm:px-6` scroll region.
+  Product names and quantity labels no longer touch the list border.
+- Draft action is **Remove draft**, distinct from **Cancel ticket** in
+  Receiving. The Owner must explicitly confirm **Yes, remove draft**; selecting
+  Back to draft never removes anything.
+- The `DELETE /api/restock-orders/:orderId` endpoint is Owner-only and accepts
+  an `expectedVersion` concurrency precondition. It requires `DRAFT`,
+  rejects previously received units, and atomically deletes only that restock
+  order and its dependent draft lines (Prisma `onDelete: Cascade`). No
+  inventory or recommendation records are deleted.
+- Persisted automated monthly drafts are protected from deletion to avoid
+  retries regenerating the same monthly recommendation. The UI omits Remove
+  draft for those batches; the backend independently checks both marker and
+  deterministic monthly order number. Approved, cancelled or received tickets
+  cannot use this endpoint.
+- No migration and no automatic cleanup is performed; deletion occurs only
+  after explicit user confirmation.
+- Regression commands:
+  `npx tsx --test backend/test/restock-draft-removal.test.ts`
+  and `node --test scripts/test/restock-draft-removal-ui.test.mjs`.
+
+Manual QA: review a draft with 8+ products in a narrow/short viewport.
+Verify visible left/right spacing, pinned actions, scrollable content, and
+high-contrast Remove action. Cancel removal, verify draft remains. Then on an
+intentionally disposable manual test draft, confirm removal and verify it
+disappears from the list without appearing as a CANCELLED Receiving ticket.
+Verify no inventory movement occurs. An automated monthly draft must not
+offer removal and the delete endpoint must reject it.

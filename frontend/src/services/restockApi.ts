@@ -277,6 +277,23 @@ export async function createRestockRequest(input: {
   return response.data;
 }
 
+/** Removes an unapproved manual draft; does not cancel a Receiving ticket. */
+export async function removeRestockDraft(orderId: string, expectedVersion: number) {
+  const response = await apiClient.request<{ removed: boolean; orderId: string }>(
+    `/api/restock-orders/${encodeURIComponent(orderId)}`,
+    {
+      method: "DELETE",
+      json: { expectedVersion }
+    }
+  );
+
+  if (!response.success || !response.data?.removed) {
+    throw new Error(response.message);
+  }
+
+  return response.data;
+}
+
 export async function replaceRestockOrderLines(
   orderId: string,
   input: { expectedVersion: number; lines: RestockDraftLineInput[] }

@@ -17,6 +17,7 @@ import {
   getRestockOrder,
   listRestockOrders,
   replaceRestockOrderLines,
+  removeManualRestockDraft,
   updateRestockOrder
 } from "../services/restockService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
@@ -29,6 +30,7 @@ import {
   dismissRestockRecommendationSchema,
   receiveRestockOrderSchema,
   replaceRestockOrderLinesSchema,
+  removeRestockDraftSchema,
   restockOrderIdParamSchema,
   restockOrderListQuerySchema,
   restockPlanningQuerySchema,
@@ -136,6 +138,27 @@ export const getRestockOrderController: RequestHandler = async (request, respons
     const order = await getRestockOrder(params.orderId);
 
     response.status(200).json(createSuccessResponse("Restock order loaded successfully.", order));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const removeRestockDraftController: RequestHandler = async (request, response, next) => {
+  try {
+    const params = parseOrThrow(restockOrderIdParamSchema, request.params, {
+      message: "Restock draft id is invalid.",
+      code: "INVALID_RESTOCK_ORDER_ID"
+    });
+    const body = parseOrThrow(removeRestockDraftSchema, request.body, {
+      message: "Restock draft removal request is invalid.",
+      code: "INVALID_RESTOCK_DRAFT_REMOVAL_REQUEST"
+    });
+    requireActorId(request);
+    await removeManualRestockDraft(params.orderId, body.expectedVersion);
+    response.status(200).json(createSuccessResponse("Saved restock draft removed.", {
+      removed: true,
+      orderId: params.orderId
+    }));
   } catch (error) {
     next(error);
   }

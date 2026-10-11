@@ -69,8 +69,8 @@ jobs:
       - name: Generate Prisma client
         run: npm run prisma:generate
       - name: Restock safety regressions (no DB writes)
-        run: npx tsx --test --test-concurrency=1 backend/test/restock-phase11-decision.test.ts backend/test/restock-phase7-9-contract.test.ts backend/test/restock-owner-policy.test.ts backend/test/dashboard-monthly-restock-summary.test.ts
+        run: npx tsx --test --test-concurrency=1 backend/test/restock-phase11-decision.test.ts backend/test/restock-phase7-9-contract.test.ts backend/test/restock-owner-policy.test.ts backend/test/restock-draft-removal.test.ts backend/test/dashboard-monthly-restock-summary.test.ts
       - name: Monthly automation and Owner warning UI contracts
-        run: node --test scripts/test/restock-forecast-automation-source.test.mjs scripts/test/restock-owner-warning-ui.test.mjs scripts/test/restock-owner-warning-scroll.test.mjs
+        run: node --test scripts/test/restock-forecast-automation-source.test.mjs scripts/test/restock-owner-warning-ui.test.mjs scripts/test/restock-owner-warning-scroll.test.mjs scripts/test/restock-draft-removal-ui.test.mjs
       - name: Backend compile
         run: npm run build --workspace backend
