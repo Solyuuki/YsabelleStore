@@ -1809,3 +1809,225 @@
   > svg {
   color: #ada2ff;
 }
+
+
+/* Sprint 11 — Email Quick Sign (address + 6-digit code).
+   Its reference skin and mobile-auth fallback were light-only, so the inner
+   stage, OTP slots and code-sent notice stayed pastel inside the dark login.
+   Scope to this flow; Google buttons, light mode and auth behavior stay intact. */
+:root.dark .customer-app .customer-auth-page--login .customer-email-quick-sign.customer-mobile-auth {
+  background: linear-gradient(155deg, #1b2a43, #202e48 70%, #242a49);
+  border: 1px solid #607492;
+  border-radius: 1.1rem;
+  box-shadow:
+    0 18px 42px rgb(4 10 26 / 22%),
+    inset 0 1px 0 rgb(194 207 255 / 6%);
+  color: #edf3ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__intro h2 {
+  color: #f3f6ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__eyebrow {
+  color: #c2b7ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__intro > p:last-child {
+  color: #c8d6ec;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  :is(.customer-auth-field > span:first-child, .customer-verification-code__label) {
+  color: #ebf2ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-auth-field input[type="email"] {
+  background: #15233b;
+  border-color: #7186a6;
+  color: #f0f5ff;
+  box-shadow: inset 0 1px 0 rgb(203 213 255 / 5%);
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-auth-field input[type="email"]::placeholder {
+  color: #b9c9e1;
+  opacity: 1;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-auth-field input[type="email"]:focus-visible {
+  border-color: #b6a8ff;
+  outline: 2px solid #b6a8ff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgb(163 146 255 / 13%);
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-verification-code__slot {
+  border-color: #7183a1;
+  background: linear-gradient(160deg, #273953, #1d2b44);
+  color: #f5f7ff;
+  box-shadow:
+    0 8px 18px rgb(4 10 26 / 17%),
+    inset 0 1px 0 rgb(210 221 255 / 6%);
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-verification-code__slot::before {
+  background: linear-gradient(145deg, rgb(213 206 255 / 5%), transparent 62%);
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-verification-code__slot[data-active="true"] {
+  border-color: transparent;
+  background:
+    linear-gradient(145deg, #293c5a, #232e4d) padding-box,
+    linear-gradient(135deg, #6fa7ff, #a28bff 55%, #e178bf) border-box;
+  color: #ffffff;
+  box-shadow:
+    0 0 0 3px rgb(168 155 255 / 17%),
+    0 12px 26px rgb(4 10 26 / 22%);
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-verification-code__hint {
+  color: #bfcee5;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__remember {
+  background: #253651;
+  border: 1px solid #657a99;
+  box-shadow: inset 0 1px 0 rgb(202 216 255 / 6%);
+  color: #edf3ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__remember > span {
+  color: #edf3ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__remember small {
+  color: #c2d0e6;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__remember input[type="checkbox"] {
+  accent-color: #9b8bfa;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__status {
+  background: #293956;
+  border-color: #6a7c9a;
+  color: #d2dff2;
+  box-shadow: inset 0 1px 0 rgb(203 213 255 / 5%);
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__status-icon {
+  background: #41396c;
+  color: #d6ccff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__status strong {
+  color: #f0f4ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__status span:not(.customer-email-quick-sign__status-icon) {
+  color: #c6d4ea;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__form > .customer-auth-submit {
+  background: linear-gradient(115deg, #245fd1, #5540bd 48%, #932876);
+  border-color: rgb(191 189 255 / 42%);
+  color: #ffffff;
+  text-shadow: 0 1px 1px rgb(9 13 34 / 30%);
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-email-quick-sign__form > .customer-auth-submit:disabled {
+  opacity: 0.72;
+  color: #f2f4ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  :is(.customer-mobile-auth__countdown, .customer-email-quick-sign__back) {
+  color: #c4d2e9;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-mobile-auth__secondary {
+  color: #bcb0ff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  :is(.customer-mobile-auth__secondary, .customer-email-quick-sign__back):hover:not(:disabled) {
+  color: #ffffff;
+}
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign
+  .customer-auth-alert {
+  background: #492e42;
+  border-color: #b07e9c;
+  color: #ffe0ed;
+}
