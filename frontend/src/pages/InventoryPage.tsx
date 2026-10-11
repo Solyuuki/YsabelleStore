@@ -1641,6 +1641,7 @@ function StockAdjustmentDialog({
                 inputMode="numeric"
                 value={quantity}
                 onChange={(event) => {
+                  if (!/^\d*$/.test(event.target.value)) return;
                   setQuantity(event.target.value);
                   setError(null);
                 }}

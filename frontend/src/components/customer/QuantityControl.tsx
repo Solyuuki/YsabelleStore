@@ -1,5 +1,7 @@
 import { Minus, Plus } from "lucide-react";
 
+import { parseWholeUnitQuantity } from "@/utils/wholeUnitQuantity";
+
 export function QuantityControl({
   label,
   max,
@@ -29,10 +31,12 @@ export function QuantityControl({
         max={max}
         min={min}
         onChange={(event) => {
-          const nextValue = Number(event.target.value);
-          onChange(Number.isFinite(nextValue) ? Math.min(max, Math.max(min, nextValue)) : min);
+          const nextValue = parseWholeUnitQuantity(event.target.value);
+          if (nextValue === null || nextValue < min) return;
+          onChange(Math.min(max, nextValue));
         }}
-        type="number"
+        pattern="[0-9]*"
+        type="text"
         value={value}
       />
       <button

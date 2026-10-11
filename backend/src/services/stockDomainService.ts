@@ -314,7 +314,12 @@ export async function createOpeningStockBatch(
     referenceId?: string | null;
   }
 ) {
-  if (input.quantity <= 0) {
+  if (!Number.isSafeInteger(input.quantity) || input.quantity < 0) {
+    throw new HttpError(422, "Opening stock quantity must be a whole number of units.", {
+      code: "INVALID_OPENING_STOCK_QUANTITY"
+    });
+  }
+  if (input.quantity === 0) {
     return null;
   }
 
@@ -377,8 +382,8 @@ export async function stockInBatch(
     referenceType?: string | null;
   }
 ) {
-  if (input.quantity <= 0) {
-    throw new HttpError(400, "Stock-in quantity must be greater than zero.", {
+  if (!Number.isSafeInteger(input.quantity) || input.quantity <= 0) {
+    throw new HttpError(400, "Stock-in quantity must be a positive whole number.", {
       code: "INVALID_STOCK_IN_QUANTITY"
     });
   }
@@ -474,6 +479,11 @@ export async function applyStockAdjustment(
     referenceType?: string | null;
   }
 ) {
+  if (!Number.isSafeInteger(input.quantity) || input.quantity <= 0) {
+    throw new HttpError(422, "Adjustment quantity must be a positive whole number.", {
+      code: "INVALID_STOCK_ADJUSTMENT_QUANTITY"
+    });
+  }
   await lockProductStock(tx as Prisma.TransactionClient, [input.productId]);
   const product = await getProductContext(tx, input.productId);
 
@@ -564,6 +574,11 @@ export async function allocateStockForSale(
     reservationOrderId?: string;
   }
 ) {
+  if (!Number.isSafeInteger(input.quantity) || input.quantity <= 0) {
+    throw new HttpError(422, "Sale quantity must be a positive whole number.", {
+      code: "INVALID_STOCK_SALE_QUANTITY"
+    });
+  }
   await lockProductStock(tx as Prisma.TransactionClient, [input.productId]);
   const product = await getProductContext(tx, input.productId);
   const batches = product.inventoryBatches

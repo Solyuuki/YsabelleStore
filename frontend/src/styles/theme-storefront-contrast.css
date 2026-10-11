@@ -897,7 +897,7 @@
 }
 /* The SHOP quantity field previously picked up the global dark input surface,
    producing a rectangle inside the rounded +/- group. Keep one unified surface. */
-:root.dark .customer-app .customer-shop-page .customer-quantity > input[type="number"] {
+:root.dark .customer-app .customer-shop-page .customer-quantity > input {
   background: transparent;
   background-color: transparent;
   border: 0;

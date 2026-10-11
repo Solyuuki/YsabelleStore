@@ -45,6 +45,28 @@ jobs:
           scripts/test/customer-email-quick-sign-dark.test.mjs
           scripts/test/dashboard-monthly-inventory-report.test.mjs
 
+  whole-unit-contract:
+    name: Whole-unit quantity contracts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Whole-unit frontend and UI contracts
+        run: node --test scripts/test/whole-unit-ui-contract.test.mjs
+
+      - name: Whole-unit backend validation contracts
+        run: npx tsx --test backend/test/whole-unit-quantity.test.ts
+
   repository-checks:
     name: Repository quality gates
     runs-on: ubuntu-latest

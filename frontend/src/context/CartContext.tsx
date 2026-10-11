@@ -11,6 +11,7 @@ import {
 } from "@/services/customerCartService";
 import { fetchStorefrontProduct } from "@/services/storefrontService";
 import type { StorefrontProduct } from "@/types/storefront";
+import { parseWholeUnitQuantity } from "@/utils/wholeUnitQuantity";
 import {
   clearGuestCart,
   readGuestCart,
@@ -139,6 +140,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return;
     }
     if (product.availableStock <= 0) return;
+    if ((parseWholeUnitQuantity(quantity) ?? 0) < 1) {
+      setAnnouncement("Choose a positive whole number of units.");
+      return;
+    }
 
     const existing = items.find((item) => item.product.id === product.id);
     const nextQuantity = Math.min((existing?.quantity ?? 0) + quantity, product.availableStock);
@@ -162,7 +167,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const target = items.find((item) => item.product.id === productId);
     if (!target) return;
 
-    const nextQuantity = Math.min(Math.max(Math.round(quantity), 0), target.product.availableStock);
+    const wholeQuantity = parseWholeUnitQuantity(quantity);
+    if (wholeQuantity === null) {
+      setAnnouncement("Quantity must be a whole number. No cart changes were saved.");
+      return;
+    }
+    const nextQuantity = Math.min(wholeQuantity, target.product.availableStock);
     setItems((current) =>
       current
         .map((item) => (item.product.id === productId ? { ...item, quantity: nextQuantity } : item))

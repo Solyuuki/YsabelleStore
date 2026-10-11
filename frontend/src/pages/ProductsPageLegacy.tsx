@@ -31,6 +31,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { isWholeUnitDraft } from "@/utils/wholeUnitQuantity";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import {
@@ -2544,7 +2545,8 @@ function CreateProductDialog({
                     inputMode="numeric"
                     value={form.reorderLevel}
                     onChange={(event) =>
-                      setForm((current) => ({ ...current, reorderLevel: event.target.value }))
+                      isWholeUnitDraft(event.target.value) &&
+                        setForm((current) => ({ ...current, reorderLevel: event.target.value }))
                     }
                   />
                 </div>
@@ -2555,7 +2557,8 @@ function CreateProductDialog({
                     inputMode="numeric"
                     value={form.targetStockLevel}
                     onChange={(event) =>
-                      setForm((current) => ({ ...current, targetStockLevel: event.target.value }))
+                      isWholeUnitDraft(event.target.value) &&
+                        setForm((current) => ({ ...current, targetStockLevel: event.target.value }))
                     }
                   />
                 </div>
@@ -3026,6 +3029,7 @@ function ProductDetailsDialog({
                       inputMode="numeric"
                       value={form.reorderLevel}
                       onChange={(event) =>
+                        isWholeUnitDraft(event.target.value) &&
                         setForm((current) => ({ ...current, reorderLevel: event.target.value }))
                       }
                     />
@@ -3037,6 +3041,7 @@ function ProductDetailsDialog({
                       inputMode="numeric"
                       value={form.targetStockLevel}
                       onChange={(event) =>
+                        isWholeUnitDraft(event.target.value) &&
                         setForm((current) => ({ ...current, targetStockLevel: event.target.value }))
                       }
                     />

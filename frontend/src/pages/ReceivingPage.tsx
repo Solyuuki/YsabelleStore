@@ -52,6 +52,7 @@ import {
   type RestockReceiptLineInput
 } from "@/services/restockApi";
 import { hasRestockReturnItems } from "@/utils/restockReturnExport";
+import { isWholeUnitDraft, parseWholeUnitQuantity, requireWholeUnitQuantity } from "@/utils/wholeUnitQuantity";
 
 const READY_STATUSES: RestockOrderStatus[] = ["APPROVED", "AWAITING_DELIVERY"];
 const dateFormatter = new Intl.DateTimeFormat("en-PH", {
@@ -150,8 +151,7 @@ function internalBatchReference(order: RestockOrder, line: RestockOrderLine) {
 }
 
 function asWholeNumber(value: string) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? Math.max(0, Math.trunc(parsed)) : 0;
+  return parseWholeUnitQuantity(value) ?? 0;
 }
 
 function acceptedQuantity(row: ReceiptRowState) {
@@ -391,8 +391,8 @@ export function ReceivingPage() {
       if (!row) continue;
 
       const remaining = remainingQuantity(line);
-      const delivered = asWholeNumber(row.deliveredQuantity);
-      const damaged = asWholeNumber(row.damagedQuantity);
+      const delivered = requireWholeUnitQuantity(row.deliveredQuantity, `${line.product.name} delivered`);
+      const damaged = requireWholeUnitQuantity(row.damagedQuantity, `${line.product.name} damaged`);
       const accepted = acceptedQuantity(row);
 
       if (damaged > delivered) {
@@ -1342,8 +1342,11 @@ function QuantityField({
         className="mt-1 h-8 w-20 text-right"
         inputMode="numeric"
         min="0"
-        onChange={(event) => onChange(event.target.value)}
-        type="number"
+        onChange={(event) => {
+          if (isWholeUnitDraft(event.target.value)) onChange(event.target.value);
+        }}
+        pattern="[0-9]*"
+        type="text"
         value={value}
       />
     </div>

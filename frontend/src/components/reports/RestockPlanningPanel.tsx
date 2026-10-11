@@ -38,6 +38,7 @@ import {
   type RestockPlanningCandidate,
   type RestockRecommendationSource
 } from "@/services/restockApi";
+import { parseWholeUnitQuantity } from "@/utils/wholeUnitQuantity";
 
 const RESTOCK_PAGE_SIZE = 8;
 const CATALOG_PAGE_SIZE = 10;
@@ -62,11 +63,6 @@ type PaginationMeta = {
   totalItems: number;
   totalPages: number;
 };
-
-function asNonNegativeInteger(value: string) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? Math.max(0, Math.trunc(parsed)) : 0;
-}
 
 function makePlanLine(candidate: RestockPlanningCandidate, manual = false): PlanLine {
   const recommendedQuantity = manual ? 0 : candidate.recommendedQuantity;
@@ -746,15 +742,18 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
                           disabled={!editable || !line.isSelected}
                           inputMode="numeric"
                           min={1}
-                          onChange={(event) =>
+                          onChange={(event) => {
+                            const quantity = parseWholeUnitQuantity(event.target.value);
+                            if (quantity === null) return;
                             updateLine(productId, (current) => ({
                               ...current,
-                              requestedQuantity: asNonNegativeInteger(event.target.value)
-                            }))
-                          }
+                              requestedQuantity: quantity
+                            }));
+                          }}
                           onFocus={(event) => event.currentTarget.select()}
+                          pattern="[0-9]*"
                           step={1}
-                          type="number"
+                          type="text"
                           value={line.requestedQuantity}
                         />
                       </div>
@@ -834,13 +833,17 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
                               aria-label={`Target stock for ${line.candidate.product.name}`}
                               disabled={Boolean(draftOrder)}
                               min={0}
-                              onChange={(event) =>
+                              onChange={(event) => {
+                                const quantity = parseWholeUnitQuantity(event.target.value);
+                                if (quantity === null) return;
                                 updateLine(productId, (current) => ({
                                   ...current,
-                                  policyTargetStockLevel: asNonNegativeInteger(event.target.value)
-                                }))
-                              }
-                              type="number"
+                                  policyTargetStockLevel: quantity
+                                }));
+                              }}
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                              type="text"
                               value={line.policyTargetStockLevel}
                             />
                           </div>
@@ -852,13 +855,17 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
                               aria-label={`Reorder level for ${line.candidate.product.name}`}
                               disabled={Boolean(draftOrder)}
                               min={0}
-                              onChange={(event) =>
+                              onChange={(event) => {
+                                const quantity = parseWholeUnitQuantity(event.target.value);
+                                if (quantity === null) return;
                                 updateLine(productId, (current) => ({
                                   ...current,
-                                  policyReorderLevel: asNonNegativeInteger(event.target.value)
-                                }))
-                              }
-                              type="number"
+                                  policyReorderLevel: quantity
+                                }));
+                              }}
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                              type="text"
                               value={line.policyReorderLevel}
                             />
                           </div>
