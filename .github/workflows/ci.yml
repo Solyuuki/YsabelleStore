@@ -38,6 +38,7 @@ jobs:
           node --test scripts/test/appearance-theme.test.mjs
           scripts/test/appearance-contrast.test.mjs
           scripts/test/status-screen-appearance.test.mjs
+          scripts/test/reports-picker-dark-contrast.test.mjs
 
   repository-checks:
     name: Repository quality gates

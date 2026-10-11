@@ -330,7 +330,7 @@ export function DeliveriesPage() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard icon={PackageCheck} label="Active tickets" value={meta.counts.active} />
+        <MetricCard icon={PackageCheck} label="Needs action" value={meta.counts.active} />
         <MetricCard icon={Box} label="Ready for delivery" value={meta.summary.READY_FOR_DELIVERY} />
         <MetricCard icon={Truck} label="On the way" value={meta.summary.OUT_FOR_DELIVERY} />
         <MetricCard icon={CheckCircle2} label="Delivered" value={meta.summary.DELIVERED} />
@@ -339,13 +339,13 @@ export function DeliveriesPage() {
       <Card>
         <CardHeader className="gap-1">
           <CardTitle>
-            {view === "history" ? "Ticket history" : view === "all" ? "All delivery tickets" : "Delivery queue"}
+            {view === "history" ? "Ticket history" : view === "all" ? "All delivery tickets" : "Deliveries to handle"}
           </CardTitle>
           <CardDescription>
             {view === "history"
               ? "Delivered and cancelled orders remain searchable, including COD awaiting collection."
               : view === "active"
-                ? "Actionable tickets, including delivered orders awaiting COD collection. Completed tickets are under History."
+                ? "Orders to prepare, deliver, or collect payment for. Finished orders are in History."
                 : "All retained delivery tickets with server-side pagination."}
           </CardDescription>
         </CardHeader>
@@ -366,7 +366,7 @@ export function DeliveriesPage() {
                 type="button"
                 variant="secondary"
               >
-                {nextView === "active" ? "Active queue" : nextView === "history" ? "History" : "All tickets"}
+                {nextView === "active" ? "Needs action" : nextView === "history" ? "History" : "All tickets"}
                 <span className="ml-1 rounded-full bg-black/10 px-2 py-0.5 text-xs dark:bg-white/15">
                   {meta.counts[nextView]}
                 </span>
@@ -465,7 +465,7 @@ export function DeliveriesPage() {
                       {view === "history"
                         ? "No completed or cancelled tickets match these filters."
                         : view === "active"
-                          ? "No active delivery tickets match these filters. Check History for completed orders."
+                          ? "No deliveries need action right now. Check History for finished orders."
                           : "No delivery tickets match these filters."}
                     </TableCell>
                   </TableRow>

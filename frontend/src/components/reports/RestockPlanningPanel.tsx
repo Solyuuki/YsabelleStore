@@ -996,7 +996,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
         }}
         open={catalogOpen}
       >
-        <DialogContent className="max-w-[820px]">
+        <DialogContent className="ys-restock-product-picker max-w-[820px]">
           <DialogHeader>
             <DialogTitle>Add product</DialogTitle>
             <DialogDescription>
@@ -1009,6 +1009,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
             <div className="flex flex-col gap-2 sm:flex-row">
               <Input
                 autoFocus
+                className="ys-restock-product-picker__search-input"
                 disabled={searching}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 onKeyDown={(event) => {
@@ -1018,6 +1019,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
                 value={searchTerm}
               />
               <Button
+                className="ys-restock-product-picker__secondary-action"
                 disabled={searching || busyAction !== null}
                 onClick={() => void searchExistingProducts(1)}
                 type="button"
@@ -1036,7 +1038,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
             ) : null}
 
             {searchResults.length > 0 ? (
-              <div className="max-h-[50vh] divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200">
+              <div className="ys-restock-product-picker__results max-h-[50vh] divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200">
                 {searchResults.map((candidate) => {
                   const alreadyAdded = lineIds.has(candidate.product.id);
 
@@ -1070,11 +1072,11 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
                 })}
               </div>
             ) : catalogMeta ? (
-              <div className="rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500">
+              <div className="ys-restock-product-picker__empty rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500">
                 No matching products found.
               </div>
             ) : (
-              <div className="rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500">
+              <div className="ys-restock-product-picker__empty rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500">
                 Enter at least two characters to search the catalog.
               </div>
             )}
@@ -1094,7 +1096,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
 
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="secondary">
+              <Button className="ys-restock-product-picker__secondary-action" type="button" variant="secondary">
                 Done
               </Button>
             </DialogClose>

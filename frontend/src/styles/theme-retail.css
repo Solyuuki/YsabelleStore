@@ -1924,3 +1924,100 @@
   cursor: not-allowed;
   opacity: 0.78;
 }
+
+
+/* Sprint 11: Reports > Add product is a Radix portal outside the retail shell.
+   The scoped dark palette restores legibility without changing light mode or
+   affecting other dialogs. Enabled and disabled actions remain distinguishable. */
+:root.dark[data-appearance-scope="retail"] [role="dialog"].ys-restock-product-picker {
+  background: #1b283e;
+  border-color: #667998;
+  color: #f2f5ff;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__search-input {
+  background: #17263e;
+  border-color: #7588a9;
+  color: #f2f5ff;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__search-input::placeholder {
+  color: #bfcee4;
+  opacity: 1;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__search-input:focus-visible {
+  border-color: #b7abff;
+  outline: 2px solid #b7abff;
+  outline-offset: 2px;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__secondary-action {
+  border-color: #8294b2;
+  background: #2c3d57;
+  color: #f4f6ff;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__secondary-action:hover:not(:disabled) {
+  border-color: #b0a6ff;
+  background: #3a4b6a;
+  color: #fff;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  button:disabled {
+  opacity: 0.86;
+  cursor: not-allowed;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__secondary-action:disabled {
+  border-color: #64738d;
+  background: #29374e;
+  color: #dce5f3;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  :is(button, input):focus-visible {
+  outline: 2px solid #b7abff;
+  outline-offset: 2px;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__empty {
+  background: #22324a;
+  border-color: #7a8bab;
+  color: #dbe5f5;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__results {
+  border-color: #596a85;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  .ys-restock-product-picker__results > * + * {
+  border-color: #485b79;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  [role="dialog"].ys-restock-product-picker
+  [class~="border-t"] {
+  border-color: #536580;
+}
