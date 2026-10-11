@@ -326,7 +326,7 @@ export async function approveRestockOrder(
   );
 
   if (!response.success || !response.data) {
-    if (response.error?.code === "RESTOCK_OWNER_WARNING_ACK_REQUIRED") {
+    if (!response.success && response.error?.code === "RESTOCK_OWNER_WARNING_ACK_REQUIRED") {
       const details = response.error.details as { warnings?: RestockOwnerWarning[] } | undefined;
       throw new RestockOwnerWarningError(Array.isArray(details?.warnings) ? details.warnings : []);
     }
