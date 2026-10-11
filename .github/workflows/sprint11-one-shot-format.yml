@@ -1,5 +1,5 @@
 name: Sprint 11 formatter with Python image-engine dependencies
-# Sprint 11 release gate formatting and select-chevron contract revalidation (2026-10-11).
+# Sprint 11 final Prettier cleanup after frontend and lint contract repairs (2026-10-11).
 
 on:
   push:
