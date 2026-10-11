@@ -41,7 +41,7 @@ test("All seven System Intelligence stages share the same complete dark workspac
   }
   assert.match(css, /\.system-preview__gridline \{\s*stroke:/);
   assert.match(css, /\.system-preview__history-dot \{\s*fill:/);
-  assert.match(css, /\.system-preview__actions button\.is-primary\.is-selected/);
+  assert.match(css.replace(/\s+/g, " "), /\.system-preview__actions button\.is-primary\.is-selected/);
 });
 
 test("Forecast chart metrics, SVG labels and recommendation remain readable", () => {
