@@ -206,12 +206,9 @@ test("receipt quarantines inflated monthly restock before any physical stock mut
     lifecycleSource,
     /await assertAutomatedRestockQuantitySafe\(orderId, input\.expectedVersion, "RECEIPT", tx\)/
   );
-  assert.match(
-    restockServiceSource,
-    /requiresAutomatedQuantityReview\(line\.recommendedQuantity, latest, null\)/
-  );
+  assert.match(restockServiceSource, /findInflatedAutomatedLine\(snapshot\.notes, selectedLines\)/);
   assert.match(restockServiceSource, /RESTOCK_QUANTITY_ANOMALY/);
-  assert.match(restockServiceSource, /excludeOrderId/);
+  assert.match(restockServiceSource, /stage === "RECEIPT" \|\| isAutomatedMonthlyOrder\(snapshot\.notes\)/);
 });
 
 test("over-delivery confirmation cannot bypass approved receiving quantity", () => {

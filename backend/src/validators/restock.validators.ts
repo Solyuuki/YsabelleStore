@@ -125,7 +125,8 @@ export const updateRestockOrderSchema = z.object({
 });
 
 export const approveRestockOrderSchema = z.object({
-  expectedVersion: z.coerce.number().int().min(0)
+  expectedVersion: z.coerce.number().int().min(0),
+  acknowledgeWarnings: z.boolean().default(false)
 });
 
 export const advanceRestockOrderSchema = z.object({

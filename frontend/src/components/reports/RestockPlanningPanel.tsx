@@ -29,6 +29,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { updateProduct } from "@/services/catalogApi";
 import {
   approveRestockOrder,
+  RestockOwnerWarningError,
+  type RestockOwnerWarning,
   createRestockOrder,
   dismissRestockRecommendation,
   listRestockPlanning,
@@ -39,6 +41,7 @@ import {
   type RestockRecommendationSource
 } from "@/services/restockApi";
 import { parseWholeUnitQuantity } from "@/utils/wholeUnitQuantity";
+import { RestockOwnerWarnings } from "@/components/reports/RestockOwnerWarnings";
 
 const RESTOCK_PAGE_SIZE = 8;
 const CATALOG_PAGE_SIZE = 10;
@@ -175,6 +178,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [ownerWarnings, setOwnerWarnings] = useState<RestockOwnerWarning[]>([]);
   const [restockPage, setRestockPage] = useState(1);
   const [reviewPage, setReviewPage] = useState(1);
   const [expandedProductIds, setExpandedProductIds] = useState<Set<string>>(() => new Set());
@@ -191,6 +195,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
     setCatalogError(null);
     setCatalogOpen(false);
     setReviewOpen(false);
+    setOwnerWarnings([]);
     setRestockPage(1);
     setReviewPage(1);
     setExpandedProductIds(new Set());
@@ -441,7 +446,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
     }
   }
 
-  async function confirmRestock() {
+  async function confirmRestock(acknowledgeWarnings = false) {
     const validationError = validatePlan(lines);
     if (validationError) {
       setError(validationError);
@@ -479,7 +484,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
 
       if (!order || order.status !== "DRAFT") return;
 
-      const approved = await approveRestockOrder(order.id, order.version);
+      const approved = await approveRestockOrder(order.id, order.version, acknowledgeWarnings);
       setReviewOpen(false);
       setNotice(null);
       onOrdersChanged();
@@ -490,6 +495,10 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
       });
       await resetPlanner();
     } catch (requestError) {
+      if (requestError instanceof RestockOwnerWarningError) {
+        setOwnerWarnings(requestError.warnings);
+        return;
+      }
       const message =
         requestError instanceof Error
           ? requestError.message
@@ -514,6 +523,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
 
     setError(null);
     setReviewPage(1);
+    setOwnerWarnings([]);
     setReviewOpen(true);
   }
 
@@ -1193,6 +1203,8 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
             </Alert>
           </div>
 
+          <RestockOwnerWarnings warnings={ownerWarnings} />
+
           <DialogFooter>
             <DialogClose asChild>
               <Button disabled={busyAction !== null} type="button" variant="secondary">
@@ -1201,10 +1213,14 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
             </DialogClose>
             <Button
               disabled={busyAction !== null}
-              onClick={() => void confirmRestock()}
+              onClick={() => void confirmRestock(ownerWarnings.length > 0)}
               type="button"
             >
-              {busyAction === "confirm" ? "Confirming…" : "Confirm restock"}
+              {busyAction === "confirm"
+                ? "Confirming…"
+                : ownerWarnings.length > 0
+                  ? "Continue with my quantities"
+                  : "Confirm restock"}
             </Button>
           </DialogFooter>
         </DialogContent>

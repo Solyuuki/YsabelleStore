@@ -2,6 +2,7 @@ import { CheckCircle2, LoaderCircle, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { useToast } from "@/components/shared/ToastProvider";
+import { RestockOwnerWarnings } from "@/components/reports/RestockOwnerWarnings";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,8 @@ import {
 import {
   approveRestockOrder,
   listRestockOrders,
+  RestockOwnerWarningError,
+  type RestockOwnerWarning,
   type RestockOrder,
   type RestockOrderLine
 } from "@/services/restockApi";
@@ -50,6 +53,7 @@ export function RestockDraftsPanel({
   const [error, setError] = useState<string | null>(null);
   const [selectedDraft, setSelectedDraft] = useState<RestockOrder | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [ownerWarnings, setOwnerWarnings] = useState<RestockOwnerWarning[]>([]);
 
   const loadDrafts = useCallback(async () => {
     setLoading(true);
@@ -74,12 +78,12 @@ export function RestockDraftsPanel({
     void loadDrafts();
   }, [loadDrafts, refreshVersion]);
 
-  async function confirmDraft() {
+  async function confirmDraft(acknowledgeWarnings = false) {
     if (!selectedDraft || confirming) return;
     setConfirming(true);
     setError(null);
     try {
-      const approved = await approveRestockOrder(selectedDraft.id, selectedDraft.version);
+      const approved = await approveRestockOrder(selectedDraft.id, selectedDraft.version, acknowledgeWarnings);
       setSelectedDraft(null);
       pushToast({
         title: "Restock sent to Receiving",
@@ -89,6 +93,10 @@ export function RestockDraftsPanel({
       onDraftConfirmed();
       await loadDrafts();
     } catch (requestError) {
+      if (requestError instanceof RestockOwnerWarningError) {
+        setOwnerWarnings(requestError.warnings);
+        return;
+      }
       setError(
         requestError instanceof Error
           ? requestError.message
@@ -180,7 +188,10 @@ export function RestockDraftsPanel({
                       </p>
                     </div>
                     <Button
-                      onClick={() => setSelectedDraft(draft)}
+                      onClick={() => {
+                        setOwnerWarnings([]);
+                        setSelectedDraft(draft);
+                      }}
                       size="sm"
                       type="button"
                       variant="secondary"
@@ -204,7 +215,10 @@ export function RestockDraftsPanel({
       <Dialog
         open={Boolean(selectedDraft)}
         onOpenChange={(open) => {
-          if (!open && !confirming) setSelectedDraft(null);
+          if (!open && !confirming) {
+            setSelectedDraft(null);
+            setOwnerWarnings([]);
+          }
         }}
       >
         <DialogContent className="ys-report-modal max-w-[760px]">
@@ -235,24 +249,28 @@ export function RestockDraftsPanel({
                 ))}
               </div>
 
+              <div className="px-6 pb-3"><RestockOwnerWarnings warnings={ownerWarnings} /></div>
+
               <DialogFooter>
                 <Button
                   disabled={confirming}
-                  onClick={() => setSelectedDraft(null)}
+                  onClick={() => { setSelectedDraft(null); setOwnerWarnings([]); }}
                   type="button"
                   variant="secondary"
                 >
                   Keep draft
                 </Button>
-                <Button disabled={confirming} onClick={() => void confirmDraft()} type="button">
+                <Button disabled={confirming} onClick={() => void confirmDraft(ownerWarnings.length > 0)} type="button">
                   {confirming ? (
                     <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
                   ) : null}
                   {confirming
                     ? "Confirming…"
-                    : isRecommendedPlan(selectedDraft)
-                      ? "Approve Recommended Plan"
-                      : "Confirm & send to Receiving"}
+                    : ownerWarnings.length > 0
+                      ? "Continue with my quantities"
+                      : isRecommendedPlan(selectedDraft)
+                        ? "Approve Recommended Plan"
+                        : "Confirm & send to Receiving"}
                 </Button>
               </DialogFooter>
             </>

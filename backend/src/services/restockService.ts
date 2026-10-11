@@ -5,7 +5,7 @@ import { Prisma, RestockOrderStatus } from "@prisma/client";
 import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import { buildPaginationMeta } from "../utils/pagination.js";
-import { requiresAutomatedQuantityReview } from "./restockDraftReconciliation.js";
+import { findInflatedAutomatedLine, isAutomatedMonthlyOrder, type RestockApprovalWarning } from "./restockApprovalPolicy.js";
 import { assessProcurementSafety, exceedsRestockOrderBudget } from "./restockProcurementSafety.js";
 import type {
   ApproveRestockOrderRequest,
@@ -373,18 +373,16 @@ export async function replaceRestockOrderLines(
 }
 
 /**
- * Fail closed for every selected restock line, including MANUAL lines.
- * Recorded Owner reasons are audit evidence and cannot override the independent
- * POS coverage / physical stock / cost checks.
- *
- * This is an approval/receiving gate. Draft edits alone never authorize buying.
+ * Strict automated snapshot-integrity quarantine at every lifecycle stage.
+ * Independent live POS/coverage/cost checks are advisory ONLY for Owner-created
+ * orders during approval. Receiving must never rerun purchasing forecasts.
  */
 export async function assertAutomatedRestockQuantitySafe(
   orderId: string,
   expectedVersion: number,
   stage: "APPROVAL" | "RECEIPT" = "APPROVAL",
   db: Prisma.TransactionClient = prisma
-) {
+): Promise<RestockApprovalWarning[]> {
   const snapshot = await db.restockOrder.findUnique({
     select: {
       lines: {
@@ -423,10 +421,20 @@ export async function assertAutomatedRestockQuantitySafe(
   }
 
   const selectedLines = snapshot.lines.filter((line) => line.isSelected);
-  if (selectedLines.length === 0) return;
+  const anomaly = findInflatedAutomatedLine(snapshot.notes, selectedLines);
+  if (anomaly) {
+    throw new HttpError(
+      422,
+      "This historical automated restock contains an inflated or invalid quantity. Owner review and authorized correction are required before receiving.",
+      { code: "RESTOCK_QUANTITY_ANOMALY", details: anomaly }
+    );
+  }
 
-  // Lazy import avoids a circular dependency with restockPlanningService.
-  // Critically, this ticket is excluded from its own incoming-stock calculation.
+  // Physical stock receipts operate on fixed approved quantities, never live
+  // forecasts, POS history, provisional budgets or fluctuating unit costs.
+  if (stage === "RECEIPT" || isAutomatedMonthlyOrder(snapshot.notes)) return [];
+  if (selectedLines.length === 0) return [];
+
   const { listRestockPlanningCandidates } = await import("./restockPlanningService.js");
   const result = await listRestockPlanningCandidates(
     { includeZero: true, page: 1, pageSize: selectedLines.length },
@@ -438,43 +446,21 @@ export async function assertAutomatedRestockQuantitySafe(
     result.items.map((candidate) => [candidate.product.id, candidate])
   );
   const costsPHP: number[] = [];
+  const warnings: RestockApprovalWarning[] = [];
 
   for (const line of selectedLines) {
-    const remainingQuantity = line.requestedQuantity - line.receivedQuantity;
-    // Previously accepted units are already represented in sellable stock.
-    // Check only outstanding units for a subsequent partial receipt.
-    if (stage === "RECEIPT" && remainingQuantity === 0) continue;
     const candidate = currentByProduct.get(line.productId);
     if (!candidate) {
-      throw new HttpError(422, "This product has no eligible current restock planning data.", {
-        code: "RESTOCK_FORECAST_UNAVAILABLE",
-        details: { productId: line.productId }
+      warnings.push({
+        productId: line.productId,
+        reason: "CURRENT_DEMAND_DATA_UNAVAILABLE",
+        requestedQuantity: line.requestedQuantity,
+        suggestedQuantity: null
       });
+      continue;
     }
-    const latest = candidate.recommendedQuantity;
-
-    if (
-      line.recommendationSource !== "MANUAL" &&
-      (requiresAutomatedQuantityReview(line.recommendedQuantity, latest, null) ||
-        requiresAutomatedQuantityReview(line.requestedQuantity, latest, line.ownerOverrideReason))
-    ) {
-      throw new HttpError(
-        422,
-        "The automated restock quantity is inconsistent with current demand. Review or cancel this ticket before proceeding.",
-        {
-          code: "RESTOCK_QUANTITY_ANOMALY",
-          details: {
-            productId: line.productId,
-            currentRecommendedQuantity: latest,
-            savedRecommendedQuantity: line.recommendedQuantity,
-            requestedQuantity: line.requestedQuantity
-          }
-        }
-      );
-    }
-
     const verdict = assessProcurementSafety({
-      requestedQuantity: stage === "RECEIPT" ? remainingQuantity : line.requestedQuantity,
+      requestedQuantity: line.requestedQuantity,
       monthlyPosDemand: candidate.stockHealth.monthlyDemand,
       posConfidence: candidate.stockHealth.confidence,
       sellableStock: candidate.sellableStock,
@@ -488,28 +474,27 @@ export async function assertAutomatedRestockQuantitySafe(
       targetApprovedAt: candidate.product.targetApprovedAt
     });
     if (!verdict.safe) {
-      throw new HttpError(
-        422,
-        "Restock purchase blocked by independent POS, stock coverage or cost safety limits.",
-        {
-          code: "RESTOCK_PURCHASE_SAFETY_BLOCKED",
-          details: {
-            productId: line.productId,
-            reason: verdict.reason,
-            requestedQuantity: line.requestedQuantity,
-            maxAllowedQuantity: verdict.maxAllowedQuantity
-          }
-        }
-      );
+      warnings.push({
+        productId: line.productId,
+        reason: verdict.reason,
+        requestedQuantity: line.requestedQuantity,
+        suggestedQuantity: candidate.recommendedQuantity
+      });
+    } else {
+      costsPHP.push(verdict.lineCostPHP);
     }
-    costsPHP.push(verdict.lineCostPHP);
   }
 
   if (exceedsRestockOrderBudget(costsPHP)) {
-    throw new HttpError(422, "This restock exceeds the configured order purchasing limit.", {
-      code: "RESTOCK_ORDER_BUDGET_EXCEEDED"
+    warnings.push({
+      productId: null,
+      reason: "ORDER_BUDGET_EXCEEDED",
+      requestedQuantity: null,
+      suggestedQuantity: null
     });
   }
+
+  return warnings;
 }
 
 export async function approveRestockOrder(
@@ -557,12 +542,34 @@ export async function approveRestockOrder(
       for (const productId of [...new Set(selectedLines.map((line) => line.productId))].sort()) {
         await tx.$queryRaw`SELECT id FROM products WHERE id = ${productId} FOR UPDATE`;
       }
-      await assertAutomatedRestockQuantitySafe(orderId, input.expectedVersion, "APPROVAL", tx);
+      const purchasingWarnings = await assertAutomatedRestockQuantitySafe(
+        orderId,
+        input.expectedVersion,
+        "APPROVAL",
+        tx
+      );
+      if (purchasingWarnings.length > 0 && !input.acknowledgeWarnings) {
+        throw new HttpError(409, "Review the purchasing warnings before confirming this Owner restock.", {
+          code: "RESTOCK_OWNER_WARNING_ACK_REQUIRED",
+          details: { warnings: purchasingWarnings }
+        });
+      }
 
       const updated = await tx.restockOrder.updateMany({
         data: {
           approvedAt: new Date(),
           approvedById,
+          ...(purchasingWarnings.length > 0
+            ? {
+                notes: [
+                  existing.notes?.trim(),
+                  `[OwnerPurchaseWarningsAcknowledged ${new Date().toISOString()} actor=${approvedById} count=${purchasingWarnings.length}]`
+                ]
+                  .filter(Boolean)
+                  .join("\n")
+                  .slice(0, 1000)
+              }
+            : {}),
           status: RestockOrderStatus.APPROVED,
           version: { increment: 1 }
         },

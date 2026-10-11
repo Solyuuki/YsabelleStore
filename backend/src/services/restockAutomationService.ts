@@ -2,12 +2,11 @@ import { Prisma, RestockOrderStatus, RestockRecommendationSource } from "@prisma
 
 import { prisma } from "../database/prismaClient.js";
 import { listRestockPlanningCandidates } from "./restockPlanningService.js";
-import { reconcileDraftRestockLine } from "./restockDraftReconciliation.js";
 import { assessProcurementSafety, exceedsRestockOrderBudget } from "./restockProcurementSafety.js";
 import { createRestockOrder } from "./restockService.js";
 
 const AUTOMATION_PAGE_SIZE = 100;
-const DEFAULT_RECONCILE_INTERVAL_MS = 30_000;
+const DEFAULT_RECONCILE_INTERVAL_MS = 60 * 60_000;
 const MANILA_OFFSET_MS = 8 * 60 * 60 * 1000;
 const MONTH_ABBREVIATIONS = [
   "JAN",
@@ -23,7 +22,6 @@ const MONTH_ABBREVIATIONS = [
   "NOV",
   "DEC"
 ] as const;
-const EXTENDABLE_BATCH_STATUSES = new Set<RestockOrderStatus>([RestockOrderStatus.DRAFT]);
 let inFlightAutomation: Promise<RestockAutomationResult> | null = null;
 let workerTimer: NodeJS.Timeout | null = null;
 let workerReconciliation: Promise<void> | null = null;
@@ -226,168 +224,37 @@ function findMonthlyBatch(orders: RestockTicketIdentity[], batch: MonthlyBatchId
   return orders.find((order) => isMonthlyAutomatedTicket(order, batch)) ?? null;
 }
 
-async function appendActionLinesToMonthlyBatch(
-  batchOrder: RestockTicketIdentity,
-  actionLines: RestockActionLine[]
-): Promise<boolean> {
-  if (!EXTENDABLE_BATCH_STATUSES.has(batchOrder.status) || actionLines.length === 0) {
-    return false;
-  }
-
-  return await prisma.$transaction(async (tx) => {
-    const current = await tx.restockOrder.findUnique({
-      select: {
-        id: true,
-        lines: {
-          select: {
-            id: true,
-            isSelected: true,
-            ownerOverrideReason: true,
-            productId: true,
-            receivedQuantity: true,
-            recommendationId: true,
-            recommendationSource: true,
-            recommendedQuantity: true,
-            requestedQuantity: true
-          }
-        },
-        status: true,
-        version: true
-      },
-      where: { id: batchOrder.id }
-    });
-
-    if (!current || current.status !== RestockOrderStatus.DRAFT) return false;
-    if (current.lines.some((line) => line.receivedQuantity > 0)) return false;
-
-    const existingByProduct = new Map(current.lines.map((line) => [line.productId, line]));
-    const changes = actionLines.map((line) => {
-      const existing = existingByProduct.get(line.productId);
-      return {
-        existing,
-        line,
-        next: existing ? reconcileDraftRestockLine(existing, line) : null
-      };
-    });
-
-    // No version bump or noisy UI conflict when recommendations did not change.
-    if (changes.every(({ existing, next }) => existing && !next)) return false;
-
-    // Claim the observed draft version BEFORE changing any lines. An Owner edit,
-    // approval, or competing worker cannot be overwritten by this reconciliation.
-    const claimed = await tx.restockOrder.updateMany({
-      data: { version: { increment: 1 } },
-      where: {
-        id: current.id,
-        status: RestockOrderStatus.DRAFT,
-        version: current.version
-      }
-    });
-    if (claimed.count !== 1) return false;
-
-    for (const { existing, line, next } of changes) {
-      if (existing) {
-        if (next) {
-          await tx.restockOrderLine.update({
-            data: next,
-            where: { id: existing.id }
-          });
-        }
-        continue;
-      }
-
-      await tx.restockOrderLine.create({
-        data: {
-          isSelected: true,
-          notes: "Inventory Recommender added this forecast-driven line to the monthly plan.",
-          ownerOverrideReason: null,
-          productId: line.productId,
-          receivedQuantity: 0,
-          recommendationId: line.recommendationId,
-          recommendationSource: line.recommendationSource,
-          recommendedQuantity: line.quantity,
-          requestedQuantity: line.quantity,
-          restockOrderId: current.id
-        }
-      });
-    }
-
-    return true;
-  });
-}
 
 async function runRestockAutomation(): Promise<RestockAutomationResult> {
   const batch = monthlyBatchIdentity();
-  const actionLines = await loadOperationalActionLines();
-
-  if (actionLines.length === 0) {
-    return { orderId: null, orderNumber: null, status: "NO_ACTION" };
-  }
-
+  // Snapshot-first: an existing month is immutable, even after worker restarts.
+  // Do not rerun the forecast or mutate the Owner's saved draft on refresh.
   const monthOrders = await loadAutomatedTicketsForMonth(batch);
   const monthlyOrder = findMonthlyBatch(monthOrders, batch);
 
   if (monthlyOrder) {
-    if (monthlyOrder.status === RestockOrderStatus.CANCELLED) {
-      console.info(
-        `[restock] ${batch.monthKey} automation remains suppressed by cancelled batch ${monthlyOrder.orderNumber}.`
-      );
-      return {
-        orderId: monthlyOrder.id,
-        orderNumber: monthlyOrder.orderNumber,
-        status: "CANCELLED"
-      };
-    }
-
-    if (
-      monthlyOrder.status === RestockOrderStatus.PARTIALLY_RECEIVED ||
-      monthlyOrder.status === RestockOrderStatus.RECEIVED
-    ) {
-      console.info(
-        `[restock] ${batch.monthKey} monthly batch ${monthlyOrder.orderNumber} has already started receiving; no second automated ticket will be created this month.`
-      );
-      return {
-        orderId: monthlyOrder.id,
-        orderNumber: monthlyOrder.orderNumber,
-        status: "EXISTING"
-      };
-    }
-
-    if (monthlyOrder.status !== RestockOrderStatus.DRAFT) {
-      console.info(
-        `[restock] ${batch.monthKey} recommended plan ${monthlyOrder.orderNumber} is already owner-approved; automation will not mutate it.`
-      );
-      return {
-        orderId: monthlyOrder.id,
-        orderNumber: monthlyOrder.orderNumber,
-        status: "EXISTING"
-      };
-    }
-
-    const changed = await appendActionLinesToMonthlyBatch(monthlyOrder, actionLines);
-    if (changed) {
-      console.info(
-        `[restock] Reconciled owner-review draft ${monthlyOrder.orderNumber} against ${actionLines.length} latest recommendation line(s).`
-      );
-    }
     return {
       orderId: monthlyOrder.id,
       orderNumber: monthlyOrder.orderNumber,
-      status: changed ? "UPDATED" : "EXISTING"
+      status: monthlyOrder.status === RestockOrderStatus.CANCELLED ? "CANCELLED" : "EXISTING"
     };
   }
 
   const legacyOrders = monthOrders.filter(isLegacyAutomatedTicket);
   if (legacyOrders.length > 0) {
     const latestLegacy = legacyOrders.at(-1)!;
-    console.info(
-      `[restock] ${batch.monthKey} already contains ${legacyOrders.length} legacy automated ticket(s). Monthly batching will not create another ticket in this month.`
-    );
     return {
       orderId: latestLegacy.id,
       orderNumber: latestLegacy.orderNumber,
       status: latestLegacy.status === RestockOrderStatus.CANCELLED ? "CANCELLED" : "EXISTING"
     };
+  }
+
+  // First run of a new month only: assess the complete eligible product list.
+  // The result becomes an Owner-review draft with a DB-unique monthly identity.
+  const actionLines = await loadOperationalActionLines();
+  if (actionLines.length === 0) {
+    return { orderId: null, orderNumber: null, status: "NO_ACTION" };
   }
 
   const actorId = await findAutomationActorId();
@@ -399,12 +266,16 @@ async function runRestockAutomation(): Promise<RestockAutomationResult> {
   }
 
   const totalUnits = actionLines.reduce((sum, line) => sum + line.quantity, 0);
+  const previousMonth = new Date(batch.monthStart.getTime() - 86_400_000);
+  const sourceMonth = new Date(previousMonth.getTime() + MANILA_OFFSET_MS)
+    .toISOString()
+    .slice(0, 7);
   let order: Awaited<ReturnType<typeof createRestockOrder>>;
   try {
     // Unique orderNumber is claimed in the create transaction, not by a later rename.
     order = await createRestockOrder(
       {
-        notes: `${batch.marker} Forecast-driven recommended inventory plan. Owner approval is required before Receiving.`,
+        notes: `${batch.marker} [RestockSourceMonth:${sourceMonth}] Frozen forecast-driven multi-product batch; Owner approval required.`,
         lines: actionLines.map((line) => ({
           isSelected: true,
           notes: "Inventory Recommender generated this forecast-driven replenishment line.",

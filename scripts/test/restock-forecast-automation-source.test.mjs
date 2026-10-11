@@ -46,17 +46,28 @@ test("server starts the independent operational restock retry worker", () => {
 });
 
 test("operational automation preserves monthly duplicate and lifecycle safeguards", () => {
-  assert.equal(automationSource.includes("EXTENDABLE_BATCH_STATUSES"), true);
+  assert.equal(automationSource.includes("appendActionLinesToMonthlyBatch"), false);
+  assert.equal(automationSource.includes("reconcileDraftRestockLine"), false);
   assert.equal(automationSource.includes("RestockOrderStatus.CANCELLED"), true);
-  assert.equal(automationSource.includes("RestockOrderStatus.PARTIALLY_RECEIVED"), true);
-  assert.equal(automationSource.includes("RestockOrderStatus.RECEIVED"), true);
+  assert.match(automationSource, /monthlyOrder\.status === RestockOrderStatus\.CANCELLED/);
   assert.match(automationSource, /AutomatedRestockMonth:/);
   assert.match(automationSource, /AutomatedRestock:/);
 });
 
 test("automated monthly restock stays as an owner-review draft until explicit approval", () => {
   assert.equal(automationSource.includes("approveRestockOrder"), false);
-  assert.match(automationSource, /Owner approval is required before Receiving/);
-  assert.match(automationSource, /RestockOrderStatus\.DRAFT/);
-  assert.match(automationSource, /recommended inventory plan/i);
+  assert.match(automationSource, /Owner approval required/);
+  assert.match(automationSource, /createRestockOrder\(/);
+  assert.match(automationSource, /forecast-driven multi-product batch/i);
+});
+
+test("monthly snapshot is loaded before candidate computation and cannot be amended by the worker", () => {
+  const start = automationSource.indexOf("async function runRestockAutomation()");
+  const section = automationSource.slice(start, automationSource.indexOf("export async function ensureAutomatedRestockTicket", start));
+  const loadSnapshot = section.indexOf("loadAutomatedTicketsForMonth(batch)");
+  const loadCandidates = section.indexOf("loadOperationalActionLines()");
+  assert.ok(loadSnapshot >= 0 && loadCandidates > loadSnapshot);
+  assert.match(section, /if \(monthlyOrder\) \{[\s\S]*?status: monthlyOrder\.status/);
+  assert.equal(section.includes("appendActionLinesToMonthlyBatch"), false);
+  assert.match(section, /RestockSourceMonth:/);
 });
