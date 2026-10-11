@@ -1971,7 +1971,7 @@
   .ys-restock-product-picker__secondary-action:hover:not(:disabled) {
   border-color: #b0a6ff;
   background: #3a4b6a;
-  color: #fff;
+  color: #ffffff;
 }
 
 :root.dark[data-appearance-scope="retail"]
