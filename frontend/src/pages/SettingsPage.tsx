@@ -180,7 +180,7 @@ export function SettingsPage() {
             <label className="block space-y-2">
               <span className="text-sm font-medium text-slate-900">Dashboard refresh interval</span>
               <select
-                className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-800"
+                className="ys-retail-select-chevron h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-800"
                 value={preferences.dashboardRefreshSeconds}
                 onChange={(event) =>
                   updatePreference(

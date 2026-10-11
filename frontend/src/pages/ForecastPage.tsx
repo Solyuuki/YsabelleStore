@@ -617,7 +617,7 @@ function ForecastedProductsCard({
 
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <select
-            className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+            className="ys-retail-select-chevron h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
             disabled={listControlsDisabled}
             onChange={(event) => onCategoryChange(event.target.value)}
             value={selectedCategory}
@@ -631,7 +631,7 @@ function ForecastedProductsCard({
           </select>
 
           <select
-            className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+            className="ys-retail-select-chevron h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
             disabled={listControlsDisabled}
             onChange={(event) => onSortChange(event.target.value as ForecastSortOption)}
             value={sortBy}
@@ -935,7 +935,7 @@ function MonthlyForecastCard({
                   <label className="flex items-center gap-2 text-xs text-slate-600">
                     View
                     <select
-                      className="h-8 rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-900"
+                      className="ys-retail-select-chevron h-8 rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-900"
                       onChange={(event) => {
                         setWindowMonths(Number(event.target.value));
                         setWindowStart(0);

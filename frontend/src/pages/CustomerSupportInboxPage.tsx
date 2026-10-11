@@ -499,7 +499,7 @@ function FilterSelect({
     <label className="grid gap-1 text-xs font-medium text-slate-500">
       <span>{label}</span>
       <select
-        className="h-10 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+        className="ys-retail-select-chevron h-10 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
         onChange={(event) => onChange(event.target.value)}
         value={value}
       >
@@ -610,7 +610,7 @@ function SupportConversation({
             <label className="grid flex-1 gap-1 text-xs font-medium text-slate-500">
               <span>Ticket status</span>
               <select
-                className="h-10 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+                className="ys-retail-select-chevron h-10 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
                 disabled={statusSaving}
                 onChange={(event) => onStatusChange(event.target.value as StaffSupportStatus)}
                 value={statusDraft}

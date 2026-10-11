@@ -41,6 +41,7 @@ jobs:
           scripts/test/reports-picker-dark-contrast.test.mjs
           scripts/test/reports-dialog-readability.test.mjs
           scripts/test/product-detail-loading-background.test.mjs
+          scripts/test/retail-dropdown-chevron-contract.test.mjs
           scripts/test/dashboard-monthly-inventory-report.test.mjs
 
   repository-checks:

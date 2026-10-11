@@ -410,7 +410,7 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
                 <label className="block space-y-2 text-sm font-medium text-slate-700">
                   <span>Role</span>
                   <select
-                    className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 shadow-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="ys-retail-select-chevron h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 shadow-sm outline-none focus:ring-2 focus:ring-indigo-500"
                     disabled={isSubmitting}
                     onChange={(event) => setRole(event.target.value as RegisterInput["role"])}
                     value={role}
@@ -555,7 +555,7 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
                 {customerView === "accounts" ? (
                   <select
                     aria-label="Customer status filter"
-                    className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="ys-retail-select-chevron h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-indigo-500"
                     onChange={(event) => {
                       setAccountStatus(event.target.value as AccountStatusFilter);
                       setAccountPage(1);
@@ -571,7 +571,7 @@ export function UserManagementPage({ error, onRegister, user }: UserManagementPa
                 ) : (
                   <select
                     aria-label="Review status filter"
-                    className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="ys-retail-select-chevron h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-indigo-500"
                     onChange={(event) => {
                       setReviewStatus(event.target.value as ReviewStatusFilter);
                       setReviewPage(1);

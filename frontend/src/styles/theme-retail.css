@@ -1060,7 +1060,7 @@
   box-shadow: 0 0 0 1px rgb(173 156 255 / 22%);
 }
 :root.dark .app-shell-ambient .ys-category-page .ys-category-filter select {
-  background: #263752 !important;
+  background-color: #263752 !important;
   border-color: #657895 !important;
   color: #edf3ff !important;
   color-scheme: dark;
@@ -2167,4 +2167,48 @@
   [role="dialog"].ys-report-modal
   :is([class~="divide-slate-100"], [class~="divide-slate-200"]) > :not(:first-child) {
   border-color: #4e6381 !important;
+}
+
+
+/* Sprint 11: reliable native-select chevrons for the existing retail filters.
+   Browser-default arrows sit against the field border inconsistently.
+   Limit this to explicitly opted-in filters so icon-bearing/dual-chevron
+   controls (including the Inventory select with a physical ChevronDown)
+   are not affected. */
+.app-shell-ambient select.ys-retail-select-chevron {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.75rem !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23475469%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22m6 9 6 6 6-6%22/%3E%3C/svg%3E") !important;
+  background-position: right 1rem center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1rem 1rem !important;
+}
+
+:root.dark .app-shell-ambient select.ys-retail-select-chevron {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23d5e2f5%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22m6 9 6 6 6-6%22/%3E%3C/svg%3E") !important;
+}
+
+/* The category directory uses shared Select and a solid dark filter surface.
+   Its former background shorthand erased the inline SVG arrow. */
+:root.dark .app-shell-ambient .ys-category-page .ys-category-filter select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23d5e2f5%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22m6 9 6 6 6-6%22/%3E%3C/svg%3E") !important;
+  background-position: right 1rem center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1rem 1rem !important;
+  padding-right: 2.75rem !important;
+}
+
+
+/* Products filters have a transparent dark-mode wrapper. That older shorthand
+   must not erase the shared chevron background on the native select. */
+:root.dark
+  .app-shell-ambient
+  .products-page-no-actions
+  .ys-product-toolbar-filter
+  > select.ys-retail-select-chevron {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23d5e2f5%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22m6 9 6 6 6-6%22/%3E%3C/svg%3E") !important;
+  background-position: right 1rem center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1rem 1rem !important;
 }

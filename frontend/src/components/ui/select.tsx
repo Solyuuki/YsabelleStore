@@ -10,13 +10,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
     return (
       <select
         className={cn(
-          "type-body-sm flex h-10 w-full appearance-none rounded-md border border-slate-200 bg-white py-2 pl-3 pr-10 text-slate-950 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60",
+          "type-body-sm flex h-10 w-full appearance-none rounded-md border border-slate-200 bg-white py-2 pl-3 pr-11 text-slate-950 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60",
           className
         )}
         ref={ref}
         style={{
           backgroundImage: SELECT_CHEVRON_BACKGROUND,
-          backgroundPosition: "right 0.875rem center",
+          backgroundPosition: "right 1rem center",
           backgroundRepeat: "no-repeat",
           backgroundSize: "1rem 1rem",
           colorScheme: "light",

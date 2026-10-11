@@ -947,7 +947,7 @@ export function ProductsPage() {
                   <Filter className="h-4 w-4 text-slate-500" aria-hidden="true" />
                   <select
                     aria-busy={filterIsLoading}
-                    className={["w-full bg-transparent outline-none", filterIsLoading ? "pr-6" : ""]
+                    className={["ys-retail-select-chevron w-full bg-transparent outline-none", filterIsLoading ? "pr-6" : ""]
                       .filter(Boolean)
                       .join(" ")}
                     value={statusFilter}
@@ -968,7 +968,7 @@ export function ProductsPage() {
                   <select
                     aria-busy={filterIsLoading}
                     aria-label="Catalog quality"
-                    className={["w-full bg-transparent outline-none", filterIsLoading ? "pr-6" : ""]
+                    className={["ys-retail-select-chevron w-full bg-transparent outline-none", filterIsLoading ? "pr-6" : ""]
                       .filter(Boolean)
                       .join(" ")}
                     value={qualityFilter}

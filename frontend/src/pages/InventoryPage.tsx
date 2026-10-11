@@ -809,7 +809,7 @@ function FilterSelect({
 }) {
   return (
     <label
-      className={`ys-inventory-filter relative flex h-10 shrink-0 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-600 ${minWidthClassName ?? "w-auto"}`}
+      className={`ys-inventory-filter relative flex h-10 shrink-0 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 pl-3 pr-4 text-sm text-slate-600 ${minWidthClassName ?? "w-auto"}`}
     >
       <span className="sr-only">{label}</span>
       <Icon className="h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />

@@ -168,7 +168,7 @@ export function ProductCatalogQoLEnhancements({
               <SortIcon />
               <select
                 aria-label="Product order"
-                className="w-full bg-transparent outline-none"
+                className="ys-retail-select-chevron w-full bg-transparent outline-none"
                 onChange={(event) => onSortOrderChange(event.target.value as CatalogSortOrder)}
                 value={sortOrder}
               >
