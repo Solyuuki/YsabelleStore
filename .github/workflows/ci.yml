@@ -34,7 +34,10 @@ jobs:
           node-version: 22
 
       - name: Run Dark Mode contracts
-        run: node --test scripts/test/appearance-theme.test.mjs scripts/test/appearance-contrast.test.mjs
+        run: >-
+          node --test scripts/test/appearance-theme.test.mjs
+          scripts/test/appearance-contrast.test.mjs
+          scripts/test/status-screen-appearance.test.mjs
 
   repository-checks:
     name: Repository quality gates
