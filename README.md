@@ -320,15 +320,15 @@ The official Tailwind CSS v3.4.19 MIT license text is preserved at [`docs/licens
 
 Configured service boundaries include:
 
-| Provider / Boundary               | Role                                                          |
-| --------------------------------- | ------------------------------------------------------------- |
-| Resend                            | Production customer email, OTP and password-recovery delivery |
-| Gmail SMTP                        | Development-only registration/login OTP QA                    |
-| Google OAuth                      | Customer social authentication                                |
-| Facebook / Meta OAuth + Graph API | Customer social authentication                                |
-| PayMongo (test mode)               | Hosted checkout and signed payment webhook processing         |
-| Gmail API                          | Threaded customer-support replies and inbox synchronization    |
-| Cloudflare Workers AI / Groq       | Optional summary-only recommender assistance; deterministic fallback |
+| Provider / Boundary               | Role                                                                 |
+| --------------------------------- | -------------------------------------------------------------------- |
+| Resend                            | Production customer email, OTP and password-recovery delivery        |
+| Gmail SMTP                        | Development-only registration/login OTP QA                           |
+| Google OAuth                      | Customer social authentication                                       |
+| Facebook / Meta OAuth + Graph API | Customer social authentication                                       |
+| PayMongo (test mode)              | Hosted checkout and signed payment webhook processing                |
+| Gmail API                         | Threaded customer-support replies and inbox synchronization          |
+| Cloudflare Workers AI / Groq      | Optional summary-only recommender assistance; deterministic fallback |
 
 Credentials and secrets must remain outside committed source. See `.env.example` for non-secret configuration names and [`docs/compliance/EXTERNAL-SERVICES-REGISTER.md`](docs/compliance/EXTERNAL-SERVICES-REGISTER.md) for governance details.
 
