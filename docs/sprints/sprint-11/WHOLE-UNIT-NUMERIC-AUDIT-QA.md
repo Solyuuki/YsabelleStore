@@ -49,7 +49,7 @@ the existing revalidation of restock purchase safety at receiving. The
 ## Regression and local QA
 
 - `node --test scripts/test/whole-unit-ui-contract.test.mjs`
-- `npx tsx --test backend/test/whole-unit-quantity.test.ts`
+- `npx tsx --test scripts/test/whole-unit-helper.test.ts backend/test/whole-unit-quantity.test.ts`
 - In Storefront Shop, Product Detail and Cart: try `1.4`, `3.4`,
   `-1`, `1e3`, empty, paste `12.5`, then a valid integer.
   Fractional values must **never** change the cart quantity or subtotal.

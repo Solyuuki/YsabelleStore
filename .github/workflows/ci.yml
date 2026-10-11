@@ -65,7 +65,7 @@ jobs:
         run: node --test scripts/test/whole-unit-ui-contract.test.mjs
 
       - name: Whole-unit backend validation contracts
-        run: npx tsx --test backend/test/whole-unit-quantity.test.ts
+        run: npx tsx --test scripts/test/whole-unit-helper.test.ts backend/test/whole-unit-quantity.test.ts
 
   repository-checks:
     name: Repository quality gates
