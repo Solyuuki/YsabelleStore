@@ -43,6 +43,7 @@ jobs:
           scripts/test/product-detail-loading-background.test.mjs
           scripts/test/retail-dropdown-chevron-contract.test.mjs
           scripts/test/customer-email-quick-sign-dark.test.mjs
+          scripts/test/storefront-quantity-segment-background.test.mjs
           scripts/test/dashboard-monthly-inventory-report.test.mjs
 
   whole-unit-contract:

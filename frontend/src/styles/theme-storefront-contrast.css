@@ -895,18 +895,21 @@
   pointer-events: none;
   background: linear-gradient(180deg, rgb(16 24 39 / 0%) 0%, rgb(16 24 39 / 18%) 40%, #101827 100%);
 }
-/* The SHOP quantity field previously picked up the global dark input surface,
-   producing a rectangle inside the rounded +/- group. Keep one unified surface. */
-:root.dark .customer-app .customer-shop-page .customer-quantity > input {
-  background: transparent;
-  background-color: transparent;
-  border: 0;
+/* Cart, Shop, Favorites and Product Detail share one +/- quantity control.
+   The global dark form-input surface would otherwise paint a rectangle inside
+   it (especially now that whole-unit quantities use type="text"). Preserve the
+   parent's rounded surface, with keyboard focus indicated on the whole group. */
+:root.dark .customer-app .customer-quantity > input {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
   border-radius: 0;
-  box-shadow: none;
-  outline: none;
+  box-shadow: none !important;
+  outline: none !important;
   color: #e2e9fb;
 }
-:root.dark .customer-app .customer-shop-page .customer-quantity:focus-within {
+:root.dark .customer-app .customer-quantity:focus-within {
   outline: 2px solid #b1a3f5;
   outline-offset: 2px;
 }
