@@ -183,6 +183,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
   const [reviewPage, setReviewPage] = useState(1);
   const [expandedProductIds, setExpandedProductIds] = useState<Set<string>>(() => new Set());
   const confirmLockRef = useRef(false);
+  const reviewScrollRef = useRef<HTMLDivElement>(null);
 
   const resetPlanner = useCallback(() => {
     setLines([]);
@@ -207,6 +208,13 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
   useEffect(() => {
     resetPlanner();
   }, [resetPlanner]);
+
+  // Keep purchasing advice visible inside the bounded, internally scrolling dialog.
+  useEffect(() => {
+    if (reviewOpen && ownerWarnings.length > 0 && reviewScrollRef.current) {
+      reviewScrollRef.current.scrollTop = reviewScrollRef.current.scrollHeight;
+    }
+  }, [reviewOpen, ownerWarnings]);
 
   const selectedLines = useMemo(() => lines.filter((line) => line.isSelected), [lines]);
   const selectedCount = selectedLines.length;
@@ -1122,22 +1130,28 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
       </Dialog>
 
       <Dialog onOpenChange={setReviewOpen} open={reviewOpen}>
-        <DialogContent className="ys-report-modal max-h-[88vh] max-w-[760px] overflow-hidden">
-          <DialogHeader>
+        <DialogContent className="ys-report-modal flex max-h-[calc(100dvh-2rem)] max-w-[760px] flex-col gap-0 overflow-hidden sm:max-h-[88dvh]">
+          <DialogHeader className="shrink-0 pb-4">
             <DialogTitle>Review restock</DialogTitle>
             <DialogDescription>
               Check the products and quantities before you save or confirm the restock.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 px-6 pb-2">
+          <div
+            aria-label="Restock review details and purchasing advice"
+            className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 pb-4"
+            ref={reviewScrollRef}
+            role="region"
+            tabIndex={0}
+          >
             <div className="grid gap-3 sm:grid-cols-3">
               <SummaryValue label="Products" value={selectedCount} />
               <SummaryValue label="Total units" value={requestedUnits} />
               <SummaryValue label="Quantity changes" value={overrideCount} />
             </div>
 
-            <div className="max-h-[36vh] divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200">
+            <div className="divide-y divide-slate-100 rounded-lg border border-slate-200">
               {pagedSelectedLines.map((line) => (
                 <div
                   className="flex flex-col gap-2 p-3 sm:flex-row sm:items-start sm:justify-between"
@@ -1201,34 +1215,34 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
                 when the actual delivery is received.
               </AlertDescription>
             </Alert>
+
+            <RestockOwnerWarnings
+              warnings={ownerWarnings}
+              onApplySuggestedQuantity={(productId, quantity) => {
+                setLines((current) =>
+                  current.map((line) =>
+                    line.candidate.product.id === productId
+                      ? {
+                          ...line,
+                          requestedQuantity: quantity,
+                          ownerOverrideReason:
+                            line.recommendationSource !== "MANUAL" &&
+                            quantity !== line.recommendedQuantity
+                              ? "Owner selected system suggested quantity."
+                              : line.ownerOverrideReason
+                        }
+                      : line
+                  )
+                );
+                setDraftDirty(true);
+                setOwnerWarnings([]);
+                setReviewOpen(false);
+                setError(null);
+              }}
+            />
           </div>
 
-          <RestockOwnerWarnings
-            warnings={ownerWarnings}
-            onApplySuggestedQuantity={(productId, quantity) => {
-              setLines((current) =>
-                current.map((line) =>
-                  line.candidate.product.id === productId
-                    ? {
-                        ...line,
-                        requestedQuantity: quantity,
-                        ownerOverrideReason:
-                          line.recommendationSource !== "MANUAL" &&
-                          quantity !== line.recommendedQuantity
-                            ? "Owner selected system suggested quantity."
-                            : line.ownerOverrideReason
-                      }
-                    : line
-                )
-              );
-              setDraftDirty(true);
-              setOwnerWarnings([]);
-              setReviewOpen(false);
-              setError(null);
-            }}
-          />
-
-          <DialogFooter>
+          <DialogFooter className="shrink-0">
             <DialogClose asChild>
               <Button disabled={busyAction !== null} type="button" variant="secondary">
                 Back

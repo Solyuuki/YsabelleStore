@@ -1,5 +1,5 @@
 import { CheckCircle2, LoaderCircle, RefreshCw } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useToast } from "@/components/shared/ToastProvider";
 import { RestockOwnerWarnings } from "@/components/reports/RestockOwnerWarnings";
@@ -55,6 +55,13 @@ export function RestockDraftsPanel({
   const [selectedDraft, setSelectedDraft] = useState<RestockOrder | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [ownerWarnings, setOwnerWarnings] = useState<RestockOwnerWarning[]>([]);
+  const draftScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (selectedDraft && ownerWarnings.length > 0 && draftScrollRef.current) {
+      draftScrollRef.current.scrollTop = draftScrollRef.current.scrollHeight;
+    }
+  }, [selectedDraft, ownerWarnings]);
 
   const loadDrafts = useCallback(async () => {
     setLoading(true);
@@ -255,10 +262,10 @@ export function RestockDraftsPanel({
           }
         }}
       >
-        <DialogContent className="ys-report-modal max-w-[760px]">
+        <DialogContent className="ys-report-modal flex max-h-[calc(100dvh-2rem)] max-w-[760px] flex-col gap-0 overflow-hidden sm:max-h-[88dvh]">
           {selectedDraft ? (
             <>
-              <DialogHeader>
+              <DialogHeader className="shrink-0 pb-4">
                 <DialogTitle>{selectedDraft.orderNumber}</DialogTitle>
                 <DialogDescription>
                   {isRecommendedPlan(selectedDraft)
@@ -267,23 +274,31 @@ export function RestockDraftsPanel({
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="max-h-[55vh] divide-y divide-slate-100 overflow-y-auto px-6 pb-2">
-                {selectedLines(selectedDraft).map((line) => (
-                  <div className="flex items-center justify-between gap-4 py-3" key={line.id}>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-slate-950">
-                        {line.product.name}
-                      </p>
-                      <p className="mt-0.5 truncate text-xs text-slate-500">{line.product.sku}</p>
+              <div
+                aria-label="Saved restock items and purchasing advice"
+                className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 pb-4"
+                ref={draftScrollRef}
+                role="region"
+                tabIndex={0}
+              >
+                <div className="divide-y divide-slate-100 rounded-lg border border-slate-200">
+                  {selectedLines(selectedDraft).map((line) => (
+                    <div className="flex items-center justify-between gap-4 py-3" key={line.id}>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-slate-950">
+                          {line.product.name}
+                        </p>
+                        <p className="mt-0.5 truncate text-xs text-slate-500">
+                          {line.product.sku}
+                        </p>
+                      </div>
+                      <span className="shrink-0 text-sm font-semibold text-slate-950">
+                        {line.requestedQuantity.toLocaleString()} units
+                      </span>
                     </div>
-                    <span className="shrink-0 text-sm font-semibold text-slate-950">
-                      {line.requestedQuantity.toLocaleString()} units
-                    </span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
 
-              <div className="px-6 pb-3">
                 <RestockOwnerWarnings
                   warnings={ownerWarnings}
                   onApplySuggestedQuantity={(productId, quantity) =>
@@ -292,7 +307,7 @@ export function RestockDraftsPanel({
                 />
               </div>
 
-              <DialogFooter>
+              <DialogFooter className="shrink-0">
                 <Button
                   disabled={confirming}
                   onClick={() => { setSelectedDraft(null); setOwnerWarnings([]); }}

@@ -81,3 +81,22 @@ Manual:
 **Do not run migrations, auto-backfill old tickets, or amend live stock during
 release checks.** Manual QA and safe staging/live MySQL concurrency validation
 are required before calling this production-certified.
+
+## Owner warning dialog scroll QA
+
+Both Restock Planner **Review restock** and Recommended & Saved Restock
+draft confirmation use a viewport-bounded dialog with a non-scrolling header,
+a single keyboard- and pointer-scrollable content region (products and all
+purchasing warnings), and a pinned Back/Confirm footer. On warning response the
+content region scrolls to the advisory list. The Radix body scroll lock remains
+intentional; the dialog body itself must scroll without clipping the final
+Owner decision buttons.
+
+- Exercise an 8-product / 80-unit manual plan whose POS-history advisories
+  yield at least eight warnings; verify the warning content is scrollable,
+  keyboard focus reaches its control and the footer remains accessible.
+- Exercise a saved draft with many lines and warnings; check Back/Keep draft
+  and **Continue with my quantities** in narrow and short viewport sizes.
+- `node --test scripts/test/restock-owner-warning-scroll.test.mjs`
+- No quantity, approval, supplier ticket, or physical inventory logic changed
+  in this layout fix.
