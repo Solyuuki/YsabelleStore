@@ -1,5 +1,5 @@
 name: Sprint 11 formatter with Python image-engine dependencies
-# Sprint 11 final Prettier cleanup after frontend and lint contract repairs (2026-10-11).
+# Sprint 11 formatting regression validation for final QA.
 
 on:
   push:
