@@ -7,7 +7,7 @@ const read = (path) => readFileSync(new URL("../../" + path, import.meta.url), "
 test("both Owner approval entry points show warnings and explicit continue action", () => {
   const drafts = read("frontend/src/components/reports/RestockDraftsPanel.tsx");
   const planner = read("frontend/src/components/reports/RestockPlanningPanel.tsx");
-  for (const [name, source] of [["Draft approval", drafts], ["Planner approval", planner]]) {
+  for (const source of [drafts, planner]) {
     assert.match(source, /RestockOwnerWarningError/);
     assert.match(source, /setOwnerWarnings\(requestError\.warnings\)/);
     assert.match(source, /ownerWarnings\.length > 0/);
