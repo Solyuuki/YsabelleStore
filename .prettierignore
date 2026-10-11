@@ -13,3 +13,6 @@ forecasting-service/outputs
 .agents/
 .codex/
 frontend/src/assets/status/*.svg
+
+# Preserve untracked, generated thesis-validation evidence byte-for-byte.
+testing/thesis-validation/evidence/
