@@ -13,7 +13,13 @@ const warningLabels: Record<string, string> = {
   INVALID_QUANTITY: "The suggested automated purchase quantity needs review."
 };
 
-export function RestockOwnerWarnings({ warnings }: { warnings: RestockOwnerWarning[] }) {
+export function RestockOwnerWarnings({
+  warnings,
+  onApplySuggestedQuantity
+}: {
+  warnings: RestockOwnerWarning[];
+  onApplySuggestedQuantity?: (productId: string, quantity: number) => void;
+}) {
   if (warnings.length === 0) return null;
 
   return (
@@ -38,6 +44,21 @@ export function RestockOwnerWarnings({ warnings }: { warnings: RestockOwnerWarni
             {warning.suggestedQuantity !== null
               ? ` System suggests: ${warning.suggestedQuantity.toLocaleString()} units.`
               : ""}
+            {onApplySuggestedQuantity &&
+            warning.productId &&
+            warning.suggestedQuantity !== null &&
+            Number.isSafeInteger(warning.suggestedQuantity) &&
+            warning.suggestedQuantity > 0 ? (
+              <button
+                className="ml-2 rounded border border-amber-600 px-2 py-1 font-semibold text-amber-900 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 dark:border-amber-300 dark:text-amber-100"
+                onClick={() =>
+                  onApplySuggestedQuantity(warning.productId!, warning.suggestedQuantity!)
+                }
+                type="button"
+              >
+                Use suggested quantity
+              </button>
+            ) : null}
           </li>
         ))}
       </ul>

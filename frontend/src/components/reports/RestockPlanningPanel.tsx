@@ -1203,7 +1203,30 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
             </Alert>
           </div>
 
-          <RestockOwnerWarnings warnings={ownerWarnings} />
+          <RestockOwnerWarnings
+            warnings={ownerWarnings}
+            onApplySuggestedQuantity={(productId, quantity) => {
+              setLines((current) =>
+                current.map((line) =>
+                  line.candidate.product.id === productId
+                    ? {
+                        ...line,
+                        requestedQuantity: quantity,
+                        ownerOverrideReason:
+                          line.recommendationSource !== "MANUAL" &&
+                          quantity !== line.recommendedQuantity
+                            ? "Owner selected system suggested quantity."
+                            : line.ownerOverrideReason
+                      }
+                    : line
+                )
+              );
+              setDraftDirty(true);
+              setOwnerWarnings([]);
+              setReviewOpen(false);
+              setError(null);
+            }}
+          />
 
           <DialogFooter>
             <DialogClose asChild>

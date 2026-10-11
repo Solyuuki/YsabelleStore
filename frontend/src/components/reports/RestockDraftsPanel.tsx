@@ -18,6 +18,7 @@ import {
 import {
   approveRestockOrder,
   listRestockOrders,
+  replaceRestockOrderLines,
   RestockOwnerWarningError,
   type RestockOwnerWarning,
   type RestockOrder,
@@ -77,6 +78,39 @@ export function RestockDraftsPanel({
     void refreshVersion;
     void loadDrafts();
   }, [loadDrafts, refreshVersion]);
+
+  async function applySuggestedQuantity(productId: string, quantity: number) {
+    if (!selectedDraft || confirming || !Number.isSafeInteger(quantity) || quantity < 1) return;
+    setConfirming(true);
+    setError(null);
+    try {
+      const updated = await replaceRestockOrderLines(selectedDraft.id, {
+        expectedVersion: selectedDraft.version,
+        lines: selectedDraft.lines.map((line) => ({
+          productId: line.productId,
+          recommendationId: line.recommendationId,
+          recommendationSource: line.recommendationSource,
+          recommendedQuantity: line.recommendedQuantity,
+          requestedQuantity: line.productId === productId ? quantity : line.requestedQuantity,
+          isSelected: line.isSelected,
+          ownerOverrideReason:
+            line.productId === productId &&
+            line.recommendationSource !== "MANUAL" &&
+            quantity !== line.recommendedQuantity
+              ? "Owner selected system suggested quantity."
+              : line.ownerOverrideReason,
+          notes: line.notes
+        }))
+      });
+      setSelectedDraft(updated);
+      setOwnerWarnings([]);
+      await loadDrafts();
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Could not apply suggested quantity.");
+    } finally {
+      setConfirming(false);
+    }
+  }
 
   async function confirmDraft(acknowledgeWarnings = false) {
     if (!selectedDraft || confirming) return;
@@ -249,7 +283,14 @@ export function RestockDraftsPanel({
                 ))}
               </div>
 
-              <div className="px-6 pb-3"><RestockOwnerWarnings warnings={ownerWarnings} /></div>
+              <div className="px-6 pb-3">
+                <RestockOwnerWarnings
+                  warnings={ownerWarnings}
+                  onApplySuggestedQuantity={(productId, quantity) =>
+                    void applySuggestedQuantity(productId, quantity)
+                  }
+                />
+              </div>
 
               <DialogFooter>
                 <Button
