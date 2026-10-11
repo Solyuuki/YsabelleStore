@@ -29,12 +29,12 @@ function checkScrollableReview(source, id, refName) {
   assert.ok(dialog.includes(`ref={${refName}}`));
   assert.match(dialog, /role="region"/);
   assert.match(dialog, /tabIndex=\{0\}/);
-  assert.match(dialog, /<DialogFooter className="shrink-0">/);
+  assert.match(dialog, /<DialogFooter className="shrink-0(?: flex-wrap gap-2)?">/);
 
   const warningIndex = dialog.indexOf("<RestockOwnerWarnings");
   const scrollerIndex = dialog.indexOf(`ref={${refName}}`);
   const scrollerEndIndex = dialog.indexOf("</div>\n\n", warningIndex);
-  const footerIndex = dialog.indexOf('<DialogFooter className="shrink-0">');
+  const footerIndex = dialog.indexOf('<DialogFooter className="shrink-0');
   assert.ok(scrollerIndex >= 0 && warningIndex > scrollerIndex);
   assert.ok(scrollerEndIndex > warningIndex && footerIndex > scrollerEndIndex);
   assert.equal(dialog.includes("max-h-[36vh]"), false, "Nested product scroller can trap wheel scrolling");
