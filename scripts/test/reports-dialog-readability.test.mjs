@@ -20,13 +20,15 @@ function contrast(a, b) {
   return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
 }
 
-test("all Reports dialog portals carry the isolated readability class", () => {
+test("all Reports and Receiving return-document portals carry the shared readability class", () => {
   const filesAndCounts = [
     ["frontend/src/components/reports/RestockPlanningPanel.tsx", 1],
     ["frontend/src/components/reports/RestockDraftsPanel.tsx", 1],
     ["frontend/src/components/reports/RestockOrderHistoryPanel.tsx", 1],
     ["frontend/src/components/reports/RestockReceivingPanel.tsx", 2],
-    ["frontend/src/components/reports/ReportDownloadDialog.tsx", 1]
+    ["frontend/src/components/reports/ReportDownloadDialog.tsx", 1],
+    ["frontend/src/components/receiving/ReturnHistoryDialog.tsx", 1],
+    ["frontend/src/components/receiving/ReturnReportDialog.tsx", 1]
   ];
 
   for (const [file, count] of filesAndCounts) {
@@ -34,7 +36,7 @@ test("all Reports dialog portals carry the isolated readability class", () => {
     assert.equal(
       source.match(/<DialogContent className="ys-report-modal /g)?.length ?? 0,
       count,
-      file + ": missing reports-only dark theme scope"
+      file + ": missing shared dark report-dialog scope"
     );
   }
 });
@@ -76,4 +78,26 @@ test("Reports modal dark selectors are scoped and do not override light styling"
   assert.ok(css.includes('/* Sprint 11: Reports dialogs render in Radix portals'));
   assert.ok(css.includes(':root.dark[data-appearance-scope="retail"]'));
   assert.ok(!css.includes(':root.light [role="dialog"].ys-report-modal'));
+});
+
+test("Receiving return-document actions use readable dark report styling without disabling actions", () => {
+  const history = read("frontend/src/components/receiving/ReturnHistoryDialog.tsx");
+  const report = read("frontend/src/components/receiving/ReturnReportDialog.tsx");
+
+  assert.match(history, /<DialogContent className="ys-report-modal /);
+  assert.match(history, /onClick=\{\(\) => onView\(order\)\}/);
+  assert.match(history, /View report/);
+  assert.match(history, /variant="secondary"/);
+  assert.doesNotMatch(history, /disabled=\{[^}]*\}[^>]*>\s*View report/);
+  assert.match(report, /<DialogContent className="ys-report-modal /);
+  assert.match(report, /Download PDF/);
+  assert.match(report, /Print/);
+  assert.match(report, /Excel-compatible CSV/);
+
+  const css = read("frontend/src/styles/theme-retail.css");
+  const modalStyles = css.slice(css.indexOf("/* Sprint 11: Reports dialogs render in Radix portals"));
+  assert.match(modalStyles, /\[role="dialog"\]\.ys-report-modal/);
+  assert.match(modalStyles, /\[class~="text-slate-700"\]/);
+  assert.match(modalStyles, /button\[class~="bg-white"\]/);
+  assert.match(modalStyles, /:hover:not\(:disabled\)/);
 });
