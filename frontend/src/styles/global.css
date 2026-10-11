@@ -1212,6 +1212,12 @@ body {
 
 /* Sprint 11: portal-based full-screen status surfaces follow the active appearance
    scope. The existing light-only status layout and colors remain unchanged. */
+/* The status portal receives focus programmatically for screen-reader announcements.
+   Suppress only its browser outline; interactive child buttons retain focus rings. */
+.status-screen:focus {
+  outline: none;
+}
+
 .status-screen__cosmos-layer,
 .status-screen__system-illustration {
   display: none;
