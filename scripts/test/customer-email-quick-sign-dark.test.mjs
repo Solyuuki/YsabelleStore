@@ -44,8 +44,8 @@ test("both email and 6-digit verification stages retain legible colors, focus, i
     ".customer-email-quick-sign__intro h2",
     ".customer-email-quick-sign__eyebrow",
     ".customer-email-quick-sign__intro > p:last-child",
-    ".customer-auth-field input[type=\"email\"]",
-    ".customer-auth-field input[type=\"email\"]::placeholder",
+    '.customer-auth-field input[type="email"]',
+    '.customer-auth-field input[type="email"]::placeholder',
     ".customer-verification-code__label",
     ".customer-verification-code__slot",
     '.customer-verification-code__slot[data-active="true"]',
@@ -59,7 +59,10 @@ test("both email and 6-digit verification stages retain legible colors, focus, i
     ".customer-email-quick-sign__back",
     ".customer-auth-alert"
   ]) {
-    assert.ok(css.replace(/\s+/g, " ").includes(selector), "Missing Quick Sign dark state: " + selector);
+    assert.ok(
+      css.replace(/\s+/g, " ").includes(selector),
+      "Missing Quick Sign dark state: " + selector
+    );
   }
   assert.ok(page.includes('stage === "email"'));
   assert.ok(page.includes('stage !== "code"'));

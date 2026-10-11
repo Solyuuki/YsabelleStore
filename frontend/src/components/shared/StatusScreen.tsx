@@ -100,7 +100,11 @@ export function StatusScreen({
   const actions = (
     <div className="auth-footer-enter mt-7 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
       {primaryAction ? (
-        <Button className="status-screen__primary-action h-11 min-w-36 px-5" onClick={primaryAction.onClick} type="button">
+        <Button
+          className="status-screen__primary-action h-11 min-w-36 px-5"
+          onClick={primaryAction.onClick}
+          type="button"
+        >
           {primaryAction.icon}
           {primaryAction.label}
         </Button>
@@ -139,7 +143,10 @@ export function StatusScreen({
       >
         <StorefrontGalaxyArtwork className="status-screen__cosmos-artwork" />
       </div>
-      <div className="status-screen__ambient-layer pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+      <div
+        className="status-screen__ambient-layer pointer-events-none absolute inset-0 z-0 overflow-hidden"
+        aria-hidden="true"
+      >
         <div
           className="absolute inset-[-16%] opacity-90 blur-3xl motion-safe:[animation:reliability-orb-drift_18s_ease-in-out_infinite] motion-reduce:animate-none"
           style={{ background: STATUS_AMBIENT[variant] }}
@@ -199,7 +206,9 @@ export function StatusScreen({
               {description}
             </p>
             {actions}
-            {footer ? <p className="status-screen__footer mt-6 text-xs text-slate-500">{footer}</p> : null}
+            {footer ? (
+              <p className="status-screen__footer mt-6 text-xs text-slate-500">{footer}</p>
+            ) : null}
           </div>
         </main>
       ) : null}
@@ -227,7 +236,9 @@ export function StatusScreen({
               {description}
             </p>
             {actions}
-            {footer ? <p className="status-screen__footer mt-6 text-xs text-slate-500">{footer}</p> : null}
+            {footer ? (
+              <p className="status-screen__footer mt-6 text-xs text-slate-500">{footer}</p>
+            ) : null}
           </div>
         </main>
       ) : null}
@@ -260,16 +271,22 @@ export function StatusScreen({
             {(noteTitle || noteDescription) && (
               <div className="status-screen__note mx-auto mt-6 max-w-lg rounded-2xl border border-white/80 bg-white/70 p-4 text-left shadow-[0_22px_54px_-40px_rgba(98,91,255,0.32),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl">
                 {noteTitle ? (
-                  <p className="status-screen__note-title text-sm font-semibold text-slate-900">{noteTitle}</p>
+                  <p className="status-screen__note-title text-sm font-semibold text-slate-900">
+                    {noteTitle}
+                  </p>
                 ) : null}
                 {noteDescription ? (
-                  <p className="status-screen__note-description mt-1.5 text-sm leading-6 text-slate-600">{noteDescription}</p>
+                  <p className="status-screen__note-description mt-1.5 text-sm leading-6 text-slate-600">
+                    {noteDescription}
+                  </p>
                 ) : null}
               </div>
             )}
 
             {actions}
-            {footer ? <p className="status-screen__footer mt-6 text-xs text-slate-500">{footer}</p> : null}
+            {footer ? (
+              <p className="status-screen__footer mt-6 text-xs text-slate-500">{footer}</p>
+            ) : null}
           </div>
         </main>
       ) : null}

@@ -8,9 +8,7 @@ export type MonthlyRestockSummaryAction = {
   recommendedQuantity: number;
 };
 
-export function summarizeMonthlyRestockActions(
-  actions: readonly MonthlyRestockSummaryAction[]
-) {
+export function summarizeMonthlyRestockActions(actions: readonly MonthlyRestockSummaryAction[]) {
   const restockProducts = actions.filter((action) => action.actionType === "RESTOCK").length;
 
   return {

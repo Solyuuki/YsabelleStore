@@ -63,5 +63,8 @@ test("inventory physical chevron remains single, with a safe right-edge gutter",
 
 test("only dropdown presentation changed: no native select event handler overrides", () => {
   const css = read("frontend/src/styles/theme-retail.css");
-  assert.doesNotMatch(css.slice(css.indexOf("/* Sprint 11: reliable native-select chevrons")), /pointer-events: none/);
+  assert.doesNotMatch(
+    css.slice(css.indexOf("/* Sprint 11: reliable native-select chevrons")),
+    /pointer-events: none/
+  );
 });

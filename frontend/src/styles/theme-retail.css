@@ -627,7 +627,12 @@
 :root.dark
   .app-shell-ambient
   .retail-dashboard-page
-  :is(.ys-sales-summary-tile, .ys-sales-selected-day, .ys-dashboard-monthly-batch, .ys-dashboard-order) {
+  :is(
+    .ys-sales-summary-tile,
+    .ys-sales-selected-day,
+    .ys-dashboard-monthly-batch,
+    .ys-dashboard-order
+  ) {
   background-color: var(--dashboard-tile-raised) !important;
 }
 :root.dark
@@ -1889,9 +1894,7 @@
 /* Report export cards live in a Radix portal outside .app-shell-ambient.
    Secondary choices must stay legible in Dark Mode without altering light mode
    or changing the PDF / Print / CSV actions. */
-:root.dark[data-appearance-scope="retail"]
-  [role="dialog"]
-  .ys-report-export-option--secondary {
+:root.dark[data-appearance-scope="retail"] [role="dialog"] .ys-report-export-option--secondary {
   border-color: #7183a2 !important;
   background-color: #293a55 !important;
   color: #edf3ff !important;
@@ -1899,18 +1902,21 @@
 }
 :root.dark[data-appearance-scope="retail"]
   [role="dialog"]
-  .ys-report-export-option--secondary .ys-report-export-option__icon {
+  .ys-report-export-option--secondary
+  .ys-report-export-option__icon {
   color: #cbc3ff !important;
   opacity: 1;
 }
 :root.dark[data-appearance-scope="retail"]
   [role="dialog"]
-  .ys-report-export-option--secondary .ys-report-export-option__title {
+  .ys-report-export-option--secondary
+  .ys-report-export-option__title {
   color: #f3f6ff !important;
 }
 :root.dark[data-appearance-scope="retail"]
   [role="dialog"]
-  .ys-report-export-option--secondary .ys-report-export-option__description {
+  .ys-report-export-option--secondary
+  .ys-report-export-option__description {
   color: #d0dcee !important;
 }
 :root.dark[data-appearance-scope="retail"]
@@ -1931,7 +1937,6 @@
   cursor: not-allowed;
   opacity: 0.78;
 }
-
 
 /* Sprint 11: Reports > Add product is a Radix portal outside the retail shell.
    The scoped dark palette restores legibility without changing light mode or
@@ -2019,7 +2024,9 @@
 
 :root.dark[data-appearance-scope="retail"]
   [role="dialog"].ys-restock-product-picker
-  .ys-restock-product-picker__results > * + * {
+  .ys-restock-product-picker__results
+  > *
+  + * {
   border-color: #485b79;
 }
 
@@ -2028,7 +2035,6 @@
   [class~="border-t"] {
   border-color: #536580;
 }
-
 
 /* Sprint 11: Reports dialogs render in Radix portals outside the retail app shell.
    These scoped overrides fix dark ink/buttons on navy dialogs while leaving
@@ -2108,9 +2114,7 @@
   color: #ffffff !important;
 }
 
-:root.dark[data-appearance-scope="retail"]
-  [role="dialog"].ys-report-modal
-  button:disabled {
+:root.dark[data-appearance-scope="retail"] [role="dialog"].ys-report-modal button:disabled {
   opacity: 0.82;
   cursor: not-allowed;
 }
@@ -2122,9 +2126,7 @@
   outline-offset: 2px;
 }
 
-:root.dark[data-appearance-scope="retail"]
-  [role="dialog"].ys-report-modal
-  [class~="bg-amber-50"] {
+:root.dark[data-appearance-scope="retail"] [role="dialog"].ys-report-modal [class~="bg-amber-50"] {
   background-color: #423525 !important;
   border-color: #a8895f !important;
   color: #ffe2b2 !important;
@@ -2136,9 +2138,7 @@
   color: #ffe2b2 !important;
 }
 
-:root.dark[data-appearance-scope="retail"]
-  [role="dialog"].ys-report-modal
-  [class~="bg-red-50"] {
+:root.dark[data-appearance-scope="retail"] [role="dialog"].ys-report-modal [class~="bg-red-50"] {
   background-color: #402b36 !important;
   border-color: #ab7087 !important;
   color: #ffd2db !important;
@@ -2150,9 +2150,7 @@
   color: #ffd2db !important;
 }
 
-:root.dark[data-appearance-scope="retail"]
-  [role="dialog"].ys-report-modal
-  [class~="bg-indigo-50"] {
+:root.dark[data-appearance-scope="retail"] [role="dialog"].ys-report-modal [class~="bg-indigo-50"] {
   background-color: #343457 !important;
   border-color: #827aba !important;
 }
@@ -2165,10 +2163,10 @@
 
 :root.dark[data-appearance-scope="retail"]
   [role="dialog"].ys-report-modal
-  :is([class~="divide-slate-100"], [class~="divide-slate-200"]) > :not(:first-child) {
+  :is([class~="divide-slate-100"], [class~="divide-slate-200"])
+  > :not(:first-child) {
   border-color: #4e6381 !important;
 }
-
 
 /* Sprint 11: reliable native-select chevrons for the existing retail filters.
    Browser-default arrows sit against the field border inconsistently.
@@ -2198,7 +2196,6 @@
   background-size: 1rem 1rem !important;
   padding-right: 2.75rem !important;
 }
-
 
 /* Products filters have a transparent dark-mode wrapper. That older shorthand
    must not erase the shared chevron background on the native select. */

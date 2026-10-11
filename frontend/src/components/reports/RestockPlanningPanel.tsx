@@ -1121,7 +1121,11 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
 
           <DialogFooter>
             <DialogClose asChild>
-              <Button className="ys-restock-product-picker__secondary-action" type="button" variant="secondary">
+              <Button
+                className="ys-restock-product-picker__secondary-action"
+                type="button"
+                variant="secondary"
+              >
                 Done
               </Button>
             </DialogClose>

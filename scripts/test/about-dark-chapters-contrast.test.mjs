@@ -10,7 +10,10 @@ test("About sections 02 and 03 reuse the exact Storefront galaxy variable", () =
   const shared = read("frontend/src/styles/theme-retail.css");
   const experience = read("frontend/src/pages/customer/AboutExperiencePage.tsx");
 
-  assert.match(shared, /\/\* Shared storefront galaxy palette:[\s\S]*?:root \{\s*--storefront-galaxy-background:/);
+  assert.match(
+    shared,
+    /\/\* Shared storefront galaxy palette:[\s\S]*?:root \{\s*--storefront-galaxy-background:/
+  );
   assert.match(experience, /import "@\/styles\/about-dark-chapters\.css";/);
   assert.ok(css.includes(`${scope} .discover-story--about .story-catalog`));
   assert.ok(css.includes(`${scope} .discover-story--about .story-sales`));

@@ -20,7 +20,9 @@ export type RestockLineIntegrity = {
 
 /** Only system-created monthly plans are subjected to strict procurement ceilings. */
 export function isAutomatedMonthlyOrder(notes: string | null) {
-  return Boolean(notes?.includes("[AutomatedRestockMonth:") || notes?.includes("[AutomatedRestock:"));
+  return Boolean(
+    notes?.includes("[AutomatedRestockMonth:") || notes?.includes("[AutomatedRestock:")
+  );
 }
 
 /**

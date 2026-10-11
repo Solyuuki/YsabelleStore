@@ -33,7 +33,10 @@ test("queue fetch is paginated and does not load complete ticket timelines", () 
   assert.match(list, /skip: \(page - 1\) \* query\.pageSize/);
   assert.match(list, /select: \{/);
   assert.doesNotMatch(list, /include: deliveryOrderInclude/);
-  assert.match(routes, /deliveryRouter\.get\("\/:orderId", requireRole\("OWNER", "STAFF"\), getDeliveryTicketController\)/);
+  assert.match(
+    routes,
+    /deliveryRouter\.get\("\/:orderId", requireRole\("OWNER", "STAFF"\), getDeliveryTicketController\)/
+  );
   assert.match(api, /apiClient\.request<DeliveryTicketSummary\[\], never, DeliveryListMeta>/);
   assert.match(page, /setSelected\(await getDeliveryTicket\(ticketId\)\)/);
   assert.match(page, /Ticket activity history/);

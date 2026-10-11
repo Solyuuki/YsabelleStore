@@ -37,24 +37,27 @@ function checkScrollableReview(source, id, refName) {
   const footerIndex = dialog.indexOf('<DialogFooter className="shrink-0');
   assert.ok(scrollerIndex >= 0 && warningIndex > scrollerIndex);
   assert.ok(scrollerEndIndex > warningIndex && footerIndex > scrollerEndIndex);
-  assert.equal(dialog.includes("max-h-[36vh]"), false, "Nested product scroller can trap wheel scrolling");
-  assert.match(source, new RegExp(refName + "\\.current\\.scrollTop = " + refName + "\\.current\\.scrollHeight"));
+  assert.equal(
+    dialog.includes("max-h-[36vh]"),
+    false,
+    "Nested product scroller can trap wheel scrolling"
+  );
+  assert.match(
+    source,
+    new RegExp(refName + "\\.current\\.scrollTop = " + refName + "\\.current\\.scrollHeight")
+  );
 }
 
 test("manual Restock review scrolls complete product + warning content while keeping actions visible", () => {
-  checkScrollableReview(planner, '<Dialog onOpenChange={setReviewOpen}', "reviewScrollRef");
-  const dialog = dialogSnippet(planner, '<Dialog onOpenChange={setReviewOpen}');
+  checkScrollableReview(planner, "<Dialog onOpenChange={setReviewOpen}", "reviewScrollRef");
+  const dialog = dialogSnippet(planner, "<Dialog onOpenChange={setReviewOpen}");
   assert.match(dialog, /Continue with my quantities/);
   assert.match(dialog, /Use suggested quantity|onApplySuggestedQuantity/);
   assert.match(dialog, /Review restock/);
 });
 
 test("saved restock drafts use the same bounded scrolling review after purchasing warnings", () => {
-  checkScrollableReview(
-    drafts,
-    '<DialogContent className="ys-report-modal flex',
-    "draftScrollRef"
-  );
+  checkScrollableReview(drafts, '<DialogContent className="ys-report-modal flex', "draftScrollRef");
   const dialog = dialogSnippet(drafts, '<DialogContent className="ys-report-modal flex');
   assert.match(dialog, /Continue with my quantities/);
   assert.match(dialog, /Keep draft/);

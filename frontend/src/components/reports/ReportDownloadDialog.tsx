@@ -615,7 +615,10 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
                 type="button"
                 variant="secondary"
               >
-                <Printer aria-hidden="true" className="ys-report-export-option__icon mt-0.5 h-5 w-5 shrink-0" />
+                <Printer
+                  aria-hidden="true"
+                  className="ys-report-export-option__icon mt-0.5 h-5 w-5 shrink-0"
+                />
                 <span>
                   <span className="ys-report-export-option__title block font-semibold text-slate-950">
                     {exportBusy === "print" ? "Preparing…" : "Print"}
@@ -633,7 +636,10 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
                 type="button"
                 variant="secondary"
               >
-                <FileSpreadsheet aria-hidden="true" className="ys-report-export-option__icon mt-0.5 h-5 w-5 shrink-0" />
+                <FileSpreadsheet
+                  aria-hidden="true"
+                  className="ys-report-export-option__icon mt-0.5 h-5 w-5 shrink-0"
+                />
                 <span>
                   <span className="ys-report-export-option__title block font-semibold text-slate-950">
                     {exportBusy === "csv" ? "Preparing…" : "Excel-compatible CSV"}

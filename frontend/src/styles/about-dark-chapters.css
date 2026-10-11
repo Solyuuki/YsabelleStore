@@ -39,9 +39,7 @@
   color: #f2f5ff;
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .discover-story--about
-  .story-catalog::before {
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-catalog::before {
   background:
     linear-gradient(rgb(159 173 242 / 5%) 1px, transparent 1px),
     linear-gradient(90deg, rgb(159 173 242 / 5%) 1px, transparent 1px);
@@ -50,36 +48,33 @@
 
 .about-experience[data-about-hero-theme="dark"]
   .discover-story--about
-  .story-catalog__copy .story-kicker {
+  .story-catalog__copy
+  .story-kicker {
   color: #a8cfff;
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .discover-story--about
-  .story-catalog__copy h2 {
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-catalog__copy h2 {
   color: #f2f5ff;
 }
 
 .about-experience[data-about-hero-theme="dark"]
   .discover-story--about
-  .story-catalog__copy .story-mask:last-child .story-mask__line {
+  .story-catalog__copy
+  .story-mask:last-child
+  .story-mask__line {
   background: linear-gradient(106deg, #a8c4ff 0%, #c0a3ff 48%, #f2a3d4 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .discover-story--about
-  .story-catalog__copy p {
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-catalog__copy p {
   color: #d2dcf0;
 }
 
 /* Only the surrounding catalog system card changes; never recolor,
    re-encode, or overlay the existing Gemini catalog video. */
-.about-experience[data-about-hero-theme="dark"]
-  .discover-story--about
-  .story-catalog__system {
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-catalog__system {
   border-color: rgb(166 175 250 / 26%);
   background: rgb(17 26 50 / 91%);
   box-shadow:
@@ -87,12 +82,11 @@
     inset 0 1px 0 rgb(237 235 255 / 9%);
 }
 
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-catalog__step,
 .about-experience[data-about-hero-theme="dark"]
   .discover-story--about
-  .story-catalog__step,
-.about-experience[data-about-hero-theme="dark"]
-  .discover-story--about
-  .story-catalog__pipeline .story-origin-shelf__item.story-catalog__step {
+  .story-catalog__pipeline
+  .story-origin-shelf__item.story-catalog__step {
   color: #b9b2ff;
 }
 
@@ -120,9 +114,7 @@
   color: #f0a9d6;
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .discover-story--about
-  .story-catalog__step svg {
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-catalog__step svg {
   border-color: rgb(158 173 255 / 29%);
   background: #202b4b;
   box-shadow:
@@ -130,15 +122,11 @@
     inset 0 1px 0 rgb(255 255 255 / 10%);
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .discover-story--about
-  .story-catalog__step small {
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-catalog__step small {
   color: #d5dff2;
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .discover-story--about
-  .story-catalog__summary {
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-catalog__summary {
   color: #afbeda;
 }
 
@@ -159,34 +147,31 @@
 
 .about-experience[data-about-hero-theme="dark"]
   .discover-story--about
-  .story-sales__copy .story-kicker {
+  .story-sales__copy
+  .story-kicker {
   color: #abd9ff;
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .discover-story--about
-  .story-sales__copy h2 {
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-sales__copy h2 {
   color: #f2f5ff;
 }
 
 .about-experience[data-about-hero-theme="dark"]
   .discover-story--about
-  .story-sales__copy .story-mask:last-child .story-mask__line {
+  .story-sales__copy
+  .story-mask:last-child
+  .story-mask__line {
   background: linear-gradient(108deg, #a6d9ff 0%, #aca8ff 35%, #d09cf5 68%, #f2a9d4 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .discover-story--about
-  .story-sales__copy p {
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-sales__copy p {
   color: #d7e0f4;
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .discover-story--about
-  .story-sales__system {
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-sales__system {
   border-color: rgb(174 182 255 / 28%);
   background: rgb(14 22 46 / 92%);
   box-shadow:
@@ -194,15 +179,11 @@
     inset 0 1px 0 rgb(242 240 255 / 9%);
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .discover-story--about
-  .story-sales__step small {
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-sales__step small {
   color: #dbe4f6;
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .discover-story--about
-  .story-sales__summary {
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-sales__summary {
   color: #b8c7e5;
 }
 
@@ -230,7 +211,9 @@
 }
 
 .about-experience[data-about-hero-theme="dark"]
-  .discover-progress li.is-active .discover-progress__dot {
+  .discover-progress
+  li.is-active
+  .discover-progress__dot {
   border-color: rgb(240 235 255 / 90%);
   background: linear-gradient(180deg, #9ae2ff 0%, #7e8aff 49%, #cc8aff 100%);
   box-shadow:

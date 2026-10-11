@@ -557,15 +557,7 @@ function MonthlyReportStat({ label, value }: { label: string; value: number }) {
   );
 }
 
-function MonthlyPlanStat({
-  label,
-  unit,
-  value
-}: {
-  label: string;
-  unit: string;
-  value: number;
-}) {
+function MonthlyPlanStat({ label, unit, value }: { label: string; unit: string; value: number }) {
   return (
     <div className="ys-dashboard-monthly-batch-stat min-w-0 rounded-lg border border-violet-100 bg-white/80 px-3 py-3">
       <p className="text-xs font-medium text-slate-600">{label}</p>

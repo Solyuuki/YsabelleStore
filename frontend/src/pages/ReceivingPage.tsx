@@ -52,7 +52,11 @@ import {
   type RestockReceiptLineInput
 } from "@/services/restockApi";
 import { hasRestockReturnItems } from "@/utils/restockReturnExport";
-import { isWholeUnitDraft, parseWholeUnitQuantity, requireWholeUnitQuantity } from "@/utils/wholeUnitQuantity";
+import {
+  isWholeUnitDraft,
+  parseWholeUnitQuantity,
+  requireWholeUnitQuantity
+} from "@/utils/wholeUnitQuantity";
 
 const READY_STATUSES: RestockOrderStatus[] = ["APPROVED", "AWAITING_DELIVERY"];
 const dateFormatter = new Intl.DateTimeFormat("en-PH", {
@@ -391,7 +395,10 @@ export function ReceivingPage() {
       if (!row) continue;
 
       const remaining = remainingQuantity(line);
-      const delivered = requireWholeUnitQuantity(row.deliveredQuantity, `${line.product.name} delivered`);
+      const delivered = requireWholeUnitQuantity(
+        row.deliveredQuantity,
+        `${line.product.name} delivered`
+      );
       const damaged = requireWholeUnitQuantity(row.damagedQuantity, `${line.product.name} damaged`);
       const accepted = acceptedQuantity(row);
 

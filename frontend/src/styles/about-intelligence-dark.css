@@ -54,7 +54,9 @@
 }
 
 .about-experience[data-about-hero-theme="dark"]
-  .system-preview__nav button.is-active .system-preview__nav-icon {
+  .system-preview__nav
+  button.is-active
+  .system-preview__nav-icon {
   border-color: rgb(206 206 255 / 75%);
   background: #dedfff;
   color: #514ce8;
@@ -257,17 +259,16 @@
   color: #f0eaff;
 }
 
+.about-experience[data-about-hero-theme="dark"] .system-preview__actions button.is-primary,
 .about-experience[data-about-hero-theme="dark"]
-  .system-preview__actions button.is-primary,
-.about-experience[data-about-hero-theme="dark"]
-  .system-preview__actions button.is-primary.is-selected {
+  .system-preview__actions
+  button.is-primary.is-selected {
   border-color: #aaa5ff;
   background: #635cea;
   color: #fff;
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .system-preview__actions button.is-primary:hover {
+.about-experience[data-about-hero-theme="dark"] .system-preview__actions button.is-primary:hover {
   background: #756ff5;
 }
 
@@ -276,12 +277,12 @@
 }
 
 .about-experience[data-about-hero-theme="dark"]
-  .system-preview__status-track :is(.is-done, .is-current) {
+  .system-preview__status-track
+  :is(.is-done, .is-current) {
   color: #edf3ff;
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .system-preview__status-track > div::before {
+.about-experience[data-about-hero-theme="dark"] .system-preview__status-track > div::before {
   background: #455479;
 }
 
@@ -351,12 +352,16 @@
 }
 
 .about-experience[data-about-hero-theme="dark"]
-  .about-forecast-demo__metrics article:nth-child(2) strong {
+  .about-forecast-demo__metrics
+  article:nth-child(2)
+  strong {
   color: #9cc2ff;
 }
 
 .about-experience[data-about-hero-theme="dark"]
-  .about-forecast-demo__metrics article:nth-child(3) strong {
+  .about-forecast-demo__metrics
+  article:nth-child(3)
+  strong {
   color: #c6afff;
 }
 
@@ -388,8 +393,7 @@
   stroke: #5cdbca;
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .about-forecast-demo__points circle.is-forecast {
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__points circle.is-forecast {
   stroke: #9bb9ff;
 }
 
@@ -397,8 +401,7 @@
   color: #e7edff;
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .about-forecast-demo__years .is-forecast strong {
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__years .is-forecast strong {
   color: #a6c2ff;
 }
 
@@ -406,8 +409,7 @@
   background: #5cdbca;
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .about-forecast-demo__legend i.is-forecast {
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__legend i.is-forecast {
   background: linear-gradient(90deg, #9ab9ff, #c2a6ff);
 }
 
@@ -445,13 +447,7 @@
 
 .about-experience[data-about-hero-theme="dark"] .discover-story--about .story-forecast {
   background:
-    linear-gradient(
-      to bottom,
-      #17243c 0%,
-      transparent 16%,
-      transparent 82%,
-      #10182f 100%
-    ),
+    linear-gradient(to bottom, #17243c 0%, transparent 16%, transparent 82%, #10182f 100%),
     radial-gradient(ellipse 45% 40% at 12% 20%, rgb(68 100 191 / 12%), transparent 88%),
     radial-gradient(ellipse 48% 45% at 86% 72%, rgb(125 71 169 / 14%), transparent 89%),
     linear-gradient(145deg, #17243c 0%, #141e3b 43%, #201d43 78%, #10182f 100%);
@@ -466,13 +462,7 @@
 
 .about-experience[data-about-hero-theme="dark"] .discover-story--about .story-intelligence {
   background:
-    linear-gradient(
-      to bottom,
-      #10182f 0%,
-      transparent 16%,
-      transparent 84%,
-      #09182f 100%
-    ),
+    linear-gradient(to bottom, #10182f 0%, transparent 16%, transparent 84%, #09182f 100%),
     radial-gradient(circle at 86% 8%, rgb(168 60 240 / 20%), transparent 32%),
     radial-gradient(circle at 12% 94%, rgb(0 140 255 / 15%), transparent 34%),
     linear-gradient(145deg, #10182f 0%, #181a48 56%, #30205b 100%);

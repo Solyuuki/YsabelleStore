@@ -24,7 +24,7 @@ test("Storefront, POS and customer cart APIs reject fractional quantities", () =
   const result = storefrontOrderSchema.safeParse(draft);
   assert.equal(result.success, false);
   if (!result.success) {
-    assert.ok(result.error.issues.some(issue => issue.path.includes("quantity")));
+    assert.ok(result.error.issues.some((issue) => issue.path.includes("quantity")));
   }
 });
 
@@ -38,7 +38,10 @@ test("Inventory mutation validators reject fractions while accepting whole units
 });
 
 test("core stock-write services reject noninteger units before any database operation", () => {
-  const source = readFileSync(new URL("../src/services/stockDomainService.ts", import.meta.url), "utf8");
+  const source = readFileSync(
+    new URL("../src/services/stockDomainService.ts", import.meta.url),
+    "utf8"
+  );
   for (const functionName of [
     "createOpeningStockBatch",
     "stockInBatch",
@@ -60,7 +63,7 @@ test("restock receipts and bulk delivery reject decimals, preserving amounts and
   });
   assert.equal(receipt.success, false);
   if (!receipt.success) {
-    assert.ok(receipt.error.issues.some(issue => issue.path.includes("deliveredQuantity")));
+    assert.ok(receipt.error.issues.some((issue) => issue.path.includes("deliveredQuantity")));
   }
 
   const bulk = completeBulkDeliverySchema.safeParse({
@@ -69,6 +72,6 @@ test("restock receipts and bulk delivery reject decimals, preserving amounts and
   });
   assert.equal(bulk.success, false);
   if (!bulk.success) {
-    assert.ok(bulk.error.issues.some(issue => issue.path.includes("receivedQuantity")));
+    assert.ok(bulk.error.issues.some((issue) => issue.path.includes("receivedQuantity")));
   }
 });

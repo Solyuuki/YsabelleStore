@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { parseWholeUnitQuantity, isWholeUnitDraft, requireWholeUnitQuantity } from "../../frontend/src/utils/wholeUnitQuantity.js";
+import {
+  parseWholeUnitQuantity,
+  isWholeUnitDraft,
+  requireWholeUnitQuantity
+} from "../../frontend/src/utils/wholeUnitQuantity.js";
 
 test("whole-unit parser rejects decimals, exponent, unsafe values and negatives without rounding", () => {
   for (const v of ["1.4", "3.4", "-1", "1e3", "2,000", "", "NaN", "Infinity", "9007199254740992"]) {
@@ -21,4 +25,3 @@ test("whole-unit parser rejects decimals, exponent, unsafe values and negatives 
   assert.throws(() => requireWholeUnitQuantity("3.4", "Delivered"), /whole number/);
   assert.throws(() => requireWholeUnitQuantity("0", "Delivered", 1), /whole number/);
 });
-

@@ -948,7 +948,10 @@ export function ProductsPage() {
                   <Filter className="h-4 w-4 text-slate-500" aria-hidden="true" />
                   <select
                     aria-busy={filterIsLoading}
-                    className={["ys-retail-select-chevron w-full bg-transparent outline-none", filterIsLoading ? "pr-6" : ""]
+                    className={[
+                      "ys-retail-select-chevron w-full bg-transparent outline-none",
+                      filterIsLoading ? "pr-6" : ""
+                    ]
                       .filter(Boolean)
                       .join(" ")}
                     value={statusFilter}
@@ -969,7 +972,10 @@ export function ProductsPage() {
                   <select
                     aria-busy={filterIsLoading}
                     aria-label="Catalog quality"
-                    className={["ys-retail-select-chevron w-full bg-transparent outline-none", filterIsLoading ? "pr-6" : ""]
+                    className={[
+                      "ys-retail-select-chevron w-full bg-transparent outline-none",
+                      filterIsLoading ? "pr-6" : ""
+                    ]
                       .filter(Boolean)
                       .join(" ")}
                     value={qualityFilter}
@@ -2546,7 +2552,7 @@ function CreateProductDialog({
                     value={form.reorderLevel}
                     onChange={(event) =>
                       isWholeUnitDraft(event.target.value) &&
-                        setForm((current) => ({ ...current, reorderLevel: event.target.value }))
+                      setForm((current) => ({ ...current, reorderLevel: event.target.value }))
                     }
                   />
                 </div>
@@ -2558,7 +2564,7 @@ function CreateProductDialog({
                     value={form.targetStockLevel}
                     onChange={(event) =>
                       isWholeUnitDraft(event.target.value) &&
-                        setForm((current) => ({ ...current, targetStockLevel: event.target.value }))
+                      setForm((current) => ({ ...current, targetStockLevel: event.target.value }))
                     }
                   />
                 </div>

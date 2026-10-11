@@ -11,7 +11,10 @@ test("Print and CSV export cards have their own scoped icon and copy classes", (
   assert.equal((dialog.match(/ys-report-export-option__title/g) ?? []).length, 2);
   assert.equal((dialog.match(/ys-report-export-option__description/g) ?? []).length, 2);
   assert.match(dialog, /<Printer\s+aria-hidden="true"\s+className="ys-report-export-option__icon/);
-  assert.match(dialog, /<FileSpreadsheet\s+aria-hidden="true"\s+className="ys-report-export-option__icon/);
+  assert.match(
+    dialog,
+    /<FileSpreadsheet\s+aria-hidden="true"\s+className="ys-report-export-option__icon/
+  );
   assert.match(dialog, /onClick=\{\(\) => void handlePrint\(\)\}/);
   assert.match(dialog, /onClick=\{\(\) => void handleCsv\(\)\}/);
   assert.match(dialog, /onClick=\{\(\) => void handlePdf\(\)\}/);
@@ -23,9 +26,18 @@ test("Dark Mode styling reaches Radix portal controls while Light Mode stays unc
   assert.match(dialog, /<DialogPortal>/);
   assert.match(css, /:root\.dark\[data-appearance-scope="retail"\]/);
   assert.match(css, /\[role="dialog"\]\s+\.ys-report-export-option--secondary/);
-  assert.match(css.replace(/\s+/g, " "), /\.ys-report-export-option--secondary \.ys-report-export-option__icon/);
-  assert.match(css.replace(/\s+/g, " "), /\.ys-report-export-option--secondary \.ys-report-export-option__title/);
-  assert.match(css.replace(/\s+/g, " "), /\.ys-report-export-option--secondary \.ys-report-export-option__description/);
+  assert.match(
+    css.replace(/\s+/g, " "),
+    /\.ys-report-export-option--secondary \.ys-report-export-option__icon/
+  );
+  assert.match(
+    css.replace(/\s+/g, " "),
+    /\.ys-report-export-option--secondary \.ys-report-export-option__title/
+  );
+  assert.match(
+    css.replace(/\s+/g, " "),
+    /\.ys-report-export-option--secondary \.ys-report-export-option__description/
+  );
   assert.match(css, /\.ys-report-export-option--secondary:hover:not\(:disabled\)/);
   assert.match(css, /\.ys-report-export-option--secondary:focus-visible/);
   assert.match(css, /\.ys-report-export-option--secondary:disabled/);

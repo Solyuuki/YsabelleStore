@@ -22,7 +22,9 @@ export function isWholeUnitDraft(value: string): boolean {
 export function requireWholeUnitQuantity(value: string | number, name: string, minimum = 0) {
   const parsed = parseWholeUnitQuantity(value);
   if (parsed === null || parsed < minimum) {
-    throw new Error(`${name}: enter a whole number of units${minimum > 0 ? ` (at least ${minimum})` : ""}.`);
+    throw new Error(
+      `${name}: enter a whole number of units${minimum > 0 ? ` (at least ${minimum})` : ""}.`
+    );
   }
   return parsed;
 }

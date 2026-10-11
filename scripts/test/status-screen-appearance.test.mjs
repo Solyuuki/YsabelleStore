@@ -55,7 +55,9 @@ test("programmatic status portal focus has no viewport frame while actions retai
   assert.ok(screen.includes("containerRef.current?.focus({ preventScroll: true });"));
   assert.ok(screen.includes("tabIndex={-1}"));
   assert.ok(css.includes(".status-screen:focus {\n  outline: none;\n}"));
-  assert.ok(css.includes("status-screen__secondary-action):focus-visible {\n  outline: 3px solid #c9c0ff;"));
+  assert.ok(
+    css.includes("status-screen__secondary-action):focus-visible {\n  outline: 3px solid #c9c0ff;")
+  );
 });
 
 test("dark status UI uses proportional galaxy artwork without changing light mode", () => {

@@ -36,7 +36,11 @@ test("Reports Add product has scoped dark portal tokens and readable action stat
     2,
     "Both initial and no-matches empty states must be legible"
   );
-  assert.ok(theme.includes(':root.dark[data-appearance-scope="retail"] [role="dialog"].ys-restock-product-picker'));
+  assert.ok(
+    theme.includes(
+      ':root.dark[data-appearance-scope="retail"] [role="dialog"].ys-restock-product-picker'
+    )
+  );
   for (const selector of [
     ".ys-restock-product-picker__search-input::placeholder",
     ".ys-restock-product-picker__secondary-action:hover:not(:disabled)",
@@ -46,8 +50,8 @@ test("Reports Add product has scoped dark portal tokens and readable action stat
   ]) {
     assert.ok(theme.includes(selector), "Missing dedicated dark style: " + selector);
   }
-  assert.ok(theme.includes('button:disabled {\n  opacity: 0.86;'));
-  assert.ok(theme.includes('outline: 2px solid #b7abff;'));
+  assert.ok(theme.includes("button:disabled {\n  opacity: 0.86;"));
+  assert.ok(theme.includes("outline: 2px solid #b7abff;"));
 });
 
 test("Reports picker dark token pairs meet WCAG AA normal-text contrast", () => {
@@ -75,8 +79,8 @@ test("Deliveries uses a plain-language label without changing active filtering",
   assert.ok(page.replace(/\s+/g, " ").includes('? "Needs action" : nextView === "history"'));
   assert.ok(page.includes('label="Needs action" value={meta.counts.active}'));
   assert.ok(page.includes('"Deliveries to handle"'));
-  assert.ok(page.includes('Orders to prepare, deliver, or collect payment for.'));
-  assert.ok(page.includes('setView(nextView);'));
-  assert.ok(service.includes('deliveryViewWhere(query.view)'));
+  assert.ok(page.includes("Orders to prepare, deliver, or collect payment for."));
+  assert.ok(page.includes("setView(nextView);"));
+  assert.ok(service.includes("deliveryViewWhere(query.view)"));
   assert.ok(!page.includes('"Active queue"'));
 });

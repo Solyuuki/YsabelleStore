@@ -10,18 +10,18 @@ converted that to 3 before the API could reject the fractional original.
 
 ## Audit matrix
 
-| Flow | Unit counts | Handling |
-| --- | --- | --- |
-| Storefront catalog/card/detail/cart | Whole integer, >=1 | Shared input parser rejects decimals; cart context rejects invalid programmatic inputs without rounding |
-| Authenticated cart, checkout | Whole integer, >=1 | Existing backend Zod `.int()` contracts remain |
-| POS checkout | Whole integer, >=1 | Existing backend Zod `.int()`; POS uses +/- controls |
-| Receiving per-ticket exceptions | Whole integer, >=0 | Controlled text input + pre-submit validation; no truncation |
-| Reports/Restock receiving | Whole integer, >=0 | Controlled text input + pre-submit validation; no truncation |
-| Restock Planner requested quantity / policy targets | Whole integer, policy-appropriate bounds | Frontend parser rejects fractional changes; backend Zod `.int()` |
-| Inventory Stock In / Stock Adjustment | Whole integer, >=1 | Existing frontend submit validation, hardened adjustment onChange and backend transaction guard |
-| Bulk inventory delivery import | Whole integer, >=0 | Editable row accepts digit drafts only; backend Zod `.int()` |
-| Product reorder / target stock levels | Whole integer, >=0 | Frontend input guards + backend Zod `.int()` |
-| Product CSV / inventory CSV / historical sales import | Whole integer for stock and sold units | Existing importer contracts retained |
+| Flow                                                  | Unit counts                              | Handling                                                                                                |
+| ----------------------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Storefront catalog/card/detail/cart                   | Whole integer, >=1                       | Shared input parser rejects decimals; cart context rejects invalid programmatic inputs without rounding |
+| Authenticated cart, checkout                          | Whole integer, >=1                       | Existing backend Zod `.int()` contracts remain                                                          |
+| POS checkout                                          | Whole integer, >=1                       | Existing backend Zod `.int()`; POS uses +/- controls                                                    |
+| Receiving per-ticket exceptions                       | Whole integer, >=0                       | Controlled text input + pre-submit validation; no truncation                                            |
+| Reports/Restock receiving                             | Whole integer, >=0                       | Controlled text input + pre-submit validation; no truncation                                            |
+| Restock Planner requested quantity / policy targets   | Whole integer, policy-appropriate bounds | Frontend parser rejects fractional changes; backend Zod `.int()`                                        |
+| Inventory Stock In / Stock Adjustment                 | Whole integer, >=1                       | Existing frontend submit validation, hardened adjustment onChange and backend transaction guard         |
+| Bulk inventory delivery import                        | Whole integer, >=0                       | Editable row accepts digit drafts only; backend Zod `.int()`                                            |
+| Product reorder / target stock levels                 | Whole integer, >=0                       | Frontend input guards + backend Zod `.int()`                                                            |
+| Product CSV / inventory CSV / historical sales import | Whole integer for stock and sold units   | Existing importer contracts retained                                                                    |
 
 ## Decimal exceptions (intentionally unchanged)
 

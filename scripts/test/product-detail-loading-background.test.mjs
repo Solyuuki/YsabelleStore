@@ -12,15 +12,20 @@ test("initial product loading reuses the completed product page galaxy stage", (
 
   const loading = product.slice(loadingStart, loadingEnd);
   assert.ok(loading.includes('className="customer-page customer-product-page"'));
-  assert.ok(loading.includes('<StorefrontGalaxyArtwork className="customer-product-page__cosmos" />'));
+  assert.ok(
+    loading.includes('<StorefrontGalaxyArtwork className="customer-product-page__cosmos" />')
+  );
   assert.ok(loading.includes('className="customer-container"'));
   assert.ok(loading.includes('<div className="customer-inline-state">Loading product...</div>'));
 
   const loaded = product.slice(loadingEnd, product.indexOf("function ReviewsSection("));
   assert.ok(loaded.includes('className="customer-page customer-product-page"'));
-  assert.ok(loaded.includes('<StorefrontGalaxyArtwork className="customer-product-page__cosmos" />'));
+  assert.ok(
+    loaded.includes('<StorefrontGalaxyArtwork className="customer-product-page__cosmos" />')
+  );
   assert.equal(
-    product.split('<StorefrontGalaxyArtwork className="customer-product-page__cosmos" />').length - 1,
+    product.split('<StorefrontGalaxyArtwork className="customer-product-page__cosmos" />').length -
+      1,
     2,
     "Loading and loaded product stages must share the same artwork component"
   );
@@ -33,7 +38,9 @@ test("existing proportional galaxy styling is used only in dark mode, without ne
   assert.ok(css.includes(".customer-app .customer-product-page__cosmos {\n  display: none;"));
   assert.ok(css.includes(":root.dark .customer-app .customer-product-page {"));
   assert.ok(css.includes("background: var(--storefront-galaxy-background);"));
-  assert.ok(css.includes(":root.dark .customer-app .customer-product-page > .customer-container {"));
+  assert.ok(
+    css.includes(":root.dark .customer-app .customer-product-page > .customer-container {")
+  );
   assert.ok(css.includes("z-index: 1;"));
   assert.ok(css.includes("aspect-ratio: 1024 / 1536;"));
   assert.ok(css.includes("transform: translateX(-50%);"));

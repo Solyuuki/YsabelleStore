@@ -1813,12 +1813,14 @@
   color: #ada2ff;
 }
 
-
 /* Sprint 11 — Email Quick Sign (address + 6-digit code).
    Its reference skin and mobile-auth fallback were light-only, so the inner
    stage, OTP slots and code-sent notice stayed pastel inside the dark login.
    Scope to this flow; Google buttons, light mode and auth behavior stay intact. */
-:root.dark .customer-app .customer-auth-page--login .customer-email-quick-sign.customer-mobile-auth {
+:root.dark
+  .customer-app
+  .customer-auth-page--login
+  .customer-email-quick-sign.customer-mobile-auth {
   background: linear-gradient(155deg, #1b2a43, #202e48 70%, #242a49);
   border: 1px solid #607492;
   border-radius: 1.1rem;
@@ -1831,7 +1833,8 @@
   .customer-app
   .customer-auth-page--login
   .customer-email-quick-sign
-  .customer-email-quick-sign__intro h2 {
+  .customer-email-quick-sign__intro
+  h2 {
   color: #f3f6ff;
 }
 :root.dark
@@ -1845,7 +1848,8 @@
   .customer-app
   .customer-auth-page--login
   .customer-email-quick-sign
-  .customer-email-quick-sign__intro > p:last-child {
+  .customer-email-quick-sign__intro
+  > p:last-child {
   color: #c8d6ec;
 }
 :root.dark
@@ -1859,7 +1863,8 @@
   .customer-app
   .customer-auth-page--login
   .customer-email-quick-sign
-  .customer-auth-field input[type="email"] {
+  .customer-auth-field
+  input[type="email"] {
   background: #15233b;
   border-color: #7186a6;
   color: #f0f5ff;
@@ -1869,7 +1874,8 @@
   .customer-app
   .customer-auth-page--login
   .customer-email-quick-sign
-  .customer-auth-field input[type="email"]::placeholder {
+  .customer-auth-field
+  input[type="email"]::placeholder {
   color: #b9c9e1;
   opacity: 1;
 }
@@ -1877,7 +1883,8 @@
   .customer-app
   .customer-auth-page--login
   .customer-email-quick-sign
-  .customer-auth-field input[type="email"]:focus-visible {
+  .customer-auth-field
+  input[type="email"]:focus-visible {
   border-color: #b6a8ff;
   outline: 2px solid #b6a8ff;
   outline-offset: 2px;
@@ -1937,21 +1944,24 @@
   .customer-app
   .customer-auth-page--login
   .customer-email-quick-sign
-  .customer-email-quick-sign__remember > span {
+  .customer-email-quick-sign__remember
+  > span {
   color: #edf3ff;
 }
 :root.dark
   .customer-app
   .customer-auth-page--login
   .customer-email-quick-sign
-  .customer-email-quick-sign__remember small {
+  .customer-email-quick-sign__remember
+  small {
   color: #c2d0e6;
 }
 :root.dark
   .customer-app
   .customer-auth-page--login
   .customer-email-quick-sign
-  .customer-email-quick-sign__remember input[type="checkbox"] {
+  .customer-email-quick-sign__remember
+  input[type="checkbox"] {
   accent-color: #9b8bfa;
 }
 :root.dark
@@ -1976,21 +1986,24 @@
   .customer-app
   .customer-auth-page--login
   .customer-email-quick-sign
-  .customer-email-quick-sign__status strong {
+  .customer-email-quick-sign__status
+  strong {
   color: #f0f4ff;
 }
 :root.dark
   .customer-app
   .customer-auth-page--login
   .customer-email-quick-sign
-  .customer-email-quick-sign__status span:not(.customer-email-quick-sign__status-icon) {
+  .customer-email-quick-sign__status
+  span:not(.customer-email-quick-sign__status-icon) {
   color: #c6d4ea;
 }
 :root.dark
   .customer-app
   .customer-auth-page--login
   .customer-email-quick-sign
-  .customer-email-quick-sign__form > .customer-auth-submit {
+  .customer-email-quick-sign__form
+  > .customer-auth-submit {
   background: linear-gradient(115deg, #245fd1, #5540bd 48%, #932876);
   border-color: rgb(191 189 255 / 42%);
   color: #ffffff;
@@ -2000,7 +2013,8 @@
   .customer-app
   .customer-auth-page--login
   .customer-email-quick-sign
-  .customer-email-quick-sign__form > .customer-auth-submit:disabled {
+  .customer-email-quick-sign__form
+  > .customer-auth-submit:disabled {
   opacity: 0.72;
   color: #f2f4ff;
 }

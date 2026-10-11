@@ -26,7 +26,11 @@ import {
   type RestockOrderStatus,
   type RestockReceiptLineInput
 } from "@/services/restockApi";
-import { isWholeUnitDraft, parseWholeUnitQuantity, requireWholeUnitQuantity } from "@/utils/wholeUnitQuantity";
+import {
+  isWholeUnitDraft,
+  parseWholeUnitQuantity,
+  requireWholeUnitQuantity
+} from "@/utils/wholeUnitQuantity";
 
 const ACTIVE_STATUSES: RestockOrderStatus[] = [
   "DRAFT",
@@ -228,9 +232,18 @@ export function RestockReceivingPanel({
       const row = receiptRows[line.id];
       if (!row) continue;
 
-      const deliveredQuantity = requireWholeUnitQuantity(row.deliveredQuantity, `${line.product.name} delivered`);
-      const damagedQuantity = requireWholeUnitQuantity(row.damagedQuantity, `${line.product.name} damaged`);
-      const acceptedQuantity = requireWholeUnitQuantity(row.acceptedQuantity, `${line.product.name} accepted`);
+      const deliveredQuantity = requireWholeUnitQuantity(
+        row.deliveredQuantity,
+        `${line.product.name} delivered`
+      );
+      const damagedQuantity = requireWholeUnitQuantity(
+        row.damagedQuantity,
+        `${line.product.name} damaged`
+      );
+      const acceptedQuantity = requireWholeUnitQuantity(
+        row.acceptedQuantity,
+        `${line.product.name} accepted`
+      );
       if (deliveredQuantity === 0) continue;
 
       if (damagedQuantity > deliveredQuantity) {

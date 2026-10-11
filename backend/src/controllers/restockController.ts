@@ -155,10 +155,12 @@ export const removeRestockDraftController: RequestHandler = async (request, resp
     });
     requireActorId(request);
     await removeManualRestockDraft(params.orderId, body.expectedVersion);
-    response.status(200).json(createSuccessResponse("Saved restock draft removed.", {
-      removed: true,
-      orderId: params.orderId
-    }));
+    response.status(200).json(
+      createSuccessResponse("Saved restock draft removed.", {
+        removed: true,
+        orderId: params.orderId
+      })
+    );
   } catch (error) {
     next(error);
   }

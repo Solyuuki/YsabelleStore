@@ -32,12 +32,7 @@ export function AboutWelcomeMotion() {
   const { storefrontTheme } = useAppearance();
   // Recreate the player on theme change: the light motion/crossfade remains
   // untouched, while the dark master uses its own seamless native loop.
-  return (
-    <AboutWelcomeMotionPlayer
-      isDark={storefrontTheme === "dark"}
-      key={storefrontTheme}
-    />
-  );
+  return <AboutWelcomeMotionPlayer isDark={storefrontTheme === "dark"} key={storefrontTheme} />;
 }
 
 function AboutWelcomeMotionPlayer({ isDark }: { isDark: boolean }) {
@@ -282,38 +277,38 @@ function AboutWelcomeMotionPlayer({ isDark }: { isDark: boolean }) {
           />
         ) : (
           <>
-          {[0, 1].map((rawIndex) => {
-            const index = rawIndex as 0 | 1;
-            const isActive = index === activeIndex;
-            const isIncoming = index === incomingIndex;
+            {[0, 1].map((rawIndex) => {
+              const index = rawIndex as 0 | 1;
+              const isActive = index === activeIndex;
+              const isIncoming = index === incomingIndex;
 
-            return (
-              <video
-                autoPlay={index === 0}
-                className={`about-welcome-motion__video${
-                  isActive ? " is-active" : ""
-                }${isIncoming ? " is-incoming" : ""}`}
-                key={index}
-                muted
-                onCanPlay={
-                  index === 0 ? (event) => markPrimaryReady(event.currentTarget) : undefined
-                }
-                onEnded={() => handleEnded(index)}
-                onLoadedData={
-                  index === 0 ? (event) => markPrimaryReady(event.currentTarget) : undefined
-                }
-                onPlaying={
-                  index === 0 ? (event) => markPrimaryReady(event.currentTarget) : undefined
-                }
-                onTimeUpdate={(event) => maybeCrossfade(event.currentTarget, index)}
-                playsInline
-                preload="auto"
-                ref={videoRefs[index]}
-                src={source}
-                tabIndex={-1}
-              />
-            );
-          })}
+              return (
+                <video
+                  autoPlay={index === 0}
+                  className={`about-welcome-motion__video${
+                    isActive ? " is-active" : ""
+                  }${isIncoming ? " is-incoming" : ""}`}
+                  key={index}
+                  muted
+                  onCanPlay={
+                    index === 0 ? (event) => markPrimaryReady(event.currentTarget) : undefined
+                  }
+                  onEnded={() => handleEnded(index)}
+                  onLoadedData={
+                    index === 0 ? (event) => markPrimaryReady(event.currentTarget) : undefined
+                  }
+                  onPlaying={
+                    index === 0 ? (event) => markPrimaryReady(event.currentTarget) : undefined
+                  }
+                  onTimeUpdate={(event) => maybeCrossfade(event.currentTarget, index)}
+                  playsInline
+                  preload="auto"
+                  ref={videoRefs[index]}
+                  src={source}
+                  tabIndex={-1}
+                />
+              );
+            })}
           </>
         )
       ) : null}

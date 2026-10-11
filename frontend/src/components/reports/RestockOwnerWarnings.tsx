@@ -30,8 +30,8 @@ export function RestockOwnerWarnings({
     >
       <p className="text-sm font-semibold">Purchasing advice — Owner decision</p>
       <p className="mt-1 text-xs leading-5">
-        These are recommendations, not purchase restrictions. You may keep your requested
-        quantities and confirm the order. Your acknowledgment will be recorded.
+        These are recommendations, not purchase restrictions. You may keep your requested quantities
+        and confirm the order. Your acknowledgment will be recorded.
       </p>
       <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
         {warnings.map((warning, index) => (

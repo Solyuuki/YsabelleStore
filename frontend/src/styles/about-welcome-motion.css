@@ -392,8 +392,7 @@
 .about-experience[data-about-hero-theme="dark"] .about-welcome-motion {
   background:
     radial-gradient(circle at 18% 21%, rgb(104 94 218 / 18%), transparent 40%),
-    radial-gradient(circle at 80% 76%, rgb(179 82 191 / 13%), transparent 43%),
-    #10182f;
+    radial-gradient(circle at 80% 76%, rgb(179 82 191 / 13%), transparent 43%), #10182f;
 }
 
 .about-experience[data-about-hero-theme="dark"] .about-welcome-motion__fallback {
@@ -471,30 +470,28 @@
 
 .about-experience[data-about-hero-theme="dark"]
   .discover-story--about
-  .story-welcome__support strong {
+  .story-welcome__support
+  strong {
   border-color: rgb(182 170 255 / 42%);
   background: rgb(34 40 76 / 72%);
   color: #ede7ff;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 10%);
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .discover-story--about
-  .story-welcome__support p {
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-welcome__support p {
   color: #e2e9ff;
   text-shadow: 0 2px 15px rgb(7 12 30 / 66%);
 }
 
-.about-experience[data-about-hero-theme="dark"]
-  .discover-story--about
-  .story-welcome__scroll-cue {
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-welcome__scroll-cue {
   color: #c7c9f2;
   text-shadow: 0 2px 12px rgb(6 10 25 / 45%);
 }
 
 .about-experience[data-about-hero-theme="dark"]
   .discover-story--about
-  .story-welcome__scroll-cue svg {
+  .story-welcome__scroll-cue
+  svg {
   color: #c0b1ff;
 }
 

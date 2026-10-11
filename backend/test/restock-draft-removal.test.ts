@@ -8,7 +8,12 @@ const read = (path: string) => readFileSync(new URL("../../" + path, import.meta
 
 test("draft removal requires a valid optimistic version", () => {
   assert.deepEqual(removeRestockDraftSchema.parse({ expectedVersion: 3 }), { expectedVersion: 3 });
-  for (const input of [{}, { expectedVersion: -1 }, { expectedVersion: 1.5 }, { expectedVersion: "invalid" }]) {
+  for (const input of [
+    {},
+    { expectedVersion: -1 },
+    { expectedVersion: 1.5 },
+    { expectedVersion: "invalid" }
+  ]) {
     assert.equal(removeRestockDraftSchema.safeParse(input).success, false);
   }
 });
@@ -21,8 +26,17 @@ test("manual draft removal is an Owner-only DELETE endpoint, not ticket cancella
   assert.ok(start >= 0 && endpoint > start);
   assert.match(controller, /removeRestockDraftSchema/);
   assert.match(controller, /requireActorId\(request\)/);
-  assert.match(controller, /await removeManualRestockDraft\(params\.orderId, body\.expectedVersion\)/);
-  assert.doesNotMatch(controller.slice(controller.indexOf("removeRestockDraftController"), controller.indexOf("updateRestockOrderController")), /cancelRestockOrder\(/);
+  assert.match(
+    controller,
+    /await removeManualRestockDraft\(params\.orderId, body\.expectedVersion\)/
+  );
+  assert.doesNotMatch(
+    controller.slice(
+      controller.indexOf("removeRestockDraftController"),
+      controller.indexOf("updateRestockOrderController")
+    ),
+    /cancelRestockOrder\(/
+  );
 });
 
 test("manual draft removal deletes only the version-matching unapproved order", () => {
@@ -45,8 +59,20 @@ test("manual draft removal deletes only the version-matching unapproved order", 
 
 test("draft lines cascade on permanent deletion without deleting products or recommendations", () => {
   const schema = read("database/prisma/schema.prisma");
-  const restockLine = schema.slice(schema.indexOf("model RestockOrderLine {"), schema.indexOf("\nmodel CustomerModerationAudit {"));
-  assert.match(restockLine, /order\s+RestockOrder\s+@relation\(fields: \[restockOrderId\], references: \[id\], onDelete: Cascade/);
-  assert.match(restockLine, /product\s+Product\s+@relation\(fields: \[productId\], references: \[id\], onDelete: Restrict/);
-  assert.match(restockLine, /recommendation\s+RecommendationRecord\?\s+@relation\(fields: \[recommendationId\], references: \[id\], onDelete: SetNull/);
+  const restockLine = schema.slice(
+    schema.indexOf("model RestockOrderLine {"),
+    schema.indexOf("\nmodel CustomerModerationAudit {")
+  );
+  assert.match(
+    restockLine,
+    /order\s+RestockOrder\s+@relation\(fields: \[restockOrderId\], references: \[id\], onDelete: Cascade/
+  );
+  assert.match(
+    restockLine,
+    /product\s+Product\s+@relation\(fields: \[productId\], references: \[id\], onDelete: Restrict/
+  );
+  assert.match(
+    restockLine,
+    /recommendation\s+RecommendationRecord\?\s+@relation\(fields: \[recommendationId\], references: \[id\], onDelete: SetNull/
+  );
 });

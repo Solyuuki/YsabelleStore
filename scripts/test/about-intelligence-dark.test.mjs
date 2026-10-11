@@ -41,7 +41,10 @@ test("All seven System Intelligence stages share the same complete dark workspac
   }
   assert.match(css, /\.system-preview__gridline \{\s*stroke:/);
   assert.match(css, /\.system-preview__history-dot \{\s*fill:/);
-  assert.match(css.replace(/\s+/g, " "), /\.system-preview__actions button\.is-primary\.is-selected/);
+  assert.match(
+    css.replace(/\s+/g, " "),
+    /\.system-preview__actions button\.is-primary\.is-selected/
+  );
 });
 
 test("Forecast chart metrics, SVG labels and recommendation remain readable", () => {
@@ -75,7 +78,10 @@ test("Transitions fade between matching sales, forecast, intelligence and delive
 
 test("Only CSS changes: preserve videos, chart calculations, stage events, and interactions", () => {
   const css = read("frontend/src/styles/about-intelligence-dark.css");
-  assert.doesNotMatch(css, /\.(?:about-sales-motion__video|about-catalog-motion__video|story-delivery__video)/);
+  assert.doesNotMatch(
+    css,
+    /\.(?:about-sales-motion__video|about-catalog-motion__video|story-delivery__video)/
+  );
   const component = read("frontend/src/components/customer/discover/SystemIntelligenceScene.tsx");
   assert.match(component, /onClick=\{\(\) => selectStage\(index\)\}/);
   assert.match(component, /<StageContent stageIndex=\{activeStage\}/);

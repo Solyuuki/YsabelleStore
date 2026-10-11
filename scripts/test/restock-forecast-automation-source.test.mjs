@@ -63,7 +63,10 @@ test("automated monthly restock stays as an owner-review draft until explicit ap
 
 test("monthly snapshot is loaded before candidate computation and cannot be amended by the worker", () => {
   const start = automationSource.indexOf("async function runRestockAutomation()");
-  const section = automationSource.slice(start, automationSource.indexOf("export async function ensureAutomatedRestockTicket", start));
+  const section = automationSource.slice(
+    start,
+    automationSource.indexOf("export async function ensureAutomatedRestockTicket", start)
+  );
   const loadSnapshot = section.indexOf("loadAutomatedTicketsForMonth(batch)");
   const loadCandidates = section.indexOf("loadOperationalActionLines()");
   assert.ok(loadSnapshot >= 0 && loadCandidates > loadSnapshot);

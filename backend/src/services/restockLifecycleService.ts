@@ -139,13 +139,23 @@ export async function markRestockOrderAwaitingDelivery(
 
   await prisma.$transaction(async (tx) => {
     const existing = await tx.restockOrder.findUnique({
-      select: { id: true, status: true, version: true, notes: true, lines: {
-        select: {
-          isSelected: true, productId: true, recommendationSource: true,
-          recommendedQuantity: true, requestedQuantity: true,
-          receivedQuantity: true, ownerOverrideReason: true
+      select: {
+        id: true,
+        status: true,
+        version: true,
+        notes: true,
+        lines: {
+          select: {
+            isSelected: true,
+            productId: true,
+            recommendationSource: true,
+            recommendedQuantity: true,
+            requestedQuantity: true,
+            receivedQuantity: true,
+            ownerOverrideReason: true
+          }
         }
-      } },
+      },
       where: { id: orderId }
     });
 

@@ -59,12 +59,14 @@
 ## Validation
 
 Automated:
+
 - `npx tsx --test --test-concurrency=1 backend/test/restock-owner-policy.test.ts backend/test/restock-phase11-decision.test.ts backend/test/restock-phase7-9-contract.test.ts`
 - `node --test scripts/test/restock-forecast-automation-source.test.mjs scripts/test/restock-owner-warning-ui.test.mjs`
 - Backend + frontend + Electron builds; existing POS and Storefront concurrent
   stock reservations must remain green.
 
 Manual:
+
 1. Review six-product manual saved restock (300 units): triggering a warning
    must not create a second draft/ticket; Owner chooses **Continue with my quantities**;
    authorized quantity is unchanged and acknowledgment recorded.

@@ -5,7 +5,11 @@ import { Prisma, RestockOrderStatus } from "@prisma/client";
 import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import { buildPaginationMeta } from "../utils/pagination.js";
-import { findInflatedAutomatedLine, isAutomatedMonthlyOrder, type RestockApprovalWarning } from "./restockApprovalPolicy.js";
+import {
+  findInflatedAutomatedLine,
+  isAutomatedMonthlyOrder,
+  type RestockApprovalWarning
+} from "./restockApprovalPolicy.js";
 import { assessProcurementSafety, exceedsRestockOrderBudget } from "./restockProcurementSafety.js";
 import type {
   ApproveRestockOrderRequest,
@@ -358,7 +362,10 @@ export async function removeManualRestockDraft(orderId: string, expectedVersion:
     }
     assertDraft(existing, expectedVersion);
 
-    if (isAutomatedMonthlyOrder(existing.notes) || /^RO-[A-Z]{3}-\d{4}$/.test(existing.orderNumber)) {
+    if (
+      isAutomatedMonthlyOrder(existing.notes) ||
+      /^RO-[A-Z]{3}-\d{4}$/.test(existing.orderNumber)
+    ) {
       throw new HttpError(
         409,
         "Monthly automated recommendations cannot be permanently removed because their snapshot prevents duplicate restock batches.",
@@ -610,10 +617,14 @@ export async function approveRestockOrder(
         tx
       );
       if (purchasingWarnings.length > 0 && !input.acknowledgeWarnings) {
-        throw new HttpError(409, "Review the purchasing warnings before confirming this Owner restock.", {
-          code: "RESTOCK_OWNER_WARNING_ACK_REQUIRED",
-          details: { warnings: purchasingWarnings }
-        });
+        throw new HttpError(
+          409,
+          "Review the purchasing warnings before confirming this Owner restock.",
+          {
+            code: "RESTOCK_OWNER_WARNING_ACK_REQUIRED",
+            details: { warnings: purchasingWarnings }
+          }
+        );
       }
 
       const updated = await tx.restockOrder.updateMany({

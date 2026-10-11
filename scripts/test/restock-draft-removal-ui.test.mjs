@@ -8,8 +8,14 @@ const draft = read("frontend/src/components/reports/RestockDraftsPanel.tsx");
 const api = read("frontend/src/services/restockApi.ts");
 
 test("saved draft rows have interior left/right whitespace and preserved responsive scroll", () => {
-  assert.match(draft, /className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-5 pb-4 sm:px-6"/);
-  assert.match(draft, /className="flex items-center justify-between gap-4 px-4 py-3 sm:px-5"\s+key=\{line\.id\}/);
+  assert.match(
+    draft,
+    /className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-5 pb-4 sm:px-6"/
+  );
+  assert.match(
+    draft,
+    /className="flex items-center justify-between gap-4 px-4 py-3 sm:px-5"\s+key=\{line\.id\}/
+  );
   assert.match(draft, /<DialogFooter className="shrink-0 flex-wrap gap-2">/);
   assert.match(draft, /className="ys-report-modal flex max-h-\[calc\(100dvh-2rem\)\]/);
 });
@@ -30,7 +36,10 @@ test("manual draft uses explicit two-stage permanent removal confirmation, not r
 });
 
 test("removal endpoint uses DELETE with expectedVersion, never cancellation mutation", () => {
-  const functionBlock = api.slice(api.indexOf("export async function removeRestockDraft("),api.indexOf("export async function replaceRestockOrderLines("));
+  const functionBlock = api.slice(
+    api.indexOf("export async function removeRestockDraft("),
+    api.indexOf("export async function replaceRestockOrderLines(")
+  );
   assert.match(functionBlock, /method: "DELETE"/);
   assert.match(functionBlock, /json: \{ expectedVersion \}/);
   assert.doesNotMatch(functionBlock, /\/cancel|\.cancel/);

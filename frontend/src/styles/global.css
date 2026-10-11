@@ -1209,7 +1209,6 @@ body {
   }
 }
 
-
 /* Sprint 11: portal-based full-screen status surfaces follow the active appearance
    scope. The existing light-only status layout and colors remain unchanged. */
 /* The status portal receives focus programmatically for screen-reader announcements.
@@ -1292,7 +1291,9 @@ body {
 .status-screen[data-status-theme="dark"] .status-screen__note {
   border-color: #62748e;
   background: rgb(37 54 80 / 96%);
-  box-shadow: 0 20px 45px -26px rgb(2 8 24 / 74%), inset 0 1px 0 rgb(255 255 255 / 5%);
+  box-shadow:
+    0 20px 45px -26px rgb(2 8 24 / 74%),
+    inset 0 1px 0 rgb(255 255 255 / 5%);
 }
 
 .status-screen[data-status-theme="dark"] .status-screen__note-title {
@@ -1326,7 +1327,8 @@ body {
   background: #354c69;
 }
 
-.status-screen[data-status-theme="dark"] :is(.status-screen__primary-action, .status-screen__secondary-action):focus-visible {
+.status-screen[data-status-theme="dark"]
+  :is(.status-screen__primary-action, .status-screen__secondary-action):focus-visible {
   outline: 3px solid #c9c0ff;
   outline-offset: 3px;
 }

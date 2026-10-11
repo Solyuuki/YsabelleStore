@@ -224,7 +224,6 @@ function findMonthlyBatch(orders: RestockTicketIdentity[], batch: MonthlyBatchId
   return orders.find((order) => isMonthlyAutomatedTicket(order, batch)) ?? null;
 }
 
-
 async function runRestockAutomation(): Promise<RestockAutomationResult> {
   const batch = monthlyBatchIdentity();
   // Snapshot-first: an existing month is immutable, even after worker restarts.

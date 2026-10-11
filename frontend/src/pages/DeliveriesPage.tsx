@@ -339,7 +339,11 @@ export function DeliveriesPage() {
       <Card>
         <CardHeader className="gap-1">
           <CardTitle>
-            {view === "history" ? "Ticket history" : view === "all" ? "All delivery tickets" : "Deliveries to handle"}
+            {view === "history"
+              ? "Ticket history"
+              : view === "all"
+                ? "All delivery tickets"
+                : "Deliveries to handle"}
           </CardTitle>
           <CardDescription>
             {view === "history"
@@ -354,9 +358,11 @@ export function DeliveriesPage() {
             {(["active", "history", "all"] as const).map((nextView) => (
               <Button
                 aria-pressed={view === nextView}
-                className={view === nextView
-                  ? "border-indigo-500 bg-indigo-600 text-white hover:bg-indigo-700 dark:border-indigo-400 dark:bg-indigo-500 dark:text-white"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"}
+                className={
+                  view === nextView
+                    ? "border-indigo-500 bg-indigo-600 text-white hover:bg-indigo-700 dark:border-indigo-400 dark:bg-indigo-500 dark:text-white"
+                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                }
                 key={nextView}
                 onClick={() => {
                   setView(nextView);
@@ -366,7 +372,11 @@ export function DeliveriesPage() {
                 type="button"
                 variant="secondary"
               >
-                {nextView === "active" ? "Needs action" : nextView === "history" ? "History" : "All tickets"}
+                {nextView === "active"
+                  ? "Needs action"
+                  : nextView === "history"
+                    ? "History"
+                    : "All tickets"}
                 <span className="ml-1 rounded-full bg-black/10 px-2 py-0.5 text-xs dark:bg-white/15">
                   {meta.counts[nextView]}
                 </span>
@@ -471,7 +481,10 @@ export function DeliveriesPage() {
                   </TableRow>
                 ) : (
                   tickets.map((ticket) => (
-                    <TableRow className="hover:bg-slate-50/70 dark:hover:bg-slate-700/50" key={ticket.id}>
+                    <TableRow
+                      className="hover:bg-slate-50/70 dark:hover:bg-slate-700/50"
+                      key={ticket.id}
+                    >
                       <TableCell>
                         <div className="grid gap-0.5">
                           <strong className="text-slate-950">{ticket.deliveryTicketNumber}</strong>
@@ -660,7 +673,10 @@ export function DeliveriesPage() {
                 >
                   <ol className="space-y-3 pr-3">
                     {selected.timeline.map((event) => (
-                      <li className="rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2 dark:border-slate-600 dark:bg-slate-700/40" key={event.id}>
+                      <li
+                        className="rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2 dark:border-slate-600 dark:bg-slate-700/40"
+                        key={event.id}
+                      >
                         <div className="flex flex-wrap justify-between gap-2">
                           <strong className="text-xs text-slate-900 dark:text-slate-100">
                             {statusLabel(event.status)}
@@ -670,7 +686,8 @@ export function DeliveriesPage() {
                           </time>
                         </div>
                         <p className="mt-1 text-xs text-slate-500 dark:text-slate-300">
-                          {event.actorType}{event.note ? ` · ${event.note}` : ""}
+                          {event.actorType}
+                          {event.note ? ` · ${event.note}` : ""}
                         </p>
                       </li>
                     ))}

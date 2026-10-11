@@ -97,7 +97,8 @@ export function RestockDraftsPanel({
   }, [loadDrafts, refreshVersion]);
 
   async function applySuggestedQuantity(productId: string, quantity: number) {
-    if (!selectedDraft || confirming || removing || !Number.isSafeInteger(quantity) || quantity < 1) return;
+    if (!selectedDraft || confirming || removing || !Number.isSafeInteger(quantity) || quantity < 1)
+      return;
     setConfirming(true);
     setError(null);
     try {
@@ -123,7 +124,9 @@ export function RestockDraftsPanel({
       setOwnerWarnings([]);
       await loadDrafts();
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Could not apply suggested quantity.");
+      setError(
+        requestError instanceof Error ? requestError.message : "Could not apply suggested quantity."
+      );
     } finally {
       setConfirming(false);
     }
@@ -134,7 +137,11 @@ export function RestockDraftsPanel({
     setConfirming(true);
     setError(null);
     try {
-      const approved = await approveRestockOrder(selectedDraft.id, selectedDraft.version, acknowledgeWarnings);
+      const approved = await approveRestockOrder(
+        selectedDraft.id,
+        selectedDraft.version,
+        acknowledgeWarnings
+      );
       setSelectedDraft(null);
       pushToast({
         title: "Restock sent to Receiving",
@@ -324,14 +331,15 @@ export function RestockDraftsPanel({
               >
                 <div className="divide-y divide-slate-100 rounded-lg border border-slate-200">
                   {selectedLines(selectedDraft).map((line) => (
-                    <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-5" key={line.id}>
+                    <div
+                      className="flex items-center justify-between gap-4 px-4 py-3 sm:px-5"
+                      key={line.id}
+                    >
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium text-slate-950">
                           {line.product.name}
                         </p>
-                        <p className="mt-0.5 truncate text-xs text-slate-500">
-                          {line.product.sku}
-                        </p>
+                        <p className="mt-0.5 truncate text-xs text-slate-500">{line.product.sku}</p>
                       </div>
                       <span className="shrink-0 text-sm font-semibold text-slate-950">
                         {line.requestedQuantity.toLocaleString()} units

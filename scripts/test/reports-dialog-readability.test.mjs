@@ -43,16 +43,19 @@ test("all Reports and Receiving return-document portals carry the shared readabi
 
 test("Reports dialog control and content contrast meets WCAG AA", () => {
   const css = read("frontend/src/styles/theme-retail.css");
-  assert.match(css, /:root\.dark\[data-appearance-scope="retail"\] \[role="dialog"\]\.ys-report-modal/);
+  assert.match(
+    css,
+    /:root\.dark\[data-appearance-scope="retail"\] \[role="dialog"\]\.ys-report-modal/
+  );
   for (const selector of [
-    "[class~=\"text-slate-700\"]",
-    "[class~=\"text-slate-400\"]",
-    "[class~=\"bg-white\"]",
+    '[class~="text-slate-700"]',
+    '[class~="text-slate-400"]',
+    '[class~="bg-white"]',
     "button:disabled",
-    "button[class~=\"bg-white\"]",
+    'button[class~="bg-white"]',
     "input, textarea)::placeholder",
-    "[class~=\"bg-amber-50\"]",
-    "[class~=\"bg-red-50\"]"
+    '[class~="bg-amber-50"]',
+    '[class~="bg-red-50"]'
   ]) {
     assert.ok(css.includes(selector), "Missing Reports modal selector: " + selector);
   }
@@ -75,7 +78,7 @@ test("Reports dialog control and content contrast meets WCAG AA", () => {
 
 test("Reports modal dark selectors are scoped and do not override light styling", () => {
   const css = read("frontend/src/styles/theme-retail.css");
-  assert.ok(css.includes('/* Sprint 11: Reports dialogs render in Radix portals'));
+  assert.ok(css.includes("/* Sprint 11: Reports dialogs render in Radix portals"));
   assert.ok(css.includes(':root.dark[data-appearance-scope="retail"]'));
   assert.ok(!css.includes(':root.light [role="dialog"].ys-report-modal'));
 });
@@ -95,7 +98,9 @@ test("Receiving return-document actions use readable dark report styling without
   assert.match(report, /Excel-compatible CSV/);
 
   const css = read("frontend/src/styles/theme-retail.css");
-  const modalStyles = css.slice(css.indexOf("/* Sprint 11: Reports dialogs render in Radix portals"));
+  const modalStyles = css.slice(
+    css.indexOf("/* Sprint 11: Reports dialogs render in Radix portals")
+  );
   assert.match(modalStyles, /\[role="dialog"\]\.ys-report-modal/);
   assert.match(modalStyles, /\[class~="text-slate-700"\]/);
   assert.match(modalStyles, /button\[class~="bg-white"\]/);

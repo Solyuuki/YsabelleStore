@@ -45,7 +45,12 @@ test("approved normal automated batch remains valid independent of later live fo
   assert.equal(
     findInflatedAutomatedLine("[AutomatedRestockMonth:2026-10]", [
       baseLine,
-      { ...baseLine, recommendationSource: "MANUAL", recommendedQuantity: 0, requestedQuantity: 300 }
+      {
+        ...baseLine,
+        recommendationSource: "MANUAL",
+        recommendedQuantity: 0,
+        requestedQuantity: 300
+      }
     ]),
     null
   );
@@ -72,7 +77,10 @@ test("Receiving bypasses live procurement policy but retains anomaly checks and 
     "utf8"
   );
   assert.match(restock, /findInflatedAutomatedLine\(snapshot\.notes, selectedLines\)/);
-  assert.match(restock, /if \(stage === "RECEIPT" \|\| isAutomatedMonthlyOrder\(snapshot\.notes\)\) return \[\]/);
+  assert.match(
+    restock,
+    /if \(stage === "RECEIPT" \|\| isAutomatedMonthlyOrder\(snapshot\.notes\)\) return \[\]/
+  );
   assert.match(restock, /RESTOCK_OWNER_WARNING_ACK_REQUIRED/);
   assert.match(restock, /OwnerPurchaseWarningsAcknowledged/);
   assert.match(lifecycle, /RESTOCK_OVER_DELIVERY_NOT_AUTHORIZED/);

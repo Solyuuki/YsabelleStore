@@ -23,7 +23,10 @@ test("Storefront quantity input rejects fractions at the component boundary", ()
 test("Both receiving paths reject fractional input instead of truncating before API submit", () => {
   const receiving = read("frontend/src/pages/ReceivingPage.tsx");
   const reports = read("frontend/src/components/reports/RestockReceivingPanel.tsx");
-  for (const [name, src] of [["Receiving page", receiving], ["Reports receiving", reports]]) {
+  for (const [name, src] of [
+    ["Receiving page", receiving],
+    ["Reports receiving", reports]
+  ]) {
     assert.doesNotMatch(src, /Math\.trunc\(/, name + " still has silent truncation");
     assert.match(src, /requireWholeUnitQuantity\(/);
     assert.match(src, /parseWholeUnitQuantity\(/);

@@ -6,7 +6,10 @@ const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), "
 
 test("Inventory toolbar filter chevrons have their own flex slot separate from label text", () => {
   const page = read("frontend/src/pages/InventoryPage.tsx");
-  const toolbar = page.slice(page.indexOf("function FilterSelect("), page.indexOf("function InventoryTable("));
+  const toolbar = page.slice(
+    page.indexOf("function FilterSelect("),
+    page.indexOf("function InventoryTable(")
+  );
 
   assert.match(toolbar, /<Select[\s\S]*?style=\{\{ backgroundImage: "none" \}\}/);
   assert.match(toolbar, /className="h-auto w-full min-w-0 flex-1/);
