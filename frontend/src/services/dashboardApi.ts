@@ -126,6 +126,8 @@ export type DashboardOperations = {
   restock: {
     actionableProducts: number;
     actions: DashboardRestockAction[];
+    restockProducts: number;
+    otherReviewProducts: number;
     latestOpenOrder: {
       automated: boolean;
       id: string;

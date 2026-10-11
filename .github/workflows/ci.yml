@@ -40,6 +40,7 @@ jobs:
           scripts/test/status-screen-appearance.test.mjs
           scripts/test/reports-picker-dark-contrast.test.mjs
           scripts/test/reports-dialog-readability.test.mjs
+          scripts/test/dashboard-monthly-inventory-report.test.mjs
 
   repository-checks:
     name: Repository quality gates

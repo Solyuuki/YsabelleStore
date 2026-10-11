@@ -6,7 +6,13 @@ on:
       - sprint/v0.11/sprint-11
     paths:
       - "backend/src/services/restock*"
+      - "backend/src/services/dashboardMonthlyRestockSummary.ts"
+      - "backend/src/services/dashboardService.ts"
+      - "frontend/src/pages/DashboardPage.tsx"
+      - "frontend/src/services/dashboardApi.ts"
+      - "scripts/test/dashboard-monthly-inventory-report.test.mjs"
       - "backend/test/restock*"
+      - "backend/test/dashboard-monthly-restock-summary.test.ts"
       - "backend/src/scripts/restockSafetyAudit.ts"
       - "backend/src/services/stockHealthService.ts"
       - "database/prisma/schema.prisma"
@@ -17,7 +23,13 @@ on:
   pull_request:
     paths:
       - "backend/src/services/restock*"
+      - "backend/src/services/dashboardMonthlyRestockSummary.ts"
+      - "backend/src/services/dashboardService.ts"
+      - "frontend/src/pages/DashboardPage.tsx"
+      - "frontend/src/services/dashboardApi.ts"
+      - "scripts/test/dashboard-monthly-inventory-report.test.mjs"
       - "backend/test/restock*"
+      - "backend/test/dashboard-monthly-restock-summary.test.ts"
       - "backend/src/scripts/restockSafetyAudit.ts"
       - "backend/src/services/stockHealthService.ts"
       - "database/prisma/schema.prisma"
@@ -49,6 +61,6 @@ jobs:
       - name: Generate Prisma client
         run: npm run prisma:generate
       - name: Restock safety regressions (no DB writes)
-        run: npx tsx --test --test-concurrency=1 backend/test/restock-phase11-decision.test.ts backend/test/restock-phase7-9-contract.test.ts
+        run: npx tsx --test --test-concurrency=1 backend/test/restock-phase11-decision.test.ts backend/test/restock-phase7-9-contract.test.ts backend/test/dashboard-monthly-restock-summary.test.ts
       - name: Backend compile
         run: npm run build --workspace backend

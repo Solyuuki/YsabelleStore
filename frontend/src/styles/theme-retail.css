@@ -614,7 +614,7 @@
     .ys-sales-detail-chart,
     .ys-dashboard-report-stat,
     .ys-dashboard-pipeline-stat,
-    .ys-dashboard-priority,
+    .ys-dashboard-monthly-batch,
     .ys-dashboard-order,
     .ys-dashboard-empty,
     .ys-dashboard-placeholder
@@ -627,7 +627,7 @@
 :root.dark
   .app-shell-ambient
   .retail-dashboard-page
-  :is(.ys-sales-summary-tile, .ys-sales-selected-day, .ys-dashboard-priority, .ys-dashboard-order) {
+  :is(.ys-sales-summary-tile, .ys-sales-selected-day, .ys-dashboard-monthly-batch, .ys-dashboard-order) {
   background-color: var(--dashboard-tile-raised) !important;
 }
 :root.dark
@@ -641,8 +641,8 @@
     .ys-sales-detail-chart,
     .ys-dashboard-report-stat,
     .ys-dashboard-pipeline-stat,
-    .ys-dashboard-priority,
-    .ys-dashboard-priority__action,
+    .ys-dashboard-monthly-batch,
+    .ys-dashboard-monthly-batch-stat,
     .ys-dashboard-order
   )
   :is(h2, h3, h4, strong, [class~="text-slate-950"], [class~="text-slate-900"]) {
@@ -658,7 +658,7 @@
     .ys-sales-performance-signal,
     .ys-dashboard-report-stat,
     .ys-dashboard-pipeline-stat,
-    .ys-dashboard-priority,
+    .ys-dashboard-monthly-batch,
     .ys-dashboard-order
   )
   :is([class~="text-slate-400"], [class~="text-slate-500"], [class~="text-slate-600"]) {
@@ -667,11 +667,18 @@
 :root.dark
   .app-shell-ambient
   .retail-dashboard-page
-  :is(.ys-sales-view-tabs, .ys-sales-month-picker, .ys-dashboard-priority__action) {
+  :is(.ys-sales-view-tabs, .ys-sales-month-picker, .ys-dashboard-monthly-batch-stat) {
   background-color: #202f49 !important;
   background-image: none !important;
   border-color: #536786 !important;
   color: var(--dashboard-tile-ink);
+}
+/* Only the live monthly recommendation summary uses this status chip.
+   Ensure the label stays legible against the dark dashboard tile. */
+:root.dark .app-shell-ambient .retail-dashboard-page .ys-dashboard-monthly-batch__badge {
+  background-color: #353154 !important;
+  border-color: #8275c1 !important;
+  color: #e7dfff !important;
 }
 :root.dark .app-shell-ambient .retail-dashboard-page .ys-sales-view-tab[class~="bg-white"] {
   background-color: #384365 !important;
@@ -735,7 +742,7 @@
 :root.dark
   .app-shell-ambient
   .retail-dashboard-page
-  :is(.ys-dashboard-priority, .ys-dashboard-order)
+  :is(.ys-dashboard-monthly-batch, .ys-dashboard-order)
   [class~="text-[#625bff]"],
 :root.dark
   .app-shell-ambient

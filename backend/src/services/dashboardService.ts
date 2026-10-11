@@ -8,6 +8,7 @@ import {
 import { prisma } from "../database/prismaClient.js";
 import { getForecastSummary } from "../modules/forecasting/forecast.service.js";
 import { listRestockPlanningCandidates } from "./restockPlanningService.js";
+import { summarizeMonthlyRestockActions } from "./dashboardMonthlyRestockSummary.js";
 import {
   buildRecommenderAssistant,
   type RecommenderAssistantResult
@@ -107,6 +108,8 @@ export type DashboardOperations = {
   restock: {
     actionableProducts: number;
     actions: DashboardRestockAction[];
+    restockProducts: number;
+    otherReviewProducts: number;
     latestOpenOrder: {
       automated: boolean;
       id: string;
@@ -415,6 +418,7 @@ export async function getDashboardOperations(now = new Date()): Promise<Dashboar
     0
   );
   const totalOpen = draftCount + approvedCount + awaitingDeliveryCount + partiallyReceivedCount;
+  const monthlyBatchSummary = summarizeMonthlyRestockActions(actions);
   const visibleActions = actions.slice(0, DASHBOARD_ACTION_LIMIT);
   const assistant = await buildRecommenderAssistant(
     visibleActions.map((action) => ({
@@ -437,6 +441,8 @@ export async function getDashboardOperations(now = new Date()): Promise<Dashboar
     restock: {
       actionableProducts: actions.length,
       actions: visibleActions,
+      restockProducts: monthlyBatchSummary.restockProducts,
+      otherReviewProducts: monthlyBatchSummary.otherReviewProducts,
       latestOpenOrder: latestOpenOrder
         ? {
             automated:
@@ -461,10 +467,7 @@ export async function getDashboardOperations(now = new Date()): Promise<Dashboar
         totalOpen
       },
       risk: riskCounts,
-      suggestedUnits: actions.reduce(
-        (sum, action) => sum + Math.max(0, action.recommendedQuantity),
-        0
-      )
+      suggestedUnits: monthlyBatchSummary.suggestedUnits
     }
   };
 }

@@ -5,6 +5,7 @@ import {
   ClipboardList,
   Clock3,
   LineChart,
+  PackageCheck,
   ReceiptText,
   Sparkles,
   Truck,
@@ -85,20 +86,6 @@ function orderStatusLabel(status: DashboardRestockOrderStatus) {
       return "Cancelled";
     default:
       return status;
-  }
-}
-
-type DashboardMonthlyAction = DashboardOperations["restock"]["actions"][number];
-
-function monthlyActionLabel(action: DashboardMonthlyAction) {
-  switch (action.actionType) {
-    case "RESTOCK":
-      return `Restock ${action.recommendedQuantity.toLocaleString()} units`;
-    case "EXPIRY_REVIEW":
-      return "Review expiry";
-    case "REDUCE_REPLENISHMENT":
-    default:
-      return "Reduce replenishment";
   }
 }
 
@@ -417,7 +404,6 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
   const highPriorityCount = operations
     ? operations.restock.risk.CRITICAL + operations.restock.risk.HIGH
     : 0;
-  const topPriority = operations?.restock.actions[0] ?? null;
 
   return (
     <Card className={brandCardClass}>
@@ -443,7 +429,7 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
               }`}
             >
               {operations.restock.actionableProducts > 0
-                ? `${operations.restock.actionableProducts} actionable`
+                ? `${operations.restock.actionableProducts} to review`
                 : "All clear"}
             </span>
           ) : null}
@@ -472,30 +458,59 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
               />
             </div>
 
-            {topPriority ? (
-              <div className="ys-dashboard-priority rounded-xl border border-violet-100 bg-gradient-to-br from-violet-50/65 to-white p-4">
+            {operations.restock.actionableProducts > 0 ? (
+              <section
+                aria-label={`${reportMonth} monthly restock plan`}
+                className="ys-dashboard-monthly-batch rounded-xl border border-violet-100 bg-gradient-to-br from-violet-50/65 to-white p-4"
+              >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#625bff]">
-                      Highest priority this month
-                    </p>
-                    <p className="mt-1 truncate text-sm font-semibold text-slate-950">
-                      {topPriority.product.name}
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-slate-600">{topPriority.rationale}</p>
-                  </div>
-                  <div className="ys-dashboard-priority__action shrink-0 rounded-lg bg-white px-3 py-2 text-right ring-1 ring-violet-100">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#625bff]">
-                      {topPriority.riskLevel} priority
-                    </p>
-                    <p className="mt-0.5 text-sm font-semibold text-slate-950">
-                      {monthlyActionLabel(topPriority)}
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#625bff]">
+                      <PackageCheck aria-hidden="true" className="h-4 w-4" />
+                      Monthly restock plan
+                    </div>
+                    <h3 className="mt-1 text-base font-semibold tracking-tight text-slate-950">
+                      {reportMonth} · Restock plan
+                    </h3>
+                    <p className="mt-1 max-w-3xl text-xs leading-5 text-slate-600">
+                      Live recommendation batch covering products to replenish and other inventory
+                      concerns. Review every product and quantity before making a purchase decision.
                     </p>
                   </div>
+                  <span className="ys-dashboard-monthly-batch__badge rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">
+                    For review
+                  </span>
                 </div>
-              </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <MonthlyPlanStat
+                    label="To restock"
+                    unit={operations.restock.restockProducts === 1 ? "product" : "products"}
+                    value={operations.restock.restockProducts}
+                  />
+                  <MonthlyPlanStat
+                    label="Suggested units"
+                    unit="units"
+                    value={operations.restock.suggestedUnits}
+                  />
+                  <MonthlyPlanStat
+                    label="Other reviews"
+                    unit={operations.restock.otherReviewProducts === 1 ? "product" : "products"}
+                    value={operations.restock.otherReviewProducts}
+                  />
+                </div>
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-violet-100 pt-3">
+                  <p className="text-xs leading-5 text-slate-600">
+                    Recommendation preview only · No purchase ticket is created by this card.
+                  </p>
+                  <Button onClick={() => onNavigate("/reports")} size="sm" type="button">
+                    <ClipboardList aria-hidden="true" className="h-4 w-4" />
+                    Review full restock plan
+                    <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                  </Button>
+                </div>
+              </section>
             ) : (
-              <div className="ys-dashboard-all-clear flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
+              <div className="ys-dashboard-all-clear flex items-start gap-3 rounded-xl border border-dashed border-emerald-200 bg-emerald-50/70 p-4">
                 <BrandIcon icon={Sparkles} />
                 <div>
                   <p className="font-semibold text-emerald-950">
@@ -513,11 +528,13 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
                 Updated {dateTimeFormatter.format(new Date(operations.generatedAt))} · live current
                 month
               </p>
-              <Button onClick={() => onNavigate("/reports")} size="sm" type="button">
-                <ClipboardList className="h-4 w-4" />
-                View {reportMonth} report
-                <ArrowRight className="h-4 w-4" />
-              </Button>
+              {operations.restock.actionableProducts === 0 ? (
+                <Button onClick={() => onNavigate("/reports")} size="sm" type="button">
+                  <ClipboardList aria-hidden="true" className="h-4 w-4" />
+                  View {reportMonth} report
+                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                </Button>
+              ) : null}
             </div>
           </>
         ) : null}
@@ -536,6 +553,28 @@ function MonthlyReportStat({ label, value }: { label: string; value: number }) {
       <p className="mt-1 text-xl font-semibold tracking-tight text-slate-950">
         {value.toLocaleString()}
       </p>
+    </div>
+  );
+}
+
+function MonthlyPlanStat({
+  label,
+  unit,
+  value
+}: {
+  label: string;
+  unit: string;
+  value: number;
+}) {
+  return (
+    <div className="ys-dashboard-monthly-batch-stat min-w-0 rounded-lg border border-violet-100 bg-white/80 px-3 py-3">
+      <p className="text-xs font-medium text-slate-600">{label}</p>
+      <div className="mt-1 flex flex-wrap items-baseline gap-1.5">
+        <span className="text-xl font-semibold tabular-nums tracking-tight text-slate-950">
+          {value.toLocaleString()}
+        </span>
+        <span className="text-xs text-slate-600">{unit}</span>
+      </div>
     </div>
   );
 }
