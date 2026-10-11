@@ -75,8 +75,8 @@ assert.match(categoryCoverPanel, /Use optimized cover/);
 assert.match(categoryCoverPanel, /Remove active cover/);
 
 assert.match(selectSource, /appearance-none/);
-assert.match(selectSource, /right 0\.875rem center/);
-assert.match(selectSource, /pr-10/);
+assert.match(selectSource, /right 1rem center/);
+assert.match(selectSource, /pr-11/);
 
 assert.doesNotMatch(productsSource, /Add category/);
 assert.doesNotMatch(productsSource, /handleCreateCategory/);
