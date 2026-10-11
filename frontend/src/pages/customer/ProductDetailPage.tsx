@@ -220,8 +220,11 @@ export function ProductDetailPage({
   }
   if (!product)
     return (
-      <div className="customer-page customer-container">
-        <div className="customer-inline-state">Loading product...</div>
+      <div className="customer-page customer-product-page">
+        <StorefrontGalaxyArtwork className="customer-product-page__cosmos" />
+        <div className="customer-container">
+          <div className="customer-inline-state">Loading product...</div>
+        </div>
       </div>
     );
   const outOfStock = product.availableStock <= 0;
