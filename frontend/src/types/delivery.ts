@@ -6,7 +6,22 @@ import type {
   StorefrontPaymentStatus
 } from "@/types/storefront";
 
-export type DeliveryTicket = {
+export type DeliveryTicketView = "active" | "history" | "all";
+
+export type DeliveryTicketSummary = {
+  id: string;
+  orderNumber: string;
+  deliveryTicketNumber: string;
+  customerName: string;
+  customerPhone: string;
+  paymentMethod: StorefrontPaymentMethod;
+  paymentStatus: StorefrontPaymentStatus;
+  deliveryStatus: StorefrontDeliveryStatus;
+  totalAmount: string;
+  updatedAt: string;
+};
+
+export type DeliveryTicket = DeliveryTicketSummary & {
   id: string;
   orderNumber: string;
   deliveryTicketNumber: string;
@@ -56,6 +71,7 @@ export type DeliveryListMeta = {
   totalItems: number;
   totalPages: number;
   summary: DeliverySummary;
+  counts: Record<DeliveryTicketView, number>;
 };
 
 export type DeliveryTransitionInput = {

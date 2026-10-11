@@ -1,11 +1,18 @@
 import { apiClient } from "@/services/apiClient";
-import type { DeliveryListMeta, DeliveryTicket, DeliveryTransitionInput } from "@/types/delivery";
+import type {
+  DeliveryListMeta,
+  DeliveryTicket,
+  DeliveryTicketSummary,
+  DeliveryTicketView,
+  DeliveryTransitionInput
+} from "@/types/delivery";
 import type { StorefrontDeliveryStatus, StorefrontPaymentMethod } from "@/types/storefront";
 
 function deliveryQuery(values: {
   page?: number;
   pageSize?: number;
   status?: StorefrontDeliveryStatus;
+  view?: DeliveryTicketView;
   paymentMethod?: StorefrontPaymentMethod;
   search?: string;
 }) {
@@ -21,13 +28,14 @@ export async function listDeliveryTickets(
     page?: number;
     pageSize?: number;
     status?: StorefrontDeliveryStatus;
+    view?: DeliveryTicketView;
     paymentMethod?: StorefrontPaymentMethod;
     search?: string;
   } = {},
   signal?: AbortSignal
 ) {
   const search = deliveryQuery(query);
-  const response = await apiClient.request<DeliveryTicket[], never, DeliveryListMeta>(
+  const response = await apiClient.request<DeliveryTicketSummary[], never, DeliveryListMeta>(
     `/api/deliveries${search ? `?${search}` : ""}`,
     { signal }
   );
@@ -39,6 +47,16 @@ export async function listDeliveryTickets(
     items: response.data,
     meta: response.meta
   };
+}
+
+export async function getDeliveryTicket(orderId: string) {
+  const response = await apiClient.request<DeliveryTicket>(
+    `/api/deliveries/${encodeURIComponent(orderId)}`
+  );
+  if (!response.success || !response.data) {
+    throw new Error(response.message || "Delivery ticket could not be loaded.");
+  }
+  return response.data;
 }
 
 export async function updateDeliveryStatus(orderId: string, input: DeliveryTransitionInput) {

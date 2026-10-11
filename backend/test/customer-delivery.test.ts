@@ -10,6 +10,7 @@ import {
 import {
   canTransitionDeliveryStatus,
   deliveryStatusLabel,
+  deliveryViewWhere,
   isCodSettlementReady,
   isPaymongoPaymentPending
 } from "../src/services/deliveryService.js";
@@ -100,4 +101,24 @@ test("PayMongo delivery processing stays locked until payment is confirmed", () 
     }),
     false
   );
+});
+
+test("delivery history retains completed or cancelled orders and unpaid COD remains actionable", () => {
+  assert.deepEqual(deliveryViewWhere("all"), {});
+  const historical = deliveryViewWhere("history");
+  assert.deepEqual(historical, {
+    OR: [
+      { deliveryStatus: CustomerDeliveryStatus.CANCELLED },
+      { deliveryStatus: CustomerDeliveryStatus.DELIVERED }
+    ]
+  });
+  assert.deepEqual(deliveryViewWhere("active"), {
+    OR: [
+      { NOT: historical },
+      {
+        deliveryStatus: CustomerDeliveryStatus.DELIVERED,
+        paymentStatus: { not: CustomerPaymentStatus.PAID }
+      }
+    ]
+  });
 });

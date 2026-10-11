@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   confirmCodCollectedController,
+  getDeliveryTicketController,
   listDeliveryTicketsController,
   updateDeliveryStatusController
 } from "../controllers/deliveryController.js";
@@ -12,6 +13,7 @@ export const deliveryRouter = Router();
 
 deliveryRouter.use(requireAuth);
 deliveryRouter.get("/", requireRole("OWNER", "STAFF"), listDeliveryTicketsController);
+deliveryRouter.get("/:orderId", requireRole("OWNER", "STAFF"), getDeliveryTicketController);
 deliveryRouter.patch(
   "/:orderId/status",
   requireRole("OWNER", "STAFF"),

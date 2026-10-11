@@ -3,6 +3,7 @@ import type { Request, RequestHandler } from "express";
 import { getAuthenticatedUser } from "../middleware/authMiddleware.js";
 import {
   confirmCodCollected,
+  getDeliveryTicket,
   listDeliveryTickets,
   updateDeliveryStatus
 } from "../services/deliveryService.js";
@@ -39,9 +40,26 @@ export const listDeliveryTicketsController: RequestHandler = async (request, res
     response.status(200).json(
       createSuccessResponse("Delivery tickets loaded.", result.items, {
         ...result.meta,
+        counts: result.counts,
         summary: result.summary
       })
     );
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getDeliveryTicketController: RequestHandler = async (request, response, next) => {
+  try {
+    requireUser(request);
+    const params = deliveryTicketParamsSchema.safeParse(request.params);
+    if (!params.success) {
+      throw new HttpError(400, "Delivery ticket identifier is invalid.", {
+        code: "INVALID_DELIVERY_TICKET_ID"
+      });
+    }
+    const ticket = await getDeliveryTicket(params.data.orderId);
+    response.status(200).json(createSuccessResponse("Delivery ticket loaded.", ticket));
   } catch (error) {
     next(error);
   }

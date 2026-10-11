@@ -21,6 +21,7 @@ export const customerDeliveryParamsSchema = z.object({
 export const deliveryListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  view: z.enum(["active", "history", "all"]).default("all"),
   status: deliveryStatusSchema.optional(),
   paymentMethod: z.enum(["CASH_ON_DELIVERY", "PAYMONGO"]).optional(),
   search: z.string().trim().max(120).optional()

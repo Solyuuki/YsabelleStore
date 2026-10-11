@@ -44,5 +44,9 @@ jobs:
         run: npx prisma generate --schema database/prisma/schema.prisma
       - name: Apply migrations to disposable MySQL only
         run: npx prisma migrate deploy --schema database/prisma/schema.prisma
+      - name: Verify delivery history query and UI contracts
+        run: |
+          node --test scripts/test/delivery-history-contract.test.mjs
+          npx tsx --test backend/test/customer-delivery.test.ts
       - name: Execute real transaction concurrency tests
         run: npx tsx --test --test-concurrency=1 backend/test/stock-reservation-concurrency.test.ts

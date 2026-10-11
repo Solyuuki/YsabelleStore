@@ -284,54 +284,130 @@ async function invalidateProducts(productIds: string[]) {
   if (productIds.length > 0) invalidateForecastCache([...new Set(productIds)]);
 }
 
+const historicalDeliveryWhere: Prisma.CustomerOrderWhereInput = {
+  OR: [
+    { deliveryStatus: CustomerDeliveryStatus.CANCELLED },
+    { deliveryStatus: CustomerDeliveryStatus.DELIVERED }
+  ]
+};
+
+/** Delivered-but-unpaid COD tickets remain actionable in the operational queue. */
+export function deliveryViewWhere(view: DeliveryListQuery["view"]): Prisma.CustomerOrderWhereInput {
+  if (view === "history") return historicalDeliveryWhere;
+  if (view === "active") {
+    return {
+      OR: [
+        { NOT: historicalDeliveryWhere },
+        {
+          deliveryStatus: CustomerDeliveryStatus.DELIVERED,
+          paymentStatus: { not: CustomerPaymentStatus.PAID }
+        }
+      ]
+    };
+  }
+  return {};
+}
+
+/**
+ * Keep queue payloads bounded: full items, addresses and the event timeline are
+ * fetched only when an operator opens the ticket.
+ */
 export async function listDeliveryTickets(query: DeliveryListQuery) {
   const search = query.search?.trim();
   const where: Prisma.CustomerOrderWhereInput = {
+    ...deliveryViewWhere(query.view),
     ...(query.status ? { deliveryStatus: query.status } : {}),
     ...(query.paymentMethod ? { paymentMethod: query.paymentMethod } : {}),
     ...(search
       ? {
-          OR: [
-            { deliveryTicketNumber: { contains: search } },
-            { orderNumber: { contains: search } },
-            { customerName: { contains: search } },
-            { customerPhone: { contains: search } }
+          AND: [
+            {
+              OR: [
+                { deliveryTicketNumber: { contains: search } },
+                { orderNumber: { contains: search } },
+                { customerName: { contains: search } },
+                { customerPhone: { contains: search } }
+              ]
+            }
           ]
         }
       : {})
   };
 
-  const [totalItems, items, grouped] = await Promise.all([
+  const [totalItems, grouped] = await Promise.all([
     prisma.customerOrder.count({ where }),
-    prisma.customerOrder.findMany({
-      include: deliveryOrderInclude,
-      orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
-      skip: (query.page - 1) * query.pageSize,
-      take: query.pageSize,
-      where
-    }),
     prisma.customerOrder.groupBy({
       _count: { _all: true },
-      by: ["deliveryStatus"]
+      by: ["deliveryStatus", "paymentStatus"]
     })
   ]);
 
-  const totalPages = Math.max(1, Math.ceil(totalItems / query.pageSize));
+  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / query.pageSize);
+  const page = totalPages === 0 ? 1 : Math.min(query.page, totalPages);
+  const items = await prisma.customerOrder.findMany({
+    select: {
+      id: true,
+      orderNumber: true,
+      deliveryTicketNumber: true,
+      customerName: true,
+      customerPhone: true,
+      paymentMethod: true,
+      paymentStatus: true,
+      deliveryStatus: true,
+      totalAmount: true,
+      updatedAt: true
+    },
+    orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+    skip: (page - 1) * query.pageSize,
+    take: query.pageSize,
+    where
+  });
+
   const summary = Object.fromEntries(
     Object.values(CustomerDeliveryStatus).map((status) => [status, 0])
   ) as Record<CustomerDeliveryStatus, number>;
-  for (const row of grouped) summary[row.deliveryStatus] = row._count._all;
+  let allCount = 0;
+  let historyCount = 0;
+  let deliveredAwaitingPaymentCount = 0;
+  for (const row of grouped) {
+    summary[row.deliveryStatus] += row._count._all;
+    allCount += row._count._all;
+    if (
+      row.deliveryStatus === CustomerDeliveryStatus.CANCELLED ||
+      row.deliveryStatus === CustomerDeliveryStatus.DELIVERED
+    ) {
+      historyCount += row._count._all;
+    }
+    if (
+      row.deliveryStatus === CustomerDeliveryStatus.DELIVERED &&
+      row.paymentStatus !== CustomerPaymentStatus.PAID
+    ) {
+      deliveredAwaitingPaymentCount += row._count._all;
+    }
+  }
 
   return {
-    items: items.map(serializeDeliveryOrder),
+    items: items.map((order) => ({
+      ...order,
+      totalAmount: order.totalAmount.toString()
+    })),
     meta: {
-      page: Math.min(query.page, totalPages),
+      page,
       pageSize: query.pageSize,
       totalItems,
       totalPages
     },
-    summary
+    summary,
+    counts: {
+      active: allCount - historyCount + deliveredAwaitingPaymentCount,
+      history: historyCount,
+      all: allCount
+    }
   };
+}
+
+export async function getDeliveryTicket(orderId: string) {
+  return serializeDeliveryOrder(await findDeliveryOrder(prisma, orderId));
 }
 
 export async function updateDeliveryStatus(

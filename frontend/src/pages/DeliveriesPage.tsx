@@ -13,7 +13,7 @@ import {
   UserRound,
   XCircle
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { AppPagination } from "@/components/shared/AppPagination";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -41,10 +41,16 @@ import {
 } from "@/components/ui/table";
 import {
   confirmCodCollected,
+  getDeliveryTicket,
   listDeliveryTickets,
   updateDeliveryStatus
 } from "@/services/deliveryApi";
-import type { DeliveryListMeta, DeliveryTicket } from "@/types/delivery";
+import type {
+  DeliveryListMeta,
+  DeliveryTicket,
+  DeliveryTicketSummary,
+  DeliveryTicketView
+} from "@/types/delivery";
 import type { StorefrontDeliveryStatus, StorefrontPaymentMethod } from "@/types/storefront";
 
 const dateTimeFormatter = new Intl.DateTimeFormat("en-PH", {
@@ -110,11 +116,15 @@ function paymentLabel(method: StorefrontPaymentMethod) {
   return method === "CASH_ON_DELIVERY" ? "Cash on Delivery" : "PayMongo";
 }
 
-function isPaymongoAwaitingPayment(ticket: DeliveryTicket) {
-  return ticket.paymentMethod === "PAYMONGO" && ticket.paymentStatus !== "PAID";
+function isPaymongoAwaitingPayment(ticket: DeliveryTicketSummary) {
+  return (
+    ticket.deliveryStatus !== "CANCELLED" &&
+    ticket.paymentMethod === "PAYMONGO" &&
+    ticket.paymentStatus !== "PAID"
+  );
 }
 
-function operationalStatusLabel(ticket: DeliveryTicket) {
+function operationalStatusLabel(ticket: DeliveryTicketSummary) {
   if (isPaymongoAwaitingPayment(ticket)) return "Awaiting payment";
   if (
     ticket.paymentMethod === "CASH_ON_DELIVERY" &&
@@ -127,7 +137,7 @@ function operationalStatusLabel(ticket: DeliveryTicket) {
 }
 
 function operationalStatusTone(
-  ticket: DeliveryTicket
+  ticket: DeliveryTicketSummary
 ): "default" | "info" | "success" | "warning" | "danger" {
   if (isPaymongoAwaitingPayment(ticket)) return "warning";
   if (
@@ -156,15 +166,17 @@ function addressText(ticket: DeliveryTicket) {
 }
 
 export function DeliveriesPage() {
-  const [tickets, setTickets] = useState<DeliveryTicket[]>([]);
+  const [tickets, setTickets] = useState<DeliveryTicketSummary[]>([]);
   const [meta, setMeta] = useState<DeliveryListMeta>({
     page: 1,
     pageSize: 20,
     totalItems: 0,
     totalPages: 0,
-    summary: EMPTY_SUMMARY
+    summary: EMPTY_SUMMARY,
+    counts: { active: 0, history: 0, all: 0 }
   });
   const [page, setPage] = useState(1);
+  const [view, setView] = useState<DeliveryTicketView>("active");
   const [pageSize, setPageSize] = useState(20);
   const [status, setStatus] = useState<StorefrontDeliveryStatus | "all">("all");
   const [paymentMethod, setPaymentMethod] = useState<StorefrontPaymentMethod | "all">("all");
@@ -173,6 +185,7 @@ export function DeliveriesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<DeliveryTicket | null>(null);
+  const [openingId, setOpeningId] = useState<string | null>(null);
   const [courierProvider, setCourierProvider] = useState("");
   const [customCourierProvider, setCustomCourierProvider] = useState("");
   const [courierReference, setCourierReference] = useState("");
@@ -190,12 +203,15 @@ export function DeliveriesPage() {
             pageSize,
             paymentMethod: paymentMethod === "all" ? undefined : paymentMethod,
             search: search || undefined,
-            status: status === "all" ? undefined : status
+            status: status === "all" ? undefined : status,
+            view
           },
           signal
         );
+        if (signal?.aborted) return;
         setTickets(result.items);
         setMeta(result.meta);
+        if (page !== result.meta.page) setPage(result.meta.page);
       } catch (reason) {
         if (reason instanceof DOMException && reason.name === "AbortError") return;
         setError(
@@ -205,7 +221,7 @@ export function DeliveriesPage() {
         if (!signal?.aborted) setLoading(false);
       }
     },
-    [page, pageSize, paymentMethod, search, status]
+    [page, pageSize, paymentMethod, search, status, view]
   );
 
   useEffect(() => {
@@ -236,15 +252,18 @@ export function DeliveriesPage() {
   const resolvedCourierProvider =
     courierProvider === "Other" ? customCourierProvider.trim() : courierProvider.trim();
 
-  const activeCount = useMemo(
-    () =>
-      meta.summary.ORDER_PLACED +
-      meta.summary.PREPARING +
-      meta.summary.READY_FOR_DELIVERY +
-      meta.summary.OUT_FOR_DELIVERY +
-      meta.summary.DELIVERY_FAILED,
-    [meta.summary]
-  );
+  async function openTicket(ticketId: string) {
+    if (openingId) return;
+    setOpeningId(ticketId);
+    setError("");
+    try {
+      setSelected(await getDeliveryTicket(ticketId));
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Ticket details could not be loaded.");
+    } finally {
+      setOpeningId(null);
+    }
+  }
 
   function applySearch() {
     setPage(1);
@@ -311,7 +330,7 @@ export function DeliveriesPage() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard icon={PackageCheck} label="Active tickets" value={activeCount} />
+        <MetricCard icon={PackageCheck} label="Active tickets" value={meta.counts.active} />
         <MetricCard icon={Box} label="Ready for delivery" value={meta.summary.READY_FOR_DELIVERY} />
         <MetricCard icon={Truck} label="On the way" value={meta.summary.OUT_FOR_DELIVERY} />
         <MetricCard icon={CheckCircle2} label="Delivered" value={meta.summary.DELIVERED} />
@@ -319,13 +338,41 @@ export function DeliveriesPage() {
 
       <Card>
         <CardHeader className="gap-1">
-          <CardTitle>Delivery queue</CardTitle>
+          <CardTitle>
+            {view === "history" ? "Ticket history" : view === "all" ? "All delivery tickets" : "Delivery queue"}
+          </CardTitle>
           <CardDescription>
-            Search by ticket, order, customer, or phone. Status and payment filters scale with the
-            queue.
+            {view === "history"
+              ? "Delivered and cancelled orders remain searchable, including COD awaiting collection."
+              : view === "active"
+                ? "Actionable tickets, including delivered orders awaiting COD collection. Completed tickets are under History."
+                : "All retained delivery tickets with server-side pagination."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div aria-label="Delivery ticket views" className="flex flex-wrap gap-2" role="group">
+            {(["active", "history", "all"] as const).map((nextView) => (
+              <Button
+                aria-pressed={view === nextView}
+                className={view === nextView
+                  ? "border-indigo-500 bg-indigo-600 text-white hover:bg-indigo-700 dark:border-indigo-400 dark:bg-indigo-500 dark:text-white"
+                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"}
+                key={nextView}
+                onClick={() => {
+                  setView(nextView);
+                  setPage(1);
+                  setStatus("all");
+                }}
+                type="button"
+                variant="secondary"
+              >
+                {nextView === "active" ? "Active queue" : nextView === "history" ? "History" : "All tickets"}
+                <span className="ml-1 rounded-full bg-black/10 px-2 py-0.5 text-xs dark:bg-white/15">
+                  {meta.counts[nextView]}
+                </span>
+              </Button>
+            ))}
+          </div>
           <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_220px]">
             <form
               className="flex min-w-0 gap-2"
@@ -400,6 +447,7 @@ export function DeliveriesPage() {
                   <TableHead>Customer</TableHead>
                   <TableHead>Payment</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Updated</TableHead>
                   <TableHead className="text-right">Total</TableHead>
                   <TableHead className="w-[120px] text-right">Action</TableHead>
                 </TableRow>
@@ -407,19 +455,23 @@ export function DeliveriesPage() {
               <TableBody>
                 {loading && tickets.length === 0 ? (
                   <TableRow>
-                    <TableCell className="h-28 text-center text-slate-500" colSpan={6}>
+                    <TableCell className="h-28 text-center text-slate-500" colSpan={7}>
                       Loading delivery tickets...
                     </TableCell>
                   </TableRow>
                 ) : tickets.length === 0 ? (
                   <TableRow>
-                    <TableCell className="h-28 text-center text-slate-500" colSpan={6}>
-                      No delivery tickets match these filters.
+                    <TableCell className="h-28 text-center text-slate-500" colSpan={7}>
+                      {view === "history"
+                        ? "No completed or cancelled tickets match these filters."
+                        : view === "active"
+                          ? "No active delivery tickets match these filters. Check History for completed orders."
+                          : "No delivery tickets match these filters."}
                     </TableCell>
                   </TableRow>
                 ) : (
                   tickets.map((ticket) => (
-                    <TableRow className="hover:bg-slate-50/70" key={ticket.id}>
+                    <TableRow className="hover:bg-slate-50/70 dark:hover:bg-slate-700/50" key={ticket.id}>
                       <TableCell>
                         <div className="grid gap-0.5">
                           <strong className="text-slate-950">{ticket.deliveryTicketNumber}</strong>
@@ -445,17 +497,21 @@ export function DeliveriesPage() {
                           {operationalStatusLabel(ticket)}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right font-semibold text-slate-950">
+                      <TableCell className="whitespace-nowrap text-xs text-slate-500 dark:text-slate-300">
+                        {dateTimeFormatter.format(new Date(ticket.updatedAt))}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold text-slate-950 dark:text-slate-100">
                         {currencyFormatter.format(Number(ticket.totalAmount))}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button
-                          onClick={() => setSelected(ticket)}
+                          disabled={Boolean(openingId)}
+                          onClick={() => void openTicket(ticket.id)}
                           size="sm"
                           type="button"
                           variant="secondary"
                         >
-                          Open ticket
+                          {openingId === ticket.id ? "Opening..." : "Open ticket"}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -590,6 +646,36 @@ export function DeliveriesPage() {
                 ) : (
                   <StaffDeliveryProgress ticket={selected} />
                 )}
+              </section>
+
+              <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-600 dark:bg-slate-800/60">
+                <h3 className="mb-1 text-sm font-semibold text-slate-950 dark:text-slate-100">
+                  Ticket activity history
+                </h3>
+                <p className="mb-3 text-xs text-slate-500 dark:text-slate-300">
+                  Recorded delivery updates, cancellation notes and payment confirmations.
+                </p>
+                <ScrollArea
+                  style={{ height: Math.min(224, Math.max(66, selected.timeline.length * 72)) }}
+                >
+                  <ol className="space-y-3 pr-3">
+                    {selected.timeline.map((event) => (
+                      <li className="rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2 dark:border-slate-600 dark:bg-slate-700/40" key={event.id}>
+                        <div className="flex flex-wrap justify-between gap-2">
+                          <strong className="text-xs text-slate-900 dark:text-slate-100">
+                            {event.label}
+                          </strong>
+                          <time className="text-xs text-slate-500 dark:text-slate-300">
+                            {dateTimeFormatter.format(new Date(event.createdAt))}
+                          </time>
+                        </div>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-300">
+                          {event.actorType}{event.note ? ` · ${event.note}` : ""}
+                        </p>
+                      </li>
+                    ))}
+                  </ol>
+                </ScrollArea>
               </section>
 
               <section>
