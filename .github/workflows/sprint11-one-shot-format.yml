@@ -1,5 +1,5 @@
 name: Sprint 11 formatter with Python image-engine dependencies
-# CI formatter: normalize reused Storefront galaxy background on retail sign-in (2026-10-10).
+# Sprint 11 release QA formatter: normalize repository with Prettier before final CI (2026-10-11).
 
 on:
   push:
