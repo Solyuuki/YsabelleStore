@@ -449,6 +449,10 @@
 :root.dark .customer-app .customer-account-nav button:not([aria-selected="true"]) {
   color: #b8c6d8;
 }
+:root.dark .customer-app .customer-account-nav button:not([aria-selected="true"]):is(:hover, :focus-visible) {
+  color: #ffffff;
+  background: #394968;
+}
 :root.dark .customer-app .customer-account-page-v2 :is(p, small, label) {
   color: #b8c6d8;
 }
