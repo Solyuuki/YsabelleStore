@@ -72,7 +72,7 @@ test("Deliveries uses a plain-language label without changing active filtering",
   const page = read("frontend/src/pages/DeliveriesPage.tsx");
   const service = read("backend/src/services/deliveryService.ts");
 
-  assert.ok(page.includes('? "Needs action" : nextView === "history"'));
+  assert.ok(page.replace(/\s+/g, " ").includes('? "Needs action" : nextView === "history"'));
   assert.ok(page.includes('label="Needs action" value={meta.counts.active}'));
   assert.ok(page.includes('"Deliveries to handle"'));
   assert.ok(page.includes('Orders to prepare, deliver, or collect payment for.'));
