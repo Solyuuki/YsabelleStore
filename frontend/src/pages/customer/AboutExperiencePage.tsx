@@ -7,6 +7,7 @@ import "@/styles/about-catalog-intelligence.css";
 import "@/styles/about-sales-inventory.css";
 import "@/styles/about-forecast-intelligence.css";
 import "@/styles/about-dark-chapters.css";
+import "@/styles/about-intelligence-dark.css";
 
 const storyTheme = {
   "--story-blue": "#008cff",

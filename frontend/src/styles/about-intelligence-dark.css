@@ -1,0 +1,488 @@
+/* Sprint 11: About System Intelligence + Forecast Intelligence dark presentation.
+   Only enabled by the customer Storefront appearance preference on /about.
+   Preserve the approved chapter videos, GSAP timelines, stage logic and Light Mode. */
+
+.about-experience[data-about-hero-theme="dark"] .system-preview {
+  --intelligence-ink: #f3f6ff;
+  --intelligence-muted: #c1cce4;
+  --intelligence-label: #aebcda;
+  --intelligence-border: rgb(157 178 237 / 22%);
+  --intelligence-surface: #1a2747;
+  --intelligence-inset: #222f50;
+  --intelligence-violet: #b3aaff;
+  --intelligence-teal: #65dbce;
+  border-color: rgb(154 164 255 / 30%);
+  background: #121c35;
+  color: var(--intelligence-ink);
+  box-shadow: 0 32px 82px rgb(1 5 18 / 36%);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__nav {
+  border-right-color: var(--intelligence-border);
+  background: #111a34;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__nav > header span,
+.about-experience[data-about-hero-theme="dark"] .system-preview__nav > p {
+  color: #b4c3e3;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__nav button {
+  color: #c0cae6;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__nav button small {
+  color: #acbce0;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__nav button:hover {
+  border-color: rgb(168 171 255 / 35%);
+  background: rgb(160 158 255 / 12%);
+  color: #f5f7ff;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__nav button.is-active {
+  border-color: rgb(174 169 255 / 52%);
+  background: linear-gradient(90deg, rgb(98 91 255 / 35%), rgb(110 100 255 / 13%));
+  color: #fff;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__nav-icon {
+  border-color: rgb(171 183 251 / 25%);
+  background: #243255;
+  color: #c5d1ff;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .system-preview__nav button.is-active .system-preview__nav-icon {
+  border-color: rgb(206 206 255 / 75%);
+  background: #dedfff;
+  color: #514ce8;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__workspace {
+  background:
+    radial-gradient(circle at 100% 0%, rgb(123 100 233 / 10%), transparent 35%),
+    linear-gradient(160deg, #17223c 0%, #15213b 100%);
+  color: var(--intelligence-ink);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__workspace-bar {
+  border-bottom-color: var(--intelligence-border);
+  background: rgb(20 30 55 / 94%);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__workspace-bar small {
+  color: var(--intelligence-label);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__workspace-bar strong,
+.about-experience[data-about-hero-theme="dark"] .system-preview__card-head strong,
+.about-experience[data-about-hero-theme="dark"] .system-preview__chart-card figcaption strong,
+.about-experience[data-about-hero-theme="dark"] .system-preview__inventory-row strong,
+.about-experience[data-about-hero-theme="dark"] .system-preview__decision-inputs strong,
+.about-experience[data-about-hero-theme="dark"] .system-preview__review-summary strong,
+.about-experience[data-about-hero-theme="dark"] .system-preview__order-meta strong,
+.about-experience[data-about-hero-theme="dark"] .system-preview__table > strong {
+  color: var(--intelligence-ink);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__workspace-icon {
+  border-color: rgb(177 182 255 / 29%);
+  background: #25345a;
+  color: #b5adff;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__status,
+.about-experience[data-about-hero-theme="dark"] .system-preview__badge {
+  border-color: rgb(174 187 247 / 32%);
+  background: #253455;
+  color: #e0e7ff;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__badge--live,
+.about-experience[data-about-hero-theme="dark"] .system-preview__badge--review.is-approved {
+  border-color: rgb(89 219 165 / 38%);
+  background: rgb(38 115 92 / 24%);
+  color: #a4f3cb;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__badge--review,
+.about-experience[data-about-hero-theme="dark"] .system-preview__badge--review.is-held {
+  border-color: rgb(184 166 250 / 39%);
+  background: rgb(105 77 157 / 24%);
+  color: #e1ceff;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__workspace-copy {
+  border-bottom-color: var(--intelligence-border);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__workspace-copy p {
+  color: var(--intelligence-muted);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__workspace-copy > span {
+  color: var(--intelligence-label);
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  :is(
+    .system-preview__metric,
+    .system-preview__table-card,
+    .system-preview__chart-card,
+    .system-preview__review-card,
+    .system-preview__recommendation
+  ) {
+  border-color: var(--intelligence-border);
+  background: var(--intelligence-surface);
+  color: var(--intelligence-ink);
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  :is(
+    .system-preview__metric span,
+    .system-preview__card-head span,
+    .system-preview__inventory-row span,
+    .system-preview__decision-inputs span,
+    .system-preview__decision-result > span,
+    .system-preview__review-summary span,
+    .system-preview__order-meta span,
+    .system-preview__chart-card figcaption span
+  ) {
+  color: var(--intelligence-label);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__metric strong {
+  color: var(--intelligence-ink);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__metric small,
+.about-experience[data-about-hero-theme="dark"] .system-preview__action-feedback {
+  color: var(--intelligence-muted);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__card-head,
+.about-experience[data-about-hero-theme="dark"] .system-preview__action-feedback {
+  border-color: var(--intelligence-border);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__table > :is(span, strong) {
+  border-bottom-color: var(--intelligence-border);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__table > span {
+  color: var(--intelligence-label);
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  :is(
+    .system-preview__inventory-row > div:not(.system-preview__stock-bar),
+    .system-preview__decision-inputs > div,
+    .system-preview__decision-result,
+    .system-preview__review-summary > div,
+    .system-preview__order-meta > div
+  ) {
+  border-color: rgb(166 187 247 / 21%);
+  background: var(--intelligence-inset);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__decision-result {
+  background: linear-gradient(145deg, #292855, #252e55);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__decision-result > strong {
+  color: #c4adff;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__decision-result p {
+  color: #cad5ee;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__stock-bar {
+  background: #354464;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__gridline {
+  stroke: rgb(178 197 240 / 22%);
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  :is(.system-preview__history-line, .system-preview__history-path) {
+  stroke: var(--intelligence-teal);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__history-dot {
+  fill: #192747;
+  stroke: var(--intelligence-teal);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__forecast-path {
+  stroke: #a69dff;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__divider {
+  stroke: #9aabd3;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__chart-labels,
+.about-experience[data-about-hero-theme="dark"] .system-preview__legend span {
+  color: var(--intelligence-muted);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__legend .is-history {
+  background: var(--intelligence-teal);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__legend .is-forecast {
+  background: #a69dff;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__actions button {
+  border-color: rgb(178 190 247 / 34%);
+  background: #263558;
+  color: #edf1ff;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__actions button:hover {
+  border-color: #a8adff;
+  background: #33436a;
+  color: #fff;
+  box-shadow: 0 5px 14px rgb(2 6 20 / 25%);
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__actions button.is-selected {
+  border-color: #afa2ff;
+  background: #38346d;
+  color: #f0eaff;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .system-preview__actions button.is-primary,
+.about-experience[data-about-hero-theme="dark"]
+  .system-preview__actions button.is-primary.is-selected {
+  border-color: #aaa5ff;
+  background: #635cea;
+  color: #fff;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .system-preview__actions button.is-primary:hover {
+  background: #756ff5;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__status-track > div {
+  color: #b8c6e2;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .system-preview__status-track :is(.is-done, .is-current) {
+  color: #edf3ff;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .system-preview__status-track > div::before {
+  background: #455479;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__status-track i {
+  border-color: #8194bd;
+  background: #182441;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__status-track .is-done i {
+  border-color: #5cd6a0;
+  background: #5cd6a0;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__status-track .is-current i {
+  border-color: #bcb3ff;
+}
+
+.about-experience[data-about-hero-theme="dark"] .system-preview__workspace-footer {
+  border-top-color: var(--intelligence-border);
+  background: #141e38;
+  color: #b8c6e2;
+}
+
+/* Scene 04: annual forecast panel. Chart remains an illustrative SVG;
+   only its surfaces, labels, stroke contrast and status colors change. */
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo {
+  --forecast-ink: #f3f6ff;
+  --forecast-blue: #99baff;
+  --forecast-violet: #c1a8ff;
+  border-color: rgb(164 181 248 / 28%);
+  background: linear-gradient(180deg, #17243f, #15203a);
+  color: var(--forecast-ink);
+  box-shadow: 0 34px 80px rgb(2 7 22 / 35%);
+}
+
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__topbar {
+  border-bottom-color: rgb(159 178 237 / 23%);
+}
+
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__eyebrow,
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__chart-heading span,
+.about-experience[data-about-hero-theme="dark"]
+  :is(
+    .about-forecast-demo__metrics span,
+    .about-forecast-demo__restock-value > span,
+    .about-forecast-demo__recommendation-grid span
+  ) {
+  color: #b5c3e1;
+}
+
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__status {
+  border-color: rgb(173 190 252 / 27%);
+  background: #253451;
+  color: #e0eaff;
+}
+
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__metrics article,
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__chart-panel {
+  border-color: rgb(166 185 248 / 23%);
+  background: #202d4e;
+  color: #f0f4ff;
+}
+
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__metrics strong,
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__chart-heading strong {
+  color: #f0f4ff;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .about-forecast-demo__metrics article:nth-child(2) strong {
+  color: #9cc2ff;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .about-forecast-demo__metrics article:nth-child(3) strong {
+  color: #c6afff;
+}
+
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__metrics small,
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__years > div,
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__legend span {
+  color: #bdcae5;
+}
+
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__grid line {
+  stroke: rgb(174 192 236 / 22%);
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  :is(.about-forecast-demo__y-labels text, .about-forecast-demo__forecast-label) {
+  fill: #bbc9e7;
+}
+
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__forecast-divider {
+  stroke: #a5b6dd;
+}
+
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__actual-line {
+  stroke: #5cdbca;
+}
+
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__points circle {
+  fill: #202d4e;
+  stroke: #5cdbca;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .about-forecast-demo__points circle.is-forecast {
+  stroke: #9bb9ff;
+}
+
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__years strong {
+  color: #e7edff;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .about-forecast-demo__years .is-forecast strong {
+  color: #a6c2ff;
+}
+
+.about-experience[data-about-hero-theme="dark"] .about-forecast-demo__legend i {
+  background: #5cdbca;
+}
+
+.about-experience[data-about-hero-theme="dark"]
+  .about-forecast-demo__legend i.is-forecast {
+  background: linear-gradient(90deg, #9ab9ff, #c2a6ff);
+}
+
+/* Delivery Operations already uses a dark layout. Lift only its muted copy
+   so it remains legible on the dark galaxy composition, without touching
+   the existing delivery video, action behavior or pinned GSAP layout. */
+.about-experience[data-about-hero-theme="dark"] .story-delivery__tagline {
+  color: #d3dcff;
+}
+
+.about-experience[data-about-hero-theme="dark"] .story-delivery__lead {
+  color: #d4e2f9;
+}
+
+.about-experience[data-about-hero-theme="dark"] .story-delivery__proofs li {
+  border-color: rgb(143 190 255 / 29%);
+  color: #edf5ff;
+}
+
+/* About scene boundaries: match BOTH sides of each transition instead
+   of painting a bright strip on one section and a dark edge on the next.
+   Use layered gradients (no stretched texture or changed scroll geometry). */
+.about-experience[data-about-hero-theme="dark"] .discover-story--about {
+  --story-seam-34: #17243c;
+  --story-seam-45: #10182f;
+  --story-seam-56: #09182f;
+  --about-sales-forecast-seam: linear-gradient(
+    90deg,
+    #17243c 0%,
+    #17213f 34%,
+    #201e42 69%,
+    #17243c 100%
+  );
+}
+
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-forecast {
+  background:
+    linear-gradient(
+      to bottom,
+      #17243c 0%,
+      transparent 16%,
+      transparent 82%,
+      #10182f 100%
+    ),
+    radial-gradient(ellipse 45% 40% at 12% 20%, rgb(68 100 191 / 12%), transparent 88%),
+    radial-gradient(ellipse 48% 45% at 86% 72%, rgb(125 71 169 / 14%), transparent 89%),
+    linear-gradient(145deg, #17243c 0%, #141e3b 43%, #201d43 78%, #10182f 100%);
+}
+
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-forecast::after {
+  height: clamp(7rem, 15vh, 10rem);
+  background: var(--about-sales-forecast-seam);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgb(0 0 0 / 55%) 30%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, rgb(0 0 0 / 55%) 30%, transparent 100%);
+}
+
+.about-experience[data-about-hero-theme="dark"] .discover-story--about .story-intelligence {
+  background:
+    linear-gradient(
+      to bottom,
+      #10182f 0%,
+      transparent 16%,
+      transparent 84%,
+      #09182f 100%
+    ),
+    radial-gradient(circle at 86% 8%, rgb(168 60 240 / 20%), transparent 32%),
+    radial-gradient(circle at 12% 94%, rgb(0 140 255 / 15%), transparent 34%),
+    linear-gradient(145deg, #10182f 0%, #181a48 56%, #30205b 100%);
+}
+
+.about-experience[data-about-hero-theme="dark"] .story-delivery {
+  background:
+    linear-gradient(to bottom, #09182f 0%, transparent 16%),
+    radial-gradient(circle at 76% 18%, rgb(102 91 255 / 24%), transparent 34%),
+    radial-gradient(circle at 12% 78%, rgb(0 140 255 / 17%), transparent 36%),
+    radial-gradient(circle at 88% 84%, rgb(168 60 240 / 14%), transparent 30%),
+    linear-gradient(135deg, #09182f 0%, #0a1730 45%, #17153d 100%);
+}
