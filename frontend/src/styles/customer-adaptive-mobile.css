@@ -1,0 +1,470 @@
+/*
+ * Sprint 12 mobile Storefront: one responsive UI, not a scaled desktop layout.
+ * Loaded after legacy Storefront themes to keep desktop and existing assets intact.
+ */
+
+/* Desktop keeps its existing full navigation. Tablet uses a compact top row. */
+.customer-mobile-dock {
+  display: none;
+}
+
+@media (max-width: 1180px) {
+  .customer-app.ys-material-canvas > .customer-mobile-dock {
+    position: relative;
+    z-index: 75;
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(0.2rem, 1vw, 0.6rem);
+    padding: 0.45rem max(1rem, calc((100vw - 820px) / 2));
+    border-bottom: 1px solid rgb(98 91 255 / 14%);
+    background: rgb(248 249 255 / 94%);
+    box-shadow: 0 5px 16px rgb(26 35 70 / 5%);
+    backdrop-filter: blur(16px);
+  }
+
+  .customer-mobile-dock__link {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 0.48rem;
+    padding: 0.45rem;
+    border: 1px solid transparent;
+    border-radius: 0.8rem;
+    color: #4e5972;
+    font-size: 0.75rem;
+    font-weight: 750;
+    line-height: 1.15;
+    text-decoration: none;
+    transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
+
+  .customer-mobile-dock__link svg {
+    flex: none;
+  }
+
+  .customer-mobile-dock__link.is-active {
+    border-color: rgb(98 91 255 / 24%);
+    background: rgb(98 91 255 / 10%);
+    color: #3f36b9;
+  }
+
+  .customer-mobile-dock__link:hover {
+    background: rgb(98 91 255 / 9%);
+  }
+
+  .customer-mobile-dock__link:focus-visible {
+    outline: 3px solid var(--customer-info);
+    outline-offset: 2px;
+  }
+
+  .customer-mobile-dock__count {
+    display: grid;
+    min-width: 1.1rem;
+    height: 1.1rem;
+    place-items: center;
+    padding-inline: 0.2rem;
+    border-radius: 999px;
+    background: #5149d9;
+    color: #fff;
+    font-size: 0.6rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :root.dark .customer-app .customer-mobile-dock {
+    border-color: #435670;
+    background: rgb(20 31 49 / 96%);
+    box-shadow: 0 8px 22px rgb(0 0 0 / 18%);
+  }
+
+  :root.dark .customer-app .customer-mobile-dock__link {
+    color: #c2d0e4;
+  }
+
+  :root.dark .customer-app .customer-mobile-dock__link.is-active {
+    border-color: #7465b7;
+    background: #30355d;
+    color: #e6ddff;
+  }
+
+  :root.dark .customer-app .customer-mobile-dock__link:hover {
+    background: #32405d;
+  }
+}
+
+@media (max-width: 920px) {
+  /* Remove the former horizontally scrolling category sidebar. */
+  .customer-shop-page .customer-filter-panel.shop-category-navigation {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    max-height: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 0.45rem;
+    padding: 0.65rem;
+    overflow: visible;
+  }
+
+  .customer-shop-page .shop-category-navigation > .customer-filter-panel__title {
+    display: none;
+  }
+
+  .customer-shop-page .shop-category-navigation > .shop-category-toggle {
+    display: flex;
+    min-height: 44px;
+    grid-column: 1 / -1;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid rgb(98 91 255 / 20%);
+    border-radius: 0.75rem;
+    background: rgb(98 91 255 / 8%);
+    color: var(--customer-primary-strong);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.83rem;
+    font-weight: 750;
+    text-align: left;
+  }
+
+  .customer-shop-page .shop-category-toggle__chevron {
+    transition: transform 160ms ease;
+  }
+
+  .customer-shop-page .shop-category-navigation.is-expanded .shop-category-toggle__chevron {
+    transform: rotate(180deg);
+  }
+
+  .customer-shop-page .shop-category-navigation:not(.is-expanded) > a:not(.is-active):not(:first-of-type) {
+    display: none;
+  }
+
+  .customer-shop-page .shop-category-navigation > a {
+    min-width: 0;
+    min-height: 44px;
+    justify-content: space-between;
+    gap: 0.3rem;
+    margin: 0;
+    padding: 0.55rem 0.65rem;
+    border-color: rgb(98 91 255 / 12%);
+    overflow-wrap: anywhere;
+  }
+
+  .customer-shop-page .shop-category-navigation > a > span {
+    min-width: 0;
+  }
+
+  .customer-shop-page .shop-category-navigation > a:hover:not(.is-active) {
+    transform: none;
+  }
+
+  /* Phones and tablets reflow category photography, never stretch/crop the card. */
+  .customer-home .home-category-grid {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(0.55rem, 1.5vw, 0.85rem);
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+
+  .customer-home .home-category-grid > .home-reveal--card,
+  .customer-home .home-category-grid > .home-category-skeleton {
+    min-width: 0;
+    width: auto;
+    flex: initial;
+  }
+
+  .customer-home .home-category-card__visual {
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 4 / 3;
+  }
+
+  .customer-home .home-category-card__body {
+    min-height: 0;
+    padding: 0.7rem 0.8rem 0.8rem;
+  }
+
+  .customer-home .home-category-card__body strong {
+    overflow: visible;
+    font-size: clamp(0.76rem, 1.6vw, 0.9rem);
+    line-height: 1.25;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .customer-home .home-category-card__body small {
+    margin-top: 0.2rem;
+    font-size: 0.67rem;
+  }
+
+  /* Keep the existing product-cart controls; arrange them to fit compact cards. */
+  .customer-app .customer-product-card__purchase-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .customer-app .customer-product-card__cart-button {
+    min-width: 0;
+    width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .customer-shop-page .shop-product-grid,
+  .customer-shop-page .customer-product-grid--loading,
+  .customer-shop-page .shop-catalog-refresh__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(0.5rem, 1.6vw, 0.9rem);
+  }
+
+  .customer-shop-page .customer-shop-layout {
+    min-width: 0;
+    gap: 1rem;
+    padding-block: 1.1rem 3rem;
+  }
+
+  .customer-shop-page .customer-shop-results,
+  .customer-shop-page .shop-product-grid-shell {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .customer-app .customer-header__bar {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 0.45rem;
+  }
+
+  .customer-app .customer-brand {
+    min-width: 0;
+  }
+
+  .customer-app .customer-brand strong {
+    font-size: clamp(0.9rem, 3.8vw, 1.07rem);
+  }
+
+  .customer-app .customer-header__actions {
+    min-width: 0;
+    gap: 0.3rem;
+  }
+
+  /* Cart is one tap away in the mobile dock; no duplicated cramped header action. */
+  .customer-app .customer-header__actions > .customer-cart-link {
+    display: none;
+  }
+
+  .customer-home .customer-container,
+  .customer-shop-page .customer-container {
+    width: calc(100% - 1.5rem);
+  }
+
+  .customer-home .customer-section {
+    padding-block: clamp(1.6rem, 4.5vw, 2.6rem);
+  }
+
+  .customer-home .home-section-heading {
+    align-items: start;
+    gap: 0.55rem;
+    margin-bottom: 1rem;
+  }
+
+  .customer-home .home-section-heading h2 {
+    font-size: clamp(1.45rem, 5.8vw, 2.1rem);
+    line-height: 1.1;
+  }
+
+  .customer-home .home-section-heading > a {
+    font-size: 0.78rem;
+  }
+
+  .customer-home .home-category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+
+  .customer-home .home-category-card {
+    border-radius: 0.86rem;
+  }
+
+  .customer-home .home-category-card__body {
+    padding: 0.55rem 0.6rem 0.65rem;
+  }
+
+  .customer-home .home-category-card__body strong {
+    font-size: 0.76rem;
+  }
+
+  .customer-home .home-category-card__body small {
+    font-size: 0.62rem;
+    -webkit-line-clamp: 2;
+  }
+
+  /* Carousel still has accessible arrows, but each page shows two compact items. */
+  .customer-home .home-product-rail {
+    width: 100%;
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+
+  .customer-home .home-product-rail__item {
+    flex: 0 0 calc((100% - var(--home-product-rail-gap)) / 2);
+    min-width: 0;
+  }
+
+  .customer-home .home-product-rail__control {
+    width: 36px;
+    height: 36px;
+  }
+
+  .customer-home .customer-product-card__body,
+  .customer-shop-page .customer-product-card__body {
+    min-width: 0;
+    padding: 0.65rem;
+  }
+
+  .customer-home .customer-product-card__body h3,
+  .customer-shop-page .customer-product-card__body h3 {
+    font-size: 0.8rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  .customer-app .customer-product-card__price-row {
+    flex-wrap: wrap;
+    gap: 0.2rem 0.4rem;
+  }
+
+  .customer-app .customer-product-card__actions {
+    padding-top: 0.55rem;
+  }
+
+  .customer-app .customer-product-card__purchase-row {
+    gap: 0.4rem;
+  }
+
+  .customer-shop-page .customer-shop-toolbar {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+    padding: 0.6rem;
+  }
+
+  .customer-shop-page .customer-shop-search,
+  .customer-shop-page .customer-select,
+  .customer-shop-page .customer-select select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .customer-shop-page .shop-catalog-refresh__card {
+    min-height: 0;
+  }
+
+  .customer-shop-page .shop-catalog-refresh__media {
+    min-height: 7rem;
+  }
+
+  .customer-shop-page .shop-catalog-refresh__body {
+    padding: 0.65rem;
+  }
+
+  .customer-shop-page .shop-catalog-refresh__actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* On portrait phones the navigation sits in the thumb zone. */
+@media (max-width: 700px) and (orientation: portrait) {
+  .customer-app.ys-material-canvas {
+    padding-bottom: calc(68px + env(safe-area-inset-bottom));
+  }
+
+  .customer-app.ys-material-canvas > .customer-mobile-dock {
+    position: fixed;
+    z-index: 90;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    gap: 0.1rem;
+    padding: 0.35rem max(0.65rem, env(safe-area-inset-right))
+      calc(0.35rem + env(safe-area-inset-bottom))
+      max(0.65rem, env(safe-area-inset-left));
+    border-top: 1px solid rgb(98 91 255 / 20%);
+    border-bottom: 0;
+    box-shadow: 0 -8px 28px rgb(18 30 60 / 9%);
+  }
+
+  .customer-mobile-dock__link {
+    min-height: 52px;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.36rem 0.2rem;
+    font-size: 0.67rem;
+  }
+
+  .customer-mobile-dock__count {
+    position: absolute;
+    top: 0.12rem;
+    right: clamp(0.05rem, 1.4vw, 0.7rem);
+  }
+}
+
+/* Landscape phones keep navigation in a compact row, freeing vertical space. */
+@media (max-width: 950px) and (max-height: 500px) and (orientation: landscape) {
+  .customer-app.ys-material-canvas > .customer-mobile-dock {
+    padding-block: 0.2rem;
+  }
+
+  .customer-mobile-dock__link {
+    min-height: 40px;
+  }
+
+  .customer-app .customer-header__bar {
+    padding-block: 0.3rem;
+  }
+
+  .customer-app .customer-header__search-region {
+    max-width: 420px;
+  }
+
+  .customer-home .home-category-card__visual {
+    aspect-ratio: 5 / 3;
+  }
+}
+
+@media (max-width: 359px) {
+  .customer-app .customer-brand__mark {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .customer-home .home-category-card__body {
+    padding: 0.5rem;
+  }
+
+  .customer-home .home-category-card__body strong {
+    font-size: 0.72rem;
+  }
+
+  .customer-app .customer-product-card__actions .customer-quantity {
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-mobile-dock__link,
+  .customer-shop-page .shop-category-toggle__chevron {
+    transition: none;
+  }
+}
