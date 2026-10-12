@@ -47,6 +47,7 @@ export function ShopPage({
   const [search, setSearch] = useState(searchParam);
   const [categoriesExpanded, setCategoriesExpanded] = useState(false);
   const [availabilityOpen, setAvailabilityOpen] = useState(false);
+  const [availabilityOpensAbove, setAvailabilityOpensAbove] = useState(false);
   const availabilityRef = useRef<HTMLDivElement>(null);
   const availabilityTriggerRef = useRef<HTMLButtonElement>(null);
   const [categories, setCategories] = useState<StorefrontCategory[]>([]);
@@ -234,6 +235,27 @@ export function ShopPage({
     navigate(buildShopUrl({ search: search.trim(), availability: nextAvailability, page: 1 }));
   }
 
+  function toggleAvailability() {
+    if (availabilityOpen) {
+      setAvailabilityOpen(false);
+      return;
+    }
+
+    const triggerBounds = availabilityTriggerRef.current?.getBoundingClientRect();
+    const dockTop =
+      document.querySelector(".customer-mobile-dock")?.getBoundingClientRect().top ??
+      window.innerHeight;
+    const bottomLimit = Math.min(window.innerHeight, dockTop);
+    // Three 44px options plus padding and spacing require roughly 158px.
+    // Flip the menu above when the mobile dock leaves less room below.
+    setAvailabilityOpensAbove(
+      !!triggerBounds &&
+        bottomLimit - triggerBounds.bottom < 166 &&
+        triggerBounds.top > 166
+    );
+    setAvailabilityOpen(true);
+  }
+
   const categoryNavigationClassName = [
     "customer-filter-panel",
     "shop-category-navigation",
@@ -405,7 +427,7 @@ export function ShopPage({
                       : "Out of stock"
                 }. Choose filter`}
                 className="customer-select__mobile-trigger"
-                onClick={() => setAvailabilityOpen((open) => !open)}
+                onClick={toggleAvailability}
                 ref={availabilityTriggerRef}
                 type="button"
               >
@@ -417,7 +439,9 @@ export function ShopPage({
               {availabilityOpen ? (
                 <div
                   aria-label="Availability options"
-                  className="customer-select__mobile-options"
+                  className={`customer-select__mobile-options${
+                    availabilityOpensAbove ? " is-above" : ""
+                  }`}
                   id="shop-availability-options"
                   role="group"
                 >
