@@ -19,7 +19,10 @@ import type {
   StorefrontMerchandisingEntry,
   StorefrontProduct
 } from "@/types/storefront";
-import { getCategoryPresentation } from "@/utils/storefrontCategoryPresentation";
+import {
+  getCategoryPresentation,
+  getCustomerCategoryDescription
+} from "@/utils/storefrontCategoryPresentation";
 import { categoryCoverObjectPosition } from "@/utils/categoryCoverPosition";
 import {
   getStorefrontProductBadge,
@@ -557,7 +560,12 @@ function CategoryCard({
         <span className="home-category-card__body">
           <span>
             <strong>{category.name}</strong>
-            <small>{category.description || "Explore this aisle"}</small>
+            <small className="home-category-card__description">
+              {getCustomerCategoryDescription(category.description)}
+            </small>
+            <small aria-hidden="true" className="home-category-card__mobile-cta">
+              Browse products <ArrowRight size={13} strokeWidth={2} />
+            </small>
           </span>
         </span>
       </CustomerLink>
