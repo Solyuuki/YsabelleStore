@@ -4,17 +4,27 @@ import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 
-test("support category select uses a padded chevron in light and dark modes", () => {
+test("support concern dropdown uses one chevron with an edge-safe gutter in both modes", () => {
   const css = read("frontend/src/styles/customer-support-mobile.css");
   const page = read("frontend/src/pages/customer/CustomerSupportPage.tsx");
+  const contrast = read("frontend/src/styles/theme-storefront-contrast.css");
+  const theme = read("frontend/src/styles/theme-storefront.css");
 
   assert.match(page, /import "@\/styles\/customer-support-mobile\.css"/);
+  assert.match(page, /className="customer-support-select-wrap"/);
   assert.match(page, /<select\s+onChange=/);
-  assert.match(css, /\.customer-app \.customer-support-page \.customer-support-form select\s*\{[^}]*appearance: none;[^}]*padding-right: 3rem;/);
-  assert.match(css, /background-position: right 1rem center;/);
-  assert.match(css, /background-size: 1rem 1rem;/);
-  assert.match(css, /:root\.dark \.customer-app \.customer-support-page \.customer-support-form select\s*\{[^}]*color: #edf2ff;[^}]*background-color: #17243a;[^}]*background-image:/);
-  assert.doesNotMatch(css, /right (?:0(?:px|rem)?|0\.25rem) center/);
+  assert.match(page, /<ChevronDown[\s\S]*?className="customer-support-select-chevron"[\s\S]*?size=\{18\}/);
+  assert.equal(
+    (page.match(/className="customer-support-select-chevron"/g) ?? []).length,
+    1,
+    "Exactly one real SVG arrow must be mounted"
+  );
+  assert.match(css, /\.customer-support-select-wrap select\s*\{[^}]*appearance: none;[^}]*padding-right: 3rem;[^}]*background-image: none !important;/);
+  assert.match(css, /\.customer-support-select-chevron\s*\{[^}]*position: absolute;[^}]*right: 1rem;[^}]*pointer-events: none;/);
+  assert.match(css, /:root\.dark \.customer-app \.customer-support-select-wrap \.customer-support-select-chevron\s*\{[^}]*color: #d8e5fb;/);
+  assert.doesNotMatch(css, /background-image: url\(/);
+  assert.match(contrast, /customer-support-form :is\(input, select, textarea\)\s*\{[^}]*background: #17243a;/);
+  assert.match(theme, /\.customer-support-form select,[\s\S]*?background: #152139;/);
 });
 
 test("mobile contact support stays form-first with optional verified-contact summary", () => {
