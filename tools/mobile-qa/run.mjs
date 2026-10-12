@@ -338,10 +338,39 @@ async function checkMobileProductDetail(page, viewport) {
       : [];
     const relatedBounds = relatedRail?.getBoundingClientRect();
     const relatedCardBounds = relatedCards.map((card) => card.getBoundingClientRect());
-    const relatedGap = relatedRail
-      ? parseFloat(getComputedStyle(relatedRail).gap) || 0
-      : 0;
+    const relatedControls = [
+      ...document.querySelectorAll(
+        ".customer-product-page .customer-related-products__rail-shell > .customer-related-products__arrow"
+      )
+    ];
+    const arrowBounds = relatedControls.map((button) => button.getBoundingClientRect());
+    const relatedShell = document.querySelector(".customer-product-page .customer-related-products__rail-shell");
+    const shellBounds = relatedShell?.getBoundingClientRect();
+    const arrowLayout = {
+      count: relatedControls.length,
+      centered:
+        relatedBounds && arrowBounds.length === 2
+          ? Math.abs(
+              (arrowBounds[0].left + arrowBounds[1].right) / 2 -
+              (relatedBounds.left + relatedBounds.right) / 2
+            ) < 3
+          : true,
+      belowCards:
+        !relatedBounds ||
+        arrowBounds.every((arrow) => arrow.top >= relatedBounds.bottom + 1),
+      inShell:
+        !!shellBounds &&
+        arrowBounds.every(
+          (arrow) =>
+            arrow.left >= shellBounds.left - 1 &&
+            arrow.right <= shellBounds.right + 1 &&
+            arrow.bottom <= shellBounds.bottom + 1
+        ),
+      touchTargets: arrowBounds.every((arrow) => arrow.width >= 43 && arrow.height >= 43),
+      staticPosition: relatedControls.every((button) => getComputedStyle(button).position === "static")
+    };
     const relatedLayout = {
+      arrowLayout,
       count: relatedCards.length,
       railWidth: relatedBounds?.width ?? 0,
       cardWidths: relatedCardBounds.map((rect) => rect.width),
@@ -439,6 +468,15 @@ async function checkMobileProductDetail(page, viewport) {
       state.relatedLayout.countOfClippedActions
     ) {
       issues.push("Related-product carousel cards are oversized, clipped or not swipeable");
+    }
+    if (state.relatedLayout.arrowLayout.count === 2 && (
+      !state.relatedLayout.arrowLayout.belowCards ||
+      !state.relatedLayout.arrowLayout.inShell ||
+      !state.relatedLayout.arrowLayout.centered ||
+      !state.relatedLayout.arrowLayout.touchTargets ||
+      !state.relatedLayout.arrowLayout.staticPosition
+    )) {
+      issues.push("Related-product arrows overlap cards or fall outside their navigation row");
     }
   }
   if (state.visibleDocumentScrollbar !== "none") {
