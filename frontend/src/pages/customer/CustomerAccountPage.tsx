@@ -17,7 +17,7 @@ import {
   ShieldCheck,
   UserRound
 } from "lucide-react";
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 
 import { ProductCard, formatCurrency } from "@/components/customer/ProductCard";
 import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
@@ -141,9 +141,9 @@ export function CustomerAccountPage({
   const { favoriteProducts, loading: favoritesLoading } = useCustomerFavorites();
   const [activeTab, setActiveTab] = useState<AccountTab>("orders");
 
-  // The compact Account popover links to the existing tab panels without
-  // duplicating account content or mounting a second set of forms.
-  useEffect(() => {
+  // The compact Account popover opens the existing panel before paint,
+  // avoiding an Orders flash when another section is selected.
+  useLayoutEffect(() => {
     const requestedView = new URL(location, window.location.origin).searchParams.get("view");
     if (
       requestedView === "orders" ||
