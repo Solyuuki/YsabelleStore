@@ -14,6 +14,7 @@ import { CategoryRetailBackdrop } from "@/components/customer/CategoryRetailBack
 import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { submitCustomerSupportTicket } from "@/services/customerSupportService";
+import "@/styles/customer-support-mobile.css";
 import type {
   CustomerSupportCategory,
   CustomerSupportTicketCreated
