@@ -316,6 +316,134 @@ async function checkShopAvailability(page, viewport) {
   return issues;
 }
 
+async function checkActiveDeliveryDarkContrast(page, viewport) {
+  // Theme probe for the actual Account > Orders styles. Never uses live
+  // customer data, mutations, delivery confirmation or network requests.
+  const metrics = await page.evaluate(() => {
+    const app = document.querySelector(".customer-app");
+    if (!app) return null;
+    const root = document.documentElement;
+    const wasDark = root.classList.contains("dark");
+    const fixture = document.createElement("div");
+    fixture.className = "customer-account-page-v2";
+    fixture.setAttribute("aria-hidden", "true");
+    fixture.style.cssText =
+      "position:absolute;left:0;top:0;max-width:100%;width:100%;visibility:hidden;pointer-events:none;";
+    fixture.innerHTML = `
+      <section id="orders-panel" class="customer-account-section">
+        <article class="customer-account-order-v2 customer-account-order-v2--active">
+          <div class="customer-account-order-topline">
+            <div><span>DEL-YS-2026</span><strong>YS-2026-ORDER</strong></div>
+            <span class="customer-delivery-status">Order placed</span>
+          </div>
+          <div class="customer-account-delivery-overview">
+            <div><span>Payment</span><strong>Cash on Delivery</strong></div>
+            <div><span>Total</span><strong>₱42.00</strong></div>
+            <div><span>Ordered</span><strong>Oct 12, 2026</strong></div>
+          </div>
+          <div class="customer-account-delivery-address"><span>Pasig, Metro Manila</span></div>
+          <div class="customer-delivery-progress">
+            <ol class="customer-delivery-stepper">
+              <li class="is-complete is-current">
+                <div class="customer-delivery-stepper__track">
+                  <span class="customer-delivery-stepper__marker">✓</span>
+                </div>
+                <div class="customer-delivery-stepper__copy">
+                  <strong>Order placed</strong><small>Oct 12, 2026</small>
+                </div>
+              </li>
+              <li>
+                <div class="customer-delivery-stepper__track">
+                  <span class="customer-delivery-stepper__marker">2</span>
+                </div>
+                <div class="customer-delivery-stepper__copy">
+                  <strong>Preparing</strong><small>Pending</small>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </article>
+      </section>`;
+    app.appendChild(fixture);
+
+    const parseRGB = (value) => {
+      const matches = value.match(/[0-9.]+/g)?.slice(0, 3).map(Number);
+      return matches?.length === 3 ? matches : null;
+    };
+    const luminosity = (rgb) => {
+      if (!rgb) return null;
+      const parts = rgb.map((v) => {
+        const srgb = v / 255;
+        return srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
+      });
+      return parts[0] * 0.2126 + parts[1] * 0.7152 + parts[2] * 0.0722;
+    };
+    const ratio = (ink, surface) => {
+      const fg = luminosity(parseRGB(ink));
+      const bg = luminosity(parseRGB(surface));
+      if (fg == null || bg == null) return 0;
+      return (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05);
+    };
+    const css = (selector) => getComputedStyle(fixture.querySelector(selector));
+    const audit = () => {
+      const panel = css(".customer-account-order-v2--active");
+      const overview = css(".customer-account-delivery-overview > div");
+      const checks = [
+        [".customer-account-order-topline > div > span", panel.backgroundColor],
+        [".customer-account-order-topline > div > strong", panel.backgroundColor],
+        [".customer-account-order-topline > .customer-delivery-status",
+          css(".customer-account-order-topline > .customer-delivery-status").backgroundColor],
+        [".customer-account-delivery-overview > div > span", overview.backgroundColor],
+        [".customer-account-delivery-overview > div > strong", overview.backgroundColor],
+        [".customer-account-delivery-address", panel.backgroundColor],
+        [".customer-delivery-stepper li.is-current .customer-delivery-stepper__copy strong",
+          panel.backgroundColor],
+        [".customer-delivery-stepper li:not(.is-complete) .customer-delivery-stepper__copy strong",
+          panel.backgroundColor],
+        [".customer-delivery-stepper li:not(.is-complete) .customer-delivery-stepper__copy small",
+          panel.backgroundColor],
+        [".customer-delivery-stepper li:not(.is-complete) .customer-delivery-stepper__marker",
+          css(".customer-delivery-stepper li:not(.is-complete) .customer-delivery-stepper__marker").backgroundColor]
+      ];
+      return {
+        panelBackground: panel.backgroundColor,
+        tileBackground: overview.backgroundColor,
+        checks: checks.map(([selector, background]) => ({
+          selector,
+          ratio: ratio(css(selector).color, background)
+        }))
+      };
+    };
+    try {
+      root.classList.remove("dark");
+      const light = audit();
+      root.classList.add("dark");
+      const dark = audit();
+      return { light, dark };
+    } finally {
+      fixture.remove();
+      root.classList.toggle("dark", wasDark);
+    }
+  });
+  if (!metrics) return ["Delivery tracking dark account fixture could not render"];
+  const issues = [];
+  if (metrics.dark.panelBackground !== "rgb(34, 49, 73)" ||
+      metrics.dark.tileBackground !== "rgb(43, 59, 85)" ||
+      metrics.light.tileBackground === metrics.dark.tileBackground) {
+    issues.push("Delivery tracking dark summary tiles reverted to light-mode surfaces");
+  }
+  for (const [theme, sample] of Object.entries(metrics)) {
+    for (const check of sample.checks) {
+      if (check.ratio < 4.5) {
+        issues.push(
+          `Delivery tracking order text contrast is insufficient (${theme}, ${check.selector}, ${viewport.width}px): ${check.ratio.toFixed(2)}:1`
+        );
+      }
+    }
+  }
+  return issues;
+}
+
 async function checkDeliveryTrackingContrast(page, viewport) {
   // Use a hidden Order Success tracking panel with the real loaded styles.
   // This never navigates to a paid order or touches customer records.
@@ -1229,6 +1357,7 @@ async function run() {
           if (route === "/shop") {
             issues.push(...(await checkCheckoutDarkBackground(page, viewport)));
             issues.push(...(await checkDeliveryTrackingContrast(page, viewport)));
+            issues.push(...(await checkActiveDeliveryDarkContrast(page, viewport)));
           }
           if (route === "/shop" && viewport.width <= 430 && viewport.height > viewport.width) {
             issues.push(...(await checkCheckoutPolicySpacing(page, viewport)));
