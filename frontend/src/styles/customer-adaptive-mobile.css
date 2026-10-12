@@ -9,6 +9,11 @@
   display: none;
 }
 
+/* The category action is only needed in the compact phone card. */
+.customer-home .home-category-card__mobile-cta {
+  display: none;
+}
+
 @media (max-width: 1180px) {
   .customer-app.ys-material-canvas > .customer-mobile-dock {
     position: relative;
@@ -637,6 +642,83 @@
   .customer-home .home-category-card__body small {
     font-size: 0.66rem;
     line-height: 1.3;
+  }
+
+  /*
+   * Phone category cards have one composition regardless of category name length:
+   * image, three-line title area, and an identical browsing action.
+   * Use the actual category name for accessible card navigation.
+   */
+  .customer-home .home-category-grid {
+    align-items: stretch;
+  }
+
+  .customer-home .home-category-grid > .home-reveal--card {
+    height: 100%;
+    align-self: stretch;
+  }
+
+  .customer-home .home-category-card {
+    height: 100%;
+    min-width: 0;
+  }
+
+  .customer-home .home-category-card__visual {
+    flex: none;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+  }
+
+  .customer-home .home-category-card__body {
+    flex: 1;
+    min-height: clamp(88px, 25vw, 96px);
+    align-items: stretch;
+    padding: clamp(8px, 2.5vw, 11px);
+  }
+
+  .customer-home .home-category-card__body > span {
+    display: flex;
+    min-width: 0;
+    width: 100%;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.3rem;
+  }
+
+  .customer-home .home-category-card__body strong {
+    display: -webkit-box;
+    min-height: calc(3 * 1.25em);
+    overflow: hidden;
+    white-space: normal;
+    overflow-wrap: break-word;
+    text-overflow: clip;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .customer-home .home-category-card__description {
+    display: none;
+  }
+
+  .customer-home .home-category-card__mobile-cta {
+    display: inline-flex;
+    min-height: 16px;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: auto;
+    color: var(--customer-primary-strong);
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .customer-home .home-category-card__mobile-cta svg {
+    flex: none;
+  }
+
+  :root.dark .customer-app .home-category-card__mobile-cta {
+    color: #c6bbff;
   }
 
   /* Home merchandising has the same two-column flow as Categories and Shop.
