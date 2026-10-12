@@ -266,3 +266,42 @@ test("phone category cards share consistent height, title space, and action", ()
   assert.match(qa, /visibleDescriptions/);
   assert.match(qa, /Category cards have inconsistent heights/);
 });
+
+test("mobile global search occupies one header row until explicitly opened", () => {
+  const header = read("frontend/src/components/customer/CustomerHeader.tsx");
+  const search = read("frontend/src/components/customer/GlobalStorefrontSearch.tsx");
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+
+  assert.match(header, /\[mobileSearchOpen, setMobileSearchOpen\] = useState\(false\)/);
+  assert.match(header, /customer-mobile-search-trigger/);
+  assert.match(header, /aria-expanded=\{mobileSearchOpen\}/);
+  assert.match(header, /aria-controls="customer-global-search"/);
+  assert.match(header, /is-mobile-open/);
+  assert.match(header, /setMobileSearchOpen\(false\)/);
+  assert.match(header, /if \(event\.key === "Escape"\) setMobileSearchOpen\(false\)/);
+  assert.match(header, /autoFocus=\{mobileSearchOpen\}/);
+  assert.match(header, /if \(!mobileSearchOpen\) return;/);
+  assert.match(header, /target\.closest\("\.customer-mobile-search-trigger"\)/);
+  assert.match(search, /autoFocus = false/);
+  assert.match(search, /if \(autoFocus && enabled\) inputRef\.current\?\.focus\(\)/);
+
+  assert.match(css, /\.customer-mobile-search-trigger\s*\{\s*display: none;/);
+  assert.match(css, /@media \(max-width: 700px\)/);
+  assert.match(css, /\.customer-app \.customer-header__search-region\s*\{[^}]*position: absolute;[^}]*display: none;/);
+  assert.match(css, /\.customer-app \.customer-header__search-region\.is-mobile-open:not\(\.is-hidden\)/);
+  assert.match(css, /\.customer-app \.customer-header__search-region\.is-hidden\s*\{\s*display: none;/);
+  assert.match(css, /\.customer-global-search__popup\s*\{[^}]*max-height: min\(19rem, calc\(100dvh - 12rem\)\)/);
+  assert.match(css, /\.customer-global-search__list,[\s\S]*?overscroll-behavior-y: contain;/);
+});
+
+test("browser QA covers compact search suggestions without covering mobile dock", () => {
+  const qa = read("tools/mobile-qa/run.mjs");
+  assert.match(qa, /async function checkCompactSearch\(page, viewport\)/);
+  assert.match(qa, /headerBounds\.height > 110/);
+  assert.match(qa, /Search suggestions too tall/);
+  assert.match(qa, /Search suggestions cover the fixed bottom navigation/);
+  assert.match(qa, /Global search must be collapsed by default on mobile/);
+  assert.match(qa, /route === "\/" && viewport\.width <= 700 && viewport\.height > viewport\.width/);
+  assert.match(qa, /await checkCompactSearch\(page, viewport\)/);
+  assert.match(qa, /page\.keyboard\.press\("Escape"\)/);
+});
