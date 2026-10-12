@@ -286,6 +286,7 @@ export function ShopPage({
             <h2>Browse</h2>
           </div>
           <button
+            aria-controls="categories"
             aria-expanded={categoriesExpanded}
             className="shop-category-toggle"
             onClick={() => setCategoriesExpanded((current) => !current)}
