@@ -1,4 +1,5 @@
-import { CircleHelp, MoonStar, ShoppingBasket, Sun, UserRound } from "lucide-react";
+import { CircleHelp, MoonStar, Search, ShoppingBasket, Sun, UserRound, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useAppearance } from "@/context/AppearanceContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
@@ -20,6 +21,27 @@ export function CustomerHeader({
   pathname: string;
 }) {
   const { itemCount } = useCart();
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const mobileSearchRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMobileSearchOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileSearchOpen) return;
+
+    const dismissOutsideSearch = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (mobileSearchRef.current?.contains(target)) return;
+      if (target.closest(".customer-global-search__positioner")) return;
+      setMobileSearchOpen(false);
+    };
+
+    document.addEventListener("pointerdown", dismissOutsideSearch);
+    return () => document.removeEventListener("pointerdown", dismissOutsideSearch);
+  }, [mobileSearchOpen]);
   const { storefrontTheme, setStorefrontTheme } = useAppearance();
   const { customer, status } = useCustomerAuth();
   const isShopRoute = isCustomerShopRoute(pathname);
@@ -66,13 +88,38 @@ export function CustomerHeader({
 
         <div
           aria-hidden={isShopRoute || undefined}
-          className={`customer-header__search-region ${isShopRoute ? "is-hidden" : ""}`}
+          className={`customer-header__search-region ${isShopRoute ? "is-hidden" : ""} ${mobileSearchOpen ? "is-mobile-open" : ""}`}
           inert={isShopRoute || undefined}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") setMobileSearchOpen(false);
+          }}
+          ref={mobileSearchRef}
         >
-          <GlobalStorefrontSearch enabled={!isShopRoute} location={location} navigate={navigate} />
+          <GlobalStorefrontSearch
+            autoFocus={mobileSearchOpen}
+            enabled={!isShopRoute}
+            location={location}
+            navigate={navigate}
+          />
         </div>
 
         <div className="customer-header__actions">
+          {!isShopRoute ? (
+            <button
+              aria-controls="customer-global-search"
+              aria-expanded={mobileSearchOpen}
+              aria-label={mobileSearchOpen ? "Close storefront search" : "Open storefront search"}
+              className="customer-theme-toggle customer-mobile-search-trigger"
+              onClick={() => setMobileSearchOpen((current) => !current)}
+              type="button"
+            >
+              {mobileSearchOpen ? (
+                <X aria-hidden="true" size={19} />
+              ) : (
+                <Search aria-hidden="true" size={19} />
+              )}
+            </button>
+          ) : null}
           <button
             aria-label="Open shopping guide"
             className="customer-icon-button customer-help-button"
