@@ -162,7 +162,9 @@ export function CustomerAccountPage({
   const [confirmingOrder, setConfirmingOrder] = useState<string | null>(null);
   const [resumingPaymentOrder, setResumingPaymentOrder] = useState<string | null>(null);
   const [historyPage, setHistoryPage] = useState(1);
-  const historyPageSize = 5;
+  // Bound the Order History list to three compact cards per page on all viewports.
+  // Active deliveries retain their full live tracking; archived orders stay paginated.
+  const historyPageSize = 3;
   const [favoritesPage, setFavoritesPage] = useState(1);
   const favoritesPageSize = 8;
   const [sessions, setSessions] = useState<CustomerSessionSummary[]>([]);
@@ -1110,17 +1112,15 @@ export function CustomerAccountPage({
                         </details>
                       ))}
                     </div>
-                    {historicalOrders.length > historyPageSize ? (
-                      <AppPagination
-                        className="customer-account-history-pagination"
-                        itemLabel="orders"
-                        onPageChange={setHistoryPage}
-                        page={historyPage}
-                        pageSize={historyPageSize}
-                        totalItems={historicalOrders.length}
-                        totalPages={historyTotalPages}
-                      />
-                    ) : null}
+                    <AppPagination
+                      className="customer-account-history-pagination"
+                      itemLabel="orders"
+                      onPageChange={setHistoryPage}
+                      page={historyPage}
+                      pageSize={historyPageSize}
+                      totalItems={historicalOrders.length}
+                      totalPages={historyTotalPages}
+                    />
                   </>
                 ) : (
                   <div className="customer-account-state">No completed delivery history yet.</div>
