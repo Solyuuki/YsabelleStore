@@ -279,15 +279,25 @@
     font-size: 0.67rem;
   }
 
-  /* Keep the existing product-cart controls; arrange them to fit compact cards. */
+  /* Keep the quantity picker and Add action on the same line on compact cards. */
   .customer-app .customer-product-card__purchase-row {
-    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  }
+
+  .customer-app .customer-product-card__actions .customer-quantity {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(20px, 0.85fr) minmax(0, 1fr);
+  }
+
+  .customer-app .customer-product-card__actions .customer-quantity > button {
+    min-width: 0;
   }
 
   .customer-app .customer-product-card__cart-button {
     min-width: 0;
     width: 100%;
-    white-space: normal;
+    white-space: nowrap;
     text-align: center;
     line-height: 1.2;
   }
@@ -850,14 +860,15 @@
 
   .customer-app .customer-product-card__purchase-row {
     min-width: 0;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.4rem;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 0.3rem;
   }
 
   .customer-app .customer-product-card__actions .customer-quantity {
+    min-width: 0;
     width: 100%;
     max-width: 100%;
-    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    grid-template-columns: minmax(0, 1fr) minmax(18px, 0.85fr) minmax(0, 1fr);
   }
 
   .customer-app .customer-product-card__cart-button {
@@ -1014,18 +1025,18 @@
   }
 
   .customer-app .customer-product-card__purchase-row {
-    gap: 0.3rem;
+    gap: clamp(3px, 1vw, 6px);
   }
 
   .customer-app .customer-product-card__actions .customer-quantity {
     height: 44px;
-    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    grid-template-columns: minmax(0, 1fr) minmax(18px, 0.85fr) minmax(0, 1fr);
     border-radius: 0.65rem;
     box-shadow: none;
   }
 
   .customer-app .customer-product-card__actions .customer-quantity > button {
-    min-width: 44px;
+    min-width: 0;
     min-height: 44px;
   }
 
@@ -1037,17 +1048,17 @@
   }
 
   .customer-app .customer-product-card__cart-button {
-    justify-self: end;
-    width: min(100%, 92px);
-    padding-inline: 0.4rem;
-    gap: 0.3rem;
-    font-size: clamp(0.67rem, 2.8vw, 0.78rem);
+    justify-self: stretch;
+    width: 100%;
+    padding-inline: clamp(2px, 0.8vw, 6px);
+    gap: clamp(2px, 0.6vw, 5px);
+    font-size: clamp(0.64rem, 2.8vw, 0.78rem);
     white-space: nowrap;
   }
 
   .customer-app .customer-product-card__cart-button svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     flex: none;
   }
 
