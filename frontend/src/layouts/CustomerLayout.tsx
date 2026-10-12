@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { CustomerFooter } from "@/components/customer/CustomerFooter";
 import { CustomerHeader } from "@/components/customer/CustomerHeader";
+import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { PrivacyNotice } from "@/components/customer/PrivacyNotice";
 import { DiscoverBrandIdentity } from "@/components/customer/DiscoverBrandIdentity";
 import { useCart } from "@/context/CartContext";
@@ -32,6 +33,7 @@ export function CustomerLayout({
         onStartGuide={startGuide}
         pathname={pathname}
       />
+      <CustomerMobileNav navigate={navigate} pathname={pathname} />
       <main id="customer-main">{children}</main>
       <DiscoverBrandIdentity pathname={pathname} />
       <CustomerFooter navigate={navigate} onStartGuide={startGuide} pathname={pathname} />
