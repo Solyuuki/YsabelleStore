@@ -10,7 +10,7 @@ test("mobile navigation uses existing storefront routes and cart/auth state", ()
   const app = read("frontend/src/app/CustomerApp.tsx");
   const css = read("frontend/src/styles/customer-adaptive-mobile.css");
 
-  assert.match(layout, /<CustomerMobileNav navigate=\{navigate\} pathname=\{pathname\} \/>/);
+  assert.match(layout, /<CustomerMobileNav navigate=\{navigate\} onStartGuide=\{startGuide\} pathname=\{pathname\} \/>/);
   assert.match(nav, /aria-label="Mobile storefront navigation"/);
   assert.match(nav, /aria-current=\{active \? "page" : undefined\}/);
   assert.match(nav, /useCustomerAuth\(\)/);
@@ -94,4 +94,49 @@ test("mobile component sizes reflow at phone and wide-portrait breakpoints", () 
   assert.match(css, /@media \(max-width: 359px\) and \(orientation: portrait\)/);
   assert.match(css, /\.customer-app \.customer-product-card__actions \.customer-quantity\s*\{[^}]*grid-template-columns: 44px minmax\(0, 1fr\) 44px;/);
   assert.match(css, /\.customer-app \.customer-product-card__cart-button\s*\{[^}]*font-size: clamp/);
+});
+
+test("the five-slot mobile dock has a centered accessible expandable More menu", () => {
+  const nav = read("frontend/src/components/customer/CustomerMobileNav.tsx");
+  const header = read("frontend/src/components/customer/CustomerHeader.tsx");
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+
+  assert.match(nav, /links\.slice\(0, 2\)\.map\(renderLink\)/);
+  assert.match(nav, /links\.slice\(2\)\.map\(renderLink\)/);
+  assert.match(nav, /<DialogPrimitive\.Root onOpenChange=\{setMoreOpen\} open=\{moreOpen\}>/);
+  assert.match(nav, /<DialogPrimitive\.Trigger asChild>/);
+  assert.match(nav, /aria-expanded=\{moreOpen\}/);
+  assert.match(nav, /aria-label=\{moreOpen \? "Close more options" : "Open more options"\}/);
+  assert.match(nav, /<DialogPrimitive\.Overlay className="customer-mobile-more__overlay" \/>/);
+  assert.match(nav, /<DialogPrimitive\.Content className="customer-mobile-more__sheet">/);
+  assert.match(nav, /<DialogPrimitive\.Title/);
+  assert.match(nav, /<DialogPrimitive\.Description/);
+  assert.match(nav, /<DialogPrimitive\.Close asChild>/);
+  for (const href of ['href="/about"', 'href="/support"']) {
+    assert.ok(nav.includes(href), "Missing More destination " + href);
+  }
+  assert.match(nav, /onStartGuide\(\)/);
+  assert.match(nav, /setMoreOpen\(false\)/);
+
+  assert.match(css, /grid-template-columns: repeat\(5, minmax\(0, 1fr\)\)/);
+  assert.match(css, /\.customer-app \.customer-menu-button,[\s\S]*?\.customer-app \.customer-mobile-panel\s*\{\s*display: none;/);
+  assert.match(css, /\.customer-mobile-dock__more-icon\s*\{[^}]*width: 44px;[^}]*height: 44px;/);
+  assert.match(css, /\.customer-mobile-more__sheet\s*\{[^}]*position: fixed;/);
+  assert.match(css, /max-height: min\(75dvh, 460px\)/);
+  assert.match(css, /safe-area-inset-bottom/);
+
+  // The desktop menu is preserved for larger screens, not deleted globally.
+  assert.match(header, /className="customer-menu-button"/);
+  assert.match(css, /@media \(max-width: 1180px\)/);
+});
+
+test("320px portrait constrains the actual header and navbar, not just scrollbar paint", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+
+  assert.match(css, /html\[data-appearance-scope="storefront"\] body/);
+  assert.match(css, /html\[data-appearance-scope="storefront"\] #root/);
+  assert.match(css, /\.customer-app \.customer-header__bar\s*\{[^}]*width: calc\(100% - 2 \* var\(--store-phone-gutter, 12px\)\)/);
+  assert.match(css, /grid-template-columns: minmax\(0, 1fr\) auto/);
+  assert.match(css, /\.customer-app\.ys-material-canvas > \.customer-mobile-dock\s*\{[^}]*box-sizing: border-box;/);
+  assert.match(css, /\.customer-app\.ys-material-canvas > \.customer-mobile-dock\s*\{[^}]*grid-template-columns: repeat\(5, minmax\(0, 1fr\)\)/);
 });
