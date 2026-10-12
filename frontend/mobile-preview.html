@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ysabelle MPOS Mobile Preview</title>
+    <style>
+      :root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color-scheme: dark; background: #0d1628; color: #ecf0fb; }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      .shell { display: flex; flex-direction: column; min-height: 100dvh; }
+      header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 18px clamp(16px, 3vw, 32px); background: #16223a; border-bottom: 1px solid #34455f; }
+      h1 { margin: 0; font-size: 1.08rem; letter-spacing: -0.02em; }
+      .sub { display: block; margin-top: 4px; font-size: .76rem; color: #b8c7dd; }
+      .tools { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
+      button, select, a.tool { min-height: 42px; border-radius: 10px; border: 1px solid #61749a; color: #eef2ff; background: #243553; padding: 8px 12px; font: inherit; font-size: .83rem; cursor: pointer; }
+      button:hover, a.tool:hover { background: #344d72; }
+      button:focus-visible, select:focus-visible, a.tool:focus-visible { outline: 3px solid #aabbff; outline-offset: 3px; }
+      a.tool { text-decoration: none; display: inline-flex; align-items: center; }
+      .view { display: flex; flex: 1; justify-content: center; align-items: flex-start; padding: 24px 12px; overflow: auto; min-height: 430px; }
+      .mount { position: relative; flex: none; }
+      .device { position: absolute; left: 0; top: 0; transform-origin: top left; padding: 9px; border-radius: 28px; background: #0b1120; border: 2px solid #7183a5; box-shadow: 0 25px 65px #0008, 0 0 0 5px #223451; }
+      iframe { display: block; width: 100%; height: 100%; border: 0; border-radius: 19px; background: #fff; }
+      .status { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 12px clamp(16px, 3vw, 32px); border-top: 1px solid #34455f; color: #b8c7dd; font-size: .78rem; }
+      .status strong { color: #e7edff; }
+      .disclaimer { max-width: 720px; }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header>
+        <div>
+          <h1>Ysabelle Store · Mobile Preview</h1>
+          <span class="sub">Sprint 12 · Mobile UI/UX QA · shared live dev backend</span>
+        </div>
+        <div class="tools">
+          <label for="device">Viewport</label>
+          <select id="device" aria-label="Preview screen size">
+            <option value="320,640">Small phone · 320 × 640</option>
+            <option value="360,800">Android · 360 × 800</option>
+            <option value="375,812">Compact iPhone · 375 × 812</option>
+            <option value="390,844" selected>iPhone · 390 × 844</option>
+            <option value="412,915">Large Android · 412 × 915</option>
+            <option value="430,932">Large phone · 430 × 932</option>
+            <option value="768,1024">Tablet · 768 × 1024</option>
+          </select>
+          <button id="rotate" type="button" aria-label="Rotate preview">Rotate</button>
+          <button type="button" data-route="/pos">Retail POS</button>
+          <button type="button" data-route="/dashboard">Dashboard</button>
+          <button type="button" data-route="/shop">Storefront</button>
+          <a class="tool" href="/pos" target="_blank" rel="noopener noreferrer">Open full page</a>
+        </div>
+      </header>
+      <main class="view" id="stage">
+        <div class="mount" id="mount">
+          <div class="device" id="frame">
+            <iframe id="preview" title="YsabelleStore live mobile viewport" src="/pos"></iframe>
+          </div>
+        </div>
+      </main>
+      <footer class="status">
+        <strong id="dimensions" aria-live="polite">390 × 844 CSS pixels</strong>
+        <span class="disclaimer">
+          Layout preview only. Real Android/iOS testing is required for touch, keyboard,
+          camera and Safari behavior. Use the LAN URL directly on your phone.
+        </span>
+      </footer>
+    </div>
+    <script>
+      const selector = document.getElementById("device");
+      const stage = document.getElementById("stage");
+      const mount = document.getElementById("mount");
+      const frame = document.getElementById("frame");
+      const preview = document.getElementById("preview");
+      const dimensions = document.getElementById("dimensions");
+      let landscape = false;
+
+      function draw() {
+        const sizes = selector.value.split(",").map(Number);
+        const width = landscape ? sizes[1] : sizes[0];
+        const height = landscape ? sizes[0] : sizes[1];
+        const outsideWidth = width + 22;
+        const outsideHeight = height + 22;
+        const scale = Math.max(
+          0.15,
+          Math.min(
+            1,
+            (stage.clientWidth - 36) / outsideWidth,
+            (window.innerHeight - 235) / outsideHeight
+          )
+        );
+
+        mount.style.width = Math.ceil(outsideWidth * scale) + "px";
+        mount.style.height = Math.ceil(outsideHeight * scale) + "px";
+        frame.style.width = outsideWidth + "px";
+        frame.style.height = outsideHeight + "px";
+        frame.style.transform = "scale(" + scale + ")";
+        dimensions.textContent = width + " × " + height + " CSS pixels";
+      }
+
+      selector.addEventListener("change", draw);
+      document.getElementById("rotate").addEventListener("click", () => {
+        landscape = !landscape;
+        draw();
+      });
+      document.querySelectorAll("[data-route]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const route = button.getAttribute("data-route");
+          preview.src = route;
+          document.querySelector("a.tool").href = route;
+        });
+      });
+      window.addEventListener("resize", draw);
+      draw();
+    </script>
+  </body>
+</html>
