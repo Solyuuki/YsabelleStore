@@ -64,3 +64,32 @@ test("compact catalog product controls and rail remain accessible in portrait", 
   assert.match(card, /label=\{`Quantity for \$\{product\.name\}`\}/);
   assert.match(card, /disabled=\{!isReady\}/);
 });
+
+test("phone portrait uses one sizing system and never enables horizontal product rails", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const portrait = css.split("/* Consistent phone scale: portrait")[1]?.split(
+    "/* A wide portrait phone/foldable"
+  )[0];
+  assert.ok(portrait, "Missing portrait sizing contract");
+  assert.match(portrait, /@media \(max-width: 700px\) and \(orientation: portrait\)/);
+  assert.match(portrait, /--store-phone-gutter: clamp\(12px, 4vw, 16px\)/);
+  assert.match(portrait, /--store-phone-card-gap: clamp\(8px, 2\.5vw, 12px\)/);
+  assert.match(portrait, /--store-phone-section-gap: clamp\(20px, 6vw, 30px\)/);
+  assert.match(portrait, /\.customer-home \.home-product-rail__viewport\s*\{[^}]*overflow: visible;/);
+  assert.match(portrait, /\.customer-home \.home-product-rail__track\s*\{\s*display: grid;/);
+  assert.match(portrait, /\.customer-home \.home-product-rail__control,[\s\S]*?display: none;/);
+  assert.match(portrait, /scroll-snap-type: none;/);
+  assert.match(portrait, /aspect-ratio: 4 \/ 3;/);
+  assert.match(portrait, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(portrait, /\.customer-shop-page\s*\{\s*overflow-x: clip;/);
+  assert.doesNotMatch(portrait, /overflow-x:\s*auto/);
+});
+
+test("mobile component sizes reflow at phone and wide-portrait breakpoints", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  assert.match(css, /@media \(min-width: 600px\) and \(max-width: 700px\) and \(orientation: portrait\)/);
+  assert.match(css, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
+  assert.match(css, /@media \(max-width: 359px\) and \(orientation: portrait\)/);
+  assert.match(css, /\.customer-app \.customer-product-card__actions \.customer-quantity\s*\{[^}]*grid-template-columns: 44px minmax\(0, 1fr\) 44px;/);
+  assert.match(css, /\.customer-app \.customer-product-card__cart-button\s*\{[^}]*font-size: clamp/);
+});
