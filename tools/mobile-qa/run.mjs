@@ -536,6 +536,8 @@ async function checkActiveDeliveryDarkContrast(page, viewport) {
           css(".customer-delivery-stepper li:not(.is-complete) .customer-delivery-stepper__marker").backgroundColor]
       ];
       const card = fixture.querySelector(".customer-account-order-v2--active");
+      const progress = fixture.querySelector(".customer-delivery-progress");
+      const stepper = fixture.querySelector(".customer-delivery-stepper");
       const darkSelector =
         ":root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active";
       return {
@@ -543,6 +545,13 @@ async function checkActiveDeliveryDarkContrast(page, viewport) {
         documentDark: root.classList.contains("dark"),
         panelBackground: panel.backgroundColor,
         tileBackground: overview.backgroundColor,
+        layout: {
+          cardWidth: card?.clientWidth ?? 0,
+          cardScrollWidth: card?.scrollWidth ?? 0,
+          progressWidth: progress?.getBoundingClientRect().width ?? 0,
+          stepperWidth: stepper?.getBoundingClientRect().width ?? 0,
+          stepperDisplay: stepper ? getComputedStyle(stepper).display : "none"
+        },
         checks: checks.map(([selector, background]) => ({
           selector,
           ratio: ratio(css(selector).color, background)
@@ -576,6 +585,21 @@ async function checkActiveDeliveryDarkContrast(page, viewport) {
         darkTile: metrics.dark.tileBackground
       })
     );
+  }
+  if (viewport.width <= 720) {
+    for (const theme of ["light", "dark"]) {
+      const layout = metrics[theme].layout;
+      if (
+        layout.cardWidth <= 0 ||
+        layout.cardScrollWidth > layout.cardWidth + 2 ||
+        layout.stepperWidth > layout.progressWidth + 2 ||
+        layout.stepperDisplay !== "grid"
+      ) {
+        issues.push(
+          `Active delivery tracking overflows the phone viewport (${theme}, ${viewport.width}px): ${JSON.stringify(layout)}`
+        );
+      }
+    }
   }
   // Existing light panels include gradient backgrounds. Sample their theme
   // change, but the targeted regression is the dark theme's solid surfaces.
