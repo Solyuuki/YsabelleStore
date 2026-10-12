@@ -23,6 +23,7 @@ import "@/styles/shopping-guide.css";
 import "@/styles/theme-storefront.css";
 import "@/styles/theme-storefront-contrast.css";
 import "@/styles/customer-order-policy.css";
+import "@/styles/customer-adaptive-mobile.css";
 import {
   getCustomerAuthPageKind,
   isCustomerProtectedRoute,
