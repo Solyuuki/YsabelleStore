@@ -1,3 +1,35 @@
+/* Checkout only: the delivery explanation and cancellation action must be
+   one vertical layout group. The generic .customer-order-summary > div rule
+   otherwise gives direct div children a horizontal flex layout. An explicit
+   grid gap is reliable even when the helper wraps at 320px or a button is
+   inline-flex. Do not apply these rules to the Cart attached policy tab. */
+.customer-app .customer-checkout-page .customer-checkout-summary > .customer-checkout-policy-group {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-content: normal;
+  justify-items: start;
+  align-content: start;
+  gap: 1rem;
+  width: 100%;
+  min-width: 0;
+  margin-top: 1rem;
+  padding: 0;
+}
+
+.customer-app .customer-checkout-page .customer-checkout-policy-group > .customer-order-summary__helper {
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-wrap: anywhere;
+}
+
+.customer-app .customer-checkout-page .customer-checkout-policy-group > .customer-order-policy__trigger {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+}
+
 /* Order policy opens a centered, accessible modal instead of stretching the cart.
    Portal surfaces are styled outside .customer-app because Radix mounts in body.
    The retail installer and checkout submission/payment logic are unaffected. */
