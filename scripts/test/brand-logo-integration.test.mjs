@@ -55,9 +55,15 @@ test("Electron uses canonical window icon and generated packaged Windows ICO", (
   const paths = read("electron/src/config/paths.ts");
 
   assert.match(builder, /icon:\s*"build\/icon\.ico"/);
-  assert.match(windowSource, /const applicationIconPath = getApplicationIconPath\(app\.isPackaged\)/);
+  assert.match(
+    windowSource,
+    /const applicationIconPath = getApplicationIconPath\(app\.isPackaged\)/
+  );
   assert.match(windowSource, /nativeImage\.createFromPath\(applicationIconPath\)/);
-  assert.match(windowSource, /\.\.\.\(applicationIcon\.isEmpty\(\) \? \{\} : \{ icon: applicationIcon \}\)/);
+  assert.match(
+    windowSource,
+    /\.\.\.\(applicationIcon\.isEmpty\(\) \? \{\} : \{ icon: applicationIcon \}\)/
+  );
   assert.match(paths, /export function getApplicationIconPath\(isPackaged:\s*boolean\)/);
   assert.match(paths, /frontend",\s*"brand",\s*"favicon-48x48\.png"/);
   assert.match(paths, /frontend\/public\/brand\/favicon-48x48\.png/);
