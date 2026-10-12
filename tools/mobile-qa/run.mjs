@@ -252,6 +252,63 @@ async function checkShopCategories(page, viewport) {
   return issues;
 }
 
+async function checkShopAvailability(page, viewport) {
+  const issues = [];
+  const trigger = page.getByRole("button", { name: /Availability:.*Choose filter/ });
+  await trigger.click();
+  const options = page.getByRole("group", { name: "Availability options" });
+  await options.waitFor({ state: "visible" });
+  const geometry = await options.evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const buttons = [...node.querySelectorAll("button")];
+    return {
+      left: rect.left,
+      right: rect.right,
+      buttons: buttons.length,
+      shortButtons: buttons.filter((button) => button.getBoundingClientRect().height < 43).length
+    };
+  });
+  if (geometry.left < 8 || geometry.right > viewport.width - 8) {
+    issues.push("Availability menu extends beyond the mobile viewport");
+  }
+  if (geometry.buttons !== 3 || geometry.shortButtons) {
+    issues.push("Availability options are incomplete or too small to tap");
+  }
+  const searchInput = page.locator(".customer-shop-search input");
+  const inputSurface = await searchInput.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      background: style.backgroundColor,
+      image: style.backgroundImage,
+      shadow: style.boxShadow
+    };
+  });
+  if (
+    !["transparent", "rgba(0, 0, 0, 0)"].includes(inputSurface.background) ||
+    inputSurface.image !== "none" ||
+    inputSurface.shadow !== "none"
+  ) {
+    issues.push("Search input has a separate rectangular background or shadow");
+  }
+
+  await page.screenshot({
+    path: join(OUTPUT_DIRECTORY, `${viewport.name}-shop-availability.png`),
+    animations: "disabled"
+  });
+  await options.getByRole("button", { name: "In stock" }).click();
+  await page.waitForURL(/availability=in-stock/, { timeout: 10000 });
+  if (await options.isVisible().catch(() => false)) {
+    issues.push("Availability options did not close on selection");
+  }
+  await trigger.click();
+  await options.waitFor({ state: "visible" });
+  const checked = await options.getByRole("button", { name: "In stock" }).getAttribute("aria-pressed");
+  if (checked !== "true") issues.push("Selected availability filter state did not persist");
+  await page.keyboard.press("Escape");
+  await options.waitFor({ state: "hidden", timeout: 2000 });
+  return issues;
+}
+
 async function checkMorePanel(page, viewport) {
   const openButton = page.getByRole("button", { name: "Open more options" });
   await openButton.click();
@@ -458,6 +515,7 @@ async function run() {
 
           if (route === "/shop" && viewport.width <= 430 && viewport.height > viewport.width) {
             issues.push(...(await checkShopCategories(page, viewport)));
+            issues.push(...(await checkShopAvailability(page, viewport)));
           }
           if (route === "/shop" && viewport.width <= 1180) {
             issues.push(...(await checkMorePanel(page, viewport)));
