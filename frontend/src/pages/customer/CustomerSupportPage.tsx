@@ -31,6 +31,13 @@ const CATEGORY_OPTIONS: Array<{ value: CustomerSupportCategory; label: string }>
   { value: "OTHER", label: "Other" }
 ];
 
+const ORDER_RELATED_CATEGORIES = new Set<CustomerSupportCategory>([
+  "ORDER",
+  "PAYMENT",
+  "PICKUP_DELIVERY",
+  "RETURN_REFUND"
+]);
+
 const FAQS = [
   {
     question: "Do I need an account to contact support?",
@@ -86,9 +93,7 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
   const [showSupportFaq, setShowSupportFaq] = useState(false);
 
   const signedIn = status === "authenticated" && Boolean(customer);
-  const orderRelatedConcern = (
-    ["ORDER", "PAYMENT", "PICKUP_DELIVERY", "RETURN_REFUND"] as CustomerSupportCategory[]
-  ).includes(category);
+  const orderRelatedConcern = ORDER_RELATED_CATEGORIES.has(category);
 
   useEffect(() => {
     if (!customer) return;
@@ -382,11 +387,9 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
                       onChange={(event) => {
                         const nextCategory = event.target.value as CustomerSupportCategory;
                         setCategory(nextCategory);
-                        if (
-                          !(
-                            ["ORDER", "PAYMENT", "PICKUP_DELIVERY", "RETURN_REFUND"] as CustomerSupportCategory[]
-                          ).includes(nextCategory)
-                        ) setOrderNumber("");
+                        if (!ORDER_RELATED_CATEGORIES.has(nextCategory)) {
+                          setOrderNumber("");
+                        }
                       }}
                       value={category}
                     >
@@ -480,29 +483,29 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
           </button>
           <div className="customer-support-sidebar__content" id="customer-support-tips-panel">
             <div className="customer-support-info-card">
-            <PackageSearch aria-hidden="true" size={22} />
-            <h2>For order concerns</h2>
-            <p>
-              Include the order number shown in your order history or confirmation when available.
-              It helps connect the ticket to the correct purchase without exposing payment secrets.
-            </p>
-            <button
-              className="customer-support-text-action"
-              onClick={() => navigate(signedIn ? "/account" : "/login?returnTo=%2Faccount")}
-              type="button"
-            >
-              {signedIn ? "Open my orders" : "Sign in to view orders"}
-            </button>
-          </div>
+              <PackageSearch aria-hidden="true" size={22} />
+              <h2>For order concerns</h2>
+              <p>
+                Include the order number shown in your order history or confirmation when available.
+                It helps connect the ticket to the correct purchase without exposing payment secrets.
+              </p>
+              <button
+                className="customer-support-text-action"
+                onClick={() => navigate(signedIn ? "/account" : "/login?returnTo=%2Faccount")}
+                type="button"
+              >
+                {signedIn ? "Open my orders" : "Sign in to view orders"}
+              </button>
+            </div>
 
-          <div className="customer-support-info-card customer-support-info-card--soft">
-            <CircleHelp aria-hidden="true" size={22} />
-            <h2>Give useful details</h2>
-            <p>
-              Mention what you were trying to do, what happened, and what you expected. Avoid
-              sensitive authentication or payment information.
-            </p>
-          </div>
+            <div className="customer-support-info-card customer-support-info-card--soft">
+              <CircleHelp aria-hidden="true" size={22} />
+              <h2>Give useful details</h2>
+              <p>
+                Mention what you were trying to do, what happened, and what you expected. Avoid
+                sensitive authentication or payment information.
+              </p>
+            </div>
           </div>
         </aside>
       </div>
