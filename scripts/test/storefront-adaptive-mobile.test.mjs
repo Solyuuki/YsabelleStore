@@ -82,6 +82,8 @@ test("phone portrait uses one sizing system and never enables horizontal product
   assert.match(portrait, /aspect-ratio: 4 \/ 3;/);
   assert.match(portrait, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(portrait, /\.customer-shop-page\s*\{\s*overflow-x: clip;/);
+  assert.match(portrait, /\.customer-home \.home-next-step h2\s*\{[^}]*font-size: clamp\(1\.55rem, 6vw, 2\.1rem\)/);
+  assert.match(portrait, /\.customer-home \.home-next-step__visual\s*\{[^}]*height: clamp\(11rem, 48vw, 15rem\)/);
   assert.doesNotMatch(portrait, /overflow-x:\s*auto/);
 });
 
