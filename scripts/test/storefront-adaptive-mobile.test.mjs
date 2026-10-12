@@ -741,3 +741,35 @@ test("dark active delivery tracking has no white tiles or invisible text", () =>
   assert.match(qa, /Delivery tracking dark summary tiles reverted to light-mode surfaces/);
   assert.match(qa, /Delivery tracking order text contrast is insufficient/);
 });
+
+test("account view tabs fit as two-by-two grid on narrow phones", () => {
+  const css = read("frontend/src/styles/customer-account-premium.css");
+  const account = read("frontend/src/pages/customer/CustomerAccountPage.tsx");
+  const qa = read("tools/mobile-qa/run.mjs");
+
+  const phone = css.split("@media (max-width: 640px) {")[1];
+  assert.ok(phone, "Missing phone account navigation breakpoint");
+  assert.match(phone, /\.customer-account-nav\s*\{[^}]*order: 3;[^}]*display: grid;[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);[^}]*overflow: visible;/);
+  assert.match(phone, /\.customer-account-nav button\s*\{[^}]*width: 100%;[^}]*min-height: 44px;[^}]*white-space: normal;/);
+  assert.match(phone, /\.customer-account-nav button svg\s*\{[^}]*width: 16px;[^}]*flex: none;/);
+  assert.doesNotMatch(phone.split(".customer-account-nav button svg")[0], /overflow-x:\s*auto/);
+  assert.match(css, /\.customer-account-nav button\[aria-selected="true"\]\s*\{[^}]*background: linear-gradient\(135deg, #168cff, #645cff 54%, #c94fa6\);/);
+
+  const nav = account.split('aria-label="Account views" role="tablist"')[1]?.split("</nav>")[0];
+  assert.ok(nav, "Account tablist missing");
+  for (const [tab, panel] of [
+    ["orders", "orders-panel"],
+    ["favorites", "favorites-panel"],
+    ["profile", "profile-panel"],
+    ["security", "security-panel"]
+  ]) {
+    assert.match(nav, new RegExp('aria-controls="' + panel + '"'));
+    assert.ok(nav.includes('aria-selected={activeTab === "' + tab + '"}'));
+    assert.ok(nav.includes('onClick={() => setActiveTab("' + tab + '")}'));
+  }
+
+  assert.match(qa, /async function checkMobileAccountTabs\(page, viewport\)/);
+  assert.match(qa, /Account tabs are clipped or horizontally scrolling/);
+  assert.match(qa, /state\.scrollWidth > state\.clientWidth \+ 2/);
+  assert.match(qa, /issues\.push\(\.\.\.\(await checkMobileAccountTabs\(page, viewport\)\)\)/);
+});
