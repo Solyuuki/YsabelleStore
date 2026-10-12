@@ -85,7 +85,11 @@
 
   /* One navigation system at mobile/tablet sizes. Desktop header stays unchanged. */
   .customer-app .customer-menu-button,
-  .customer-app .customer-mobile-panel {
+  .customer-app .customer-mobile-panel,
+  .customer-app .customer-help-button,
+  .customer-app .customer-header__action-divider,
+  .customer-app .customer-account-link,
+  .customer-app .customer-cart-link {
     display: none;
   }
 
