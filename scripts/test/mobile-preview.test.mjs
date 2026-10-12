@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { runInNewContext } from "node:vm";
 
 const read = (path) => readFileSync(new URL("../../" + path, import.meta.url), "utf8");
 
@@ -49,9 +50,115 @@ test("mobile preview supports phone sizes, rotation and live routes", () => {
   }
   assert.match(page, /<iframe[^>]+title="YsabelleStore live mobile viewport"/);
   assert.match(page, /id="rotate"/);
-  assert.match(page, /data-route="\/pos"/);
-  assert.match(page, /data-route="\/dashboard"/);
-  assert.match(page, /data-route="\/shop"/);
+  assert.match(page, /data-view="welcome" data-route="\/\?preview=welcome"/);
+  assert.match(page, /data-view="pos" data-route="\/pos"/);
+  assert.match(page, /data-view="dashboard" data-route="\/dashboard"/);
+  assert.match(page, /data-view="storefront" data-route="\/shop"/);
+  assert.match(page, /<iframe[^>]+src="\/\?preview=welcome"/);
+  assert.match(page, /window\.addEventListener\("hashchange"/);
+  assert.match(page, /button\.setAttribute\("aria-pressed"/);
+  const customerApp = read("frontend/src/app/CustomerApp.tsx");
+  assert.match(customerApp, /import\.meta\.env\.VITE_MOBILE_PREVIEW === "1"/);
+  assert.match(customerApp, /locationUrl\.searchParams\.get\("preview"\) === "welcome"/);
   assert.match(page, /Layout preview only/);
   assert.doesNotMatch(page, /http:\/\/localhost:3001/);
+});
+
+test("preview route selection restores from hash, highlights the active view and supports reselect", () => {
+  const page = read("frontend/mobile-preview.html");
+  const script = page.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+  assert.ok(script, "Missing mobile preview script");
+
+  function element(attributes = {}) {
+    const listeners = new Map();
+    return {
+      style: {},
+      attributes: { ...attributes },
+      clientWidth: 900,
+      value: "390,844",
+      textContent: "",
+      addEventListener(name, callback) {
+        listeners.set(name, callback);
+      },
+      getAttribute(name) {
+        return this.attributes[name] ?? null;
+      },
+      setAttribute(name, value) {
+        this.attributes[name] = value;
+      },
+      trigger(name) {
+        listeners.get(name)?.();
+      }
+    };
+  }
+
+  const buttons = [
+    ["welcome", "/?preview=welcome"],
+    ["storefront", "/shop"],
+    ["pos", "/pos"],
+    ["dashboard", "/dashboard"]
+  ].map(([view, route]) => {
+    const button = element({ "data-view": view, "data-route": route });
+    button.dataset = { view, route };
+    return button;
+  });
+  const preview = element({ src: "/?preview=welcome" });
+  Object.defineProperty(preview, "src", {
+    get() { return this.attributes.src; },
+    set(value) { this.attributes.src = value; }
+  });
+  const fullPage = element();
+  const ids = {
+    device: element(),
+    stage: element(),
+    mount: element(),
+    frame: element(),
+    preview,
+    dimensions: element(),
+    rotate: element(),
+    "full-page-link": fullPage
+  };
+  const events = new Map();
+  const fakeWindow = {
+    innerHeight: 1080,
+    location: { hash: "#dashboard" },
+    addEventListener(name, callback) { events.set(name, callback); }
+  };
+
+  runInNewContext(script, {
+    document: {
+      getElementById(id) { return ids[id]; },
+      querySelectorAll(selector) {
+        assert.equal(selector, "[data-view][data-route]");
+        return buttons;
+      }
+    },
+    window: fakeWindow
+  });
+
+  assert.equal(preview.src, "/dashboard");
+  assert.equal(fullPage.href, "/dashboard");
+  assert.equal(buttons[3].getAttribute("aria-pressed"), "true");
+  assert.equal(buttons[0].getAttribute("aria-pressed"), "false");
+
+  buttons[0].trigger("click");
+  assert.equal(preview.src, "/?preview=welcome");
+  assert.equal(fullPage.href, "/?preview=welcome");
+  assert.equal(fakeWindow.location.hash, "welcome");
+  assert.equal(buttons[0].getAttribute("aria-pressed"), "true");
+  assert.equal(buttons[3].getAttribute("aria-pressed"), "false");
+
+  preview.src = "/"; // Simulate navigating through Get Started inside the iframe.
+  buttons[0].trigger("click");
+  assert.equal(preview.src, "/?preview=welcome", "Reselecting Welcome must restore the entrance");
+
+  fakeWindow.location.hash = "#storefront";
+  events.get("hashchange")();
+  assert.equal(preview.src, "/shop");
+  assert.equal(fullPage.href, "/shop");
+  assert.equal(buttons[1].getAttribute("aria-pressed"), "true");
+
+  fakeWindow.location.hash = "#not-a-route";
+  events.get("hashchange")();
+  assert.equal(preview.src, "/?preview=welcome");
 });
