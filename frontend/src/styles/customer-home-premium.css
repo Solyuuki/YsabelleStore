@@ -359,6 +359,24 @@
   }
 }
 
+/* At 320px portrait, fit the authored two-line welcome headline rather than
+   letting its first line wrap between Neighborhood and Store. */
+@media (max-width: 359px) and (orientation: portrait) {
+  .store-entrance__content {
+    width: calc(100% - 1rem);
+  }
+
+  .store-entrance h1 {
+    font-size: clamp(1.35rem, 6.7vw, 1.52rem);
+    letter-spacing: -0.045em;
+    line-height: 1.1;
+  }
+
+  .store-entrance h1 span:first-child {
+    white-space: nowrap;
+  }
+}
+
 /* A phone in landscape can be only 320-430px tall. Size the full entrance
    stack to the available height rather than creating an iframe scrollbar. */
 @media (max-width: 950px) and (max-height: 440px) {
