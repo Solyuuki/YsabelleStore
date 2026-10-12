@@ -126,6 +126,136 @@ test("Google Quick Sign escapes the embedded phone preview before OAuth", () => 
   assert.match(preview, /Google Quick Sign opens the full browser page/);
 });
 
+test("OAuth returns to the signed-in mobile preview, restores the viewport and clears stale routing", () => {
+  const page = read("frontend/mobile-preview.html");
+  const script = page.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+  assert.ok(script, "Missing embedded preview controller");
+
+  function runPreview(address, orientation = "portrait") {
+    function element(attributes = {}) {
+      const listeners = new Map();
+      return {
+        attributes: { ...attributes },
+        style: {},
+        clientWidth: 1000,
+        value: "390,844",
+        selectedOptions: [{ dataset: { orientation } }],
+        textContent: "",
+        addEventListener(name, callback) {
+          listeners.set(name, callback);
+        },
+        getAttribute(name) {
+          return this.attributes[name] ?? null;
+        },
+        setAttribute(name, value) {
+          this.attributes[name] = value;
+        },
+        trigger(name) {
+          listeners.get(name)?.();
+        }
+      };
+    }
+
+    const buttons = [
+      ["welcome", "/?preview=welcome"],
+      ["storefront", "/shop"],
+      ["pos", "/pos"],
+      ["dashboard", "/dashboard"]
+    ].map(([view, route]) => {
+      const node = element({ "data-view": view, "data-route": route });
+      node.dataset = { view, route };
+      return node;
+    });
+    const iframe = element({ src: "/?preview=welcome" });
+    Object.defineProperty(iframe, "src", {
+      get() { return this.attributes.src; },
+      set(value) { this.attributes.src = value; }
+    });
+    const inputs = {
+      device: element(),
+      stage: element(),
+      mount: element(),
+      frame: element(),
+      preview: iframe,
+      dimensions: element(),
+      rotate: element(),
+      "orientation-hint": element(),
+      "full-page-link": element()
+    };
+    inputs.device.selectedOptions = [{ dataset: { orientation } }];
+    const parsed = new URL(address);
+    let redirect = null;
+    let cleanedPath = null;
+    const win = {
+      innerHeight: 1200,
+      location: {
+        href: parsed.href,
+        origin: parsed.origin,
+        hostname: parsed.hostname,
+        port: parsed.port,
+        search: parsed.search,
+        hash: parsed.hash,
+        replace(href) {
+          redirect = href;
+        }
+      },
+      history: {
+        replaceState(_state, _title, path) {
+          cleanedPath = path;
+        }
+      },
+      addEventListener() {}
+    };
+    runInNewContext(script, {
+      window: win,
+      URL,
+      URLSearchParams,
+      document: {
+        getElementById(id) { return inputs[id]; },
+        querySelectorAll() { return buttons; }
+      }
+    });
+    return {
+      buttons,
+      iframe,
+      inputs,
+      redirect: () => redirect,
+      cleanedPath: () => cleanedPath
+    };
+  }
+
+  const phone = runPreview(
+    "http://localhost:5174/mobile-preview.html?authRoute=%2Faccount&authDevice=390%2C844"
+  );
+  assert.equal(phone.iframe.src, "/account");
+  assert.equal(phone.inputs["full-page-link"].href, "/account");
+  assert.equal(phone.buttons[1].getAttribute("aria-pressed"), "true");
+  assert.equal(phone.inputs.dimensions.textContent, "390 × 844 CSS pixels");
+  phone.buttons[2].trigger("click");
+  assert.equal(phone.iframe.src, "/pos");
+  assert.equal(phone.cleanedPath(), "/mobile-preview.html#pos");
+
+  const tablet = runPreview(
+    "http://localhost:5174/mobile-preview.html?authRoute=%2Faccount%3Fview%3Dprofile&authDevice=768%2C1024&authLandscape=1",
+    "both"
+  );
+  assert.equal(tablet.iframe.src, "/account?view=profile");
+  assert.equal(tablet.inputs.dimensions.textContent, "1024 × 768 CSS pixels");
+
+  const canonicalCallback = runPreview(
+    "http://localhost:5173/mobile-preview.html?authRoute=%2Faccount&authDevice=390%2C844&authPreviewPort=5174"
+  );
+  const handoff = new URL(canonicalCallback.redirect());
+  assert.equal(handoff.origin, "http://localhost:5174");
+  assert.equal(handoff.searchParams.get("authRoute"), "/account");
+  assert.equal(handoff.searchParams.has("authPreviewPort"), false);
+
+  const malicious = runPreview(
+    "http://localhost:5174/mobile-preview.html?authRoute=%2F%2Fevil.example%2F"
+  );
+  assert.equal(malicious.iframe.src, "/?preview=welcome");
+});
+
 test("small touch phones show portrait guidance while tablets support either orientation", () => {
   const html = read("frontend/index.html");
   const css = read("frontend/src/styles/global.css");
