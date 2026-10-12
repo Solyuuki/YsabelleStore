@@ -44,7 +44,7 @@ try {
     const state = await probeStack();
     if (state === "partial") {
       throw new Error(
-        "Only part of the YsabelleStore stack is running, or ports 3001/5173 are owned by other services. Fix the stack before dev:mob."
+        "A development port is used by another service or the backend is unhealthy. Check ports 3001/5173 and run npm run runtime:report before retrying dev:mob."
       );
     }
     if (state === "none") {
@@ -65,6 +65,9 @@ try {
         windowsHide: true
       });
       await waitUntil(async () => (await probeStack()) === "complete", ownedStack, "Web/backend stack");
+    } else if (state === "backend-only") {
+      console.info("Reusing the healthy YsabelleStore backend and database.");
+      console.info("Port 5173 is not running; the independent mobile frontend does not require it.");
     } else {
       console.info("Reusing the existing YsabelleStore web server, backend, and database.");
     }
@@ -118,19 +121,23 @@ async function probeStack() {
     occupied(runtime.frontendPort, new URL(runtime.frontendUrl).hostname)
   ]);
   if (!backendOccupied && !frontendOccupied) return "none";
-  if (!backendOccupied || !frontendOccupied) return "partial";
+  if (!backendOccupied) return "partial";
   try {
-    const [backend, frontend] = await Promise.all([
-      fetch(runtime.apiBaseUrl + "/api/health", { signal: AbortSignal.timeout(1800) }),
-      fetch(runtime.frontendUrl, { signal: AbortSignal.timeout(1800) })
-    ]);
+    const backend = await fetch(runtime.apiBaseUrl + "/api/health", {
+      signal: AbortSignal.timeout(1800)
+    });
     const payload = await backend.json();
+    if (!backend.ok || payload?.data?.service !== "ysabellestore-backend") {
+      return "partial";
+    }
+    // A healthy backend is sufficient: the mobile Vite frontend is independent of port 5173.
+    if (!frontendOccupied) return "backend-only";
+
+    const frontend = await fetch(runtime.frontendUrl, {
+      signal: AbortSignal.timeout(1800)
+    });
     const html = await frontend.text();
-    return backend.ok &&
-      payload?.data?.service === "ysabellestore-backend" &&
-      frontend.ok &&
-      html.includes('id="root"') &&
-      html.includes("YsabelleStore")
+    return frontend.ok && html.includes('id="root"') && html.includes("YsabelleStore")
       ? "complete"
       : "partial";
   } catch {
