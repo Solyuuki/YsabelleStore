@@ -1150,7 +1150,7 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                 </div>
                 {favoriteProducts.length > favoritesPageSize ? (
                   <AppPagination
-                    className="customer-account-favorites-pagination"
+                    className="customer-account-history-pagination customer-account-favorites-pagination"
                     itemLabel="favorites"
                     onPageChange={setFavoritesPage}
                     page={favoritesPage}
