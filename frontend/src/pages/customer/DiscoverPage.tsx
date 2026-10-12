@@ -839,274 +839,278 @@ export function DiscoverPage({
           const location = first<HTMLElement>(".story-location");
           if (location) {
             if (isAboutExperience) {
-              const forecastKicker = location.querySelector<HTMLElement>(".story-kicker");
-              const forecastHeadline = Array.from(
-                location.querySelectorAll<HTMLElement>(".story-forecast__header .story-mask__line")
-              );
-              const forecastLead = location.querySelector<HTMLElement>(".story-forecast__lead");
-              const forecastVisual = location.querySelector<HTMLElement>(".story-forecast__visual");
-              const forecastModel = location.querySelector<HTMLElement>(".story-forecast__model");
-              const locationHandoff = location.querySelector<HTMLElement>(
-                ".story-location__handoff"
-              );
-              const forecastDemoTopbar = location.querySelector<HTMLElement>(
-                ".about-forecast-demo__topbar"
-              );
-              const forecastDemoMetrics = Array.from(
-                location.querySelectorAll<HTMLElement>(".about-forecast-demo__metrics article")
-              );
-              const forecastDemoChart = location.querySelector<HTMLElement>(
-                ".about-forecast-demo__chart-panel"
-              );
-              const forecastActualLine = location.querySelector<SVGPathElement>(
-                ".about-forecast-demo__actual-line"
-              );
-              const forecastProjectedLine = location.querySelector<SVGPathElement>(
-                ".about-forecast-demo__forecast-line"
-              );
-              const forecastConfidence = location.querySelector<SVGPathElement>(
-                ".about-forecast-demo__confidence"
-              );
-              const forecastDivider = location.querySelector<SVGLineElement>(
-                ".about-forecast-demo__forecast-divider"
-              );
-              const forecastDividerLabel = location.querySelector<SVGTextElement>(
-                ".about-forecast-demo__forecast-label"
-              );
-              const forecastObservedPoints = Array.from(
-                location.querySelectorAll<SVGCircleElement>(
-                  ".about-forecast-demo__points circle:not(.is-forecast)"
-                )
-              );
-              const forecastProjectedPoints = Array.from(
-                location.querySelectorAll<SVGCircleElement>(
-                  ".about-forecast-demo__points circle.is-forecast"
-                )
-              );
-              const forecastRecommendation = location.querySelector<HTMLElement>(
-                ".about-forecast-demo__recommendation"
-              );
-              const forecastRecommendationItems = Array.from(
-                location.querySelectorAll<HTMLElement>(
-                  ".about-forecast-demo__product, .about-forecast-demo__restock-value, .about-forecast-demo__recommendation-grid > div"
-                )
-              );
+              // Mobile About previews render their complete chart immediately.
+              // Desktop/tablet keep the pinned progressive forecast reveal.
+              if (!mobile) {
+                const forecastKicker = location.querySelector<HTMLElement>(".story-kicker");
+                const forecastHeadline = Array.from(
+                  location.querySelectorAll<HTMLElement>(".story-forecast__header .story-mask__line")
+                );
+                const forecastLead = location.querySelector<HTMLElement>(".story-forecast__lead");
+                const forecastVisual = location.querySelector<HTMLElement>(".story-forecast__visual");
+                const forecastModel = location.querySelector<HTMLElement>(".story-forecast__model");
+                const locationHandoff = location.querySelector<HTMLElement>(
+                  ".story-location__handoff"
+                );
+                const forecastDemoTopbar = location.querySelector<HTMLElement>(
+                  ".about-forecast-demo__topbar"
+                );
+                const forecastDemoMetrics = Array.from(
+                  location.querySelectorAll<HTMLElement>(".about-forecast-demo__metrics article")
+                );
+                const forecastDemoChart = location.querySelector<HTMLElement>(
+                  ".about-forecast-demo__chart-panel"
+                );
+                const forecastActualLine = location.querySelector<SVGPathElement>(
+                  ".about-forecast-demo__actual-line"
+                );
+                const forecastProjectedLine = location.querySelector<SVGPathElement>(
+                  ".about-forecast-demo__forecast-line"
+                );
+                const forecastConfidence = location.querySelector<SVGPathElement>(
+                  ".about-forecast-demo__confidence"
+                );
+                const forecastDivider = location.querySelector<SVGLineElement>(
+                  ".about-forecast-demo__forecast-divider"
+                );
+                const forecastDividerLabel = location.querySelector<SVGTextElement>(
+                  ".about-forecast-demo__forecast-label"
+                );
+                const forecastObservedPoints = Array.from(
+                  location.querySelectorAll<SVGCircleElement>(
+                    ".about-forecast-demo__points circle:not(.is-forecast)"
+                  )
+                );
+                const forecastProjectedPoints = Array.from(
+                  location.querySelectorAll<SVGCircleElement>(
+                    ".about-forecast-demo__points circle.is-forecast"
+                  )
+                );
+                const forecastRecommendation = location.querySelector<HTMLElement>(
+                  ".about-forecast-demo__recommendation"
+                );
+                const forecastRecommendationItems = Array.from(
+                  location.querySelectorAll<HTMLElement>(
+                    ".about-forecast-demo__product, .about-forecast-demo__restock-value, .about-forecast-demo__recommendation-grid > div"
+                  )
+                );
 
-              if (
-                forecastKicker &&
-                forecastHeadline.length &&
-                forecastLead &&
-                forecastVisual &&
-                forecastModel &&
-                locationHandoff &&
-                forecastDemoTopbar &&
-                forecastDemoMetrics.length &&
-                forecastDemoChart &&
-                forecastActualLine &&
-                forecastProjectedLine &&
-                forecastConfidence &&
-                forecastDivider &&
-                forecastDividerLabel &&
-                forecastObservedPoints.length &&
-                forecastProjectedPoints.length &&
-                forecastRecommendation &&
-                forecastRecommendationItems.length
-              ) {
-                gsap.set(forecastKicker, { autoAlpha: 0, y: 12 });
-                gsap.set(forecastHeadline, { autoAlpha: 0, y: 22 });
-                gsap.set(forecastLead, { autoAlpha: 0, y: 14 });
-                gsap.set(forecastVisual, { autoAlpha: 0, scale: 0.985, y: 26 });
-                gsap.set(forecastModel, { autoAlpha: 0, x: -14 });
-                gsap.set(locationHandoff, { autoAlpha: 0 });
-                gsap.set(forecastDemoTopbar, { autoAlpha: 0, y: 8 });
-                gsap.set(forecastDemoMetrics, { autoAlpha: 0, y: 12 });
-                gsap.set(forecastDemoChart, { autoAlpha: 0, y: 12 });
-                gsap.set([forecastActualLine, forecastProjectedLine], {
-                  strokeDasharray: 1,
-                  strokeDashoffset: 1
-                });
-                gsap.set(forecastConfidence, { autoAlpha: 0 });
-                gsap.set([forecastDivider, forecastDividerLabel], { autoAlpha: 0 });
-                gsap.set([...forecastObservedPoints, ...forecastProjectedPoints], {
-                  autoAlpha: 0,
-                  scale: 0.72,
-                  transformOrigin: "center center"
-                });
-                gsap.set(forecastRecommendation, { autoAlpha: 0, x: 18 });
-                gsap.set(forecastRecommendationItems, { autoAlpha: 0, y: 8 });
+                if (
+                  forecastKicker &&
+                  forecastHeadline.length &&
+                  forecastLead &&
+                  forecastVisual &&
+                  forecastModel &&
+                  locationHandoff &&
+                  forecastDemoTopbar &&
+                  forecastDemoMetrics.length &&
+                  forecastDemoChart &&
+                  forecastActualLine &&
+                  forecastProjectedLine &&
+                  forecastConfidence &&
+                  forecastDivider &&
+                  forecastDividerLabel &&
+                  forecastObservedPoints.length &&
+                  forecastProjectedPoints.length &&
+                  forecastRecommendation &&
+                  forecastRecommendationItems.length
+                ) {
+                  gsap.set(forecastKicker, { autoAlpha: 0, y: 12 });
+                  gsap.set(forecastHeadline, { autoAlpha: 0, y: 22 });
+                  gsap.set(forecastLead, { autoAlpha: 0, y: 14 });
+                  gsap.set(forecastVisual, { autoAlpha: 0, scale: 0.985, y: 26 });
+                  gsap.set(forecastModel, { autoAlpha: 0, x: -14 });
+                  gsap.set(locationHandoff, { autoAlpha: 0 });
+                  gsap.set(forecastDemoTopbar, { autoAlpha: 0, y: 8 });
+                  gsap.set(forecastDemoMetrics, { autoAlpha: 0, y: 12 });
+                  gsap.set(forecastDemoChart, { autoAlpha: 0, y: 12 });
+                  gsap.set([forecastActualLine, forecastProjectedLine], {
+                    strokeDasharray: 1,
+                    strokeDashoffset: 1
+                  });
+                  gsap.set(forecastConfidence, { autoAlpha: 0 });
+                  gsap.set([forecastDivider, forecastDividerLabel], { autoAlpha: 0 });
+                  gsap.set([...forecastObservedPoints, ...forecastProjectedPoints], {
+                    autoAlpha: 0,
+                    scale: 0.72,
+                    transformOrigin: "center center"
+                  });
+                  gsap.set(forecastRecommendation, { autoAlpha: 0, x: 18 });
+                  gsap.set(forecastRecommendationItems, { autoAlpha: 0, y: 8 });
 
-                if (desktop) {
-                  const forecastPrelude = gsap.timeline({
-                    scrollTrigger: {
-                      trigger: location,
-                      start: "top 94%",
-                      end: "top top+=76",
-                      invalidateOnRefresh: true,
-                      scrub: 0.2
-                    }
+                  if (desktop) {
+                    const forecastPrelude = gsap.timeline({
+                      scrollTrigger: {
+                        trigger: location,
+                        start: "top 94%",
+                        end: "top top+=76",
+                        invalidateOnRefresh: true,
+                        scrub: 0.2
+                      }
+                    });
+
+                    forecastPrelude
+                      .to(forecastKicker, { autoAlpha: 0.72, duration: 1, ease: "none", y: 3 }, 0)
+                      .to(forecastHeadline, { autoAlpha: 0.66, duration: 1, ease: "none", y: 7 }, 0)
+                      .to(forecastLead, { autoAlpha: 0.58, duration: 1, ease: "none", y: 5 }, 0)
+                      .to(
+                        forecastVisual,
+                        { autoAlpha: 0.7, duration: 1, ease: "none", scale: 0.994, y: 8 },
+                        0
+                      );
+                  }
+
+                  const forecastTimeline = gsap.timeline({
+                    scrollTrigger: desktop
+                      ? {
+                          trigger: location,
+                          start: "top top+=76",
+                          end: () => `+=${Math.max(1500, Math.round(window.innerHeight * 1.85))}`,
+                          pin: location,
+                          pinSpacing: true,
+                          anticipatePin: 1,
+                          invalidateOnRefresh: true,
+                          scrub: 0.32
+                        }
+                      : {
+                          trigger: location,
+                          start: mobile ? "top 90%" : "top 84%",
+                          end: "bottom 14%",
+                          invalidateOnRefresh: true,
+                          scrub: tablet ? 0.22 : 0.16
+                        }
                   });
 
-                  forecastPrelude
-                    .to(forecastKicker, { autoAlpha: 0.72, duration: 1, ease: "none", y: 3 }, 0)
-                    .to(forecastHeadline, { autoAlpha: 0.66, duration: 1, ease: "none", y: 7 }, 0)
-                    .to(forecastLead, { autoAlpha: 0.58, duration: 1, ease: "none", y: 5 }, 0)
-                    .to(
+                  forecastTimeline
+                    .fromTo(
+                      forecastKicker,
+                      { autoAlpha: desktop ? 0.72 : 0, y: desktop ? 3 : 12 },
+                      { autoAlpha: 1, duration: 0.08, ease: "power2.out", y: 0 },
+                      0.02
+                    )
+                    .fromTo(
+                      forecastHeadline,
+                      { autoAlpha: desktop ? 0.66 : 0, y: desktop ? 7 : 22 },
+                      {
+                        autoAlpha: 1,
+                        duration: 0.12,
+                        ease: "power2.out",
+                        stagger: 0.025,
+                        y: 0
+                      },
+                      0.08
+                    )
+                    .fromTo(
+                      forecastLead,
+                      { autoAlpha: desktop ? 0.58 : 0, y: desktop ? 5 : 14 },
+                      { autoAlpha: 1, duration: 0.1, ease: "power1.out", y: 0 },
+                      0.18
+                    )
+                    .fromTo(
                       forecastVisual,
-                      { autoAlpha: 0.7, duration: 1, ease: "none", scale: 0.994, y: 8 },
-                      0
-                    );
+                      {
+                        autoAlpha: desktop ? 0.7 : 0,
+                        scale: desktop ? 0.994 : 0.985,
+                        y: desktop ? 8 : 26
+                      },
+                      {
+                        autoAlpha: 1,
+                        duration: 0.12,
+                        ease: "power2.out",
+                        scale: 1,
+                        y: 0
+                      },
+                      0.2
+                    )
+                    .to(
+                      forecastDemoTopbar,
+                      { autoAlpha: 1, duration: 0.06, ease: "power2.out", y: 0 },
+                      0.23
+                    )
+                    .to(
+                      forecastDemoMetrics,
+                      {
+                        autoAlpha: 1,
+                        duration: 0.07,
+                        ease: "power2.out",
+                        stagger: 0.018,
+                        y: 0
+                      },
+                      0.26
+                    )
+                    .to(
+                      forecastDemoChart,
+                      { autoAlpha: 1, duration: 0.07, ease: "power2.out", y: 0 },
+                      0.29
+                    )
+                    .to(
+                      forecastActualLine,
+                      { duration: 0.1, ease: "none", strokeDashoffset: 0 },
+                      0.32
+                    )
+                    .to(
+                      forecastObservedPoints,
+                      {
+                        autoAlpha: 1,
+                        duration: 0.055,
+                        ease: "back.out(1.5)",
+                        scale: 1,
+                        stagger: 0.014
+                      },
+                      0.31
+                    )
+                    .to(
+                      [forecastDivider, forecastDividerLabel],
+                      { autoAlpha: 1, duration: 0.05, ease: "power1.out" },
+                      0.39
+                    )
+                    .to(
+                      forecastConfidence,
+                      { autoAlpha: 1, duration: 0.065, ease: "power1.out" },
+                      0.41
+                    )
+                    .to(
+                      forecastProjectedLine,
+                      { duration: 0.1, ease: "none", strokeDashoffset: 0 },
+                      0.38
+                    )
+                    .to(
+                      forecastProjectedPoints,
+                      {
+                        autoAlpha: 1,
+                        duration: 0.055,
+                        ease: "back.out(1.5)",
+                        scale: 1,
+                        stagger: 0.012
+                      },
+                      0.48
+                    )
+                    .to(
+                      forecastRecommendation,
+                      { autoAlpha: 1, duration: 0.09, ease: "power2.out", x: 0 },
+                      0.36
+                    )
+                    .to(
+                      forecastRecommendationItems,
+                      {
+                        autoAlpha: 1,
+                        duration: 0.07,
+                        ease: "power2.out",
+                        stagger: 0.014,
+                        y: 0
+                      },
+                      0.43
+                    )
+                    .to(
+                      forecastModel,
+                      { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
+                      0.55
+                    )
+                    .addLabel("forecast-complete", 0.62)
+                    .to(locationHandoff, { autoAlpha: 0.82, duration: 0.06, ease: "none" }, 0.9);
+
+                  settle(forecastTimeline, desktop ? 0.64 : 0.92);
                 }
-
-                const forecastTimeline = gsap.timeline({
-                  scrollTrigger: desktop
-                    ? {
-                        trigger: location,
-                        start: "top top+=76",
-                        end: () => `+=${Math.max(1500, Math.round(window.innerHeight * 1.85))}`,
-                        pin: location,
-                        pinSpacing: true,
-                        anticipatePin: 1,
-                        invalidateOnRefresh: true,
-                        scrub: 0.32
-                      }
-                    : {
-                        trigger: location,
-                        start: mobile ? "top 90%" : "top 84%",
-                        end: "bottom 14%",
-                        invalidateOnRefresh: true,
-                        scrub: tablet ? 0.22 : 0.16
-                      }
-                });
-
-                forecastTimeline
-                  .fromTo(
-                    forecastKicker,
-                    { autoAlpha: desktop ? 0.72 : 0, y: desktop ? 3 : 12 },
-                    { autoAlpha: 1, duration: 0.08, ease: "power2.out", y: 0 },
-                    0.02
-                  )
-                  .fromTo(
-                    forecastHeadline,
-                    { autoAlpha: desktop ? 0.66 : 0, y: desktop ? 7 : 22 },
-                    {
-                      autoAlpha: 1,
-                      duration: 0.12,
-                      ease: "power2.out",
-                      stagger: 0.025,
-                      y: 0
-                    },
-                    0.08
-                  )
-                  .fromTo(
-                    forecastLead,
-                    { autoAlpha: desktop ? 0.58 : 0, y: desktop ? 5 : 14 },
-                    { autoAlpha: 1, duration: 0.1, ease: "power1.out", y: 0 },
-                    0.18
-                  )
-                  .fromTo(
-                    forecastVisual,
-                    {
-                      autoAlpha: desktop ? 0.7 : 0,
-                      scale: desktop ? 0.994 : 0.985,
-                      y: desktop ? 8 : 26
-                    },
-                    {
-                      autoAlpha: 1,
-                      duration: 0.12,
-                      ease: "power2.out",
-                      scale: 1,
-                      y: 0
-                    },
-                    0.2
-                  )
-                  .to(
-                    forecastDemoTopbar,
-                    { autoAlpha: 1, duration: 0.06, ease: "power2.out", y: 0 },
-                    0.23
-                  )
-                  .to(
-                    forecastDemoMetrics,
-                    {
-                      autoAlpha: 1,
-                      duration: 0.07,
-                      ease: "power2.out",
-                      stagger: 0.018,
-                      y: 0
-                    },
-                    0.26
-                  )
-                  .to(
-                    forecastDemoChart,
-                    { autoAlpha: 1, duration: 0.07, ease: "power2.out", y: 0 },
-                    0.29
-                  )
-                  .to(
-                    forecastActualLine,
-                    { duration: 0.1, ease: "none", strokeDashoffset: 0 },
-                    0.32
-                  )
-                  .to(
-                    forecastObservedPoints,
-                    {
-                      autoAlpha: 1,
-                      duration: 0.055,
-                      ease: "back.out(1.5)",
-                      scale: 1,
-                      stagger: 0.014
-                    },
-                    0.31
-                  )
-                  .to(
-                    [forecastDivider, forecastDividerLabel],
-                    { autoAlpha: 1, duration: 0.05, ease: "power1.out" },
-                    0.39
-                  )
-                  .to(
-                    forecastConfidence,
-                    { autoAlpha: 1, duration: 0.065, ease: "power1.out" },
-                    0.41
-                  )
-                  .to(
-                    forecastProjectedLine,
-                    { duration: 0.1, ease: "none", strokeDashoffset: 0 },
-                    0.38
-                  )
-                  .to(
-                    forecastProjectedPoints,
-                    {
-                      autoAlpha: 1,
-                      duration: 0.055,
-                      ease: "back.out(1.5)",
-                      scale: 1,
-                      stagger: 0.012
-                    },
-                    0.48
-                  )
-                  .to(
-                    forecastRecommendation,
-                    { autoAlpha: 1, duration: 0.09, ease: "power2.out", x: 0 },
-                    0.36
-                  )
-                  .to(
-                    forecastRecommendationItems,
-                    {
-                      autoAlpha: 1,
-                      duration: 0.07,
-                      ease: "power2.out",
-                      stagger: 0.014,
-                      y: 0
-                    },
-                    0.43
-                  )
-                  .to(
-                    forecastModel,
-                    { autoAlpha: 1, duration: 0.07, ease: "power2.out", x: 0 },
-                    0.55
-                  )
-                  .addLabel("forecast-complete", 0.62)
-                  .to(locationHandoff, { autoAlpha: 0.82, duration: 0.06, ease: "none" }, 0.9);
-
-                settle(forecastTimeline, desktop ? 0.64 : 0.92);
               }
             } else {
               const realMap = location.querySelector<HTMLElement>(".story-real-map");
