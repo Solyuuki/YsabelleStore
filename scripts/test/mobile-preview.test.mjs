@@ -162,3 +162,21 @@ test("preview route selection restores from hash, highlights the active view and
   events.get("hashchange")();
   assert.equal(preview.src, "/?preview=welcome");
 });
+
+test("store entrance fits short landscape phone viewports without scroll clipping", () => {
+  const css = read("frontend/src/styles/customer-home-premium.css");
+  const shortLandscape = css.split(
+    "@media (max-width: 950px) and (max-height: 440px)"
+  )[1]?.split("/* Home becomes shopping-first")[0];
+
+  assert.ok(shortLandscape, "Missing short-height responsive rule");
+  assert.match(shortLandscape, /\.store-entrance\s*\{[^}]*height: 100svh;/);
+  assert.match(
+    shortLandscape,
+    /\.store-entrance__content\s*\{[^}]*height: 100svh;[^}]*min-height: 0;/
+  );
+  assert.match(shortLandscape, /\.store-entrance__brand-mark\s*\{[^}]*31svh/);
+  assert.match(shortLandscape, /\.store-entrance h1\s*\{[^}]*7\.5svh/);
+  assert.match(shortLandscape, /\.store-entrance__enter\s*\{[^}]*min-height: 40px;/);
+  assert.doesNotMatch(shortLandscape, /overflow:\s*hidden/);
+});
