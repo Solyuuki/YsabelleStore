@@ -83,6 +83,41 @@
       const rotateButton = document.getElementById("rotate");
       let landscape = false;
 
+      // Google OAuth completes in the real browser. On success its verified
+      // returnPath reopens this QA shell with the selected device and account
+      // route, instead of leaving the user on a desktop-width /account page.
+      const authReturn = new URLSearchParams(window.location.search || "");
+      if (
+        authReturn.get("authPreviewPort") === "5174" &&
+        window.location.port === "5173" &&
+        ["localhost", "127.0.0.1"].includes(window.location.hostname)
+      ) {
+        const originalPreview = new URL(window.location.href);
+        originalPreview.port = "5174";
+        originalPreview.searchParams.delete("authPreviewPort");
+        window.location.replace(originalPreview.toString());
+      }
+
+      const allowedDevicePresets = [
+        "320,640", "360,800", "375,812", "390,844",
+        "412,915", "430,932", "768,1024"
+      ];
+      const restoredDevice = authReturn.get("authDevice");
+      if (restoredDevice && allowedDevicePresets.includes(restoredDevice)) {
+        selector.value = restoredDevice;
+        landscape = restoredDevice === "768,1024" && authReturn.get("authLandscape") === "1";
+      }
+
+      function restoredAuthRoute() {
+        const requested = authReturn.get("authRoute");
+        if (!requested || !requested.startsWith("/") || requested.startsWith("//")) return null;
+        if (requested.includes("\\") || /[\u0000-\u001f]/.test(requested)) return null;
+        const destination = new URL(requested, window.location.origin);
+        if (destination.origin !== window.location.origin) return null;
+        if (destination.pathname === "/mobile-preview.html") return null;
+        return destination.pathname + destination.search + destination.hash;
+      }
+
       // Explicit preset capability, not a width guess: tablet can rotate,
       // phone is always rendered upright (even after switching from tablet).
       function canRotate() {
@@ -151,7 +186,17 @@
           const view = button.dataset.view;
           // Reload even when reselecting Welcome after Get Started changed the iframe route.
           selectView(view, true);
-          if (window.location.hash !== "#" + view) {
+          if (authReturn.has("authRoute") && window.history?.replaceState) {
+            const cleanedUrl = new URL(window.location.href);
+            ["authRoute", "authDevice", "authLandscape", "authPreviewPort"].forEach((key) =>
+              cleanedUrl.searchParams.delete(key)
+            );
+            cleanedUrl.hash = view;
+            window.history.replaceState(null, "", cleanedUrl.pathname + cleanedUrl.search + cleanedUrl.hash);
+            ["authRoute", "authDevice", "authLandscape", "authPreviewPort"].forEach((key) =>
+              authReturn.delete(key)
+            );
+          } else if (window.location.hash !== "#" + view) {
             window.location.hash = view;
           }
         });
@@ -160,7 +205,14 @@
         selectView(window.location.hash.slice(1));
       });
       window.addEventListener("resize", draw);
-      selectView(window.location.hash.slice(1));
+      const landingRoute = restoredAuthRoute();
+      if (landingRoute) {
+        selectView("storefront");
+        preview.src = landingRoute;
+        fullPageLink.href = landingRoute;
+      } else {
+        selectView(window.location.hash.slice(1));
+      }
       draw();
     </script>
   </body>
