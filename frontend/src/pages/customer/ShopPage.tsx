@@ -349,7 +349,11 @@ export function ShopPage({
                 value={search}
               />
             </label>
-            <label className={`customer-select customer-select--availability${availabilityParam === "all" ? "" : " is-active"}`}>
+            <label
+              className={`customer-select customer-select--availability${
+                availabilityParam === "all" ? "" : " is-active"
+              }`}
+            >
               <span className="sr-only">Filter products by availability</span>
               <span aria-hidden="true" className="customer-select__mobile-glyph">
                 <SlidersHorizontal size={18} />
@@ -360,7 +364,13 @@ export function ShopPage({
               <select
                 aria-label="Filter products by availability"
                 onChange={(event) => applyAvailability(event.target.value as AvailabilityFilter)}
-                title={availabilityParam === "all" ? "All availability" : availabilityParam === "in-stock" ? "In stock" : "Out of stock"}
+                title={
+                  availabilityParam === "all"
+                    ? "All availability"
+                    : availabilityParam === "in-stock"
+                      ? "In stock"
+                      : "Out of stock"
+                }
                 value={availabilityParam}
               >
                 <option value="all">All availability</option>
