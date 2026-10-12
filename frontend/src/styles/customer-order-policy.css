@@ -1,0 +1,131 @@
+/* Storefront order policy disclosure and checkout acknowledgement.
+   Dark/light treatment is scoped to customer pages, never the retail installer. */
+.customer-app .customer-order-policy {
+  min-width: 0;
+  margin-block: 0.9rem;
+  border: 1px solid #c2c9e2;
+  border-radius: 0.85rem;
+  background: #f1f2ff;
+  color: #293450;
+}
+
+.customer-app .customer-order-policy__trigger {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.8rem;
+  color: #3d3999;
+  cursor: pointer;
+  font-size: 0.79rem;
+  font-weight: 750;
+  line-height: 1.4;
+  list-style: none;
+}
+
+.customer-app .customer-order-policy__trigger::-webkit-details-marker {
+  display: none;
+}
+
+.customer-app .customer-order-policy__trigger > svg:first-child {
+  flex: none;
+}
+
+.customer-app .customer-order-policy__chevron {
+  flex: none;
+  margin-left: auto;
+  transition: transform 160ms ease;
+}
+
+.customer-app .customer-order-policy[open] .customer-order-policy__chevron {
+  transform: rotate(180deg);
+}
+
+.customer-app .customer-order-policy__trigger:focus-visible {
+  border-radius: 0.75rem;
+  outline: 3px solid #554ac5;
+  outline-offset: 3px;
+}
+
+.customer-app .customer-order-policy__content {
+  padding: 0.1rem 0.85rem 0.9rem;
+  border-top: 1px solid #cdd2e6;
+}
+
+.customer-app .customer-order-policy__content p {
+  margin: 0.65rem 0 0;
+  color: #45516a;
+  font-size: 0.77rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.customer-app .customer-order-agreement {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  margin-top: 0.85rem;
+  padding: 0.85rem;
+  border: 1px solid #c2c9e2;
+  border-radius: 0.85rem;
+  background: #f5f5ff;
+  cursor: pointer;
+}
+
+.customer-app .customer-order-agreement__checkbox {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: none;
+  margin: 0.12rem 0 0;
+  accent-color: #6255c6;
+  cursor: pointer;
+}
+
+.customer-app .customer-order-agreement__checkbox:focus-visible {
+  outline: 3px solid #554ac5;
+  outline-offset: 3px;
+}
+
+.customer-app .customer-order-agreement__text {
+  min-width: 0;
+  color: #2e3951;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+:root.dark .customer-app .customer-order-policy,
+:root.dark .customer-app .customer-order-agreement {
+  border-color: #7386ae;
+  background: #22324b;
+  color: #eff2ff;
+}
+
+:root.dark .customer-app .customer-order-policy__trigger {
+  color: #d2c7ff;
+}
+
+:root.dark .customer-app .customer-order-policy__content {
+  border-color: #596e91;
+}
+
+:root.dark .customer-app .customer-order-policy__content p,
+:root.dark .customer-app .customer-order-agreement__text {
+  color: #dce5f5;
+}
+
+:root.dark .customer-app .customer-order-policy__trigger:focus-visible,
+:root.dark .customer-app .customer-order-agreement__checkbox:focus-visible {
+  outline-color: #c6b7ff;
+}
+
+:root.dark .customer-app .customer-order-agreement__checkbox {
+  accent-color: #aaa0f3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-app .customer-order-policy__chevron {
+    transition: none;
+  }
+}
