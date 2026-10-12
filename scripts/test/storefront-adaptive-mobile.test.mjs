@@ -180,3 +180,35 @@ test("mobile sizing primitives and floating sheet are centralized for browser QA
   assert.match(qaScript, /getByRole\("dialog"\)/);
   assert.match(qaScript, /dockTop - 6/);
 });
+
+test("floating More geometry follows the measured dock height, not a fixed pixel guess", () => {
+  const nav = read("frontend/src/components/customer/CustomerMobileNav.tsx");
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+
+  assert.match(nav, /const dockRef = useRef<HTMLElement>\(null\)/);
+  assert.match(nav, /ref=\{dockRef\}/);
+  assert.match(nav, /getComputedStyle\(dock\)\.position !== "fixed"/);
+  assert.match(nav, /window\.innerHeight - dock\.getBoundingClientRect\(\)\.top/);
+  assert.match(nav, /new ResizeObserver\(measure\)/);
+  assert.match(nav, /window\.addEventListener\("resize", measure\)/);
+  assert.match(nav, /--store-mobile-measured-dock-height/);
+
+  const sheetCss = css.split(".customer-mobile-more__sheet {")[1]?.split(
+    "/* Floating More panel keeps physical separation"
+  )[0];
+  assert.ok(sheetCss);
+  assert.match(sheetCss, /var\(--store-mobile-measured-dock-height,/);
+  assert.match(sheetCss, /var\(--store-mobile-floating-gap, 8px\)/);
+  assert.doesNotMatch(sheetCss, /border-bottom: 0/);
+});
+
+test("mobile browser QA bypasses first-visit splash in isolation and waits for route content", () => {
+  const qaScript = read("tools/mobile-qa/run.mjs");
+
+  assert.match(qaScript, /await context\.addInitScript\(\(\) => \{/);
+  assert.match(qaScript, /window\.sessionStorage\.setItem\("ysabelle-store-entrance-entered", "true"\)/);
+  assert.match(qaScript, /\.customer-app\.ys-material-canvas/);
+  assert.match(qaScript, /route === "\/" \? "\.customer-home" : "\.customer-shop-page"/);
+  assert.match(qaScript, /panelBottom=/);
+  assert.match(qaScript, /dockTop=/);
+});
