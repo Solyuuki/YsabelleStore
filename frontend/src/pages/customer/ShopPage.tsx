@@ -308,6 +308,7 @@ export function ShopPage({
             className={!categorySlug ? "is-active" : ""}
             href={buildShopUrl({ page: 1 }, null)}
             navigate={navigate}
+            onClick={() => setCategoriesExpanded(false)}
             style={{ "--shop-navigation-index": 0 } as CSSProperties}
           >
             All categories
@@ -318,6 +319,7 @@ export function ShopPage({
               href={buildShopUrl({ page: 1 }, category.slug)}
               key={category.id}
               navigate={navigate}
+              onClick={() => setCategoriesExpanded(false)}
               style={{ "--shop-navigation-index": index + 1 } as CSSProperties}
             >
               <span>{category.name}</span>
