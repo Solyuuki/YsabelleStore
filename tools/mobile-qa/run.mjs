@@ -316,6 +316,61 @@ async function checkShopAvailability(page, viewport) {
   return issues;
 }
 
+async function checkCheckoutDarkBackground(page, viewport) {
+  // Check the actual computed dark canvas without requiring a real customer
+  // checkout session, creating an order, or changing the account's theme.
+  const appearance = await page.evaluate(() => {
+    const app = document.querySelector(".customer-app");
+    if (!app) return null;
+
+    const root = document.documentElement;
+    const wasDark = root.classList.contains("dark");
+    const fixture = document.createElement("section");
+    fixture.className = "customer-page customer-checkout-page";
+    fixture.setAttribute("aria-hidden", "true");
+    fixture.style.cssText =
+      "position:absolute;top:0;left:0;width:100%;min-height:1200px;visibility:hidden;pointer-events:none;z-index:-1;";
+
+    try {
+      root.classList.add("dark");
+      app.appendChild(fixture);
+      const dark = getComputedStyle(fixture);
+      const background = {
+        color: dark.backgroundColor,
+        image: dark.backgroundImage,
+        sizes: dark.backgroundSize.split(",").map((part) => part.trim()),
+        repeat: dark.backgroundRepeat,
+        position: dark.backgroundPosition
+      };
+
+      root.classList.remove("dark");
+      const lightImage = getComputedStyle(fixture).backgroundImage;
+      return { background, lightImage };
+    } finally {
+      fixture.remove();
+      root.classList.toggle("dark", wasDark);
+    }
+  });
+
+  if (!appearance) return ["Checkout dark background geometry could not be measured"];
+  const { background, lightImage } = appearance;
+  const issues = [];
+  if (
+    background.color !== "rgb(16, 24, 39)" ||
+    background.image === "none" ||
+    background.image.includes("ys-dark-midnight-velvet") ||
+    !background.image.includes("linear-gradient") ||
+    background.sizes.some((size) => size !== "auto") ||
+    background.repeat.split(",").some((repeat) => repeat.trim() !== "no-repeat") ||
+    lightImage === background.image
+  ) {
+    issues.push(
+      `Checkout still uses a stretched or mismatched dark background at ${viewport.width}px: ${JSON.stringify(background)}`
+    );
+  }
+  return issues;
+}
+
 async function checkCheckoutContentDensity(page, viewport) {
   // Measure responsive Checkout CSS with a hidden, realistic form fixture.
   // The suite can run as a guest: no checkout attempt or payment state changes.
@@ -1088,6 +1143,9 @@ async function run() {
             fullPage: false
           });
 
+          if (route === "/shop") {
+            issues.push(...(await checkCheckoutDarkBackground(page, viewport)));
+          }
           if (route === "/shop" && viewport.width <= 430 && viewport.height > viewport.width) {
             issues.push(...(await checkCheckoutPolicySpacing(page, viewport)));
             issues.push(...(await checkCheckoutContentDensity(page, viewport)));
