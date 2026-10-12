@@ -91,7 +91,10 @@ export function LogoutConfirmationModal({
             <TriangleAlert className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <h2 id="logout-confirmation-title" className="logout-confirmation-title type-h4 text-slate-950">
+            <h2
+              id="logout-confirmation-title"
+              className="logout-confirmation-title type-h4 text-slate-950"
+            >
               End current session?
             </h2>
             <p className="logout-confirmation-description type-body-sm mt-2.5 text-slate-600">
