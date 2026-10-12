@@ -158,6 +158,13 @@ body .customer-order-policy__dialog {
   overflow-wrap: anywhere;
 }
 
+/* Long cancellation terms use aligned edges without spreading the last line. */
+.customer-order-policy__content p + p {
+  text-align: justify;
+  text-align-last: left;
+  hyphens: auto;
+}
+
 .customer-order-policy__footer {
   display: flex;
   justify-content: flex-end;
