@@ -1,5 +1,6 @@
 import {
   CheckCircle2,
+  ChevronDown,
   CircleHelp,
   Clock3,
   Headphones,
@@ -383,22 +384,30 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
                   </label>
                   <label>
                     <span>Concern type</span>
-                    <select
-                      onChange={(event) => {
-                        const nextCategory = event.target.value as CustomerSupportCategory;
-                        setCategory(nextCategory);
-                        if (!ORDER_RELATED_CATEGORIES.has(nextCategory)) {
-                          setOrderNumber("");
-                        }
-                      }}
-                      value={category}
-                    >
-                      {CATEGORY_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    <span className="customer-support-select-wrap">
+                      <select
+                        onChange={(event) => {
+                          const nextCategory = event.target.value as CustomerSupportCategory;
+                          setCategory(nextCategory);
+                          if (!ORDER_RELATED_CATEGORIES.has(nextCategory)) {
+                            setOrderNumber("");
+                          }
+                        }}
+                        value={category}
+                      >
+                        {CATEGORY_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown
+                        aria-hidden="true"
+                        className="customer-support-select-chevron"
+                        size={18}
+                        strokeWidth={2.25}
+                      />
+                    </span>
                   </label>
                 </div>
 
