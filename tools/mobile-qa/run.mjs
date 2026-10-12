@@ -396,13 +396,17 @@ async function checkActiveDeliveryDarkContrast(page, viewport) {
     if (!app) return null;
     const root = document.documentElement;
     const wasDark = root.classList.contains("dark");
-    const fixture = document.createElement("div");
-    fixture.className = "customer-account-page-v2";
+    const fixture = document.createElement("section");
+    // Match the actual Account page and account-content descendants; the
+    // source rules target .customer-account-page-v2 #orders-panel, not Shop.
+    fixture.className = "customer-account-page-v2 ys-glass-flow-background";
     fixture.setAttribute("aria-hidden", "true");
     fixture.style.cssText =
       "position:absolute;left:0;top:0;max-width:100%;width:100%;visibility:hidden;pointer-events:none;";
     fixture.innerHTML = `
-      <section id="orders-panel" class="customer-account-section">
+      <div class="customer-account-layout-v2">
+        <main class="customer-account-content-v2">
+          <section id="orders-panel" role="tabpanel" class="customer-account-section ys-material-surface">
         <article class="customer-account-order-v2 customer-account-order-v2--active">
           <div class="customer-account-order-topline">
             <div><span>DEL-YS-2026</span><strong>YS-2026-ORDER</strong></div>
@@ -435,7 +439,9 @@ async function checkActiveDeliveryDarkContrast(page, viewport) {
             </ol>
           </div>
         </article>
-      </section>`;
+      </section>
+        </main>
+      </div>`;
     app.appendChild(fixture);
 
     const parseRGB = (value) => {
@@ -477,7 +483,12 @@ async function checkActiveDeliveryDarkContrast(page, viewport) {
         [".customer-delivery-stepper li:not(.is-complete) .customer-delivery-stepper__marker",
           css(".customer-delivery-stepper li:not(.is-complete) .customer-delivery-stepper__marker").backgroundColor]
       ];
+      const card = fixture.querySelector(".customer-account-order-v2--active");
+      const darkSelector =
+        ":root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active";
       return {
+        selectorMatches: !!card?.matches(darkSelector),
+        documentDark: root.classList.contains("dark"),
         panelBackground: panel.backgroundColor,
         tileBackground: overview.backgroundColor,
         checks: checks.map(([selector, background]) => ({
@@ -502,7 +513,17 @@ async function checkActiveDeliveryDarkContrast(page, viewport) {
   if (metrics.dark.panelBackground !== "rgb(34, 49, 73)" ||
       metrics.dark.tileBackground !== "rgb(43, 59, 85)" ||
       metrics.light.tileBackground === metrics.dark.tileBackground) {
-    issues.push("Delivery tracking dark summary tiles reverted to light-mode surfaces");
+    issues.push(
+      "Delivery tracking dark summary tiles reverted to light-mode surfaces: " +
+      JSON.stringify({
+        selectorMatches: metrics.dark.selectorMatches,
+        documentDark: metrics.dark.documentDark,
+        lightPanel: metrics.light.panelBackground,
+        darkPanel: metrics.dark.panelBackground,
+        lightTile: metrics.light.tileBackground,
+        darkTile: metrics.dark.tileBackground
+      })
+    );
   }
   // Existing light panels include gradient backgrounds. Sample their theme
   // change, but the targeted regression is the dark theme's solid surfaces.
