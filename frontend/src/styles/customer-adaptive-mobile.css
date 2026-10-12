@@ -2739,3 +2739,110 @@
     transition: none;
   }
 }
+
+/* About/Discover chrome-only dark mode: the story deliberately does not set
+   :root.dark. Theme its fixed dock and portaled menus through the existing
+   data-about-chrome-theme preference without altering chapter palettes. */
+@media (max-width: 1180px) {
+  :root[data-about-chrome-theme="dark"] .customer-app.ys-material-canvas > .customer-mobile-dock {
+    border-top-color: #435670;
+    background: rgb(20 31 49 / 96%);
+    box-shadow: 0 -8px 28px rgb(0 0 0 / 27%);
+    color-scheme: dark;
+  }
+
+  :root[data-about-chrome-theme="dark"] .customer-app .customer-mobile-dock__link,
+  :root[data-about-chrome-theme="dark"] .customer-app .customer-mobile-dock__more {
+    color: #d4e0f3;
+  }
+
+  :root[data-about-chrome-theme="dark"] .customer-app .customer-mobile-dock__link.is-active {
+    border-color: #8475c6;
+    background: #30355d;
+    color: #f2edff;
+  }
+
+  :root[data-about-chrome-theme="dark"] .customer-app .customer-mobile-dock__link:hover,
+  :root[data-about-chrome-theme="dark"] .customer-app .customer-mobile-dock__more:hover {
+    background: #32405d;
+    color: #fff;
+  }
+
+  :root[data-about-chrome-theme="dark"] .customer-app .customer-mobile-dock__link:focus-visible,
+  :root[data-about-chrome-theme="dark"] .customer-app .customer-mobile-dock__more:focus-visible {
+    outline: 3px solid #c4b9ff;
+    outline-offset: 2px;
+  }
+
+  :root[data-about-chrome-theme="dark"] .customer-app .customer-mobile-dock__more-icon {
+    border-color: #aa9ee9;
+    color: #fff;
+  }
+
+  /* Radix More sheet and Account popover are portaled under body, outside
+     .customer-app, so their selectors must also use the root theme marker. */
+  :root[data-about-chrome-theme="dark"] .customer-mobile-more__sheet,
+  :root[data-about-chrome-theme="dark"] .customer-mobile-account__popover {
+    border-color: #5e6c8d;
+    background: #1b293e;
+    color: #e9f0ff;
+    box-shadow: 0 20px 56px rgb(0 0 0 / 36%);
+    color-scheme: dark;
+  }
+
+  :root[data-about-chrome-theme="dark"] .customer-mobile-more__description,
+  :root[data-about-chrome-theme="dark"] .customer-mobile-account__identity-copy small {
+    color: #bdcbe4;
+  }
+
+  :root[data-about-chrome-theme="dark"] .customer-mobile-more__options > :is(a, button),
+  :root[data-about-chrome-theme="dark"] .customer-mobile-more__close {
+    border-color: #5b6d8d;
+    background: #273853;
+    color: #eaf0ff;
+  }
+
+  :root[data-about-chrome-theme="dark"] .customer-mobile-more__options > :is(a, button) svg {
+    color: #c4b8ff;
+  }
+
+  :root[data-about-chrome-theme="dark"] .customer-mobile-more__options > :is(a, button):hover,
+  :root[data-about-chrome-theme="dark"] .customer-mobile-more__close:hover {
+    background: #344865;
+    color: #fff;
+  }
+
+  :root[data-about-chrome-theme="dark"] .customer-mobile-account__identity {
+    border-bottom-color: #405473;
+  }
+
+  :root[data-about-chrome-theme="dark"] .customer-mobile-account__identity-copy strong {
+    color: #f0f5ff;
+  }
+
+  :root[data-about-chrome-theme="dark"] .customer-mobile-account__view {
+    color: #e2ebfc;
+  }
+
+  :root[data-about-chrome-theme="dark"] .customer-mobile-account__view:hover {
+    background: #304364;
+    color: #fff;
+  }
+
+  :root[data-about-chrome-theme="dark"] .customer-mobile-account__view[aria-current="page"] {
+    border-color: #a495e6;
+    color: #fff;
+  }
+
+  :root[data-about-chrome-theme="dark"] .customer-mobile-account__signout {
+    border-color: #85576c;
+    background: #432d45;
+    color: #ffdbe8;
+  }
+
+  :root[data-about-chrome-theme="dark"] .customer-mobile-account__signout:hover {
+    border-color: #b67392;
+    background: #56344d;
+    color: #fff;
+  }
+}
