@@ -1150,3 +1150,105 @@
     animation: none;
   }
 }
+
+/*
+ * Small-screen global search is an on-demand header action. Its anchored panel
+ * floats below the single-row header instead of claiming a second sticky row.
+ * Base UI's portaled autocomplete is independently capped and scrollable.
+ */
+.customer-mobile-search-trigger {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .customer-app .customer-header {
+    overflow: visible;
+  }
+
+  .customer-app .customer-header__bar {
+    min-height: 60px;
+    padding-block: 0.45rem;
+  }
+
+  .customer-app .customer-mobile-search-trigger {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .customer-app .customer-header__search-region {
+    position: absolute;
+    z-index: 95;
+    top: calc(100% + 2px);
+    right: 0;
+    left: 0;
+    display: none;
+    grid-column: auto;
+    grid-row: auto;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 8px;
+    border: 1px solid rgb(98 91 255 / 22%);
+    border-radius: 0.95rem;
+    background: #f8f9ff;
+    box-shadow: 0 12px 28px rgb(18 30 60 / 16%);
+  }
+
+  .customer-app .customer-header__search-region.is-mobile-open:not(.is-hidden) {
+    display: flex;
+  }
+
+  .customer-app .customer-header__search-region.is-hidden {
+    display: none;
+  }
+
+  .customer-global-search__positioner {
+    box-sizing: border-box;
+    max-width: calc(100vw - 24px);
+  }
+
+  .customer-global-search__popup {
+    box-sizing: border-box;
+    display: flex;
+    width: 100%;
+    height: auto;
+    max-height: min(19rem, calc(100dvh - 12rem));
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .customer-global-search__popup-header {
+    flex: none;
+  }
+
+  .customer-global-search__list,
+  .customer-global-search__recent-list {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    flex: 0 1 auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+
+  .customer-global-search__empty {
+    flex: none;
+  }
+
+  :root.dark .customer-app .customer-header__search-region {
+    border-color: #53658a;
+    background: #1c293f;
+    box-shadow: 0 14px 32px rgb(1 7 20 / 30%);
+  }
+}
+
+@media (max-width: 700px) and (max-height: 500px) and (orientation: landscape) {
+  .customer-global-search__popup {
+    max-height: min(13rem, calc(100dvh - 8rem));
+  }
+}
