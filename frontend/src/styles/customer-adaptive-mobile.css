@@ -2087,12 +2087,53 @@
   }
 
   .customer-app .customer-product-page .customer-related-products__rail-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 44px 44px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 0.75rem;
+    row-gap: 0.55rem;
+    align-items: center;
     min-width: 0;
     max-width: 100%;
     margin-top: 1rem;
   }
 
+  /* The mobile arrows live in a dedicated navigation row below the cards.
+     Never float over product text, image, favorites, or cart controls. */
+  .customer-app .customer-product-page .customer-related-products__arrow {
+    position: static;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    z-index: auto;
+    display: grid;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    justify-self: center;
+    align-self: center;
+    transform: none;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__arrow:is(:hover, :focus-visible, :active) {
+    transform: none;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__arrow--previous {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__arrow--next {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
   .customer-app .customer-product-page .customer-related-products__viewport {
+    grid-column: 1 / -1;
+    grid-row: 1;
     min-width: 0;
     max-width: 100%;
     gap: var(--store-phone-card-gap, 8px);
