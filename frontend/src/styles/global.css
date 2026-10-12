@@ -1086,8 +1086,9 @@ body {
 
 /* Status illustrations use locally vendored open illustrations with restrained product motion. */
 .status-screen-main {
-  padding-top: clamp(0.5rem, 1.5vh, 1.25rem);
-  padding-bottom: clamp(6.5rem, 14vh, 10rem);
+  /* The HTTP status layout has no branded top header. Balance both edges
+     so the illustration, status code and recovery action remain centered. */
+  padding-block: clamp(2rem, 6vh, 4rem);
 }
 
 .status-screen-main.status-screen-main--system {
@@ -1171,8 +1172,7 @@ body {
 
 @media (max-width: 720px) {
   .status-screen-main {
-    padding-top: 0.5rem;
-    padding-bottom: clamp(4.5rem, 10vh, 6.5rem);
+    padding-block: clamp(1.5rem, 5vh, 3rem);
   }
 
   .status-illustration {
@@ -1187,8 +1187,7 @@ body {
 
 @media (max-height: 760px) and (min-width: 721px) {
   .status-screen-main {
-    padding-top: 0;
-    padding-bottom: 4rem;
+    padding-block: 1.5rem;
   }
 
   .status-illustration {
@@ -1255,10 +1254,6 @@ body {
 
 .status-screen[data-status-theme="dark"] .status-screen__light-wash {
   display: none;
-}
-
-.status-screen[data-status-theme="dark"] .status-screen__brand-logo {
-  filter: brightness(0) invert(1) drop-shadow(0 8px 20px rgb(5 10 26 / 30%));
 }
 
 .status-screen[data-status-theme="dark"] .status-screen__status-number {
