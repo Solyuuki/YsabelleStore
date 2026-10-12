@@ -113,19 +113,11 @@ export function CustomerMobileNav({
           </div>
 
           <div className="customer-mobile-more__options">
-            <CustomerLink
-              href="/about"
-              navigate={navigate}
-              onClick={() => setMoreOpen(false)}
-            >
+            <CustomerLink href="/about" navigate={navigate} onClick={() => setMoreOpen(false)}>
               <Store aria-hidden="true" size={20} />
               <span>About Us</span>
             </CustomerLink>
-            <CustomerLink
-              href="/support"
-              navigate={navigate}
-              onClick={() => setMoreOpen(false)}
-            >
+            <CustomerLink href="/support" navigate={navigate} onClick={() => setMoreOpen(false)}>
               <Headphones aria-hidden="true" size={20} />
               <span>Customer Support</span>
             </CustomerLink>
