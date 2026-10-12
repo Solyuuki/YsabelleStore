@@ -380,6 +380,38 @@ test("browser QA covers compact search suggestions without covering mobile dock"
   assert.match(qa, /page\.keyboard\.press\("Escape"\)/);
 });
 
+test("phone cart scales to multiple products without giant images or stacked quantity", () => {
+  const css = read("frontend/src/styles/customer-cart-premium.css");
+  const page = read("frontend/src/pages/customer/CartPage.tsx");
+  const qa = read("tools/mobile-qa/run.mjs");
+
+  const phone = css.split("/* Sprint 12 mobile cart density.")[1];
+  assert.ok(phone, "Compact cart mobile override is missing");
+  assert.match(phone, /@media \(max-width: 700px\)/);
+  assert.match(phone, /\.customer-cart-item\s*\{[^}]*grid-template-columns: clamp\(76px, 23vw, 100px\) minmax\(0, 1fr\);[^}]*grid-template-rows: auto auto;/);
+  assert.match(phone, /\.customer-cart-item > \.customer-product-visual\s*\{[^}]*grid-column: 1;[^}]*grid-row: 1;[^}]*min-height: 0;[^}]*max-height: 100px;/);
+  assert.match(phone, /\.customer-cart-item__info\s*\{[^}]*grid-column: 2;[^}]*grid-row: 1;/);
+  assert.match(phone, /\.customer-cart-item__quantity\s*\{[^}]*grid-column: 1 \/ -1;[^}]*grid-row: 2;[^}]*grid-template-columns: minmax\(0, 1fr\) max-content;/);
+  assert.match(phone, /\.customer-cart-item__quantity \.customer-quantity\s*\{[^}]*height: 44px;/);
+  assert.match(phone, /\.customer-cart-item__info button\s*\{[^}]*min-height: 44px;/);
+  assert.match(phone, /\.customer-cart-item__quantity > strong\s*\{[^}]*font-variant-numeric: tabular-nums;/);
+
+  assert.match(page, /const CART_PAGE_SIZE = 5;/);
+  assert.match(page, /items\.slice\(start, start \+ CART_PAGE_SIZE\)/);
+  assert.match(page, /items\.length > CART_PAGE_SIZE/);
+  assert.match(page, /className="customer-cart-summary-stack"/);
+  assert.match(page, /Remove \$\{product\.name\} from cart/);
+  assert.match(page, /onChange=\{\(value\) => updateQuantity\(product\.id, value\)\}/);
+  assert.match(page, /formatCurrency\(Number\(product\.sellingPrice\) \* quantity\)/);
+  assert.match(page, /formatCurrency\(subtotal\)/);
+
+  assert.match(qa, /async function checkMobileCart\(page, viewport\)/);
+  assert.match(qa, /Not enough in-stock products to verify a multi-item cart/);
+  assert.match(qa, /Cart line is oversized, clipped, or has unusable actions/);
+  assert.match(qa, /Remove cart item did not update list/);
+  assert.match(qa, /await checkMobileCart\(page, viewport\)/);
+});
+
 test("mobile review ratings fit six filters in a two-row grid without a scroll rail", () => {
   const detail = read("frontend/src/pages/customer/ProductDetailPage.tsx");
   const css = read("frontend/src/styles/customer-adaptive-mobile.css");
