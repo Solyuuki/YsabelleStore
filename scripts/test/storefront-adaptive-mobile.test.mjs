@@ -391,6 +391,10 @@ test("mobile product detail keeps sizes readable and explains verified-review el
   assert.match(css, /\.customer-product-page \.customer-product-size-selector__arrow\s*\{\s*display: none;/);
   assert.match(css, /\.customer-product-page \.customer-product-size-option\s*\{[^}]*flex: 0 0 calc\(\(100% - 0\.55rem\) \/ 2\);/);
   assert.match(css, /\.customer-product-page \.customer-product-size-option__copy strong\s*\{[^}]*white-space: normal;/);
+  assert.match(css, /\.customer-product-page \.customer-product-size-option\s*\{[^}]*grid-template-rows: 100px minmax\(0, auto\);/);
+  assert.match(css, /\.customer-product-page \.customer-product-size-option__visual\s*\{[^}]*height: 100%;[^}]*overflow: hidden;/);
+  assert.match(css, /\.customer-product-page \.customer-product-size-option__image > img\s*\{[^}]*object-fit: contain;/);
+  assert.match(css, /\.customer-product-page \.customer-product-size-option__image\[data-image-resolution="low"\] > img\s*\{[^}]*max-height: min\(90%, var\(--catalog-image-natural-height\)\);[^}]*object-fit: contain;/);
   assert.match(sizes, /customer-product-size-selector__swipe-hint/);
   assert.doesNotMatch(sizes, /title=\{variant\.name\}/);
 
@@ -409,6 +413,8 @@ test("mobile product detail keeps sizes readable and explains verified-review el
   assert.match(qa, /async function checkMobileProductDetail\(page, viewport\)/);
   assert.match(qa, /Mobile detail image has incorrect height/);
   assert.match(qa, /Pack-size controls have obstructive tooltips or clipped labels/);
+  assert.match(qa, /Pack-size product thumbnails are clipped or too short for full images/);
+  assert.match(qa, /imageBounds\.bottom > frame\.bottom \+ 1/);
   assert.match(qa, /Product detail review form is missing/);
 });
 
