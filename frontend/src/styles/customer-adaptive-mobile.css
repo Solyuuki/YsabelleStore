@@ -674,6 +674,11 @@
     color: #25304a;
   }
 
+  .customer-shop-page .customer-select__mobile-options.is-above {
+    top: auto;
+    bottom: calc(100% + 6px);
+  }
+
   .customer-shop-page .customer-select__mobile-options > button {
     display: flex;
     width: 100%;
