@@ -123,6 +123,7 @@ async function measurePage(page, viewport) {
       badgeOverlaps: [],
       clippedBadges: [],
       smallFavoriteTargets: [],
+      doubleCircleFavorites: [],
       oversizedCartActions: [],
       smallQuantityTargets: [],
       visibleReviewCounts: [],
@@ -155,6 +156,14 @@ async function measurePage(page, viewport) {
         const bounds = favorite.getBoundingClientRect();
         if (bounds.width < 43 || bounds.height < 43) {
           productLayout.smallFavoriteTargets.push(index);
+        }
+        const innerCircle = getComputedStyle(favorite, "::before");
+        const outerCircle = getComputedStyle(favorite, "::after");
+        if (
+          (innerCircle.display !== "none" && innerCircle.content !== "none") ||
+          (outerCircle.display !== "none" && outerCircle.content !== "none")
+        ) {
+          productLayout.doubleCircleFavorites.push(index);
         }
       }
       if (add && !add.disabled) {
@@ -1494,6 +1503,7 @@ async function run() {
               ["Overlapping product badge and favorite", layout.badgeOverlaps],
               ["Clipped or hidden mobile badge label", layout.clippedBadges],
               ["Favorite touch target below 44px", layout.smallFavoriteTargets],
+              ["Favorite button paints extra pseudo-element rings", layout.doubleCircleFavorites],
               ["Cart action outside compact 44px sizing", layout.oversizedCartActions],
               ["Quantity controls below 24px wide or 44px tall", layout.smallQuantityTargets],
               ["Mobile review counts still visible", layout.visibleReviewCounts],
