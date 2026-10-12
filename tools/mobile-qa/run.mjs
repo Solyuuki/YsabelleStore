@@ -173,6 +173,53 @@ async function checkMorePanel(page, viewport) {
   return issues;
 }
 
+async function checkCompactSearch(page, viewport) {
+  const issues = [];
+  const header = page.locator(".customer-header");
+  const headerBounds = await header.boundingBox();
+  if (headerBounds && headerBounds.height > 110) {
+    issues.push(`Mobile header uses excessive height: ${Math.round(headerBounds.height)}px`);
+  }
+
+  const region = page.locator(".customer-header__search-region");
+  if (await region.isVisible()) {
+    issues.push("Global search must be collapsed by default on mobile");
+  }
+
+  const trigger = page.getByRole("button", { name: "Open storefront search" });
+  await trigger.click();
+  await region.waitFor({ state: "visible" });
+  const input = page.locator("#customer-global-search");
+  await input.fill("555");
+
+  const popup = page.locator(".customer-global-search__popup");
+  await popup.waitFor({ state: "visible", timeout: 10000 });
+  const popupBounds = await popup.boundingBox();
+  const dockBounds = await page.locator(".customer-mobile-dock").boundingBox();
+  if (!popupBounds) {
+    issues.push("Mobile search suggestions are not visible");
+  } else {
+    if (popupBounds.height > 310) {
+      issues.push(`Search suggestions too tall: ${Math.round(popupBounds.height)}px`);
+    }
+    if (popupBounds.x < -1 || popupBounds.x + popupBounds.width > viewport.width + 1) {
+      issues.push("Search suggestions exceed the viewport width");
+    }
+    if (dockBounds && popupBounds.y + popupBounds.height > dockBounds.y - 6) {
+      issues.push("Search suggestions cover the fixed bottom navigation");
+    }
+  }
+
+  await page.screenshot({
+    path: join(OUTPUT_DIRECTORY, `${viewport.name}-search.png`),
+    animations: "disabled"
+  });
+
+  await page.keyboard.press("Escape");
+  await region.waitFor({ state: "hidden" });
+  return issues;
+}
+
 async function run() {
   await mkdir(OUTPUT_DIRECTORY, { recursive: true });
   const failures = [];
@@ -268,6 +315,9 @@ async function run() {
 
           if (route === "/shop" && viewport.width <= 1180) {
             issues.push(...(await checkMorePanel(page, viewport)));
+          }
+          if (route === "/" && viewport.width <= 700 && viewport.height > viewport.width) {
+            issues.push(...(await checkCompactSearch(page, viewport)));
           }
           if (issues.length) {
             failures.push({ viewport: viewport.name, route, issues });
