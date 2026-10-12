@@ -425,3 +425,20 @@ test("store entrance fits short landscape phone viewports without scroll clippin
   assert.match(shortLandscape, /\.store-entrance__enter\s*\{[^}]*min-height: 40px;/);
   assert.doesNotMatch(shortLandscape, /overflow:\s*hidden/);
 });
+
+
+test("320px welcome keeps the two intended title lines centered without changing entrance behavior", () => {
+  const entrance = read("frontend/src/components/customer/StoreEntrance.tsx");
+  const css = read("frontend/src/styles/customer-home-premium.css");
+  const narrow = css.split("/* At 320px portrait, fit the authored two-line welcome headline")[1]
+    ?.split("/* A phone in landscape can be only 320-430px tall.")[0];
+
+  assert.ok(narrow, "Missing 320px entrance typography");
+  assert.match(entrance, /<span>Your Neighborhood Store<\/span>\s*<span>Now Online\.<\/span>/);
+  assert.match(narrow, /@media \(max-width: 359px\) and \(orientation: portrait\)/);
+  assert.match(narrow, /\.store-entrance h1\s*\{[^}]*font-size: clamp\(1\.35rem, 6\.7vw, 1\.52rem\);/);
+  assert.match(narrow, /\.store-entrance h1 span:first-child\s*\{\s*white-space: nowrap;/);
+  assert.match(css, /\.store-entrance__content\s*\{[^}]*align-items: center;[^}]*justify-content: center;/);
+  assert.match(css, /\.store-entrance h1\s*\{[^}]*text-wrap: balance;/);
+  assert.match(entrance, /onClick=\{enterStore\}/);
+});
