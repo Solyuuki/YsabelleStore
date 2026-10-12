@@ -55,7 +55,7 @@ The Playwright QA now checks that the compact header stays within 110px before s
 
 At 320–430 CSS px in portrait, the **Home and Shop** product cards retain a two-column grid but use concise, readable merchandising. A short badge label (Trending, Best seller, or Low stock) is reserved its own space beside a 44px favorite hit target with a visually smaller 34px heart circle; no text or overlay collision is permitted. Product titles are clamped at two lines and review counts are visually hidden on phones, while the full rating summary is preserved in accessible text. Pricing, stock messages, favorite state, whole-unit quantity changes, and the existing `addItem(product, selectedQuantity)` behavior remain unchanged.
 
-Quantity decrement and increment retain 44px hit targets; the separate purple cart action uses a smaller, right-aligned 92px **cart icon + Add** pill with a 44px hit height. Desktop continues to display full badge and **Add to cart** labels. Out-of-stock messages remain descriptive rather than being shrunk to an unreadable pill.
+The quantity picker and purple **cart icon + Add** button now sit **side by side in a single 44px-tall row**, including 320px phone cards. Both columns shrink with the available card width; quantity +/- hit areas remain at least 24px wide and 44px tall, and the full heart/favorite hit target remains 44px square. Desktop continues to display full badge and **Add to cart** labels. Out-of-stock messages remain descriptive rather than being shrunk to an unreadable pill.
 
 `npm run qa:mobile` now checks actual badged card/favorite geometry, clipping of short badge text, title clamping, mobile rating density, cart-action geometry, and 44px favorite/quantity touch targets on both Home and Shop in each phone portrait viewport. It waits for real product cards to load before measuring, instead of silently passing an empty/skeleton layout. Confirm the visual details in screenshots and on a physical touchscreen before calling the design production-ready.
 
@@ -82,6 +82,14 @@ npm run qa:mobile
 The overflow audit treats clipped, scrollable Home product carousels on **landscape, tablet and desktop** as intentional: a card parked beyond the visible carousel region is not a page-overflow error as long as its containing rail stays within the viewport. **Portrait phone rails are never exempt:** any horizontally overflowing product rail fails QA. Document-wide width overflow and other unconstrained elements always fail.
 
 This is **local browser automation**, not a claim that iOS Safari, camera, soft-keyboard or physical-device interactions are already verified. Keep manual QA for those behaviors. `npm run test:mobile` remains the faster dependency-free source contract test.
+
+## Customer favorites and mobile preview origin
+
+Authenticated Favorites PUT/DELETE requests require an approved `Origin` even when the customer session cookie is valid. Port 5174 uses the same backend as the normal storefront but has a distinct browser Origin. In non-production mode, the backend explicitly allows local `localhost:5174`, `127.0.0.1:5174`, and port 5174 on this host's **actual private LAN interface IPv4 addresses**, without enabling wildcard CORS or bypassing customer authentication. Production continues to use only its configured CORS origins.
+
+**After pulling a change to `backend/src/config/env.ts`, restart the running backend** before starting mobile QA. `npm run dev:mob` intentionally reuses a healthy existing backend and does not restart it for you. The mobile launcher performs an unauthenticated Favorites DELETE origin probe (which must receive HTTP 401 from the authentication middleware); a 403 `CUSTOMER_AUTH_ORIGIN_REJECTED` gives a backend-restart diagnostic instead of reporting the preview as fully ready.
+
+A real guest tapping Favorite is redirected to customer Login; an expired session detected by the mutation is refreshed and sent to Login. A blocked Origin or server error stays an error and is **not** misrepresented as a logout or an internet connection problem. Use an authenticated customer session to manually verify both Save and Remove actions on Home, Shop, and Account Favorites.
 
 ## Validate local connectivity
 
