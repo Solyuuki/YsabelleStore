@@ -949,17 +949,30 @@
     height: 8px;
   }
 
+  /* Keep the 44px heart tap target above the product's full-image link.
+     Only the button receives the tap; the photo still opens the product page. */
   .customer-app .customer-product-card__favorite {
     top: 2px;
     right: 2px;
-    z-index: 5;
+    z-index: 10;
     width: 44px;
     height: 44px;
     border: 0;
     background: transparent;
     box-shadow: none;
     backdrop-filter: none;
+    pointer-events: auto;
+    touch-action: manipulation;
+    cursor: pointer;
     transform: none;
+  }
+
+  .customer-app .customer-product-card__favorite:disabled {
+    cursor: progress;
+  }
+
+  .customer-app .customer-product-card__favorite > svg {
+    pointer-events: none;
   }
 
   .customer-app .customer-product-card__favorite::before {
