@@ -1780,3 +1780,147 @@
     max-height: min(13rem, calc(100dvh - 8rem));
   }
 }
+
+
+/* Sprint 12 product-detail mobile: avoid wasting a full viewport on the hero
+   and use a scroll-snapped size rail without space-consuming side arrows. */
+.customer-product-size-selector__swipe-hint {
+  display: none;
+}
+
+.customer-review-composer__eligibility {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+  margin-top: 0.85rem;
+  padding: 0.85rem;
+  border: 1px solid rgb(108 123 169 / 32%);
+  border-radius: 0.8rem;
+  background: rgb(98 91 255 / 7%);
+  color: #2f3b5c;
+}
+
+.customer-review-composer__eligibility strong {
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.customer-review-composer__eligibility p {
+  margin: 0;
+  font-size: 0.77rem;
+  line-height: 1.55;
+}
+
+.customer-review-composer__orders-link {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid #9a8bdc;
+  border-radius: 0.65rem;
+  background: #eee9ff;
+  color: #4335a4;
+  font-size: 0.78rem;
+  font-weight: 750;
+  cursor: pointer;
+  text-align: center;
+}
+
+.customer-review-composer__orders-link:focus-visible {
+  outline: 2px solid #7665e0;
+  outline-offset: 2px;
+}
+
+:root.dark .customer-app .customer-review-composer__eligibility {
+  border-color: #6c7e9f;
+  background: #24354f;
+  color: #dce6fb;
+}
+
+:root.dark .customer-app .customer-review-composer__orders-link {
+  border-color: #a18de5;
+  background: #393267;
+  color: #f1eaff;
+}
+
+@media (max-width: 700px) {
+  .customer-product-page .customer-product-detail__media {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .customer-product-page .customer-product-visual.customer-product-visual--large {
+    height: clamp(260px, 82vw, 340px);
+    min-height: 0;
+    max-width: 100%;
+  }
+
+  .customer-product-page .customer-product-size-selector {
+    max-width: 100%;
+    margin-top: 0.85rem;
+  }
+
+  .customer-product-page .customer-product-size-selector__rail-shell {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+    margin-top: 0.45rem;
+  }
+
+  .customer-product-page .customer-product-size-selector__arrow {
+    display: none;
+  }
+
+  .customer-product-page .customer-product-size-selector__options {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    gap: 0.55rem;
+    padding: 0.15rem 0.1rem 0.45rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-padding-inline: 0.1rem;
+    scroll-snap-type: x mandatory;
+    touch-action: pan-x pan-y;
+  }
+
+  .customer-product-page .customer-product-size-option {
+    flex: 0 0 calc((100% - 0.55rem) / 2);
+    min-width: 0;
+    max-width: 100%;
+    min-height: 0;
+    grid-template-rows: 70px minmax(0, auto);
+    gap: 0.25rem;
+    padding: 0.45rem;
+    scroll-snap-align: start;
+  }
+
+  .customer-product-page .customer-product-size-option__copy {
+    min-width: 0;
+    padding: 0.2rem 0.15rem 0.3rem;
+  }
+
+  .customer-product-page .customer-product-size-option__copy strong {
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .customer-product-page .customer-product-size-selector__swipe-hint {
+    display: block;
+    margin: 0.15rem 0 0;
+    color: var(--customer-muted);
+    font-size: 0.69rem;
+    line-height: 1.4;
+    text-align: center;
+  }
+
+  .customer-product-page .customer-review-composer {
+    min-width: 0;
+  }
+
+  .customer-product-page .customer-review-composer__eligibility {
+    padding: 0.7rem;
+  }
+}
