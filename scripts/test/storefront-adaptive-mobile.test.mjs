@@ -72,9 +72,11 @@ test("phone portrait uses one sizing system and never enables horizontal product
   )[0];
   assert.ok(portrait, "Missing portrait sizing contract");
   assert.match(portrait, /@media \(max-width: 700px\) and \(orientation: portrait\)/);
-  assert.match(portrait, /--store-phone-gutter: clamp\(12px, 4vw, 16px\)/);
-  assert.match(portrait, /--store-phone-card-gap: clamp\(8px, 2\.5vw, 12px\)/);
-  assert.match(portrait, /--store-phone-section-gap: clamp\(20px, 6vw, 30px\)/);
+  const tokens = read("frontend/src/styles/customer-mobile-tokens.css");
+  assert.match(tokens, /--store-phone-gutter: clamp\(12px, 4vw, 16px\)/);
+  assert.match(tokens, /--store-phone-card-gap: clamp\(8px, 2\.5vw, 12px\)/);
+  assert.match(tokens, /--store-phone-section-gap: clamp\(20px, 6vw, 30px\)/);
+  assert.match(portrait, /width: calc\(100% - 2 \* var\(--store-phone-gutter\)\)/);
   assert.match(portrait, /\.customer-home \.home-product-rail__viewport\s*\{[^}]*overflow: visible;/);
   assert.match(portrait, /\.customer-home \.home-product-rail__track\s*\{\s*display: grid;/);
   assert.match(portrait, /\.customer-home \.home-product-rail__control,[\s\S]*?display: none;/);
@@ -122,7 +124,10 @@ test("the five-slot mobile dock has a centered accessible expandable More menu",
   assert.match(css, /\.customer-app \.customer-menu-button,[\s\S]*?\.customer-app \.customer-cart-link\s*\{\s*display: none;/);
   assert.match(css, /\.customer-mobile-dock__more-icon\s*\{[^}]*width: 44px;[^}]*height: 44px;/);
   assert.match(css, /\.customer-mobile-more__sheet\s*\{[^}]*position: fixed;/);
-  assert.match(css, /max-height: min\(75dvh, 460px\)/);
+  assert.match(css, /max-height: min\(68dvh, 380px\)/);
+  assert.match(css, /max-width: 380px/);
+  assert.match(css, /border-radius: 1\.15rem/);
+  assert.match(css, /--store-mobile-floating-gap, 8px/);
   assert.match(css, /safe-area-inset-bottom/);
 
   // The legacy duplicate mobile panel is gone; the desktop links remain.
@@ -140,4 +145,38 @@ test("320px portrait constrains the actual header and navbar, not just scrollbar
   assert.match(css, /grid-template-columns: minmax\(0, 1fr\) auto/);
   assert.match(css, /\.customer-app\.ys-material-canvas > \.customer-mobile-dock\s*\{[^}]*box-sizing: border-box;/);
   assert.match(css, /\.customer-app\.ys-material-canvas > \.customer-mobile-dock\s*\{[^}]*grid-template-columns: repeat\(5, minmax\(0, 1fr\)\)/);
+});
+
+test("mobile sizing primitives and floating sheet are centralized for browser QA", () => {
+  const app = read("frontend/src/app/CustomerApp.tsx");
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const tokens = read("frontend/src/styles/customer-mobile-tokens.css");
+  const packageJson = JSON.parse(read("package.json"));
+  const qaScript = read("tools/mobile-qa/run.mjs");
+
+  assert.match(
+    app,
+    /import "@\/styles\/customer-mobile-tokens\.css";\s*import "@\/styles\/customer-adaptive-mobile\.css";/
+  );
+  assert.match(tokens, /--store-mobile-touch-target: 44px/);
+  assert.match(tokens, /--store-mobile-dock-clearance: 76px/);
+  assert.match(tokens, /--store-mobile-floating-gap: 8px/);
+  assert.match(css, /\.customer-mobile-more__sheet\s*\{[^}]*right: 12px;[^}]*left: 12px;/);
+  assert.match(css, /border-bottom: 0;/); // existing dock, not the floating card
+  const sheetCss = css.split(".customer-mobile-more__sheet {")[1]?.split(
+    ".customer-mobile-more__header {"
+  )[0];
+  assert.ok(sheetCss);
+  assert.match(sheetCss, /border: 1px solid #bcc6e1/);
+  assert.doesNotMatch(sheetCss, /border-bottom: 0/);
+  assert.match(sheetCss, /@media \(min-width: 701px\), \(orientation: landscape\)/);
+
+  assert.equal(packageJson.scripts["qa:mobile"], "node tools/mobile-qa/run.mjs");
+  assert.match(qaScript, /const VIEWPORTS = \[/);
+  for (const width of [320, 360, 375, 390, 430, 640, 768, 1280]) {
+    assert.match(qaScript, new RegExp(`width: ${width}\\b`));
+  }
+  assert.match(qaScript, /document\.documentElement\.scrollWidth/);
+  assert.match(qaScript, /getByRole\("dialog"\)/);
+  assert.match(qaScript, /dockTop - 6/);
 });
