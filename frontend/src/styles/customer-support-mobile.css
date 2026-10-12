@@ -1,0 +1,297 @@
+/* Sprint 12 · Contact Support
+   Native select caret with a proper right gutter on both themes.
+   The mobile layout prioritizes a usable ticket form over repeated guidance. */
+.customer-app .customer-support-page .customer-support-form select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 3rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233c4e6d' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem 1rem;
+  cursor: pointer;
+}
+:root.dark .customer-app .customer-support-page .customer-support-form select {
+  color: #edf2ff;
+  background-color: #17243a;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d8e5fb' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+.customer-support-account-note__mobile,
+.customer-support-mobile-disclosure {
+  display: none;
+}
+.customer-support-sidebar__content {
+  display: grid;
+  gap: 1rem;
+}
+@media (min-width: 641px) and (max-width: 900px) {
+  .customer-support-sidebar__content {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .customer-app .customer-support-page,
+  .customer-app .customer-support-grid,
+  .customer-app .customer-support-form-card,
+  .customer-app .customer-support-form,
+  .customer-app .customer-support-faq {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .customer-app .customer-support-hero__grid {
+    width: min(calc(100% - 1.5rem), 35rem);
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding-block: 1.4rem 1.5rem;
+  }
+  .customer-app .customer-support-hero h1 {
+    max-width: 24ch;
+    font-size: clamp(1.95rem, 8vw, 2.65rem);
+    line-height: 1.06;
+    overflow-wrap: anywhere;
+  }
+  .customer-app .customer-support-hero__detail,
+  .customer-app .customer-support-hero__extra,
+  .customer-app .customer-support-hero__signals,
+  .customer-app .customer-support-hero__card {
+    display: none;
+  }
+  .customer-app .customer-support-hero__lead {
+    max-width: 36ch;
+    margin-top: 0.5rem;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  .customer-app .customer-support-grid {
+    width: min(calc(100% - 1.5rem), 35rem);
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+    padding-block: 0.75rem 1.5rem;
+  }
+  .customer-app .customer-support-form-card {
+    min-width: 0;
+    padding: clamp(0.85rem, 3.5vw, 1.25rem);
+    border-radius: 1rem;
+  }
+  .customer-app .customer-support-section-heading {
+    gap: 0.45rem;
+    margin-bottom: 0.85rem;
+  }
+  .customer-app .customer-support-section-heading h2 {
+    font-size: clamp(1.55rem, 6.7vw, 2rem);
+    line-height: 1.12;
+  }
+  .customer-app .customer-support-section-heading > span {
+    padding: 0.36rem 0.55rem;
+    font-size: 0.65rem;
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+  .customer-app .customer-support-form {
+    gap: 0.72rem;
+  }
+  .customer-app .customer-support-form__two-column {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.72rem;
+  }
+  .customer-app .customer-support-form label {
+    min-width: 0;
+    gap: 0.3rem;
+  }
+  .customer-app .customer-support-form :is(input, select) {
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 46px;
+    font-size: 0.9rem;
+  }
+  .customer-app .customer-support-form select {
+    padding-right: 3rem;
+    background-position: right 1rem center;
+  }
+  .customer-app .customer-support-form textarea {
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 136px;
+    height: 136px;
+    padding: 0.7rem 0.8rem;
+    line-height: 1.5;
+    font-size: 0.88rem;
+  }
+  .customer-app .customer-support-form__verified-fields,
+  .customer-app .customer-support-form__verified-phone,
+  .customer-app .customer-support-form__order-reference--nonpurchase {
+    display: none;
+  }
+  /* Verified details are sent from auth state, not re-entered on a phone.
+     Their locked desktop inputs are retained in the DOM for desktop use. */
+  .customer-app .customer-support-account-note {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 0.55rem;
+    margin-bottom: 0.7rem;
+    padding: 0.7rem 0.8rem;
+    line-height: 1.35;
+  }
+  .customer-app .customer-support-account-note__desktop {
+    display: none;
+  }
+  .customer-app .customer-support-account-note__mobile {
+    display: grid;
+    min-width: 0;
+    gap: 0.2rem;
+    font-size: 0.77rem;
+  }
+  .customer-app .customer-support-account-note__mobile :is(span, small, strong) {
+    display: block;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .customer-app .customer-support-account-note__mobile strong {
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+  .customer-app .customer-support-account-note__mobile small {
+    font-size: 0.7rem;
+  }
+
+  .customer-app .customer-support-safety-note {
+    gap: 0.55rem;
+    padding: 0.65rem 0.7rem;
+    font-size: 0.74rem;
+    line-height: 1.45;
+  }
+  .customer-app .customer-support-submit {
+    width: 100%;
+    min-height: 46px;
+    margin-top: 0;
+  }
+  .customer-app .customer-support-success {
+    min-height: 0;
+    padding-block: 0.8rem;
+  }
+  .customer-app .customer-support-success h2 {
+    font-size: 1.8rem;
+  }
+  .customer-app .customer-support-reference {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .customer-app .customer-support-reference strong {
+    overflow-wrap: anywhere;
+    font-size: 1.05rem;
+  }
+
+  /* Supplementary information is still one tap away, but no longer adds
+     multiple full-height cards before or after the ticket form. */
+  .customer-app .customer-support-sidebar {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .customer-app .customer-support-mobile-disclosure {
+    display: flex;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 48px;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid #a9b3ce;
+    border-radius: 0.85rem;
+    background: #f4f6ff;
+    color: #283957;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.83rem;
+    font-weight: 760;
+    text-align: left;
+  }
+  .customer-app .customer-support-mobile-disclosure > span:nth-child(2) {
+    flex: 1;
+  }
+  .customer-app .customer-support-mobile-disclosure > span:last-child {
+    color: #6054ca;
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+  .customer-app .customer-support-mobile-disclosure:focus-visible {
+    outline: 3px solid #ac9bff;
+    outline-offset: 2px;
+  }
+  .customer-app .customer-support-sidebar__content {
+    display: none;
+    min-width: 0;
+    gap: 0.5rem;
+    padding-top: 0.65rem;
+  }
+  .customer-app .customer-support-sidebar[data-mobile-open="true"] .customer-support-sidebar__content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .customer-app .customer-support-info-card {
+    min-width: 0;
+    padding: 0.85rem;
+  }
+  .customer-app .customer-support-info-card h2 {
+    margin-top: 0.4rem;
+    font-size: 1.08rem;
+  }
+  .customer-app .customer-support-info-card p {
+    margin-top: 0.4rem;
+    line-height: 1.5;
+  }
+
+  .customer-app .customer-support-faq {
+    width: min(calc(100% - 1.5rem), 35rem);
+    box-sizing: border-box;
+    padding-bottom: 3.5rem;
+  }
+  .customer-app .customer-support-faq__heading {
+    display: none;
+  }
+  .customer-app .customer-support-faq__list {
+    display: none;
+  }
+  .customer-app .customer-support-faq[data-mobile-open="true"] .customer-support-faq__list {
+    display: grid;
+    gap: 0.5rem;
+    padding-top: 0.6rem;
+  }
+  .customer-app .customer-support-faq details {
+    min-width: 0;
+  }
+  .customer-app .customer-support-faq summary {
+    padding: 0.75rem 2.35rem 0.75rem 0.85rem;
+    line-height: 1.42;
+    font-size: 0.82rem;
+  }
+  .customer-app .customer-support-faq summary::after {
+    right: 0.8rem;
+  }
+  .customer-app .customer-support-faq details p {
+    padding: 0 0.85rem 0.9rem;
+    font-size: 0.78rem;
+    line-height: 1.5;
+  }
+  :root.dark .customer-app .customer-support-mobile-disclosure {
+    border-color: #687b9d;
+    background: #263750;
+    color: #eef3ff;
+  }
+  :root.dark .customer-app .customer-support-mobile-disclosure > span:last-child {
+    color: #c8b9ff;
+  }
+  :root.dark .customer-app .customer-support-account-note__mobile {
+    color: #e8eefc;
+  }
+  :root.dark .customer-app .customer-support-account-note__mobile small {
+    color: #c5d2e8;
+  }
+}
