@@ -902,7 +902,8 @@
   }
 
   .customer-app .customer-product-badge__label-mobile {
-    display: inline;
+    display: block;
+    flex: 0 1 auto;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -976,6 +977,13 @@
   :root.dark .customer-app .customer-product-card__favorite::before {
     border-color: #6d779e;
     background: #2b3a55;
+  }
+
+  :root.dark .customer-app .customer-product-card__favorite[aria-pressed="true"],
+  :root.dark .customer-app .customer-product-card__favorite:is(:hover, :focus-visible) {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   :root.dark .customer-app .customer-product-card__favorite[aria-pressed="true"]::before {
