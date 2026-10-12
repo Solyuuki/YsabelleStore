@@ -1,14 +1,18 @@
 # Ysabelle Store brand assets
 
-The approved source artwork is the original circular Ysabelle Store logo. It is the only brand artwork that may represent Ysabelle Store in the application.
+The approved artwork is the original circular Ysabelle Store logo. Application branding must use that artwork only.
 
-- `frontend/src/assets/brand/ysabelle-logo-official.webp` is the bundled canonical runtime logo used by the shared React brand component.
-- `ysabelle-store-mark.png`, `ysabelle-store-mark-256.png`, and `ysabelle-store-logo.png` are canonical public exports of the same approved logo artwork.
-- `ysabelle-store-mark-128.png` is the compact responsive export.
-- `favicon-16x16.png`, `favicon-32x32.png`, and `favicon-48x48.png` are direct downscales of the approved logo.
-- `favicon.ico` contains those same approved frames for browser compatibility.
-- `apple-touch-icon.png` is the mobile bookmark/home-screen export.
+## Verified runtime assets
 
-All application brand placements must use the shared `BrandLogo` / `YsabelleBrandMark` components. Do not substitute a generated shopping-bag mark, initials, a Lucide icon, a gradient fallback, or other synthetic artwork. The logo artwork is already circular, so shared wrappers must remain transparent and must not add a fake colored background behind it.
+- `frontend/src/assets/brand/ysabelle-approved-mark-128.png` copies the approved 128px public logo, byte-for-byte.
+- `frontend/src/assets/brand/ysabelle-approved-mark-180.png` copies the approved 180px Apple touch icon, byte-for-byte.
+- Shared `BrandLogo` / `YsabelleBrandMark` components load these bundled, integrity-checked PNGs with a responsive `srcSet` on web and Electron.
+- The existing PNG outputs retain transparent circular branding. No synthetic logo or background is added.
 
-For Windows packaging, `electron/scripts/prepare-windows-icon.mjs` generates `electron/build/icon.ico` immediately before development startup or packaging. `electron-builder` uses that generated ICO only to stamp the executable/installer. Runtime branding continues to use the approved logo artwork.
+## Legacy asset repair backlog
+
+The pre-existing `ysabelle-store-mark-256.png`, `ysabelle-store-mark.png`, `ysabelle-store-logo.png`, `ysabelle-logo-official.webp`, and `favicon-48x48.png` have damaged/truncated image data. They must not be selected as runtime React image sources until restored from the original approved artwork and validated. Do not claim these files are repaired by the mobile logo source change.
+
+`favicon-16x16.png`, `favicon-32x32.png`, `favicon.ico`, and `apple-touch-icon.png` remain existing browser assets. The legacy 48px favicon used by Windows icon preparation needs separate repair before certifying Windows packaging.
+
+Keep shared logo wrappers transparent and circular. No generated bag icon, initials, other logo, or artificial gradient fallback is permitted.
