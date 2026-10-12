@@ -52,6 +52,35 @@ test("approved browser Origin and non-browser requests can reach customer auth b
   });
 });
 
+test("local mobile preview can reach authenticated favorite mutations without origin rejection", async () => {
+  await withServer(async (baseUrl) => {
+    for (const origin of ["http://localhost:5174", "http://127.0.0.1:5174"]) {
+      for (const method of ["PUT", "DELETE"]) {
+        const response = await fetch(`${baseUrl}/api/customer-account/favorites/test-product`, {
+          method,
+          headers: { Origin: origin }
+        });
+        const body = (await response.json()) as {
+          error?: { code?: string };
+        };
+
+        // No session is supplied in this regression test, so auth must still
+        // reject the request. A 403 here would mean mobile Origin was blocked.
+        assert.equal(response.status, 401);
+        assert.equal(body.error?.code, "CUSTOMER_SESSION_REQUIRED");
+      }
+    }
+
+    const untrusted = await fetch(`${baseUrl}/api/customer-account/favorites/test-product`, {
+      method: "DELETE",
+      headers: { Origin: "https://untrusted.example" }
+    });
+    const rejectedBody = (await untrusted.json()) as { error?: { code?: string } };
+    assert.equal(untrusted.status, 403);
+    assert.equal(rejectedBody.error?.code, "CUSTOMER_AUTH_ORIGIN_REJECTED");
+  });
+});
+
 test("unapproved browser Origin is rejected before state-changing customer auth behavior", async () => {
   await withServer(async (baseUrl) => {
     const login = await postInvalidLogin(baseUrl, "https://evil.example");
