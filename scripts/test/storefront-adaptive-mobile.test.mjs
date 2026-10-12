@@ -380,6 +380,35 @@ test("browser QA covers compact search suggestions without covering mobile dock"
   assert.match(qa, /page\.keyboard\.press\("Escape"\)/);
 });
 
+test("mobile review ratings fit six filters in a two-row grid without a scroll rail", () => {
+  const detail = read("frontend/src/pages/customer/ProductDetailPage.tsx");
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const qa = read("tools/mobile-qa/run.mjs");
+
+  assert.match(detail, /const reviewFilters = \[null, 5, 4, 3, 2, 1\] as const;/);
+  assert.match(detail, /aria-label=\{rating === null \? \`All reviews \(\$\{count\}\)\` : \`\$\{rating\}-star reviews \(\$\{count\}\)\`\}/);
+  assert.match(detail, /aria-pressed=\{ratingFilter === rating\}/);
+  assert.match(detail, /onClick=\{\(\) => onFilterChange\(rating\)\}/);
+  assert.match(detail, /customer-review-filter__label-full/);
+  assert.match(detail, /customer-review-filter__label-compact/);
+  assert.match(css, /\.customer-product-page \.customer-review-filter__label-compact\s*\{\s*display: none;/);
+
+  const phone = css.split("/* Product detail reviews: desktop keeps")[1];
+  assert.ok(phone, "Missing scoped mobile review-filter rules");
+  assert.match(phone, /@media \(max-width: 520px\)/);
+  assert.match(phone, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/);
+  assert.match(phone, /\.customer-product-page \.customer-review-filters\s*\{[^}]*overflow: visible;/);
+  assert.match(phone, /\.customer-product-page \.customer-review-filters > button\s*\{[^}]*min-height: 44px;/);
+  assert.match(phone, /\.customer-product-page \.customer-review-filter__label-full\s*\{\s*display: none;/);
+  assert.match(phone, /\.customer-product-page \.customer-review-filter__label-compact\s*\{\s*display: inline;/);
+
+  assert.match(qa, /Mobile rating filters do not fit the two-row, three-column touch grid/);
+  assert.match(qa, /state\.reviewFilterGeometry\.rows !== 2/);
+  assert.match(qa, /reviewFilters\.scrollWidth > reviewFilters\.clientWidth \+ 2/);
+  assert.match(qa, /getByRole\("button", \{ name: \/5-star reviews\/ \}\)/);
+  assert.match(qa, /getByRole\("button", \{ name: \/All reviews\/ \}\)/);
+});
+
 test("mobile product detail keeps sizes readable and explains verified-review eligibility", () => {
   const css = read("frontend/src/styles/customer-adaptive-mobile.css");
   const sizes = read("frontend/src/components/customer/ProductSizeSelector.tsx");
