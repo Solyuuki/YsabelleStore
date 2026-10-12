@@ -706,6 +706,45 @@
     font-size: clamp(0.67rem, 2.8vw, 0.78rem);
   }
 
+  /* The checkout/story section follows the same compact type and spacing scale.
+     Keep the existing artwork's aspect ratio instead of stretching it. */
+  .customer-home .home-next-step {
+    padding-block: var(--store-phone-section-gap);
+  }
+
+  .customer-home .home-next-step__main {
+    min-width: 0;
+    gap: clamp(0.75rem, 3vw, 1.25rem);
+    padding: 0;
+  }
+
+  .customer-home .home-next-step h2 {
+    font-size: clamp(1.55rem, 6vw, 2.1rem);
+    line-height: 1.08;
+    overflow-wrap: anywhere;
+  }
+
+  .customer-home .home-next-step__lede {
+    margin-top: 0.65rem;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  .customer-home .home-next-step__meta {
+    gap: 0.4rem;
+  }
+
+  .customer-home .home-next-step__meta > span {
+    min-height: 36px;
+    padding: 0.4rem 0.55rem;
+    font-size: 0.68rem;
+  }
+
+  .customer-home .home-next-step__visual {
+    height: clamp(11rem, 48vw, 15rem);
+    min-height: 0;
+  }
+
   .customer-shop-page {
     overflow-x: clip;
   }
