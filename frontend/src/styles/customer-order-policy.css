@@ -16,6 +16,7 @@
   position: static;
   width: 100%;
   border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 /* The badge sits directly on the summary border as an attached tab.
@@ -23,8 +24,13 @@
 .customer-app .customer-cart-summary-stack > .customer-order-policy__trigger {
   position: relative;
   z-index: 1;
+  width: 100%;
+  max-width: none;
+  justify-content: flex-start;
   margin: 0 0 -1px;
   border-bottom-color: transparent;
+  border-top-left-radius: 1.1rem;
+  border-top-right-radius: 1.1rem;
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
 }
