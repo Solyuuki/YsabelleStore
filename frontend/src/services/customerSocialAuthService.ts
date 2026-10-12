@@ -84,6 +84,56 @@ export function startCustomerSocialAuth(
   returnPath = "/account",
   authPage: CustomerSocialAuthPage = "login"
 ): void {
-  const url = buildCustomerSocialAuthStartUrl(provider, returnPath, authPage);
-  customerSocialAuthNavigationWindow(window).location.assign(url.toString());
+  const authWindow = customerSocialAuthNavigationWindow(window);
+  let destination = returnPath;
+
+  if (authWindow !== window) {
+    // OAuth is top-level, but the signed-in customer should land back inside
+    // the mobile QA device frame instead of the desktop-width /account page.
+    // The backend stores this same-origin relative path in the OAuth state.
+    const previewReturn = new URL("/mobile-preview.html", authWindow.location.origin);
+    const safeReturnPath =
+      returnPath.startsWith("/") &&
+      !returnPath.startsWith("//") &&
+      !returnPath.includes("\\") &&
+      !returnPath.includes("\0")
+        ? returnPath
+        : "/account";
+    previewReturn.searchParams.set("authRoute", safeReturnPath);
+
+    const viewport = authWindow.document.getElementById("device") as HTMLSelectElement | null;
+    const preset = viewport?.value;
+    const allowedPresets = [
+      "320,640",
+      "360,800",
+      "375,812",
+      "390,844",
+      "412,915",
+      "430,932",
+      "768,1024"
+    ];
+    if (preset && allowedPresets.includes(preset)) {
+      previewReturn.searchParams.set("authDevice", preset);
+      if (
+        preset === "768,1024" &&
+        authWindow.document.getElementById("dimensions")?.textContent?.startsWith("1024 × 768")
+      ) {
+        previewReturn.searchParams.set("authLandscape", "1");
+      }
+    }
+
+    // Local mobile QA uses :5174, while the OAuth callback uses FRONTEND_URL
+    // (:5173). The preview page will safely hand back to :5174 after OAuth.
+    if (
+      authWindow.location.port === "5174" &&
+      ["localhost", "127.0.0.1"].includes(authWindow.location.hostname)
+    ) {
+      previewReturn.searchParams.set("authPreviewPort", "5174");
+    }
+
+    destination = previewReturn.pathname + previewReturn.search;
+  }
+
+  const url = buildCustomerSocialAuthStartUrl(provider, destination, authPage);
+  authWindow.location.assign(url.toString());
 }
