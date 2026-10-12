@@ -322,6 +322,10 @@ async function checkMobileProductDetail(page, viewport) {
   await page.goto(new URL(href, BASE_URL).href, { waitUntil: "domcontentloaded", timeout: 20000 });
   const hero = page.locator(".customer-product-page .customer-product-visual--large");
   await hero.waitFor({ state: "visible", timeout: 15000 });
+  await page.locator(".customer-product-page .customer-review-filters").waitFor({
+    state: "visible",
+    timeout: 15000
+  });
 
   const state = await page.evaluate(() => {
     const hero = document.querySelector(".customer-product-page .customer-product-visual--large");
@@ -329,7 +333,28 @@ async function checkMobileProductDetail(page, viewport) {
     const options = rail ? [...rail.querySelectorAll(".customer-product-size-option")] : [];
     const arrows = [...document.querySelectorAll(".customer-product-page .customer-product-size-selector__arrow")];
     const reviewForm = document.querySelector(".customer-review-composer");
+    const reviewFilters = document.querySelector(".customer-product-page .customer-review-filters");
+    const reviewFilterButtons = reviewFilters ? [...reviewFilters.querySelectorAll("button")] : [];
+    const filterBounds = reviewFilters?.getBoundingClientRect();
+    const filterButtonBounds = reviewFilterButtons.map((button) => button.getBoundingClientRect());
+    const filterRows = [...new Set(filterButtonBounds.map((rect) => Math.round(rect.top)))].length;
+    const reviewFilterGeometry = {
+      count: reviewFilterButtons.length,
+      display: reviewFilters ? getComputedStyle(reviewFilters).display : "",
+      rows: filterRows,
+      horizontallyOverflowing:
+        !reviewFilters ||
+        reviewFilters.scrollWidth > reviewFilters.clientWidth + 2 ||
+        filterButtonBounds.some(
+          (rect) =>
+            !filterBounds ||
+            rect.left < filterBounds.left - 1 ||
+            rect.right > filterBounds.right + 1
+        ),
+      shortTouchTargets: filterButtonBounds.filter((rect) => rect.height < 43).length
+    };
     return {
+      reviewFilterGeometry,
       heroHeight: hero?.getBoundingClientRect().height ?? 0,
       scrollWidth: document.documentElement.scrollWidth,
       railWidth: rail?.getBoundingClientRect().width ?? 0,
@@ -385,11 +410,30 @@ async function checkMobileProductDetail(page, viewport) {
   if (!state.hasReviewForm) {
     issues.push("Product detail review form is missing");
   }
+  if (
+    state.reviewFilterGeometry.count !== 6 ||
+    state.reviewFilterGeometry.display !== "grid" ||
+    state.reviewFilterGeometry.rows !== 2 ||
+    state.reviewFilterGeometry.horizontallyOverflowing ||
+    state.reviewFilterGeometry.shortTouchTargets
+  ) {
+    issues.push("Mobile rating filters do not fit the two-row, three-column touch grid");
+  }
 
   await page.screenshot({
     path: join(OUTPUT_DIRECTORY, `${viewport.name}-product-detail.png`),
     animations: "disabled"
   });
+  const fiveStars = page.getByRole("button", { name: /5-star reviews/ });
+  const allReviews = page.getByRole("button", { name: /All reviews/ });
+  await fiveStars.click();
+  if ((await fiveStars.getAttribute("aria-pressed")) !== "true") {
+    issues.push("5-star review filter did not become selected");
+  }
+  await allReviews.click();
+  if ((await allReviews.getAttribute("aria-pressed")) !== "true") {
+    issues.push("All review filter did not restore selection");
+  }
   return issues;
 }
 
