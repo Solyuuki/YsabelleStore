@@ -9,8 +9,14 @@ test("cart policy badge is above the summary card and opens a centered modal", (
   const policy = read("frontend/src/components/customer/CustomerOrderPolicyInfo.tsx");
 
   assert.match(cart, /<div className="customer-cart-summary-stack">/);
-  assert.ok(cart.indexOf("<CustomerOrderPolicyInfo />") < cart.indexOf('<aside className="customer-order-summary">'));
-  assert.ok(cart.indexOf('<aside className="customer-order-summary">') < cart.indexOf("Proceed to checkout"));
+  assert.ok(
+    cart.indexOf("<CustomerOrderPolicyInfo />") <
+      cart.indexOf('<aside className="customer-order-summary">')
+  );
+  assert.ok(
+    cart.indexOf('<aside className="customer-order-summary">') <
+      cart.indexOf("Proceed to checkout")
+  );
   assert.match(policy, /<Dialog>/);
   assert.match(policy, /<DialogTrigger asChild>/);
   assert.match(policy, /<DialogContent className="customer-order-policy__dialog">/);
@@ -26,7 +32,10 @@ test("cart policy badge is above the summary card and opens a centered modal", (
 test("only new storefront orders require explicit acceptance before order creation", () => {
   const checkout = read("frontend/src/pages/customer/CheckoutPage.tsx");
 
-  assert.match(checkout, /const \[orderPolicyAccepted, setOrderPolicyAccepted\] = useState\(false\)/);
+  assert.match(
+    checkout,
+    /const \[orderPolicyAccepted, setOrderPolicyAccepted\] = useState\(false\)/
+  );
   assert.match(checkout, /if \(!pendingPaymongoOrder && !orderPolicyAccepted\)/);
   assert.match(checkout, /checked=\{orderPolicyAccepted\}/);
   assert.match(checkout, /required\s+type="checkbox"/);
