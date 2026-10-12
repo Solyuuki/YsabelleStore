@@ -330,7 +330,7 @@ test("small-phone product cards retain semantics with compact badges and Add", (
   assert.match(css, /\.customer-product-badge__label-mobile,[\s\S]*?\.customer-product-card__add-mobile\s*\{\s*display: none;/);
   assert.match(portrait, /\.customer-app \.customer-product-badge\s*\{[^}]*max-width: calc\(100% - 60px\);/);
   assert.match(portrait, /\.customer-app \.customer-product-badge__label-full\s*\{\s*display: none;/);
-  assert.match(portrait, /\.customer-app \.customer-product-badge__label-mobile\s*\{\s*display: inline;/);
+  assert.match(portrait, /\.customer-app \.customer-product-badge__label-mobile\s*\{\s*display: block;/);
   assert.match(portrait, /\.customer-app \.customer-product-card__favorite\s*\{[^}]*width: 44px;[^}]*height: 44px;/);
   assert.match(portrait, /\.customer-app \.customer-product-card__favorite::before\s*\{[^}]*inset: 5px;/);
   assert.match(portrait, /\.customer-app \.customer-product-card h3\s*\{[^}]*-webkit-line-clamp: 2;/);
