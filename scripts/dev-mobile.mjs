@@ -64,7 +64,7 @@ try {
         stdio: ["inherit", "inherit", "inherit", "ipc"],
         windowsHide: true
       });
-      await waitUntil(async () => (await probeStack()) === "complete", ownedStack, "Web/backend stack");
+      await waitUntil(async () => (await probeStack()) === "backend-only", ownedStack, "Web/backend stack");
     } else if (state === "backend-only") {
       console.info("Reusing the healthy YsabelleStore backend and database.");
       console.info("Mobile frontend runs independently on port 5174; port 5173 is optional.");
