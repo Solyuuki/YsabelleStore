@@ -2068,3 +2068,158 @@
     margin-top: 1.15rem;
   }
 }
+
+/* Compact related-products carousel and unobtrusive page scrollbars.
+   Keep native document scroll and horizontal swipe behavior: only hide
+   the visible browser scrollbar in phone portrait. */
+@media (max-width: 700px) and (orientation: portrait) {
+  html[data-appearance-scope="storefront"],
+  html[data-appearance-scope="storefront"] body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html[data-appearance-scope="storefront"]::-webkit-scrollbar,
+  html[data-appearance-scope="storefront"] body::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__rail-shell {
+    min-width: 0;
+    max-width: 100%;
+    margin-top: 1rem;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport {
+    min-width: 0;
+    max-width: 100%;
+    gap: var(--store-phone-card-gap, 8px);
+    padding: 0.25rem 0.1rem 0.7rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 0.1rem;
+    scrollbar-width: none;
+    touch-action: pan-x pan-y;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Exactly two bounded cards across the rail, not a single 78vw card.
+     Responsive width follows the *container*, never the device hardware. */
+  .customer-app .customer-product-page .customer-related-products__viewport > .customer-product-card {
+    flex: 0 0 calc((100% - var(--store-phone-card-gap, 8px)) / 2);
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    scroll-snap-align: start;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-product-card__visual-link {
+    padding: 0.35rem 0.35rem 0;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-product-visual {
+    min-height: 0;
+    aspect-ratio: 4 / 3;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-product-card__body {
+    min-width: 0;
+    padding: clamp(7px, 2.2vw, 10px);
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-product-card__body > .customer-eyebrow {
+    margin-bottom: 0.25rem;
+    font-size: 0.6rem;
+    line-height: 1.3;
+    letter-spacing: 0.025em;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-product-card h3 {
+    min-height: 0;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: clamp(0.76rem, 3.3vw, 0.87rem);
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-product-card__rating {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    gap: 0.2rem;
+    margin-top: 0.35rem;
+    font-size: 0.65rem;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-product-card__review-count {
+    display: none;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-product-card__price-row {
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: 0.2rem 0.4rem;
+    margin-top: 0.45rem;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-product-card__price-row strong {
+    font-size: clamp(0.9rem, 3.9vw, 1.05rem);
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-product-card__price-row span {
+    font-size: 0.65rem;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-product-card__actions {
+    padding-top: 0.55rem;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-product-card__purchase-row {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: clamp(3px, 1vw, 6px);
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-quantity {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(18px, 0.85fr) minmax(0, 1fr);
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-quantity > button {
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-product-card__cart-button {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding-inline: 2px;
+    gap: 2px;
+    white-space: nowrap;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-product-card__add-full {
+    display: none;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-product-card__add-mobile {
+    display: inline;
+  }
+
+  .customer-app .customer-product-page .customer-related-products__viewport .customer-product-card__cart-button svg {
+    width: 14px;
+    height: 14px;
+    flex: none;
+  }
+}
