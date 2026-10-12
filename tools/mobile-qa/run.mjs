@@ -48,6 +48,29 @@ async function measurePage(page, viewport) {
       ".shop-product-grid"
     ];
     const overflowing = [];
+    const portraitPhone = width <= 700 && height > width;
+    const rails = [...document.querySelectorAll(".home-product-rail__viewport")];
+    const horizontalRailsInPortrait = rails.filter((rail) => {
+      return portraitPhone && rail.scrollWidth > rail.clientWidth + 2;
+    }).length;
+
+    // Cards outside the page viewport are expected inside a *clipped and
+    // scrollable* Home product rail on landscape, tablet and desktop. They are
+    // still checked on portrait phones, where rails must form vertical grids.
+    function isContainedInHorizontalRail(element) {
+      if (portraitPhone) return false;
+      const rail = element.closest(".home-product-rail__viewport");
+      if (!rail) return false;
+      const railStyle = getComputedStyle(rail);
+      const railBounds = rail.getBoundingClientRect();
+      return (
+        ["auto", "scroll"].includes(railStyle.overflowX) &&
+        rail.scrollWidth > rail.clientWidth + 2 &&
+        railBounds.left >= -1 &&
+        railBounds.right <= width + 1
+      );
+    }
+
     for (const selector of selectors) {
       for (const element of document.querySelectorAll(selector)) {
         const style = getComputedStyle(element);
@@ -56,6 +79,7 @@ async function measurePage(page, viewport) {
           continue;
         }
         if (bounds.left < -1 || bounds.right > width + 1) {
+          if (isContainedInHorizontalRail(element)) continue;
           overflowing.push({
             selector,
             left: Math.round(bounds.left),
@@ -78,6 +102,7 @@ async function measurePage(page, viewport) {
       dockVisible: Boolean(dockVisible),
       dockSlots: dockVisible ? dock.children.length : 0,
       legacyBurger: Boolean(document.querySelector(".customer-menu-button")),
+      horizontalRailsInPortrait,
       overflowing
     };
   }, viewport);
@@ -168,6 +193,9 @@ async function run() {
           }
           if (result.scrollWidth > viewport.width + 1) {
             issues.push(`Document overflow: ${result.scrollWidth}px > ${viewport.width}px`);
+          }
+          if (result.horizontalRailsInPortrait) {
+            issues.push(`Horizontal product rails in portrait: ${result.horizontalRailsInPortrait}`);
           }
           if (result.overflowing.length) {
             issues.push(
