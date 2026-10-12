@@ -16,6 +16,7 @@ const notice = read("frontend/src/components/customer/PrivacyNotice.tsx");
 const policy = read("frontend/src/pages/customer/PrivacyPolicyPage.tsx");
 const privacyContent = read("frontend/src/content/privacy.ts");
 const privacyCss = read("frontend/src/styles/customer-privacy.css");
+const mobileNav = read("frontend/src/components/customer/CustomerMobileNav.tsx");
 
 test("storefront exposes a dedicated privacy route and persistent footer access", () => {
   assert.match(app, /pathname === "\/privacy"/);
@@ -70,4 +71,30 @@ test("privacy UI is responsive, material-aware, and reduced-motion safe", () => 
   assert.match(privacyCss, /@media \(max-width: 720px\)/);
   assert.match(privacyCss, /@media \(max-width: 520px\)/);
   assert.match(privacyCss, /@media \(prefers-reduced-motion: reduce\)/);
+});
+
+
+test("mobile More links to the existing Privacy & Cookies page and closes its sheet", () => {
+  assert.match(mobileNav, /<CustomerLink href="\/privacy" navigate=\{navigate\} onClick=\{\(\) => setMoreOpen\(false\)\}>/);
+  assert.match(mobileNav, /<span>Privacy &amp; Cookies<\/span>/);
+  assert.match(mobileNav, /<ShieldCheck aria-hidden="true" size=\{20\} \/>/);
+  assert.match(app, /pathname === "\/privacy"/);
+});
+
+test("Privacy sections use an accessible no-scroll mobile table of contents", () => {
+  assert.match(policy, /const \[tocOpen, setTocOpen\] = useState\(false\)/);
+  assert.match(policy, /aria-controls="customer-privacy-toc-links"/);
+  assert.match(policy, /aria-expanded=\{tocOpen\}/);
+  assert.match(policy, /setTocOpen\(\(open\) => !open\)/);
+  assert.match(policy, /data-mobile-open=\{tocOpen\}/);
+  assert.match(policy, /<nav id="customer-privacy-toc-links">/);
+  assert.match(policy, /onClick=\{\(\) => setTocOpen\(false\)\}/);
+
+  const tablet = privacyCss.split("@media (max-width: 980px) {")[1]?.split("@media (max-width: 720px) {")[0];
+  assert.ok(tablet, "Missing compact/privacy TOC breakpoint");
+  assert.match(tablet, /\.customer-privacy-toc\s*\{[^}]*overflow: visible;/);
+  assert.match(tablet, /\.customer-privacy-toc nav\s*\{[^}]*display: none;[^}]*width: 100%;[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
+  assert.match(tablet, /\.customer-privacy-toc\[data-mobile-open="true"\] nav\s*\{\s*display: grid;/);
+  assert.match(tablet, /\.customer-privacy-toc__toggle\s*\{[^}]*min-height: 44px;/);
+  assert.doesNotMatch(tablet, /overflow-x: auto|width: max-content/);
 });
