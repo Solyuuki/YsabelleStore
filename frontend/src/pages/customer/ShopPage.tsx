@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Search, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown, Search, SlidersHorizontal } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -45,6 +45,7 @@ export function ShopPage({
         : "all";
   const pageParam = Math.max(1, Number(params.get("page")) || 1);
   const [search, setSearch] = useState(searchParam);
+  const [categoriesExpanded, setCategoriesExpanded] = useState(false);
   const [categories, setCategories] = useState<StorefrontCategory[]>([]);
   const [products, setProducts] = useState<StorefrontProduct[]>([]);
   const [meta, setMeta] = useState<StorefrontPagination>({
@@ -276,7 +277,7 @@ export function ShopPage({
         <ShopCatalogBackdrop />
         <aside
           aria-label="Shop filters"
-          className={`customer-filter-panel shop-category-navigation ${categoryNavigationReveal.isVisible ? "is-visible" : ""}`}
+          className={`customer-filter-panel shop-category-navigation ${categoryNavigationReveal.isVisible ? "is-visible" : ""}${categoriesExpanded ? " is-expanded" : ""}`}
           id="categories"
           ref={categoryNavigationReveal.ref}
         >
@@ -284,6 +285,15 @@ export function ShopPage({
             <SlidersHorizontal aria-hidden="true" size={18} />
             <h2>Browse</h2>
           </div>
+          <button
+            aria-expanded={categoriesExpanded}
+            className="shop-category-toggle"
+            onClick={() => setCategoriesExpanded((current) => !current)}
+            type="button"
+          >
+            <span>Browse categories</span>
+            <ChevronDown aria-hidden="true" className="shop-category-toggle__chevron" size={18} />
+          </button>
           <CustomerLink
             className={!categorySlug ? "is-active" : ""}
             href={buildShopUrl({ page: 1 }, null)}
