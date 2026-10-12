@@ -1,7 +1,6 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
-import { BrandLogo } from "@/components/brand/BrandLogo";
 import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
 import { StatusIllustration } from "@/components/shared/StatusIllustration";
 import { Button } from "@/components/ui/button";
@@ -170,15 +169,6 @@ export function StatusScreen({
         />
         <div className="status-screen__light-wash absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(247,249,255,0.3))]" />
       </div>
-
-      {variant !== "system" ? (
-        <header className="auth-footer-enter relative z-10 flex items-center px-6 py-5 sm:px-10 sm:py-7">
-          <BrandLogo
-            className="status-screen__brand-logo h-auto w-[10.75rem] max-w-[48vw] object-contain object-left drop-shadow-[0_8px_18px_rgba(49,46,129,0.1)]"
-            variant="full"
-          />
-        </header>
-      ) : null}
 
       {variant === "navigation" ? (
         <main className="status-screen-main relative z-10 flex flex-1 items-center justify-center px-5 sm:px-8">
