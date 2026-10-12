@@ -142,7 +142,10 @@
 }
 
 .ysabelle-guide .driver-popover-footer button {
+  box-sizing: border-box;
+  min-width: 0;
   min-height: 2.45rem;
+  white-space: nowrap;
   padding: 0.58rem 0.95rem !important;
   border-radius: 0.72rem !important;
   font-family: var(--font-sans) !important;
