@@ -511,8 +511,8 @@ test("checkout confirmation keeps readable mobile spacing without changing payme
 
   assert.match(block, /@media \(max-width: 700px\)/);
   assert.match(block, /\.customer-checkout-summary\s*\{[^}]*padding: clamp\(1rem, 4vw, 1\.3rem\);/);
-  assert.match(block, /\.customer-checkout-summary > \.customer-order-summary__helper\s*\{[^}]*margin: 1rem 0 0 !important;[^}]*line-height: 1\.65 !important;/);
-  assert.match(block, /\.customer-checkout-summary > \.customer-order-policy__trigger\s*\{[^}]*margin: 0\.9rem 0 0;/);
+  assert.match(block, /\.customer-checkout-summary > \.customer-order-summary__helper\s*\{[^}]*margin: 1rem 0 0 !important;[^}]*padding-bottom: 1rem;[^}]*line-height: 1\.65 !important;/);
+  assert.match(block, /\.customer-checkout-summary > \.customer-order-policy__trigger\s*\{[^}]*display: flex;[^}]*width: fit-content;[^}]*margin: 0;/);
   assert.match(block, /\.customer-checkout-summary > \.customer-order-agreement\s*\{[^}]*margin-top: 1rem;[^}]*padding: 1rem 0\.9rem;/);
   assert.match(block, /\.customer-checkout-summary > \.customer-order-summary__action\s*\{[^}]*min-height: 48px;[^}]*margin-top: 1\.15rem;/);
 
