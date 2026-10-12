@@ -33,6 +33,7 @@ process.once("exit", () => {
 try {
   const existing = await probePreview();
   if (existing === "ready") {
+    await assertMobileFavoriteOriginAllowed();
     console.info("YsabelleStore mobile preview is already running.");
     printLinks();
     if (!noOpen) openBrowser(MOBILE_ORIGIN + PREVIEW_PATH);
@@ -92,6 +93,7 @@ try {
     if (!response.ok || health?.data?.service !== "ysabellestore-backend") {
       throw new Error("The mobile /api proxy is not connected to the YsabelleStore backend.");
     }
+    await assertMobileFavoriteOriginAllowed();
 
     console.info("");
     console.info("YsabelleStore mobile development environment ready");
@@ -114,6 +116,30 @@ try {
   await shutdown(1);
 }
 if (ownedPreview || ownedStack) await shutdown(process.exitCode ?? 0);
+
+async function assertMobileFavoriteOriginAllowed() {
+  // The unauthenticated DELETE is intentionally rejected with 401 when the
+  // Origin is trusted. 403 means the browser preview cannot perform favorites.
+  // No mutation occurs because this probe never carries a session cookie.
+  const response = await fetch(MOBILE_ORIGIN + "/api/customer-account/favorites/__mobile_origin_probe__", {
+    method: "DELETE",
+    headers: { Origin: MOBILE_ORIGIN },
+    signal: AbortSignal.timeout(5_000)
+  });
+  if (response.status === 401) return;
+
+  const body = await response.json().catch(() => null);
+  if (response.status === 403 && body?.error?.code === "CUSTOMER_AUTH_ORIGIN_REJECTED") {
+    throw new Error(
+      "Mobile favorites are blocked by the existing backend's Origin allowlist. " +
+      "Restart the development backend to load the Sprint 12 mobile-preview origin fix, then retry."
+    );
+  }
+  throw new Error(
+    "Mobile favorites origin preflight failed (HTTP " + response.status +
+    "). Check the backend auth/origin configuration before testing account actions."
+  );
+}
 
 async function probeStack() {
   // Verify the backend by its HTTP identity, not an IPv4/IPv6-dependent TCP probe.
