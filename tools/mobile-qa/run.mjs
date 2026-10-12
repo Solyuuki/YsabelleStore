@@ -89,6 +89,27 @@ async function measurePage(page, viewport) {
       }
     }
 
+    const categoryCards = [...document.querySelectorAll(".home-category-grid .home-category-card")];
+    const cardHeights = categoryCards.map((card) => card.getBoundingClientRect().height);
+    const categoryImages = categoryCards.map((card) =>
+      card.querySelector(".home-category-card__visual")?.getBoundingClientRect().height ?? 0
+    );
+    const unevenHeights = (values) =>
+      values.length > 1 && Math.max(...values) - Math.min(...values) > 2;
+    const categoryLayout = {
+      count: categoryCards.length,
+      unevenCardHeights: unevenHeights(cardHeights),
+      unevenImageHeights: unevenHeights(categoryImages),
+      missingBrowsingActions: categoryCards.filter((card) => {
+        const action = card.querySelector(".home-category-card__mobile-cta");
+        return !action || getComputedStyle(action).display === "none";
+      }).length,
+      visibleDescriptions: categoryCards.filter((card) => {
+        const description = card.querySelector(".home-category-card__description");
+        return description && getComputedStyle(description).display !== "none";
+      }).length
+    };
+
     const dock = document.querySelector(".customer-mobile-dock");
     const dockVisible =
       dock &&
@@ -102,6 +123,7 @@ async function measurePage(page, viewport) {
       dockVisible: Boolean(dockVisible),
       dockSlots: dockVisible ? dock.children.length : 0,
       legacyBurger: Boolean(document.querySelector(".customer-menu-button")),
+      categoryLayout,
       horizontalRailsInPortrait,
       overflowing
     };
@@ -182,6 +204,14 @@ async function run() {
           await page
             .locator(route === "/" ? ".customer-home" : ".customer-shop-page")
             .waitFor({ timeout: 15000 });
+          // Category-density assertions need actual loaded cards, not only the
+          // Home shell. Missing catalog data must not silently pass UI QA.
+          if (route === "/" && viewport.width <= 700 && viewport.height > viewport.width) {
+            await page.locator(".home-category-grid .home-category-card").first().waitFor({
+              state: "attached",
+              timeout: 10000
+            });
+          }
           await page.evaluate(() => document.fonts.ready);
           const dismiss = page.getByRole("button", { name: "Dismiss privacy notice" });
           if (await dismiss.isVisible().catch(() => false)) await dismiss.click();
@@ -196,6 +226,23 @@ async function run() {
           }
           if (result.horizontalRailsInPortrait) {
             issues.push(`Horizontal product rails in portrait: ${result.horizontalRailsInPortrait}`);
+          }
+          if (route === "/" && viewport.width <= 700 && viewport.height > viewport.width) {
+            if (result.categoryLayout.count < 2) {
+              issues.push("Not enough category cards to verify two-column layout");
+            }
+            if (result.categoryLayout.unevenCardHeights) {
+              issues.push("Category cards have inconsistent heights");
+            }
+            if (result.categoryLayout.unevenImageHeights) {
+              issues.push("Category cover images have inconsistent heights");
+            }
+            if (result.categoryLayout.missingBrowsingActions) {
+              issues.push("Category cards have missing mobile browsing actions");
+            }
+            if (result.categoryLayout.visibleDescriptions) {
+              issues.push("Raw category descriptions remain visible in compact cards");
+            }
           }
           if (result.overflowing.length) {
             issues.push(
