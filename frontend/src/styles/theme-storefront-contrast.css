@@ -2049,6 +2049,29 @@
   color: #ffe0ed;
 }
 
+/* Checkout dark canvas: reuse the approved Storefront/Cart galaxy, not the
+   old cover-scaled midnight-velvet shader. Keep its intrinsic proportions and
+   blend the long page to the same #101827 base as the shared storefront.
+   This is a route background only: form cards, topbar and nav are unchanged. */
+:root.dark .customer-app .customer-checkout-page {
+  position: relative;
+  isolation: isolate;
+  background-color: #101827 !important;
+  background-image:
+    linear-gradient(
+      to bottom,
+      #101827 0,
+      transparent 145px,
+      transparent calc(100% - 220px),
+      #101827 100%
+    ),
+    var(--storefront-galaxy-background) !important;
+  background-size: auto !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+  background-blend-mode: normal !important;
+}
+
 /* Checkout dark-mode completion: saved preferences and payment choices. */
 /* These controls were light-first despite the dark checkout form. Scope every
    surface and state to the customer checkout so light mode remains unchanged. */
