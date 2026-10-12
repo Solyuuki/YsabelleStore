@@ -2033,12 +2033,17 @@
 
   .customer-app .customer-checkout-page .customer-checkout-summary > .customer-order-summary__helper {
     margin: 1rem 0 0 !important;
+    /* Padding belongs to the text box, so it cannot collapse with the next
+       sibling or depend on the trigger's inline formatting context. */
+    padding-bottom: 1rem;
     line-height: 1.65 !important;
   }
 
   .customer-app .customer-checkout-page .customer-checkout-summary > .customer-order-policy__trigger {
+    display: flex;
+    width: fit-content;
     max-width: 100%;
-    margin: 0.9rem 0 0;
+    margin: 0;
   }
 
   .customer-app .customer-checkout-page .customer-checkout-summary > .customer-order-agreement {
