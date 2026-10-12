@@ -156,3 +156,33 @@ test("logout confirmation reuses the About galaxy and keeps both themes readable
   assert.match(modal, /event\.key === "Escape"/);
   assert.match(modal, /isLoggingOut \? "Securing session\.\.\."/);
 });
+
+
+test("About dark preference themes mobile dock and portaled menus without changing story scenes", () => {
+  const appearance = read("frontend/src/context/AppearanceContext.tsx");
+  const mobile = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const app = read("frontend/src/app/CustomerApp.tsx");
+  const scoped = mobile.split("/* About/Discover chrome-only dark mode:")[1];
+
+  assert.ok(scoped, "Missing About-specific mobile chrome styles");
+  assert.match(appearance, /root\.dataset\.aboutChromeTheme = "dark"/);
+  assert.match(appearance, /!preserveAbout &&/);
+  assert.match(app, /customer-adaptive-mobile\.css/);
+  assert.match(scoped, /@media \(max-width: 1180px\)/);
+  for (const className of [
+    "customer-mobile-dock",
+    "customer-mobile-dock__link",
+    "customer-mobile-dock__more",
+    "customer-mobile-dock__more-icon",
+    "customer-mobile-more__sheet",
+    "customer-mobile-account__popover"
+  ]) {
+    assert.ok(scoped.includes(className), "Missing About dark style: " + className);
+  }
+  assert.match(scoped, /:root\[data-about-chrome-theme="dark"\]/);
+  assert.match(scoped, /background: rgb\(20 31 49 \/ 96%\)/);
+  assert.match(scoped, /color: #d4e0f3;/);
+  assert.match(scoped, /:focus-visible/);
+  assert.doesNotMatch(scoped, /\.discover-story|\.story-welcome|\.story-catalog/);
+  assert.doesNotMatch(scoped, /:root\.light/);
+});
