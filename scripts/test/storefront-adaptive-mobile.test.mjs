@@ -380,6 +380,32 @@ test("browser QA covers compact search suggestions without covering mobile dock"
   assert.match(qa, /page\.keyboard\.press\("Escape"\)/);
 });
 
+test("mobile product detail keeps sizes readable and explains verified-review eligibility", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const sizes = read("frontend/src/components/customer/ProductSizeSelector.tsx");
+  const detail = read("frontend/src/pages/customer/ProductDetailPage.tsx");
+  const service = read("backend/src/services/storefrontService.ts");
+
+  assert.match(css, /\.customer-product-page \.customer-product-visual\.customer-product-visual--large\s*\{[^}]*height: clamp\(260px, 82vw, 340px\);[^}]*min-height: 0;/);
+  assert.match(css, /\.customer-product-page \.customer-product-size-selector__rail-shell\s*\{[^}]*display: block;/);
+  assert.match(css, /\.customer-product-page \.customer-product-size-selector__arrow\s*\{\s*display: none;/);
+  assert.match(css, /\.customer-product-page \.customer-product-size-option\s*\{[^}]*flex: 0 0 calc\(\(100% - 0\.55rem\) \/ 2\);/);
+  assert.match(css, /\.customer-product-page \.customer-product-size-option__copy strong\s*\{[^}]*white-space: normal;/);
+  assert.match(sizes, /customer-product-size-selector__swipe-hint/);
+  assert.doesNotMatch(sizes, /title=\{variant\.name\}/);
+
+  assert.match(detail, /reviewContextLoading/);
+  assert.match(detail, /"Purchase required"/);
+  assert.match(detail, /Signed in · Purchase not verified/);
+  assert.match(detail, /Check order history/);
+  assert.match(detail, /Retry verification/);
+  assert.match(detail, /writeReviewDraft\(productId, \{ rating: star, comment: reviewComment \}\)/);
+  assert.match(detail, /authStatus === "authenticated" && !reviewContext\?\.eligible/);
+  assert.match(service, /status: CustomerOrderStatus\.COMPLETED,/);
+  assert.match(service, /items: \{ some: \{ productId \} \}/);
+  assert.match(service, /code: "CUSTOMER_REVIEW_PURCHASE_REQUIRED"/);
+});
+
 test("small-phone product cards retain semantics with compact badges and Add", () => {
   const card = read("frontend/src/components/customer/ProductCard.tsx");
   const css = read("frontend/src/styles/customer-adaptive-mobile.css");
