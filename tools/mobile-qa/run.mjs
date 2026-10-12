@@ -112,6 +112,72 @@ async function measurePage(page, viewport) {
       }).length
     };
 
+    // Product density is a visual contract, not only document scroll width.
+    // Inspect every rendered card at phone sizes, including cards below fold.
+    const productCards = portraitPhone
+      ? [...document.querySelectorAll(".customer-product-card")]
+      : [];
+    const productLayout = {
+      count: productCards.length,
+      badgeOverlaps: [],
+      clippedBadges: [],
+      smallFavoriteTargets: [],
+      oversizedCartActions: [],
+      smallQuantityTargets: [],
+      visibleReviewCounts: [],
+      wrongTitleClamps: []
+    };
+    productCards.forEach((card, index) => {
+      const badge = card.querySelector(".customer-product-badge");
+      const favorite = card.querySelector(".customer-product-card__favorite");
+      const add = card.querySelector(".customer-product-card__cart-button");
+      const quantityButtons = card.querySelectorAll(".customer-quantity > button");
+      const title = card.querySelector("h3");
+      const reviewCount = card.querySelector(".customer-product-card__review-count");
+      const label = badge?.querySelector(".customer-product-badge__label-mobile");
+
+      if (badge && favorite) {
+        const badgeBounds = badge.getBoundingClientRect();
+        const favoriteBounds = favorite.getBoundingClientRect();
+        if (badgeBounds.right > favoriteBounds.left - 1) {
+          productLayout.badgeOverlaps.push(index);
+        }
+        if (
+          label &&
+          (getComputedStyle(label).display === "none" ||
+            label.scrollWidth > label.clientWidth + 1)
+        ) {
+          productLayout.clippedBadges.push(index);
+        }
+      }
+      if (favorite) {
+        const bounds = favorite.getBoundingClientRect();
+        if (bounds.width < 43 || bounds.height < 43) {
+          productLayout.smallFavoriteTargets.push(index);
+        }
+      }
+      if (add) {
+        const bounds = add.getBoundingClientRect();
+        if (bounds.width > 97 || bounds.height > 48 || bounds.height < 43) {
+          productLayout.oversizedCartActions.push(index);
+        }
+      }
+      if (
+        [...quantityButtons].some((button) => {
+          const bounds = button.getBoundingClientRect();
+          return bounds.width < 43 || bounds.height < 43;
+        })
+      ) {
+        productLayout.smallQuantityTargets.push(index);
+      }
+      if (reviewCount && getComputedStyle(reviewCount).display !== "none") {
+        productLayout.visibleReviewCounts.push(index);
+      }
+      if (title && getComputedStyle(title).webkitLineClamp !== "2") {
+        productLayout.wrongTitleClamps.push(index);
+      }
+    });
+
     const dock = document.querySelector(".customer-mobile-dock");
     const dockVisible =
       dock &&
@@ -126,6 +192,7 @@ async function measurePage(page, viewport) {
       dockSlots: dockVisible ? dock.children.length : 0,
       legacyBurger: Boolean(document.querySelector(".customer-menu-button")),
       categoryLayout,
+      productLayout,
       horizontalRailsInPortrait,
       overflowing
     };
@@ -261,6 +328,12 @@ async function run() {
               timeout: 10000
             });
           }
+          if (viewport.width <= 700 && viewport.height > viewport.width) {
+            await page.locator(".customer-product-card").first().waitFor({
+              state: "attached",
+              timeout: 10000
+            });
+          }
           await page.evaluate(() => document.fonts.ready);
           const dismiss = page.getByRole("button", { name: "Dismiss privacy notice" });
           if (await dismiss.isVisible().catch(() => false)) await dismiss.click();
@@ -291,6 +364,23 @@ async function run() {
             }
             if (result.categoryLayout.visibleDescriptions) {
               issues.push("Raw category descriptions remain visible in compact cards");
+            }
+          }
+          if (viewport.width <= 700 && viewport.height > viewport.width) {
+            const layout = result.productLayout;
+            if (layout.count < 1) issues.push("No rendered product cards for density QA");
+            for (const [issue, cardIndices] of [
+              ["Overlapping product badge and favorite", layout.badgeOverlaps],
+              ["Clipped or hidden mobile badge label", layout.clippedBadges],
+              ["Favorite touch target below 44px", layout.smallFavoriteTargets],
+              ["Cart action outside compact 44px sizing", layout.oversizedCartActions],
+              ["Quantity controls below 44px", layout.smallQuantityTargets],
+              ["Mobile review counts still visible", layout.visibleReviewCounts],
+              ["Product titles not clamped to two lines", layout.wrongTitleClamps]
+            ]) {
+              if (cardIndices.length) {
+                issues.push(`${issue}: cards ${cardIndices.slice(0, 6).join(", ")}`);
+              }
             }
           }
           if (result.overflowing.length) {
