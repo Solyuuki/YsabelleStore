@@ -700,7 +700,7 @@ test("dark active delivery tracking has no white tiles or invisible text", () =>
   assert.match(premium, /\.customer-account-delivery-overview > div\s*\{[^}]*background: #fafbfe;/);
   assert.match(rule(".customer-account-delivery-overview > div"), /background: #2b3b55;/);
   assert.match(rule(".customer-account-order-topline > div > strong"), /color: #f2f5ff;/);
-  assert.match(rule(".customer-account-delivery-address, .customer-account-delivery-courier").replace(/\s+/g, " "), /./);
+  assert.match(rule(":is(.customer-account-delivery-address, .customer-account-delivery-courier)"), /color: #cfdaec;/);
   assert.match(rule(".customer-delivery-stepper__marker"), /background: #30415c;/);
   assert.match(rule(".customer-delivery-stepper__copy strong"), /color: #e1eafa;/);
   assert.match(rule(".customer-delivery-stepper__copy small"), /color: #c2d0e5;/);
