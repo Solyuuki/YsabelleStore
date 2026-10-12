@@ -81,8 +81,13 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
   const [createdTicket, setCreatedTicket] = useState<CustomerSupportTicketCreated | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showSupportTips, setShowSupportTips] = useState(false);
+  const [showSupportFaq, setShowSupportFaq] = useState(false);
 
   const signedIn = status === "authenticated" && Boolean(customer);
+  const orderRelatedConcern = (
+    ["ORDER", "PAYMENT", "PICKUP_DELIVERY", "RETURN_REFUND"] as CustomerSupportCategory[]
+  ).includes(category);
 
   useEffect(() => {
     if (!customer) return;
@@ -150,10 +155,15 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
         <div className="customer-container customer-support-hero__grid">
           <div>
             <p className="customer-eyebrow">Customer support</p>
-            <h1>Tell us what happened. We&apos;ll keep it organized.</h1>
+            <h1>
+              Tell us what happened.
+              <span className="customer-support-hero__detail"> We&apos;ll keep it organized.</span>
+            </h1>
             <p className="customer-support-hero__lead">
               Send one clear request and receive a ticket reference you can keep for follow-up.
-              Order numbers are optional, but useful for purchase-related concerns.
+              <span className="customer-support-hero__extra">
+                {" "}Order numbers are optional, but useful for purchase-related concerns.
+              </span>
             </p>
             <div className="customer-support-hero__signals" aria-label="Support safeguards">
               <span>
@@ -229,9 +239,15 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
               {signedIn ? (
                 <div className="customer-support-account-note">
                   <ShieldCheck aria-hidden="true" size={18} />
-                  <span>
+                  <span className="customer-support-account-note__desktop">
                     Signed in as <strong>{customer?.email}</strong>. Your saved account contact
                     details will be used for this ticket.
+                  </span>
+                  <span className="customer-support-account-note__mobile">
+                    <strong>Verified contact</strong>
+                    <span>{customerName}</span>
+                    <span>{customerEmail}</span>
+                    {customerPhone ? <small>Mobile: {customerPhone}</small> : null}
                   </span>
                 </div>
               ) : null}
@@ -240,7 +256,7 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
                 className="customer-support-form"
                 onSubmit={(event) => void handleSubmit(event)}
               >
-                <div className="customer-support-form__two-column">
+                <div className={`customer-support-form__two-column${signedIn ? " customer-support-form__verified-fields" : ""}`}>
                   <label>
                     <span>Name</span>
                     <div
@@ -320,7 +336,7 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
                 </div>
 
                 <div className="customer-support-form__two-column">
-                  <label>
+                  <label className={signedIn ? "customer-support-form__verified-phone" : undefined}>
                     <span>
                       Phone <small>optional</small>
                     </span>
@@ -362,9 +378,15 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
                   <label>
                     <span>Concern type</span>
                     <select
-                      onChange={(event) =>
-                        setCategory(event.target.value as CustomerSupportCategory)
-                      }
+                      onChange={(event) => {
+                        const nextCategory = event.target.value as CustomerSupportCategory;
+                        setCategory(nextCategory);
+                        if (
+                          !(
+                            ["ORDER", "PAYMENT", "PICKUP_DELIVERY", "RETURN_REFUND"] as CustomerSupportCategory[]
+                          ).includes(nextCategory)
+                        ) setOrderNumber("");
+                      }}
                       value={category}
                     >
                       {CATEGORY_OPTIONS.map((option) => (
@@ -376,7 +398,9 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
                   </label>
                 </div>
 
-                <label>
+                <label
+                  className={`customer-support-form__order-reference${orderRelatedConcern ? "" : " customer-support-form__order-reference--nonpurchase"}`}
+                >
                   <span>
                     Order number <small>optional</small>
                   </span>
@@ -438,8 +462,23 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
           )}
         </section>
 
-        <aside className="customer-support-sidebar">
-          <div className="customer-support-info-card">
+        <aside
+          className="customer-support-sidebar"
+          data-mobile-open={showSupportTips}
+        >
+          <button
+            aria-controls="customer-support-tips-panel"
+            aria-expanded={showSupportTips}
+            className="customer-support-mobile-disclosure customer-support-sidebar__toggle"
+            onClick={() => setShowSupportTips((open) => !open)}
+            type="button"
+          >
+            <CircleHelp aria-hidden="true" size={18} />
+            <span>Tips for a faster review</span>
+            <span aria-hidden="true">{showSupportTips ? "−" : "+"}</span>
+          </button>
+          <div className="customer-support-sidebar__content" id="customer-support-tips-panel">
+            <div className="customer-support-info-card">
             <PackageSearch aria-hidden="true" size={22} />
             <h2>For order concerns</h2>
             <p>
@@ -463,16 +502,31 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
               sensitive authentication or payment information.
             </p>
           </div>
+          </div>
         </aside>
       </div>
 
-      <div className="customer-container customer-support-faq">
+      <div
+        className="customer-container customer-support-faq"
+        data-mobile-open={showSupportFaq}
+      >
         <div className="customer-support-faq__heading">
           <p className="customer-eyebrow">Frequently asked questions</p>
           <h2>Before you send a request</h2>
           <p>Quick answers for common support questions.</p>
         </div>
-        <div className="customer-support-faq__list">
+        <button
+          aria-controls="customer-support-faq-list"
+          aria-expanded={showSupportFaq}
+          className="customer-support-mobile-disclosure customer-support-faq__toggle"
+          onClick={() => setShowSupportFaq((open) => !open)}
+          type="button"
+        >
+          <CircleHelp aria-hidden="true" size={18} />
+          <span>Common questions &amp; privacy</span>
+          <span aria-hidden="true">{showSupportFaq ? "−" : "+"}</span>
+        </button>
+        <div className="customer-support-faq__list" id="customer-support-faq-list">
           {FAQS.map((faq) => (
             <details key={faq.question}>
               <summary>{faq.question}</summary>
