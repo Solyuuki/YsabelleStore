@@ -452,18 +452,165 @@
     gap: 0.4rem;
   }
 
-  .customer-shop-page .customer-shop-toolbar {
-    min-width: 0;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.5rem;
-    padding: 0.6rem;
+  /* The collapsed category picker needs only one row, not a framed sidebar
+     with an always-visible All Categories option. The selected category stays
+     visible in the button label, and opening it reveals every category link. */
+  .customer-shop-page .customer-filter-panel.shop-category-navigation {
+    position: static;
+    gap: 0.4rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
-  .customer-shop-page .customer-shop-search,
-  .customer-shop-page .customer-select,
-  .customer-shop-page .customer-select select {
+  .customer-shop-page .customer-filter-panel.shop-category-navigation::before {
+    display: none;
+  }
+
+  .customer-shop-page .shop-category-navigation:not(.is-expanded) > a {
+    display: none;
+  }
+
+  .customer-shop-page .shop-category-toggle__label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Search takes the available space; the native availability select remains
+     fully functional behind a 44px icon on the same compact row. */
+  .customer-shop-page .customer-shop-toolbar {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    align-items: stretch;
+    gap: 8px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .customer-shop-page .customer-shop-search {
     min-width: 0;
     width: 100%;
+    min-height: 44px;
+    gap: 0.45rem;
+    padding-inline: 0.65rem;
+    border-color: rgb(98 91 255 / 24%);
+    background: rgb(255 255 255 / 94%);
+    color: #58657e;
+  }
+
+  .customer-shop-page .customer-shop-search > svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
+  }
+
+  .customer-shop-page .customer-shop-search input {
+    min-width: 0;
+    color: #25304a;
+    font-size: clamp(0.72rem, 3.4vw, 0.83rem);
+  }
+
+  .customer-shop-page .customer-shop-search input::placeholder {
+    color: #61718d;
+    opacity: 1;
+  }
+
+  .customer-shop-page .customer-select--availability {
+    position: relative;
+    display: grid;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    place-items: center;
+    border: 1px solid rgb(98 91 255 / 24%);
+    border-radius: 0.72rem;
+    background: rgb(255 255 255 / 94%);
+    color: #404b72;
+  }
+
+  .customer-shop-page .customer-select--availability.is-active {
+    border-color: #7564df;
+    background: #eeeafb;
+    color: #5141ba;
+  }
+
+  .customer-shop-page .customer-select--availability:focus-within {
+    outline: 2px solid #7564df;
+    outline-offset: 2px;
+  }
+
+  .customer-shop-page .customer-select__mobile-glyph {
+    position: relative;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+  }
+
+  .customer-shop-page .customer-select__active-dot {
+    position: absolute;
+    top: -5px;
+    right: -6px;
+    width: 7px;
+    height: 7px;
+    border: 1px solid #fff;
+    border-radius: 50%;
+    background: #7051dd;
+    pointer-events: none;
+  }
+
+  .customer-shop-page .customer-select--availability select {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    min-height: 44px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    cursor: pointer;
+    opacity: 0;
+  }
+
+  .customer-shop-page .customer-results-meta {
+    gap: 0.3rem;
+    padding-block: 0.9rem 0.7rem;
+  }
+
+  :root.dark .customer-app .customer-shop-page .customer-filter-panel.shop-category-navigation,
+  :root.dark .customer-app .customer-shop-page .customer-shop-toolbar {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  :root.dark .customer-app .customer-shop-page .customer-shop-search,
+  :root.dark .customer-app .customer-shop-page .customer-select--availability {
+    border-color: #67799b;
+    background: #1e2d45;
+    color: #e3eaff;
+  }
+
+  :root.dark .customer-app .customer-shop-page .customer-shop-search input {
+    color: #f1f5ff;
+  }
+
+  :root.dark .customer-app .customer-shop-page .customer-shop-search input::placeholder {
+    color: #b6c5e0;
+  }
+
+  :root.dark .customer-app .customer-shop-page .customer-select--availability.is-active {
+    border-color: #bca8ff;
+    background: #3e3369;
+    color: #e7daff;
   }
 
   .customer-shop-page .shop-catalog-refresh__card {
