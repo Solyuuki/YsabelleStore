@@ -502,3 +502,26 @@ test("browser QA checks actual product badge collision and reachable mobile cart
   assert.match(qa, /Product titles not clamped to two lines/);
   assert.match(qa, /\.customer-product-card"\)\.first\(\)\.waitFor/);
 });
+
+test("checkout confirmation keeps readable mobile spacing without changing payment consent", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const checkout = read("frontend/src/pages/customer/CheckoutPage.tsx");
+  const block = css.split("/* Sprint 12: breathe between checkout explanation")[1];
+  assert.ok(block, "Missing checkout confirmation phone-spacing override");
+
+  assert.match(block, /@media \(max-width: 700px\)/);
+  assert.match(block, /\.customer-checkout-summary\s*\{[^}]*padding: clamp\(1rem, 4vw, 1\.3rem\);/);
+  assert.match(block, /\.customer-checkout-summary > \.customer-order-summary__helper\s*\{[^}]*margin: 1rem 0 0 !important;[^}]*line-height: 1\.65 !important;/);
+  assert.match(block, /\.customer-checkout-summary > \.customer-order-policy__trigger\s*\{[^}]*margin: 0\.9rem 0 0;/);
+  assert.match(block, /\.customer-checkout-summary > \.customer-order-agreement\s*\{[^}]*margin-top: 1rem;[^}]*padding: 1rem 0\.9rem;/);
+  assert.match(block, /\.customer-checkout-summary > \.customer-order-summary__action\s*\{[^}]*min-height: 48px;[^}]*margin-top: 1\.15rem;/);
+
+  const helper = checkout.indexOf('className="customer-order-summary__helper"');
+  const policy = checkout.indexOf("<CustomerOrderPolicyInfo />", helper);
+  const consent = checkout.indexOf('className="customer-order-agreement"', policy);
+  const payment = checkout.indexOf("customer-order-summary__action", consent);
+  assert.ok(helper >= 0 && helper < policy && policy < consent && consent < payment);
+  assert.match(checkout, /checked=\{orderPolicyAccepted\}/);
+  assert.match(checkout, /required\s+type="checkbox"/);
+  assert.match(checkout, /Continue to PayMongo/);
+});
