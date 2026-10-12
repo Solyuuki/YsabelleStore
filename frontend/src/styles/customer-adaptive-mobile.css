@@ -2546,6 +2546,10 @@
     cursor: pointer;
   }
 
+  .customer-app .customer-mobile-dock__account:not(.is-active) {
+    background: transparent;
+  }
+
   .customer-mobile-account__popover {
     position: fixed;
     z-index: 215;
