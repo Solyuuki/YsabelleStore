@@ -22,6 +22,7 @@ import "@/styles/brand.css";
 import "@/styles/shopping-guide.css";
 import "@/styles/theme-storefront.css";
 import "@/styles/theme-storefront-contrast.css";
+import "@/styles/customer-order-policy.css";
 import {
   getCustomerAuthPageKind,
   isCustomerProtectedRoute,
