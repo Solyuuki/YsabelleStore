@@ -54,6 +54,10 @@ test("policy popup is viewport-centered, scroll-safe and supports light/dark the
   assert.match(css, /gap: 0;/);
   assert.match(css, /margin: 0 0 -1px;/);
   assert.match(css, /border-top-left-radius: 0;/);
+  assert.match(css, /border-top-right-radius: 0;/);
+  assert.match(css, /width: 100%;/);
+  assert.match(css, /max-width: none;/);
+  assert.match(css, /justify-content: flex-start;/);
   assert.match(css, /border-bottom-right-radius: 0;/);
   assert.match(css, /border-bottom-left-radius: 0;/);
   assert.match(css, /body \.customer-order-policy__dialog/);
