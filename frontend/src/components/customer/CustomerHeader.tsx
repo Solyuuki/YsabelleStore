@@ -35,6 +35,7 @@ export function CustomerHeader({
       const target = event.target;
       if (!(target instanceof Element)) return;
       if (mobileSearchRef.current?.contains(target)) return;
+      if (target.closest(".customer-mobile-search-trigger")) return;
       if (target.closest(".customer-global-search__positioner")) return;
       setMobileSearchOpen(false);
     };
