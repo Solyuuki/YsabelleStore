@@ -1401,6 +1401,8 @@ async function checkSupportMobileLayout(page, viewport) {
       bodyWidth: document.documentElement.scrollWidth,
       selectPosition: styles?.backgroundPosition ?? "",
       selectAppearance: styles?.appearance ?? "",
+      selectPaddingRight: Number.parseFloat(styles?.paddingRight ?? "0"),
+      selectChevronImage: styles?.backgroundImage ?? "",
       faqClosed: faq ? getComputedStyle(faq).display === "none" : false,
       tipsClosed: tips ? getComputedStyle(tips).display === "none" : false
     };
@@ -1415,7 +1417,11 @@ async function checkSupportMobileLayout(page, viewport) {
       issues.push(`Support field extends outside phone: ${entry.selector}`);
     }
   }
-  if (!dimensions.selectPosition.includes("16px") || dimensions.selectAppearance !== "none") {
+  if (
+    dimensions.selectAppearance !== "none" ||
+    dimensions.selectPaddingRight < 36 ||
+    !dimensions.selectChevronImage.includes("data:image/svg+xml")
+  ) {
     issues.push("Support concern selector does not preserve the chevron gutter");
   }
   if (!dimensions.faqClosed || !dimensions.tipsClosed) {
