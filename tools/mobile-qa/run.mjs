@@ -327,7 +327,8 @@ async function checkMobileCart(page, viewport) {
   const available = await addButtons.count();
   if (available < 3) return ["Not enough in-stock products to verify a multi-item cart"];
 
-  for (let index = 0; index < 3; index += 1) {
+  const itemsToAdd = available >= 6 ? 6 : 3;
+  for (let index = 0; index < itemsToAdd; index += 1) {
     await addButtons.nth(index).click();
   }
   await page.goto(new URL("/cart", BASE_URL).href, { waitUntil: "domcontentloaded" });
@@ -370,7 +371,10 @@ async function checkMobileCart(page, viewport) {
     };
   });
 
-  if (metrics.count !== 3) issues.push(`Expected 3 cart lines, found ${metrics.count}`);
+  const visibleCount = Math.min(itemsToAdd, 5);
+  if (metrics.count !== visibleCount) {
+    issues.push(`Expected ${visibleCount} cart lines, found ${metrics.count}`);
+  }
   if (!metrics.hasSummary) issues.push("Order summary missing from multi-item cart");
   if (metrics.pageWidth > viewport.width + 1) issues.push("Multi-item cart overflows screen width");
   if (metrics.results.some((item) =>
@@ -395,10 +399,30 @@ async function checkMobileCart(page, viewport) {
     fullPage: false
   });
 
+  // When six products exist, pagination must keep five lines per page,
+  // yet totals and item count must cover the complete basket.
+  if (itemsToAdd === 6) {
+    const pagination = page.getByRole("navigation", { name: "cart items pagination" });
+    if (!(await pagination.isVisible())) {
+      issues.push("Six distinct cart products did not show pagination");
+    } else {
+      await pagination.getByRole("button", { name: "Next page" }).click();
+      if ((await cards.count()) !== 1) {
+        issues.push("Cart second page did not show remaining product");
+      }
+      await pagination.getByRole("button", { name: "Previous page" }).click();
+      if ((await cards.count()) !== 5) {
+        issues.push("Cart pagination did not restore the first five products");
+      }
+    }
+  }
+
   // Cart operations must still work after the layout changes.
   const firstRemove = cards.first().getByRole("button", { name: /Remove .* from cart/ });
   await firstRemove.click();
-  if ((await cards.count()) !== 2) issues.push("Remove cart item did not update list");
+  if ((await cards.count()) !== visibleCount - 1) {
+    issues.push("Remove cart item did not update list");
+  }
   return issues;
 }
 
