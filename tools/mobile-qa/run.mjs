@@ -156,7 +156,7 @@ async function measurePage(page, viewport) {
           productLayout.smallFavoriteTargets.push(index);
         }
       }
-      if (add) {
+      if (add && !add.disabled) {
         const bounds = add.getBoundingClientRect();
         if (bounds.width > 97 || bounds.height > 48 || bounds.height < 43) {
           productLayout.oversizedCartActions.push(index);
