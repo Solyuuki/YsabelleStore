@@ -2021,3 +2021,45 @@
     text-align: center;
   }
 }
+
+
+/* Sprint 12: breathe between checkout explanation, cancellation terms, explicit
+   consent and payment submission. Keep the established surfaces and colors. */
+@media (max-width: 700px) {
+  .customer-app .customer-checkout-page .customer-checkout-summary {
+    min-width: 0;
+    padding: clamp(1rem, 4vw, 1.3rem);
+  }
+
+  .customer-app .customer-checkout-page .customer-checkout-summary > .customer-order-summary__helper {
+    margin: 1rem 0 0 !important;
+    line-height: 1.65 !important;
+  }
+
+  .customer-app .customer-checkout-page .customer-checkout-summary > .customer-order-policy__trigger {
+    max-width: 100%;
+    margin: 0.9rem 0 0;
+  }
+
+  .customer-app .customer-checkout-page .customer-checkout-summary > .customer-order-agreement {
+    min-width: 0;
+    gap: 0.8rem;
+    margin-top: 1rem;
+    padding: 1rem 0.9rem;
+  }
+
+  .customer-app .customer-checkout-page .customer-order-agreement__text {
+    min-width: 0;
+    line-height: 1.65;
+  }
+
+  .customer-app .customer-checkout-page .customer-checkout-summary > .customer-form-error {
+    margin-top: 1rem;
+  }
+
+  .customer-app .customer-checkout-page .customer-checkout-summary > .customer-order-summary__action {
+    width: 100%;
+    min-height: 48px;
+    margin-top: 1.15rem;
+  }
+}
