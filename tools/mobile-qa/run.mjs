@@ -684,16 +684,13 @@ async function run() {
             );
             continue;
           }
-          if (
-            (viewport.name === "tablet" || viewport.name === "tablet-landscape") &&
-            (await orientationNotice.isVisible())
-          ) {
-            failures.push({
-              viewport: viewport.name,
-              route,
-              issues: ["Tablet orientation was incorrectly restricted"]
-            });
-            process.stderr.write(`FAIL ${viewport.name} ${pageName}: Tablet orientation was incorrectly restricted\n`);
+          if (await orientationNotice.isVisible()) {
+            const message =
+              viewport.name === "tablet" || viewport.name === "tablet-landscape"
+                ? "Tablet orientation was incorrectly restricted"
+                : "Portrait phone or desktop was incorrectly blocked by orientation notice";
+            failures.push({ viewport: viewport.name, route, issues: [message] });
+            process.stderr.write(`FAIL ${viewport.name} ${pageName}: ${message}\n`);
             continue;
           }
 
