@@ -511,6 +511,12 @@
   backdrop-filter: blur(14px);
 }
 
+/* Desktop keeps its sticky table of contents. The compact layout uses an
+   accessible disclosure instead of overflowing horizontally. */
+.customer-privacy-toc__toggle {
+  display: none;
+}
+
 .customer-privacy-toc > span {
   display: block;
   margin-bottom: 0.65rem;
@@ -962,18 +968,73 @@
   .customer-privacy-toc {
     position: relative;
     top: auto;
-    overflow-x: auto;
-    padding: 0.7rem;
+    min-width: 0;
+    padding: 0.65rem;
+    overflow: visible;
   }
 
-  .customer-privacy-toc > span {
-    margin-left: 0.35rem;
+  .customer-privacy-toc > .customer-privacy-toc__eyebrow {
+    display: none;
+  }
+
+  .customer-privacy-toc__toggle {
+    display: flex;
+    width: 100%;
+    min-height: 44px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0.4rem 0.6rem;
+    border: 0;
+    border-radius: 0.6rem;
+    background: transparent;
+    color: #424b69;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-align: left;
+  }
+
+  .customer-privacy-toc__toggle svg {
+    flex: none;
+    transition: transform 160ms ease;
+  }
+
+  .customer-privacy-toc[data-mobile-open="true"] .customer-privacy-toc__toggle svg {
+    transform: rotate(180deg);
+  }
+
+  .customer-privacy-toc__toggle:focus-visible {
+    outline: 3px solid #998bf2;
+    outline-offset: 2px;
   }
 
   .customer-privacy-toc nav {
-    display: flex;
-    width: max-content;
-    min-width: 100%;
+    display: none;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.25rem;
+    margin-top: 0.35rem;
+  }
+
+  .customer-privacy-toc[data-mobile-open="true"] nav {
+    display: grid;
+  }
+
+  .customer-privacy-toc nav a {
+    min-width: 0;
+    padding: 0.65rem 0.5rem;
+    overflow-wrap: anywhere;
+  }
+
+  :root.dark .customer-app .customer-privacy-toc__toggle {
+    color: #e6edfb;
+  }
+
+  :root.dark .customer-app .customer-privacy-toc__toggle:hover {
+    background: #2b3b55;
   }
 
   .customer-privacy-storage-table article {
