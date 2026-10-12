@@ -127,6 +127,7 @@ test("small touch phones show portrait guidance while tablets support either ori
   assert.match(qa, /\{ name: "tablet-landscape", width: 1024, height: 768 \}/);
   assert.match(qa, /Landscape phone did not show full-screen portrait orientation notice/);
   assert.match(qa, /Tablet orientation was incorrectly restricted/);
+  assert.match(qa, /Portrait phone or desktop was incorrectly blocked by orientation notice/);
 });
 
 test("preview route selection restores from hash, highlights the active view and supports reselect", () => {
