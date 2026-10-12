@@ -122,31 +122,31 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
               <CustomerOrderPolicyInfo />
               <aside className="customer-order-summary">
                 <p className="customer-kicker">Order summary</p>
-              <h2>Review Your Total</h2>
-              <div>
-                <span>Items ({itemCount})</span>
-                <strong>{formatCurrency(subtotal)}</strong>
-              </div>
-              <div className="customer-order-summary__total">
-                <span>Total</span>
-                <strong>{formatCurrency(subtotal)}</strong>
-              </div>
-              <p>
-                {status === "authenticated"
-                  ? "Final stock availability is checked when you place your delivery order."
-                  : "Sign in to move this guest cart into your account and continue to checkout."}
-              </p>
-              <CustomerLink
-                className="customer-button customer-button--full"
-                href={checkoutHref}
-                navigate={navigate}
-                aria-disabled={!isReady}
-                onClick={(event) => {
-                  if (!isReady) event.preventDefault();
-                }}
-              >
-                Proceed to checkout <ArrowRight aria-hidden="true" size={18} />
-              </CustomerLink>
+                <h2>Review Your Total</h2>
+                <div>
+                  <span>Items ({itemCount})</span>
+                  <strong>{formatCurrency(subtotal)}</strong>
+                </div>
+                <div className="customer-order-summary__total">
+                  <span>Total</span>
+                  <strong>{formatCurrency(subtotal)}</strong>
+                </div>
+                <p>
+                  {status === "authenticated"
+                    ? "Final stock availability is checked when you place your delivery order."
+                    : "Sign in to move this guest cart into your account and continue to checkout."}
+                </p>
+                <CustomerLink
+                  className="customer-button customer-button--full"
+                  href={checkoutHref}
+                  navigate={navigate}
+                  aria-disabled={!isReady}
+                  onClick={(event) => {
+                    if (!isReady) event.preventDefault();
+                  }}
+                >
+                  Proceed to checkout <ArrowRight aria-hidden="true" size={18} />
+                </CustomerLink>
               </aside>
             </div>
           </div>
