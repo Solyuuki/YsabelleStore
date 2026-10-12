@@ -316,6 +316,89 @@ async function checkShopAvailability(page, viewport) {
   return issues;
 }
 
+async function checkDeliveryTrackingContrast(page, viewport) {
+  // Use a hidden Order Success tracking panel with the real loaded styles.
+  // This never navigates to a paid order or touches customer records.
+  const metrics = await page.evaluate(() => {
+    const app = document.querySelector(".customer-app");
+    if (!app) return null;
+    const root = document.documentElement;
+    const wasDark = root.classList.contains("dark");
+    const fixture = document.createElement("div");
+    fixture.className = "customer-success-card";
+    fixture.setAttribute("aria-hidden", "true");
+    fixture.style.cssText =
+      "position:absolute;top:0;left:0;width:320px;max-width:100%;visibility:hidden;pointer-events:none;";
+    fixture.innerHTML = `
+      <div class="customer-success-pickup">
+        <svg viewBox="0 0 24 24"></svg>
+        <div>
+          <strong>Delivery tracking starts here</strong>
+          <span>Open My Account to follow Preparing, Ready for delivery, On the way, and Delivered.</span>
+          <small>Courier booking is coordinated by store staff.</small>
+        </div>
+      </div>`;
+    app.appendChild(fixture);
+
+    const rgb = (color) => {
+      const channels = color.match(/[\\d.]+/g)?.slice(0, 3).map(Number);
+      return channels?.length === 3 ? channels : null;
+    };
+    const luminance = (color) => {
+      const c = rgb(color);
+      if (!c) return null;
+      const values = c.map((v) => {
+        const srgb = v / 255;
+        return srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
+      });
+      return values[0] * 0.2126 + values[1] * 0.7152 + values[2] * 0.0722;
+    };
+    const sample = () => {
+      const panel = fixture.querySelector(".customer-success-pickup");
+      const background = getComputedStyle(panel).backgroundColor;
+      const bg = luminance(background);
+      const results = ["strong", "span", "small"].map((tag) => {
+        const element = panel.querySelector(tag);
+        const style = getComputedStyle(element);
+        const fg = luminance(style.color);
+        return {
+          tag,
+          color: style.color,
+          fontSize: parseFloat(style.fontSize),
+          contrast: fg === null || bg === null
+            ? 0
+            : (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05)
+        };
+      });
+      return { background, results };
+    };
+    try {
+      root.classList.remove("dark");
+      const light = sample();
+      root.classList.add("dark");
+      const dark = sample();
+      return { light, dark };
+    } finally {
+      fixture.remove();
+      root.classList.toggle("dark", wasDark);
+    }
+  });
+
+  if (!metrics) return ["Delivery tracking contrast fixture could not render"];
+  const issues = [];
+  for (const [theme, sample] of Object.entries(metrics)) {
+    for (const text of sample.results) {
+      const minimumSize = text.tag === "small" ? 11.5 : 12;
+      if (text.contrast < 4.5 || text.fontSize < minimumSize) {
+        issues.push(
+          `Delivery tracking text contrast is insufficient (${theme}, ${text.tag}, ${viewport.width}px): ${text.contrast.toFixed(2)}:1 at ${text.fontSize}px`
+        );
+      }
+    }
+  }
+  return issues;
+}
+
 async function checkCheckoutDarkBackground(page, viewport) {
   // Check the actual computed dark canvas without requiring a real customer
   // checkout session, creating an order, or changing the account's theme.
@@ -1145,6 +1228,7 @@ async function run() {
 
           if (route === "/shop") {
             issues.push(...(await checkCheckoutDarkBackground(page, viewport)));
+            issues.push(...(await checkDeliveryTrackingContrast(page, viewport)));
           }
           if (route === "/shop" && viewport.width <= 430 && viewport.height > viewport.width) {
             issues.push(...(await checkCheckoutPolicySpacing(page, viewport)));
