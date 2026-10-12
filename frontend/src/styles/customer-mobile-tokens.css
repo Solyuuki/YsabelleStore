@@ -1,0 +1,19 @@
+/* Sprint 12 responsive storefront sizing primitives.
+ * Single source of truth for phone spacing and hit-target dimensions.
+ * All values are CSS pixels and grow fluidly between device widths.
+ */
+@media (max-width: 1180px) {
+  :root {
+    --store-mobile-touch-target: 44px;
+    --store-mobile-dock-clearance: 76px;
+    --store-mobile-floating-gap: 8px;
+  }
+}
+
+@media (max-width: 700px) and (orientation: portrait) {
+  :root {
+    --store-phone-gutter: clamp(12px, 4vw, 16px);
+    --store-phone-card-gap: clamp(8px, 2.5vw, 12px);
+    --store-phone-section-gap: clamp(20px, 6vw, 30px);
+  }
+}
