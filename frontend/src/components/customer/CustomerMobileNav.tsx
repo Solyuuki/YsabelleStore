@@ -44,7 +44,9 @@ export function CustomerMobileNav({
         return;
       }
 
-      const occupied = Math.ceil(Math.max(0, window.innerHeight - dock.getBoundingClientRect().top));
+      const occupied = Math.ceil(
+        Math.max(0, window.innerHeight - dock.getBoundingClientRect().top)
+      );
       setOccupiedDockHeight((previous) => (previous === occupied ? previous : occupied));
     };
 
