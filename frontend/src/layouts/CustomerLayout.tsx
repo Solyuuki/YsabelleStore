@@ -33,7 +33,7 @@ export function CustomerLayout({
         onStartGuide={startGuide}
         pathname={pathname}
       />
-      <CustomerMobileNav navigate={navigate} pathname={pathname} />
+      <CustomerMobileNav navigate={navigate} onStartGuide={startGuide} pathname={pathname} />
       <main id="customer-main">{children}</main>
       <DiscoverBrandIdentity pathname={pathname} />
       <CustomerFooter navigate={navigate} onStartGuide={startGuide} pathname={pathname} />
