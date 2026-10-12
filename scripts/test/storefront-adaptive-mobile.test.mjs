@@ -538,14 +538,39 @@ test("small-phone product cards retain semantics with compact badges and Add", (
   assert.match(portrait, /\.customer-app \.customer-product-badge__label-full\s*\{\s*display: none;/);
   assert.match(portrait, /\.customer-app \.customer-product-badge__label-mobile\s*\{\s*display: block;/);
   assert.match(portrait, /\.customer-app \.customer-product-card__favorite\s*\{[^}]*width: 44px;[^}]*height: 44px;/);
-  assert.match(portrait, /\.customer-app \.customer-product-card__favorite::before\s*\{[^}]*inset: 5px;/);
+  assert.match(portrait, /\\.customer-app \\.customer-product-card__favorite::before,[\\s\\S]*?\\.customer-app \\.customer-product-card__favorite::after\\s*\\{[^}]*display: none;[^}]*content: none;/);
   assert.match(portrait, /\.customer-app \.customer-product-card h3\s*\{[^}]*-webkit-line-clamp: 2;/);
   assert.match(portrait, /\.customer-app \.customer-product-card__rating \.customer-product-card__review-count\s*\{\s*display: none;/);
   assert.match(portrait, /\.customer-app \.customer-product-card__actions \.customer-quantity\s*\{[^}]*height: 44px;/);
   assert.match(portrait, /\.customer-app \.customer-product-card__cart-button\s*\{[^}]*width: 100%;/);
   assert.match(portrait, /\.customer-app \.customer-product-card__add-full\s*\{\s*display: none;/);
   assert.match(portrait, /\.customer-app \.customer-product-card__add-mobile\s*\{\s*display: inline;/);
-  assert.match(portrait, /:root\.dark \.customer-app \.customer-product-card__favorite::before/);
+  assert.match(portrait, /:root\\.dark \\.customer-app \\.customer-product-card__favorite\\s*\\{[^}]*background: #26344c;/);
+  assert.match(portrait, /:root\\.dark \\.customer-app \\.customer-product-card__favorite\\[aria-pressed="true"\\]\\s*\\{[^}]*background: linear-gradient\\(/);
+});
+
+test("mobile Favorite control uses one 44px circle just like desktop", () => {
+  const mobile = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const desktop = read("frontend/src/styles/customer-home-premium.css");
+  const contrast = read("frontend/src/styles/theme-storefront-contrast.css");
+  const card = read("frontend/src/components/customer/ProductCard.tsx");
+
+  const portrait = mobile.split("/* Consistent phone scale: portrait")[1]?.split(
+    "/* A wide portrait phone/foldable"
+  )[0];
+  assert.ok(portrait, "Missing portrait product controls");
+  assert.match(desktop, /\\.customer-product-card__favorite\\s*\\{[^}]*width: 44px;[^}]*height: 44px;/);
+  assert.match(portrait, /\\.customer-app \\.customer-product-card__favorite\\s*\\{[^}]*width: 44px;[^}]*height: 44px;[^}]*border: 1px solid #d7ddea;[^}]*border-radius: 50%;/);
+  assert.match(portrait, /\\.customer-app \\.customer-product-card__favorite::before,[\\s\\S]*?\\.customer-app \\.customer-product-card__favorite::after\\s*\\{[^}]*content: none;/);
+  assert.doesNotMatch(portrait, /\\.customer-product-card__favorite::before\\s*\\{[^}]*inset:/);
+  assert.match(portrait, /\\.customer-app \\.customer-product-card__favorite\\[aria-pressed="true"\\]\\s*\\{[^}]*color: #fff;/);
+  assert.match(portrait, /:root\\.dark \\.customer-app \\.customer-product-card__favorite\\s*\\{[^}]*background: #26344c;[^}]*color: #e1e9ff;/);
+  assert.match(portrait, /:root\\.dark \\.customer-app \\.customer-product-card__favorite\\[aria-pressed="true"\\]\\s*\\{[^}]*color: #fff;/);
+  assert.match(contrast, /:root\\.dark \\.customer-app \\.customer-product-card__favorite\\[aria-pressed="true"\\]/);
+  assert.match(card, /aria-pressed=\\{isFavorite\\}/);
+  assert.match(card, /aria-label=\\{/);
+  assert.match(card, /toggleFavorite\\(product\\.id\\)/);
+  assert.match(card, /<Heart aria-hidden="true" fill=\\{isFavorite \\? "currentColor" : "none"\\}/);
 });
 
 test("browser QA checks actual product badge collision and reachable mobile cart controls", () => {
