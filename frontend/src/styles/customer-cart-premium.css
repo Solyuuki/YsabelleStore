@@ -313,3 +313,133 @@
   opacity: 0.35;
   cursor: not-allowed;
 }
+
+/* Sprint 12 mobile cart density. The legacy <=520px single-column rule
+   expanded each thumbnail to full width and wasted most of a phone screen.
+   Give the product a small, contained cover plus readable details, with one
+   separate 44px control row. Keep desktop/tablet and all cart logic intact. */
+@media (max-width: 700px) {
+  .customer-app .customer-cart-page .customer-cart-list {
+    min-width: 0;
+    gap: 0.65rem;
+  }
+
+  .customer-app .customer-cart-page .customer-cart-item {
+    display: grid;
+    grid-template-columns: clamp(76px, 23vw, 100px) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: start;
+    column-gap: clamp(0.65rem, 3vw, 0.9rem);
+    row-gap: 0.6rem;
+    min-width: 0;
+    max-width: 100%;
+    padding: clamp(0.65rem, 2.8vw, 0.9rem);
+  }
+
+  .customer-app .customer-cart-page .customer-cart-item > .customer-product-visual {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+    height: auto;
+    min-width: 0;
+    min-height: 0;
+    max-height: 100px;
+    aspect-ratio: 1 / 1;
+    align-self: start;
+    overflow: hidden;
+    border-radius: 0.7rem;
+  }
+
+  .customer-app .customer-cart-page .customer-cart-item .customer-product-visual__image {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .customer-app .customer-cart-page .customer-cart-item__info {
+    grid-column: 2;
+    grid-row: 1;
+    display: grid;
+    min-width: 0;
+    align-content: start;
+    gap: 0.2rem;
+  }
+
+  .customer-app .customer-cart-page .customer-cart-item__info .customer-eyebrow {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.61rem;
+    line-height: 1.35;
+  }
+
+  .customer-app .customer-cart-page .customer-cart-item__info h2 {
+    display: -webkit-box;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow-wrap: anywhere;
+    font-size: clamp(0.79rem, 3.5vw, 0.92rem);
+    line-height: 1.3;
+  }
+
+  .customer-app .customer-cart-page .customer-cart-item__info > p:not(.customer-eyebrow) {
+    margin: 0;
+    font-size: 0.7rem;
+    line-height: 1.45;
+  }
+
+  .customer-app .customer-cart-page .customer-cart-item__info button {
+    width: fit-content;
+    min-width: 0;
+    min-height: 36px;
+    margin: 0;
+    padding-inline: 0.25rem;
+    touch-action: manipulation;
+  }
+
+  .customer-app .customer-cart-page .customer-cart-item__quantity {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    min-width: 0;
+    width: 100%;
+    align-items: center;
+    gap: 0.65rem;
+    margin: 0;
+    padding: 0.6rem 0 0;
+    border-top: 1px solid rgb(98 91 255 / 18%);
+    border-left: 0;
+  }
+
+  .customer-app .customer-cart-page .customer-cart-item__quantity .customer-quantity {
+    width: min(100%, 170px);
+    min-width: 0;
+    height: 44px;
+    grid-template-columns: minmax(40px, 1fr) minmax(32px, 0.8fr) minmax(40px, 1fr);
+  }
+
+  .customer-app .customer-cart-page .customer-cart-item__quantity .customer-quantity > button {
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  .customer-app .customer-cart-page .customer-cart-item__quantity > strong {
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    color: var(--customer-primary-strong);
+    font-size: clamp(0.85rem, 3.8vw, 1rem);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .customer-app .customer-cart-page .customer-cart-items {
+    min-width: 0;
+    gap: 0.8rem;
+  }
+}
