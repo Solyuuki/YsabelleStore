@@ -212,3 +212,21 @@ test("mobile browser QA bypasses first-visit splash in isolation and waits for r
   assert.match(qaScript, /panelBottom=/);
   assert.match(qaScript, /dockTop=/);
 });
+
+test("browser QA permits only clipped carousel items outside viewport on non-portrait screens", () => {
+  const qa = read("tools/mobile-qa/run.mjs");
+
+  assert.match(qa, /const portraitPhone = width <= 700 && height > width/);
+  assert.match(qa, /function isContainedInHorizontalRail\(element\)/);
+  assert.match(qa, /if \(portraitPhone\) return false;/);
+  assert.match(qa, /element\.closest\("\.home-product-rail__viewport"\)/);
+  assert.match(qa, /\["auto", "scroll"\]\.includes\(railStyle\.overflowX\)/);
+  assert.match(qa, /rail\.scrollWidth > rail\.clientWidth \+ 2/);
+  assert.match(qa, /railBounds\.left >= -1/);
+  assert.match(qa, /railBounds\.right <= width \+ 1/);
+  assert.match(qa, /if \(isContainedInHorizontalRail\(element\)\) continue;/);
+  assert.match(qa, /horizontalRailsInPortrait/);
+  assert.match(qa, /Document overflow:/);
+  assert.match(qa, /Horizontal product rails in portrait:/);
+  assert.match(qa, /Elements outside viewport:/);
+});
