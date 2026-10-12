@@ -23,7 +23,10 @@ function contrast(text, surface) {
 
 test("Email Quick Sign dark styles are scoped to its login flow, leaving light mode untouched", () => {
   const css = read("frontend/src/styles/theme-storefront-contrast.css");
-  const section = css.slice(css.indexOf("/* Sprint 11 — Email Quick Sign"));
+  const start = css.indexOf("/* Sprint 11 — Email Quick Sign");
+  const end = css.indexOf("/* Checkout dark canvas:", start);
+  assert.ok(start >= 0 && end > start, "Missing Quick Sign stylesheet boundaries");
+  const section = css.slice(start, end);
   assert.ok(section.length > 500, "Missing Quick Sign dark-mode styles");
 
   const selectors = section.match(/:root\.dark/g) ?? [];
