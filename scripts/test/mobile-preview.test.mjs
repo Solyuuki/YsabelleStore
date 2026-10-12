@@ -49,7 +49,11 @@ test("mobile mode shares the existing backend and uses a separate Vite port", ()
   assert.match(vite, /strictPort: true/);
   assert.match(vite, /"\/api": \{/);
   assert.match(vite, /Mobile preview may proxy only to a local development API/);
-  assert.match(frontend, /import\.meta\.env\.VITE_MOBILE_PREVIEW === "1"/);
+  // Node/TSX contract tests don't inject import.meta.env like Vite does.
+  // The mobile proxy branch must be guarded without changing the Vite behavior.
+  assert.match(frontend, /import\.meta\.env\?\.DEV/);
+  assert.match(frontend, /import\.meta\.env\?\.VITE_MOBILE_PREVIEW === "1"/);
+  assert.match(frontend, /typeof window !== "undefined"/);
   assert.match(frontend, /window\.location\.origin/);
 });
 
