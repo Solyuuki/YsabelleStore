@@ -901,8 +901,8 @@
   box-sizing: border-box;
   right: 12px;
   bottom: calc(
-    var(--store-mobile-dock-clearance, 76px) + var(--store-mobile-floating-gap, 8px) +
-      env(safe-area-inset-bottom)
+    var(--store-mobile-measured-dock-height, var(--store-mobile-dock-clearance, 76px)) +
+      var(--store-mobile-floating-gap, 8px)
   );
   left: 12px;
   width: auto;
