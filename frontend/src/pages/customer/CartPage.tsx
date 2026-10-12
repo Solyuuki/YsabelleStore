@@ -118,8 +118,10 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
                 />
               ) : null}
             </section>
-            <aside className="customer-order-summary">
-              <p className="customer-kicker">Order summary</p>
+            <div className="customer-cart-summary-stack">
+              <CustomerOrderPolicyInfo />
+              <aside className="customer-order-summary">
+                <p className="customer-kicker">Order summary</p>
               <h2>Review Your Total</h2>
               <div>
                 <span>Items ({itemCount})</span>
@@ -134,7 +136,6 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
                   ? "Final stock availability is checked when you place your delivery order."
                   : "Sign in to move this guest cart into your account and continue to checkout."}
               </p>
-              <CustomerOrderPolicyInfo />
               <CustomerLink
                 className="customer-button customer-button--full"
                 href={checkoutHref}
@@ -146,7 +147,8 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
               >
                 Proceed to checkout <ArrowRight aria-hidden="true" size={18} />
               </CustomerLink>
-            </aside>
+              </aside>
+            </div>
           </div>
         )}
       </div>
