@@ -942,8 +942,8 @@
   .ysabelle-guide.driver-popover
   .driver-popover-next-btn:disabled:is(:hover, :focus-visible) {
   background: #192438 !important;
-  border-color: #344259 !important;
-  color: #74839a !important;
+  border-color: #425475 !important;
+  color: #aab9d0 !important;
   box-shadow: none;
   transform: none;
 }
