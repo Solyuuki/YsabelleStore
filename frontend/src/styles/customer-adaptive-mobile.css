@@ -455,7 +455,7 @@
 /* On portrait phones the navigation sits in the thumb zone. */
 @media (max-width: 700px) and (orientation: portrait) {
   .customer-app.ys-material-canvas {
-    padding-bottom: calc(68px + env(safe-area-inset-bottom));
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
   }
 
   .customer-app.ys-material-canvas > .customer-mobile-dock {
@@ -478,7 +478,7 @@
 
   /* Keep the privacy disclosure readable without covering thumb navigation. */
   .customer-app .customer-privacy-notice {
-    bottom: calc(65px + env(safe-area-inset-bottom));
+    bottom: calc(73px + env(safe-area-inset-bottom));
   }
 
   .customer-mobile-dock__link {
@@ -900,6 +900,7 @@
 
 .customer-mobile-more__sheet {
   position: fixed;
+  box-sizing: border-box;
   z-index: 211;
   right: 0;
   bottom: 0;
@@ -961,6 +962,7 @@
 }
 
 .customer-mobile-more__options > :is(a, button) {
+  box-sizing: border-box;
   display: flex;
   min-width: 0;
   min-height: 48px;
