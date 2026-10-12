@@ -46,6 +46,9 @@ export function ShopPage({
   const pageParam = Math.max(1, Number(params.get("page")) || 1);
   const [search, setSearch] = useState(searchParam);
   const [categoriesExpanded, setCategoriesExpanded] = useState(false);
+  const [availabilityOpen, setAvailabilityOpen] = useState(false);
+  const availabilityRef = useRef<HTMLDivElement>(null);
+  const availabilityTriggerRef = useRef<HTMLButtonElement>(null);
   const [categories, setCategories] = useState<StorefrontCategory[]>([]);
   const [products, setProducts] = useState<StorefrontProduct[]>([]);
   const [meta, setMeta] = useState<StorefrontPagination>({
@@ -79,6 +82,27 @@ export function ShopPage({
   useEffect(() => {
     setSearch(searchParam);
   }, [searchParam]);
+
+  useEffect(() => {
+    if (!availabilityOpen) return;
+
+    const closeWhenOutside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !availabilityRef.current?.contains(event.target)) {
+        setAvailabilityOpen(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setAvailabilityOpen(false);
+      availabilityTriggerRef.current?.focus();
+    };
+    document.addEventListener("pointerdown", closeWhenOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeWhenOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [availabilityOpen]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -206,6 +230,7 @@ export function ShopPage({
   }
 
   function applyAvailability(nextAvailability: AvailabilityFilter) {
+    setAvailabilityOpen(false);
     navigate(buildShopUrl({ search: search.trim(), availability: nextAvailability, page: 1 }));
   }
 
@@ -351,35 +376,72 @@ export function ShopPage({
                 value={search}
               />
             </label>
-            <label
+            <div
               className={`customer-select customer-select--availability${
                 availabilityParam === "all" ? "" : " is-active"
               }`}
+              ref={availabilityRef}
             >
-              <span className="sr-only">Filter products by availability</span>
-              <span aria-hidden="true" className="customer-select__mobile-glyph">
-                <SlidersHorizontal size={18} />
-                {availabilityParam !== "all" ? (
-                  <span className="customer-select__active-dot" />
-                ) : null}
-              </span>
-              <select
-                aria-label="Filter products by availability"
-                onChange={(event) => applyAvailability(event.target.value as AvailabilityFilter)}
-                title={
+              <label className="customer-select__desktop">
+                <span className="sr-only">Filter products by availability</span>
+                <select
+                  aria-label="Filter products by availability"
+                  onChange={(event) => applyAvailability(event.target.value as AvailabilityFilter)}
+                  value={availabilityParam}
+                >
+                  <option value="all">All availability</option>
+                  <option value="in-stock">In stock</option>
+                  <option value="out-of-stock">Out of stock</option>
+                </select>
+              </label>
+              <button
+                aria-controls="shop-availability-options"
+                aria-expanded={availabilityOpen}
+                aria-label={`Availability: ${
                   availabilityParam === "all"
                     ? "All availability"
                     : availabilityParam === "in-stock"
                       ? "In stock"
                       : "Out of stock"
-                }
-                value={availabilityParam}
+                }. Choose filter`}
+                className="customer-select__mobile-trigger"
+                onClick={() => setAvailabilityOpen((open) => !open)}
+                ref={availabilityTriggerRef}
+                type="button"
               >
-                <option value="all">All availability</option>
-                <option value="in-stock">In stock</option>
-                <option value="out-of-stock">Out of stock</option>
-              </select>
-            </label>
+                <SlidersHorizontal aria-hidden="true" size={18} />
+                {availabilityParam !== "all" ? (
+                  <span aria-hidden="true" className="customer-select__active-dot" />
+                ) : null}
+              </button>
+              {availabilityOpen ? (
+                <div
+                  aria-label="Availability options"
+                  className="customer-select__mobile-options"
+                  id="shop-availability-options"
+                  role="group"
+                >
+                  {([
+                    ["all", "All availability"],
+                    ["in-stock", "In stock"],
+                    ["out-of-stock", "Out of stock"]
+                  ] as const).map(([value, label]) => (
+                    <button
+                      aria-pressed={availabilityParam === value}
+                      className={availabilityParam === value ? "is-selected" : ""}
+                      key={value}
+                      onClick={() => applyAvailability(value)}
+                      type="button"
+                    >
+                      <span>{label}</span>
+                      {availabilityParam === value ? (
+                        <span aria-hidden="true" className="customer-select__option-check">✓</span>
+                      ) : null}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           </form>
           <div
             className={`customer-results-meta shop-motion-results-meta ${resultsMetaReveal.isVisible ? "is-visible" : ""}`}
