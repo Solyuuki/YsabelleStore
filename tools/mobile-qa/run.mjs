@@ -338,6 +338,26 @@ async function checkMobileProductDetail(page, viewport) {
         return title && title.scrollWidth > title.clientWidth + 2;
       }).length,
       hasLongTooltip: options.some((option) => option.hasAttribute("title")),
+      variantImages: options.map((option) => {
+        const visual = option.querySelector(".customer-product-size-option__visual");
+        const image = option.querySelector(".customer-product-size-option__image > img");
+        const frame = visual?.getBoundingClientRect();
+        const imageBounds = image?.getBoundingClientRect();
+        return {
+          frameHeight: frame?.height ?? 0,
+          imageLoaded: Boolean(image?.complete && image.naturalWidth > 0),
+          fit: image ? getComputedStyle(image).objectFit : "",
+          clipped:
+            !!frame &&
+            !!imageBounds &&
+            imageBounds.width > 0 &&
+            imageBounds.height > 0 &&
+            (imageBounds.top < frame.top - 1 ||
+              imageBounds.left < frame.left - 1 ||
+              imageBounds.right > frame.right + 1 ||
+              imageBounds.bottom > frame.bottom + 1)
+        };
+      }),
       visibleArrows: arrows.filter((arrow) => getComputedStyle(arrow).display !== "none").length,
       hasReviewForm: Boolean(reviewForm)
     };
@@ -351,6 +371,13 @@ async function checkMobileProductDetail(page, viewport) {
   }
   if (state.hasLongTooltip || state.overflowingVariantLabels) {
     issues.push("Pack-size controls have obstructive tooltips or clipped labels");
+  }
+  if (
+    state.variantImages.some(
+      (image) => image.frameHeight < 99 || image.fit !== "contain" || image.clipped
+    )
+  ) {
+    issues.push("Pack-size product thumbnails are clipped or too short for full images");
   }
   if (state.visibleArrows) {
     issues.push("Pack-size arrows still consume mobile rail width");
