@@ -3,6 +3,7 @@ import { CircleAlert, Flame, Heart, ShoppingCart, Star } from "lucide-react";
 import { useState } from "react";
 
 import { useCart } from "@/context/CartContext";
+import { CustomerAccountRequestError } from "@/services/customerAccountService";
 import { useToast } from "@/components/shared/ToastProvider";
 import { useCustomerFavorites } from "@/context/CustomerFavoritesContext";
 import type { StorefrontProduct } from "@/types/storefront";
@@ -85,10 +86,16 @@ export function ProductCard({
         const returnTo = `${window.location.pathname}${window.location.search}`;
         navigate(buildCustomerAuthPath("/login", returnTo));
       }
-    } catch {
+    } catch (error) {
       pushToast({
         title: "Couldn't update favorites",
-        message: "Please check your connection and try again.",
+        message:
+          error instanceof CustomerAccountRequestError &&
+          error.code === "CUSTOMER_AUTH_ORIGIN_REJECTED"
+            ? "This mobile preview origin is not allowed yet. Restart the development backend and retry."
+            : error instanceof Error
+              ? error.message
+              : "Please try again.",
         variant: "error"
       });
     } finally {
