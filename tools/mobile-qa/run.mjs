@@ -316,6 +316,78 @@ async function checkShopAvailability(page, viewport) {
   return issues;
 }
 
+async function checkMobileAccountTabs(page, viewport) {
+  // Real loaded Account CSS with an inert navigation fixture: no login,
+  // account changes or tab routing are necessary for a geometry regression.
+  const state = await page.evaluate(() => {
+    const app = document.querySelector(".customer-app");
+    if (!app) return null;
+    const fixture = document.createElement("section");
+    fixture.className = "customer-account-page-v2";
+    fixture.setAttribute("aria-hidden", "true");
+    fixture.style.cssText =
+      "position:absolute;left:0;top:0;width:100%;visibility:hidden;pointer-events:none;z-index:-1;";
+    fixture.innerHTML = `
+      <div class="customer-account-layout-v2">
+        <aside class="customer-account-rail">
+          <div class="customer-account-identity-card"><div><h1>My Account</h1></div></div>
+          <nav class="customer-account-nav" role="tablist" aria-label="Account views">
+            <button role="tab" aria-selected="true" type="button">Orders</button>
+            <button role="tab" aria-selected="false" type="button">Favorites</button>
+            <button role="tab" aria-selected="false" type="button">Profile</button>
+            <button role="tab" aria-selected="false" type="button">Security</button>
+          </nav>
+          <button class="customer-account-signout" type="button">Sign out</button>
+        </aside>
+      </div>`;
+    app.appendChild(fixture);
+    try {
+      const nav = fixture.querySelector(".customer-account-nav");
+      if (!nav) return null;
+      const navRect = nav.getBoundingClientRect();
+      const buttons = [...nav.querySelectorAll("button")];
+      return {
+        display: getComputedStyle(nav).display,
+        columns: getComputedStyle(nav).gridTemplateColumns,
+        width: navRect.width,
+        scrollWidth: nav.scrollWidth,
+        clientWidth: nav.clientWidth,
+        buttons: buttons.map((button) => {
+          const rect = button.getBoundingClientRect();
+          return {
+            x: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
+            width: rect.width, height: rect.height,
+            fits: rect.left >= navRect.left - 1 && rect.right <= navRect.right + 1,
+            label: button.textContent?.trim()
+          };
+        })
+      };
+    } finally {
+      fixture.remove();
+    }
+  });
+
+  if (!state) return ["Account tabs could not render a mobile layout fixture"];
+  const buttons = state.buttons;
+  const twoRows = buttons.length === 4 &&
+    Math.abs(buttons[0].top - buttons[1].top) < 2 &&
+    Math.abs(buttons[2].top - buttons[3].top) < 2 &&
+    buttons[2].top >= Math.max(buttons[0].bottom, buttons[1].bottom) &&
+    buttons[0].right <= buttons[1].x + 1 &&
+    buttons[2].right <= buttons[3].x + 1;
+  if (
+    state.display !== "grid" ||
+    !twoRows ||
+    state.scrollWidth > state.clientWidth + 2 ||
+    buttons.some((button) => !button.fits || button.height < 43 || button.width < 70)
+  ) {
+    return [
+      `Account tabs are clipped or horizontally scrolling at ${viewport.width}px: ${JSON.stringify(state)}`
+    ];
+  }
+  return [];
+}
+
 async function checkActiveDeliveryDarkContrast(page, viewport) {
   // Theme probe for the actual Account > Orders styles. Never uses live
   // customer data, mutations, delivery confirmation or network requests.
@@ -1359,6 +1431,9 @@ async function run() {
             issues.push(...(await checkCheckoutDarkBackground(page, viewport)));
             issues.push(...(await checkDeliveryTrackingContrast(page, viewport)));
             issues.push(...(await checkActiveDeliveryDarkContrast(page, viewport)));
+          }
+          if (route === "/shop" && viewport.width <= 640 && viewport.height > viewport.width) {
+            issues.push(...(await checkMobileAccountTabs(page, viewport)));
           }
           if (route === "/shop" && viewport.width <= 430 && viewport.height > viewport.width) {
             issues.push(...(await checkCheckoutPolicySpacing(page, viewport)));
