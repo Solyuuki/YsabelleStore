@@ -23,6 +23,23 @@ From the repository root, use `npm run dev:mob`.
 - To suppress automatic browser launch, use `npm run dev:mob -- --no-open`.
 - Run fast regression checks with `npm run test:mobile`.
 
+## Frontend Node test runner compatibility
+
+The mobile API proxy decision in `frontend/src/config/runtime.ts` reads Vite's
+`import.meta.env` only when that object exists. Native Node/TSX frontend
+contract tests do not inject the Vite environment; the runtime therefore
+falls back to the validated `frontendEnv.VITE_API_BASE_URL` instead of throwing
+at module import. The mobile development browser still uses its own origin
+when `DEV` and `VITE_MOBILE_PREVIEW=1` are present. The
+`scripts/test/mobile-preview.test.mjs` suite checks both the guarded
+source contract and an actual native Node ESM import of the runtime module
+with a stubbed environment schema. No authentication, API permission, or
+production base URL is changed.
+
+To verify after pulling, run `npm run test:mobile` and
+`npm run test --workspace @ysabellestore/frontend`. The latter is the full
+frontend contract suite; the former tests Node/Vite compatibility separately.
+
 ## Logo-free HTTP status pages
 
 Sprint 12 removes the oversized Ysabelle Store logo header from the shared full-screen `StatusScreen` component. HTTP **401 session expired**, **403 access denied**, **404 not found**, and the existing **503/system reliability states** now present only the dedicated status illustration, code, explanation, and recovery actions. All status variants share the same logo-free layout, so desktop and mobile use balanced vertical padding after the old top header is removed. Regular storefront, customer authentication forms, and store navigation retain their existing branding.
