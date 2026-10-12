@@ -120,3 +120,19 @@ test("account hero does not duplicate the existing shop navigation", () => {
   assert.doesNotMatch(customerAccountPage, /customer-account-shop-button/);
   assert.doesNotMatch(customerAccountPage, />\s*Continue shopping\s*</);
 });
+
+
+test("dark account pagination keeps all page controls readable", () => {
+  const css = fs.readFileSync(
+    path.join(REPO_ROOT, "frontend", "src", "styles", "theme-storefront-contrast.css"),
+    "utf8"
+  );
+  const pager = customerAccountPage.match(/className="customer-account-history-pagination(?: customer-account-favorites-pagination)?"/g) ?? [];
+  assert.equal(pager.length, 2, "Orders and Favorites must share the themed pager");
+  assert.match(css, /:root\.dark \.customer-app \.customer-account-history-pagination :is\(p, label\)/);
+  assert.match(css, /\.customer-account-history-pagination nav button:not\(\[aria-current="page"\]\)/);
+  assert.match(css, /\.customer-account-history-pagination nav button\[aria-current="page"\]/);
+  assert.match(css, /\.customer-account-history-pagination nav button:disabled:not\(\[aria-current="page"\]\)/);
+  assert.match(css, /\.customer-account-history-pagination nav button:focus-visible/);
+  assert.match(css, /button\[aria-current="page"\]\s*\{[^}]*opacity: 1;/);
+});
