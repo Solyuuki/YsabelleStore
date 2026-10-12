@@ -29,9 +29,9 @@ The mobile preview now reuses the live Storefront, not a separately cloned UI.
 At the preview toolbar choose **Welcome** and **Get Started** to inspect the customer homepage.
 The **Storefront** button opens the product catalog directly.
 
-- Small portrait phones (320–430 CSS px) use compact two-column category/catalog/product grids and a **five-slot bottom dock**: Home, Shop, **More**, Cart, Account. The center More button opens an accessible modal bottom sheet for About Us, Customer Support and Shopping Guide; cart count and account authorization still come from existing state.
+- Small portrait phones (320–430 CSS px) use compact two-column category/catalog/product grids and a **five-slot bottom dock**: Home, Shop, **More**, Cart, Account. The center More button opens an accessible floating menu above the bottom dock for About Us, Customer Support and Shopping Guide; cart count and account authorization still come from existing state.
 - **Portrait is vertically scrollable only:** Trending, Best Sellers and Everyday Essentials product rails become normal two-column grids; category filters wrap rather than forming a horizontal scroller. Rail arrows are hidden only when the entire grid is visible.
-- Mobile design uses shared CSS sizing tokens (12–16px gutters, 8–12px card gaps and 20–30px section spacing). Titles, photos, pricing and CTA controls scale together, not as independent device-specific designs.
+- Mobile sizing is centralized in `frontend/src/styles/customer-mobile-tokens.css` (12–16px gutters, 8–12px card gaps, 20–30px section spacing and bottom dock clearance), imported before `customer-adaptive-mobile.css`. Phone sizing scales from the 320px baseline; no per-device visual redesign.
 - Portrait widths 600–700px can show three columns without changing the Storefront design language; regular portrait phones keep two columns. Interactive quantity/CTA controls retain their 44px+ touch target dimensions.
 - Landscape phones use a compact navigation row beneath the header, adaptive photo proportions and no horizontally scrolling category sidebar.
 - The redundant legacy hamburger/mobile-panel has been removed from the Storefront header. The responsive dock is the only mobile navigation (portrait/landscape/tablet), while the existing desktop link navigation remains unchanged.
@@ -43,6 +43,28 @@ The **Storefront** button opens the product catalog directly.
 - Run `npm run test:mobile` to check mobile preview navigation and Storefront responsive contracts.
 
 **Manual visual QA still required:** use the preview's 320 × 640, 390 × 844, 640 × 320, and 768 × 1024 options, switch light/dark modes, inspect both Home and Shop, and verify there is no body-wide horizontal overflow or clipped buttons. Real phone testing is still required for soft keyboards, touch behavior and safe areas.
+
+## Automated browser QA (Playwright)
+
+Use the **existing** `npm run dev:mob` stack with the backend ready, then open a second terminal in the repository root:
+
+```powershell
+npm run qa:mobile:setup
+npm run qa:mobile
+```
+
+Setup is a one-time install of the **isolated** `tools/mobile-qa` Playwright dependency. The runner prefers Chrome already installed on Windows; if Chrome is missing, from `tools/mobile-qa` run `npx playwright install chromium` once. It does not change the root package lock, backend, or runtime mode.
+
+The `qa:mobile` command checks both **Home** and **Shop** on widths **320, 360, 375, 390, 430, 640 landscape, 768 tablet, and 1280 desktop**. It checks document scroll width, key visible element bounds, five nav slots, absence of the old hamburger, and whether the modal **More** card has real margins and remains above the bottom dock in portrait. The runner also validates menu destinations, Escape dismissal and writes screenshots to `tools/mobile-qa/screenshots/` (gitignored). It exits nonzero if any automated check fails.
+
+You can point it at another local dev server using `MOBILE_QA_URL`, for example in PowerShell:
+
+```powershell
+$env:MOBILE_QA_URL = "http://127.0.0.1:5174"
+npm run qa:mobile
+```
+
+This is **local browser automation**, not a claim that iOS Safari, camera, soft-keyboard or physical-device interactions are already verified. Keep manual QA for those behaviors. `npm run test:mobile` remains the faster dependency-free source contract test.
 
 ## Validate local connectivity
 
