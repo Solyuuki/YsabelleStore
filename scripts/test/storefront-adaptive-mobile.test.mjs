@@ -52,6 +52,31 @@ test("mobile categories form an adaptive grid instead of a sideways carousel", (
   assert.match(css, /overflow-wrap: anywhere/);
 });
 
+test("mobile shop filters use one compact search row and retain dynamic native controls", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const shop = read("frontend/src/pages/customer/ShopPage.tsx");
+  const phone = css.split("@media (max-width: 700px) {")[1]?.split("/* On portrait phones")[0];
+  assert.ok(phone, "Missing phone controls breakpoint");
+
+  assert.match(phone, /\.customer-shop-page \.shop-category-navigation:not\(\.is-expanded\) > a\s*\{\s*display: none;/);
+  assert.match(phone, /\.customer-shop-page \.customer-filter-panel\.shop-category-navigation\s*\{[^}]*border: 0;/);
+  assert.match(phone, /\.customer-shop-page \.customer-shop-toolbar\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\) 44px;[^}]*padding: 0;[^}]*border: 0;/);
+  assert.match(phone, /\.customer-shop-page \.customer-select--availability\s*\{[^}]*width: 44px;[^}]*height: 44px;/);
+  assert.match(phone, /\.customer-shop-page \.customer-select--availability select\s*\{[^}]*position: absolute;[^}]*opacity: 0;/);
+  assert.match(phone, /\.customer-shop-page \.customer-results-meta\s*\{[^}]*padding-block: 0\.9rem 0\.7rem;/);
+  assert.match(phone, /:root\.dark \.customer-app \.customer-shop-page \.customer-shop-search input/);
+
+  assert.match(shop, /shop-category-toggle__label/);
+  assert.match(shop, /activeCategory\?\.name \?\? "Categories"/);
+  assert.match(shop, /customer-select--availability/);
+  assert.match(shop, /availabilityParam === "all" \? "" : " is-active"/);
+  assert.match(shop, /aria-label="Filter products by availability"/);
+  assert.match(shop, /onChange=\{\(event\) => applyAvailability\(event\.target\.value as AvailabilityFilter\)\}/);
+  assert.match(shop, /<option value="in-stock">In stock<\/option>/);
+  assert.match(shop, /<option value="out-of-stock">Out of stock<\/option>/);
+  assert.match(shop, /customer-select__active-dot/);
+});
+
 test("compact catalog product controls and rail remain accessible in portrait", () => {
   const css = read("frontend/src/styles/customer-adaptive-mobile.css");
   const home = read("frontend/src/components/customer/HomeProductRail.tsx");
@@ -327,7 +352,7 @@ test("small-phone product cards retain semantics with compact badges and Add", (
     "/* A wide portrait phone/foldable"
   )[0];
   assert.ok(portrait, "Missing portrait product rules");
-  assert.match(css, /\.customer-product-badge__label-mobile,[\s\S]*?\.customer-product-card__add-mobile\s*\{\s*display: none;/);
+  assert.match(css, /\.customer-product-badge__label-mobile,[\s\S]*?\.customer-product-card__add-mobile,[\s\S]*?\.customer-select__mobile-glyph\s*\{\s*display: none;/);
   assert.match(portrait, /\.customer-app \.customer-product-badge\s*\{[^}]*max-width: calc\(100% - 60px\);/);
   assert.match(portrait, /\.customer-app \.customer-product-badge__label-full\s*\{\s*display: none;/);
   assert.match(portrait, /\.customer-app \.customer-product-badge__label-mobile\s*\{\s*display: block;/);
