@@ -10,7 +10,6 @@ Sprint 12 initialized from `main`; individual MPOS implementation tasks await pl
 
 Integration branch: `sprint/v0.12/sprint-12`.
 
-
 ## Sprint activation task
 
 Branch: `m1/v0.12/docs/activate-sprint-12`.
