@@ -15,8 +15,8 @@
     z-index: 75;
     display: grid;
     width: 100%;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: clamp(0.2rem, 1vw, 0.6rem);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: clamp(0px, 0.5vw, 5px);
     padding: 0.45rem max(1rem, calc((100vw - 820px) / 2));
     border-bottom: 1px solid rgb(98 91 255 / 14%);
     background: rgb(248 249 255 / 94%);
@@ -45,6 +45,48 @@
 
   .customer-mobile-dock__link svg {
     flex: none;
+  }
+
+  .customer-mobile-dock__more {
+    display: flex;
+    min-width: 0;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.2rem 0;
+    border: 1px solid transparent;
+    border-radius: 0.8rem;
+    background: transparent;
+    color: #4e5972;
+    cursor: pointer;
+    font-size: 0.68rem;
+    font-weight: 750;
+    line-height: 1.15;
+  }
+
+  .customer-mobile-dock__more-icon {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    border: 1px solid #8477dc;
+    border-radius: 999px;
+    background: linear-gradient(145deg, #4f6ee8, #6e51d6 58%, #a45ce6);
+    box-shadow: 0 5px 15px rgb(77 67 185 / 20%);
+    color: #fff;
+  }
+
+  .customer-mobile-dock__more:focus-visible {
+    outline: 3px solid var(--customer-info);
+    outline-offset: 2px;
+  }
+
+  /* One navigation system at mobile/tablet sizes. Desktop header stays unchanged. */
+  .customer-app .customer-menu-button,
+  .customer-app .customer-mobile-panel {
+    display: none;
   }
 
   .customer-mobile-dock__link.is-active {
@@ -93,6 +135,14 @@
 
   :root.dark .customer-app .customer-mobile-dock__link:hover {
     background: #32405d;
+  }
+
+  :root.dark .customer-app .customer-mobile-dock__more {
+    color: #c2d0e4;
+  }
+
+  :root.dark .customer-app .customer-mobile-dock__more-icon {
+    border-color: #aa9ee9;
   }
 }
 
@@ -266,6 +316,13 @@
     gap: 0.3rem;
   }
 
+  .customer-app .customer-header__bar,
+  .customer-app .customer-header__search-region,
+  .customer-app .customer-global-search {
+    max-width: 100%;
+    min-width: 0;
+  }
+
   /* Cart is one tap away in the mobile dock; no duplicated cramped header action. */
   .customer-app .customer-header__actions > .customer-cart-link {
     display: none;
@@ -403,7 +460,10 @@
     right: 0;
     bottom: 0;
     left: 0;
-    gap: 0.1rem;
+    width: 100%;
+    max-width: 100%;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0;
     padding: 0.35rem max(0.65rem, env(safe-area-inset-right))
       calc(0.35rem + env(safe-area-inset-bottom))
       max(0.65rem, env(safe-area-inset-left));
@@ -418,11 +478,23 @@
   }
 
   .customer-mobile-dock__link {
-    min-height: 52px;
+    min-height: 58px;
     flex-direction: column;
-    gap: 0.25rem;
-    padding: 0.36rem 0.2rem;
-    font-size: 0.67rem;
+    gap: 0.2rem;
+    padding: 0.4rem 0.1rem;
+    font-size: clamp(0.61rem, 2.8vw, 0.68rem);
+    white-space: nowrap;
+  }
+
+  .customer-mobile-dock__more {
+    min-height: 58px;
+    padding-block: 0.1rem 0.3rem;
+    font-size: clamp(0.61rem, 2.8vw, 0.68rem);
+  }
+
+  .customer-mobile-dock__more-icon {
+    width: 42px;
+    height: 42px;
   }
 
   .customer-mobile-dock__count {
@@ -809,5 +881,175 @@
 
   .customer-app .customer-product-card__cart-button {
     gap: 0.2rem;
+  }
+}
+
+/* The More sheet is portaled into document.body by Radix, avoiding the
+   nav's backdrop-filter stacking context and allowing proper focus trapping. */
+.customer-mobile-more__overlay {
+  position: fixed;
+  z-index: 210;
+  inset: 0;
+  background: rgb(8 14 32 / 65%);
+  backdrop-filter: blur(3px);
+}
+
+.customer-mobile-more__sheet {
+  position: fixed;
+  z-index: 211;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-width: 480px;
+  max-height: min(75dvh, 460px);
+  margin-inline: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1rem clamp(12px, 4vw, 18px) calc(1.1rem + env(safe-area-inset-bottom));
+  border: 1px solid #bcc6e1;
+  border-bottom: 0;
+  border-radius: 1.2rem 1.2rem 0 0;
+  background: #f9faff;
+  box-shadow: 0 -18px 58px rgb(11 22 48 / 20%);
+  color: #1c2440;
+}
+
+.customer-mobile-more__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.customer-mobile-more__title {
+  margin: 0;
+  color: inherit;
+  font-size: 1.12rem;
+  font-weight: 800;
+}
+
+.customer-mobile-more__description {
+  margin: 0.3rem 0 0;
+  color: #53617a;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.customer-mobile-more__close {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  place-items: center;
+  border: 1px solid #c9d0e7;
+  border-radius: 0.8rem;
+  background: #fff;
+  color: #303957;
+  cursor: pointer;
+}
+
+.customer-mobile-more__options {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.customer-mobile-more__options > :is(a, button) {
+  display: flex;
+  min-width: 0;
+  min-height: 48px;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #d3d9eb;
+  border-radius: 0.85rem;
+  background: #fff;
+  color: #292f50;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.87rem;
+  font-weight: 740;
+  text-align: left;
+  text-decoration: none;
+}
+
+.customer-mobile-more__options > :is(a, button) svg {
+  flex: none;
+  color: #5b4fce;
+}
+
+.customer-mobile-more__options > :is(a, button):focus-visible,
+.customer-mobile-more__close:focus-visible {
+  outline: 3px solid #008cff;
+  outline-offset: 2px;
+}
+
+:root.dark .customer-mobile-more__sheet {
+  border-color: #5e6c8d;
+  background: #1b293e;
+  color: #dce5f6;
+}
+
+:root.dark .customer-mobile-more__description {
+  color: #b7c4dd;
+}
+
+:root.dark .customer-mobile-more__options > :is(a, button),
+:root.dark .customer-mobile-more__close {
+  border-color: #5b6d8d;
+  background: #273853;
+  color: #e4eaf6;
+}
+
+:root.dark .customer-mobile-more__options > :is(a, button) svg {
+  color: #baafff;
+}
+
+/* Ensure the actual 320px layout computes within the viewport. */
+@media (max-width: 700px) and (orientation: portrait) {
+  html[data-appearance-scope="storefront"],
+  html[data-appearance-scope="storefront"] body,
+  html[data-appearance-scope="storefront"] #root {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+  }
+
+  .customer-app.ys-material-canvas,
+  .customer-app .customer-header,
+  .customer-app .customer-header__bar,
+  .customer-app .customer-header__search-region,
+  .customer-app .customer-global-search,
+  .customer-app > main,
+  .customer-app .customer-container {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .customer-app .customer-header__bar {
+    width: calc(100% - 2 * var(--store-phone-gutter, 12px));
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.35rem;
+  }
+
+  .customer-app .customer-header__search-region {
+    width: 100%;
+  }
+
+  .customer-app.ys-material-canvas > .customer-mobile-dock {
+    box-sizing: border-box;
+    padding-inline: max(8px, env(safe-area-inset-left))
+      max(8px, env(safe-area-inset-right));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-mobile-dock__more-icon,
+  .customer-mobile-more__sheet {
+    transition: none;
+    animation: none;
   }
 }
