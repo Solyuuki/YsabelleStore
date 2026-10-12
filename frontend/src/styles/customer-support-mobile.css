@@ -1,21 +1,46 @@
-/* Sprint 12 · Contact Support
-   Native select caret with a proper right gutter on both themes.
-   The mobile layout prioritizes a usable ticket form over repeated guidance. */
-.customer-app .customer-support-page .customer-support-form select {
+/* One real SVG chevron, not a tiled background image. Dark-mode styles
+   use background shorthands on native selects and formerly reset repeat. */
+.customer-app .customer-support-page .customer-support-form .customer-support-select-wrap {
+  position: relative;
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
+.customer-app .customer-support-page .customer-support-form .customer-support-select-wrap select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
   appearance: none;
   -webkit-appearance: none;
   padding-right: 3rem;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233c4e6d' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 1rem 1rem;
+  background-image: none !important;
   cursor: pointer;
 }
-:root.dark .customer-app .customer-support-page .customer-support-form select {
-  color: #edf2ff;
-  background-color: #17243a;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d8e5fb' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+
+.customer-app .customer-support-select-wrap .customer-support-select-chevron {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  width: 18px;
+  height: 18px;
+  color: #495b78;
+  pointer-events: none;
+  transform: translateY(-50%);
 }
+
+:root.dark .customer-app .customer-support-select-wrap .customer-support-select-chevron {
+  color: #d8e5fb;
+}
+
+.customer-app .customer-support-select-wrap:focus-within .customer-support-select-chevron {
+  color: #8170e7;
+}
+
+:root.dark .customer-app .customer-support-select-wrap:focus-within .customer-support-select-chevron {
+  color: #c7b9ff;
+}
+
 .customer-support-account-note__mobile,
 .customer-support-mobile-disclosure {
   display: none;
@@ -108,9 +133,8 @@
     min-height: 46px;
     font-size: 0.9rem;
   }
-  .customer-app .customer-support-form select {
+  .customer-app .customer-support-form .customer-support-select-wrap select {
     padding-right: 3rem;
-    background-position: right 1rem center;
   }
   .customer-app .customer-support-form textarea {
     box-sizing: border-box;
