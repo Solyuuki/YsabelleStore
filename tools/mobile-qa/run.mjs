@@ -1371,6 +1371,93 @@ async function checkCompactSearch(page, viewport) {
   return issues;
 }
 
+async function checkSupportMobileLayout(page, viewport) {
+  // Read-only, guest-mode browser QA: never submit a real support ticket.
+  await page.locator(".customer-support-form select").waitFor({
+    state: "visible", timeout: 15000
+  });
+
+  const dimensions = await page.evaluate(() => {
+    const selectors = [
+      ".customer-support-hero__grid",
+      ".customer-support-form-card",
+      ".customer-support-form select",
+      ".customer-support-form textarea",
+      ".customer-support-submit"
+    ];
+    const bounds = selectors.map((selector) => {
+      const node = document.querySelector(selector);
+      const rect = node?.getBoundingClientRect();
+      return rect
+        ? { selector, left: rect.left, right: rect.right, width: rect.width }
+        : { selector, missing: true };
+    });
+    const select = document.querySelector(".customer-support-form select");
+    const faq = document.querySelector(".customer-support-faq__list");
+    const tips = document.querySelector(".customer-support-sidebar__content");
+    const styles = select ? getComputedStyle(select) : null;
+    return {
+      bounds,
+      bodyWidth: document.documentElement.scrollWidth,
+      selectPosition: styles?.backgroundPosition ?? "",
+      selectAppearance: styles?.appearance ?? "",
+      faqClosed: faq ? getComputedStyle(faq).display === "none" : false,
+      tipsClosed: tips ? getComputedStyle(tips).display === "none" : false
+    };
+  });
+
+  const issues = [];
+  if (dimensions.bodyWidth > viewport.width + 2) {
+    issues.push("Support document exceeds phone viewport");
+  }
+  for (const entry of dimensions.bounds) {
+    if (entry.missing || entry.left < -2 || entry.right > viewport.width + 2) {
+      issues.push(`Support field extends outside phone: ${entry.selector}`);
+    }
+  }
+  if (!dimensions.selectPosition.includes("16px") || dimensions.selectAppearance !== "none") {
+    issues.push("Support concern selector does not preserve the chevron gutter");
+  }
+  if (!dimensions.faqClosed || !dimensions.tipsClosed) {
+    issues.push("Supplementary Support tips/FAQ should start collapsed on phone");
+  }
+
+  const category = page.locator(".customer-support-form select");
+  await category.selectOption("ACCOUNT");
+  const orderField = page.locator(".customer-support-form__order-reference");
+  if (await orderField.isVisible()) {
+    issues.push("Order reference should be compact when concern is not purchase related");
+  }
+  await category.selectOption("ORDER");
+  if (!(await orderField.isVisible())) {
+    issues.push("Order reference must reappear for purchase-related requests");
+  }
+
+  const faqToggle = page.locator(".customer-support-faq__toggle");
+  await faqToggle.click();
+  if (
+    (await faqToggle.getAttribute("aria-expanded")) !== "true" ||
+    !(await page.locator(".customer-support-faq__list").isVisible())
+  ) {
+    issues.push("Support FAQ mobile disclosure failed to expand");
+  }
+  const tipsToggle = page.locator(".customer-support-sidebar__toggle");
+  await tipsToggle.click();
+  if (
+    (await tipsToggle.getAttribute("aria-expanded")) !== "true" ||
+    !(await page.locator(".customer-support-sidebar__content").isVisible())
+  ) {
+    issues.push("Support tips mobile disclosure failed to expand");
+  }
+
+  await page.screenshot({
+    path: join(OUTPUT_DIRECTORY, `${viewport.name}-support.png`),
+    animations: "disabled",
+    fullPage: false
+  });
+  return issues;
+}
+
 async function checkAboutMobileIntelligence(page, viewport) {
   // Exercise the actual About screens without changing operational data.
   await page.locator(".about-forecast-demo__chart-mobile").waitFor({
@@ -1636,6 +1723,20 @@ async function run() {
           const status = issues.length ? "FAIL" : "PASS";
           const details = issues.join("; ") || "width and navigation checks passed";
           process.stdout.write(`${status} ${viewport.name} ${pageName}: ${details}\n`);
+        }
+        if (viewport.width <= 430 && viewport.height > viewport.width) {
+          const supportRoute = "/support";
+          await page.goto(new URL(supportRoute, BASE_URL).href, {
+            waitUntil: "domcontentloaded",
+            timeout: 20000
+          });
+          const supportIssues = await checkSupportMobileLayout(page, viewport);
+          if (supportIssues.length) {
+            failures.push({ viewport: viewport.name, route: supportRoute, issues: supportIssues });
+          }
+          process.stdout.write(
+            `${supportIssues.length ? "FAIL" : "PASS"} ${viewport.name} Support: ${supportIssues.join("; ") || "select and mobile form fit"}\n`
+          );
         }
         if (viewport.width <= 430 && viewport.height > viewport.width) {
           const aboutRoute = "/about";
