@@ -153,6 +153,9 @@ async function run() {
           // StoreEntrance shares .customer-app but has no navbar. The layout
           // class is the stable marker for actual Home and Shop content.
           await page.locator(".customer-app.ys-material-canvas").waitFor({ timeout: 15000 });
+          await page
+            .locator(route === "/" ? ".customer-home" : ".customer-shop-page")
+            .waitFor({ timeout: 15000 });
           await page.evaluate(() => document.fonts.ready);
           const dismiss = page.getByRole("button", { name: "Dismiss privacy notice" });
           if (await dismiss.isVisible().catch(() => false)) await dismiss.click();
