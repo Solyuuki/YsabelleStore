@@ -10,6 +10,7 @@ test("mobile mode shares the existing backend and uses a separate Vite port", ()
   const launcher = read("scripts/dev-mobile.mjs");
   const vite = read("frontend/vite.config.ts");
   const frontend = read("frontend/src/config/runtime.ts");
+  const backendConfig = read("backend/src/config/env.ts");
 
   assert.equal(pkg.scripts["dev:mob"], "node --env-file=.env scripts/dev-mobile.mjs");
   assert.equal(
@@ -36,6 +37,13 @@ test("mobile mode shares the existing backend and uses a separate Vite port", ()
   assert.match(launcher, /ownedStack\.send\(\{ type: "shutdown" \}\)/);
   assert.match(launcher, /probePreview\(\)/);
   assert.match(launcher, /Mobile preview may not|local development backend/);
+  assert.match(launcher, /await assertMobileFavoriteOriginAllowed\(\)/);
+  assert.match(launcher, /Origin: MOBILE_ORIGIN/);
+  assert.match(launcher, /CUSTOMER_AUTH_ORIGIN_REJECTED/);
+  assert.ok(backendConfig.includes('"http://localhost:5174"'));
+  assert.ok(backendConfig.includes('"http://127.0.0.1:5174"'));
+  assert.match(backendConfig, /address\.family === "IPv4"/);
+  assert.match(backendConfig, /env\.NODE_ENV === "production"/);
   assert.match(vite, /mobilePreview \? "0\.0\.0\.0" : frontendUrl\.hostname/);
   assert.match(vite, /mobilePreview \? 5174 : Number\(frontendUrl\.port\)/);
   assert.match(vite, /strictPort: true/);
