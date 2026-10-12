@@ -7,6 +7,7 @@ import "@/styles/customer-auth-shaders.css";
 import "@/styles/customer-auth-interactions.css";
 import "@/styles/customer-auth-wide-composition.css";
 import "@/styles/customer-auth-login-premium.css";
+import "@/styles/customer-auth-compact.css";
 
 type CustomerAuthFrameProps = {
   children: ReactNode;
