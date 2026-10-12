@@ -23,6 +23,22 @@ From the repository root, use `npm run dev:mob`.
 - To suppress automatic browser launch, use `npm run dev:mob -- --no-open`.
 - Run fast regression checks with `npm run test:mobile`.
 
+## Adaptive customer Storefront (Sprint 12)
+
+The mobile preview now reuses the live Storefront, not a separately cloned UI.
+At the preview toolbar choose **Welcome** and **Get Started** to inspect the customer homepage.
+The **Storefront** button opens the product catalog directly.
+
+- Small portrait phones (320–430 CSS px) use a compact two-column category/catalog grid and a four-item fixed bottom navigation (Home, Shop, Cart, Account). Cart quantity remains connected to the existing cart state.
+- Landscape phones use a compact navigation row beneath the header, adaptive photo proportions and no horizontally scrolling category sidebar.
+- Tablets use the compact navigation row and three-column category grid; desktop keeps its original full Storefront navigation.
+- The Shop category navigation is collapsed by default on mobile and expands into a wrapping grid with a 44px minimum interactive target instead of a horizontal scroller.
+- The new layout styles are in `frontend/src/styles/customer-adaptive-mobile.css` and are imported last so they do not override desktop theme rules outside responsive breakpoints.
+- The established Storefront routes, category/product source, visual assets, owner/staff POS screens and backend remain unchanged.
+- Run `npm run test:mobile` to check mobile preview navigation and Storefront responsive contracts.
+
+**Manual visual QA still required:** use the preview's 320 × 640, 390 × 844, 640 × 320, and 768 × 1024 options, switch light/dark modes, inspect both Home and Shop, and verify there is no body-wide horizontal overflow or clipped buttons. Real phone testing is still required for soft keyboards, touch behavior and safe areas.
+
 ## Validate local connectivity
 
 Use `npm run runtime:report` to inspect the configured frontend, backend and database target; it checks the live health endpoint when the services are running.
