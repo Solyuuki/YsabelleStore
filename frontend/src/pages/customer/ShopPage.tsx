@@ -301,7 +301,7 @@ export function ShopPage({
             onClick={() => setCategoriesExpanded((current) => !current)}
             type="button"
           >
-            <span>Browse categories</span>
+            <span className="shop-category-toggle__label">{activeCategory?.name ?? "Categories"}</span>
             <ChevronDown aria-hidden="true" className="shop-category-toggle__chevron" size={18} />
           </button>
           <CustomerLink
@@ -349,10 +349,18 @@ export function ShopPage({
                 value={search}
               />
             </label>
-            <label className="customer-select">
-              <span className="sr-only">Availability</span>
+            <label className={`customer-select customer-select--availability${availabilityParam === "all" ? "" : " is-active"}`}>
+              <span className="sr-only">Filter products by availability</span>
+              <span aria-hidden="true" className="customer-select__mobile-glyph">
+                <SlidersHorizontal size={18} />
+                {availabilityParam !== "all" ? (
+                  <span className="customer-select__active-dot" />
+                ) : null}
+              </span>
               <select
+                aria-label="Filter products by availability"
                 onChange={(event) => applyAvailability(event.target.value as AvailabilityFilter)}
+                title={availabilityParam === "all" ? "All availability" : availabilityParam === "in-stock" ? "In stock" : "Out of stock"}
                 value={availabilityParam}
               >
                 <option value="all">All availability</option>
