@@ -576,9 +576,6 @@
     font-size: 0.72rem;
   }
 
-  .customer-app .customer-product-card__actions .customer-quantity {
-    grid-template-columns: 44px minmax(0, 1fr) 44px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
