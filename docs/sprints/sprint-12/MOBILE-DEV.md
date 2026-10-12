@@ -51,6 +51,14 @@ At portrait and short-landscape phone widths (up to 700 CSS px), global search n
 
 The Playwright QA now checks that the compact header stays within 110px before search opens, that the suggestions popup is no taller than 310px, and that it stays within the viewport and above the portrait bottom navigation. These checks run on the five portrait phone sizes and write `*-search.png` screenshots.
 
+## Compact product-card purchase controls
+
+At 320–430 CSS px in portrait, the **Home and Shop** product cards retain a two-column grid but use concise, readable merchandising. A short badge label (Trending, Best seller, or Low stock) is reserved its own space beside a 44px favorite hit target with a visually smaller 34px heart circle; no text or overlay collision is permitted. Product titles are clamped at two lines and review counts are visually hidden on phones, while the full rating summary is preserved in accessible text. Pricing, stock messages, favorite state, whole-unit quantity changes, and the existing `addItem(product, selectedQuantity)` behavior remain unchanged.
+
+Quantity decrement and increment retain 44px hit targets; the separate purple cart action uses a smaller, right-aligned 92px **cart icon + Add** pill with a 44px hit height. Desktop continues to display full badge and **Add to cart** labels. Out-of-stock messages remain descriptive rather than being shrunk to an unreadable pill.
+
+`npm run qa:mobile` now checks actual badged card/favorite geometry, clipping of short badge text, title clamping, mobile rating density, cart-action geometry, and 44px favorite/quantity touch targets on both Home and Shop in each phone portrait viewport. It waits for real product cards to load before measuring, instead of silently passing an empty/skeleton layout. Confirm the visual details in screenshots and on a physical touchscreen before calling the design production-ready.
+
 ## Automated browser QA (Playwright)
 
 Use the **existing** `npm run dev:mob` stack with the backend ready, then open a second terminal in the repository root:
