@@ -119,7 +119,7 @@ test("the five-slot mobile dock has a centered accessible expandable More menu",
   assert.match(nav, /setMoreOpen\(false\)/);
 
   assert.match(css, /grid-template-columns: repeat\(5, minmax\(0, 1fr\)\)/);
-  assert.match(css, /\.customer-app \.customer-menu-button,[\s\S]*?\.customer-app \.customer-mobile-panel\s*\{\s*display: none;/);
+  assert.match(css, /\.customer-app \.customer-menu-button,[\s\S]*?\.customer-app \.customer-cart-link\s*\{\s*display: none;/);
   assert.match(css, /\.customer-mobile-dock__more-icon\s*\{[^}]*width: 44px;[^}]*height: 44px;/);
   assert.match(css, /\.customer-mobile-more__sheet\s*\{[^}]*position: fixed;/);
   assert.match(css, /max-height: min\(75dvh, 460px\)/);
