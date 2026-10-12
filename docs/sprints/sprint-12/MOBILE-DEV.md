@@ -17,7 +17,9 @@ From the repository root, use `npm run dev:mob`.
 - Direct browser app: `http://localhost:5174/`
 - Actual Android/iPhone on the same trusted Wi-Fi: `http://<PC-LAN-IP>:5174/`
 - The terminal prints detected private IPv4 candidates. Try the IP for your active Wi-Fi/LAN adapter.
-- The preview toolbar offers multiple phone and tablet viewport widths, portrait/landscape rotation and direct links to POS, Dashboard and Storefront.
+- The preview defaults to **Welcome**, reproducing the Storefront entrance at `/?preview=welcome` in mobile development mode (including after Get Started). The preview-only query does not change desktop or production storefront behavior.
+- The toolbar offers Welcome, Storefront, Retail POS and Dashboard, highlights the selected view, and saves it in the preview URL hash (e.g. `mobile-preview.html#pos`) so reloads and browser back/forward restore the selection. **Open full page** follows the selected view.
+- The toolbar also offers multiple phone and tablet viewport widths and portrait/landscape rotation.
 - To suppress automatic browser launch, use `npm run dev:mob -- --no-open`.
 - Run fast regression checks with `npm run test:mobile`.
 
