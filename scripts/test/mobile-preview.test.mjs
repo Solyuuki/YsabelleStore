@@ -12,7 +12,10 @@ test("mobile mode shares the existing backend and uses a separate Vite port", ()
   const frontend = read("frontend/src/config/runtime.ts");
 
   assert.equal(pkg.scripts["dev:mob"], "node --env-file=.env scripts/dev-mobile.mjs");
-  assert.equal(pkg.scripts["test:mobile"], "node --test scripts/test/mobile-preview.test.mjs");
+  assert.equal(
+    pkg.scripts["test:mobile"],
+    "node --test scripts/test/mobile-preview.test.mjs scripts/test/storefront-adaptive-mobile.test.mjs"
+  );
 
   assert.match(launcher, /const MOBILE_PORT = 5174/);
   assert.match(launcher, /const state = await probeStack\(\)/);
