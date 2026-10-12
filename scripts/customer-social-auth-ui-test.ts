@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { CustomerSocialAuthButtons } from "../frontend/src/components/customer/CustomerSocialAuthButtons.tsx";
 import {
   buildCustomerSocialAuthStartUrl,
+  customerSocialAuthNavigationWindow,
   getCustomerSocialAuthNotice,
   type CustomerSocialAuthProvider
 } from "../frontend/src/services/customerSocialAuthService.ts";
@@ -187,6 +188,36 @@ assert.ok(
 assert.ok(
   accountNavigationIndex > socialLinkIndex,
   "Successful social linking should continue to the validated return path."
+);
+
+// Preview iframe is a visual QA shell, never a place to render Google's OAuth screen.
+const fullPage = { location: { origin: "http://localhost:5174", pathname: "/login" } } as unknown as Window;
+Object.assign(fullPage, { self: fullPage, top: fullPage, parent: fullPage });
+assert.equal(customerSocialAuthNavigationWindow(fullPage), fullPage);
+
+const previewHost = {
+  location: { origin: "http://localhost:5174", pathname: "/mobile-preview.html" }
+} as unknown as Window;
+const framedPage = {
+  location: { origin: "http://localhost:5174", pathname: "/login" },
+  self: {},
+  parent: previewHost,
+  top: previewHost
+} as unknown as Window;
+assert.equal(customerSocialAuthNavigationWindow(framedPage), previewHost);
+
+const otherHost = {
+  location: { origin: "http://localhost:5174", pathname: "/external-widget" }
+} as unknown as Window;
+const untrustedFrame = { ...framedPage, parent: otherHost, top: otherHost } as Window;
+assert.throws(
+  () => customerSocialAuthNavigationWindow(untrustedFrame),
+  /Open Ysabelle Store in a full browser tab/
+);
+const nestedFrame = { ...framedPage, top: otherHost } as Window;
+assert.throws(
+  () => customerSocialAuthNavigationWindow(nestedFrame),
+  /Open Ysabelle Store in a full browser tab/
 );
 
 console.log("Customer social auth quick-sign UI contract passed.");
