@@ -455,7 +455,7 @@
 /* On portrait phones the navigation sits in the thumb zone. */
 @media (max-width: 700px) and (orientation: portrait) {
   .customer-app.ys-material-canvas {
-    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+    padding-bottom: calc(var(--store-mobile-dock-clearance) + env(safe-area-inset-bottom));
   }
 
   .customer-app.ys-material-canvas > .customer-mobile-dock {
@@ -478,7 +478,7 @@
 
   /* Keep the privacy disclosure readable without covering thumb navigation. */
   .customer-app .customer-privacy-notice {
-    bottom: calc(73px + env(safe-area-inset-bottom));
+    bottom: calc(var(--store-mobile-dock-clearance) + env(safe-area-inset-bottom));
   }
 
   .customer-mobile-dock__link {
@@ -562,9 +562,6 @@
  */
 @media (max-width: 700px) and (orientation: portrait) {
   .customer-app {
-    --store-phone-gutter: clamp(12px, 4vw, 16px);
-    --store-phone-card-gap: clamp(8px, 2.5vw, 12px);
-    --store-phone-section-gap: clamp(20px, 6vw, 30px);
     width: 100%;
     max-width: 100%;
     overflow-x: clip;
@@ -903,7 +900,10 @@
   z-index: 211;
   box-sizing: border-box;
   right: 12px;
-  bottom: calc(84px + env(safe-area-inset-bottom));
+  bottom: calc(
+    var(--store-mobile-dock-clearance, 76px) + var(--store-mobile-floating-gap, 8px) +
+      env(safe-area-inset-bottom)
+  );
   left: 12px;
   width: auto;
   max-width: 380px;
