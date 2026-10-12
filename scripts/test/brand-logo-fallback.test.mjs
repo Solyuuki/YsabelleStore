@@ -19,8 +19,14 @@ test("brand components use only verified approved circular Ysabelle logo sources
     ]);
 
   for (const component of [brandLogo, customerMark]) {
-    assert.match(component, /import officialMark128Url from "@\/assets\/brand\/ysabelle-approved-mark-128\.png";/);
-    assert.match(component, /import officialMark180Url from "@\/assets\/brand\/ysabelle-approved-mark-180\.png";/);
+    assert.match(
+      component,
+      /import officialMark128Url from "@\/assets\/brand\/ysabelle-approved-mark-128\.png";/
+    );
+    assert.match(
+      component,
+      /import officialMark180Url from "@\/assets\/brand\/ysabelle-approved-mark-180\.png";/
+    );
     assert.match(component, /src=\{officialMark180Url\}/);
     assert.match(component, /srcSet=\{APPROVED_MARK_SOURCES\}/);
     assert.doesNotMatch(component, /ysabelle-store-mark-256\.png|ysabelle-logo-official\.webp/);
