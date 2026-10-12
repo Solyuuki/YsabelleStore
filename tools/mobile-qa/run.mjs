@@ -264,6 +264,9 @@ async function checkShopAvailability(page, viewport) {
     return {
       left: rect.left,
       right: rect.right,
+      top: rect.top,
+      bottom: rect.bottom,
+      dockTop: document.querySelector(".customer-mobile-dock")?.getBoundingClientRect().top ?? window.innerHeight,
       buttons: buttons.length,
       shortButtons: buttons.filter((button) => button.getBoundingClientRect().height < 43).length
     };
@@ -273,6 +276,9 @@ async function checkShopAvailability(page, viewport) {
   }
   if (geometry.buttons !== 3 || geometry.shortButtons) {
     issues.push("Availability options are incomplete or too small to tap");
+  }
+  if (geometry.top < 0 || geometry.bottom > geometry.dockTop - 4) {
+    issues.push("Availability menu is clipped by the screen edge or bottom dock");
   }
   const searchInput = page.locator(".customer-shop-search input");
   const inputSurface = await searchInput.evaluate((element) => {
