@@ -110,7 +110,7 @@ test("the five-slot mobile dock has a centered accessible expandable More menu",
   assert.match(nav, /aria-expanded=\{moreOpen\}/);
   assert.match(nav, /aria-label=\{moreOpen \? "Close more options" : "Open more options"\}/);
   assert.match(nav, /<DialogPrimitive\.Overlay className="customer-mobile-more__overlay" \/>/);
-  assert.match(nav, /<DialogPrimitive\.Content className="customer-mobile-more__sheet">/);
+  assert.match(nav, /<DialogPrimitive\.Content\s+className="customer-mobile-more__sheet"/);
   assert.match(nav, /<DialogPrimitive\.Title/);
   assert.match(nav, /<DialogPrimitive\.Description/);
   assert.match(nav, /<DialogPrimitive\.Close asChild>/);
