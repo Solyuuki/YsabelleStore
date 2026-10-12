@@ -64,6 +64,8 @@ $env:MOBILE_QA_URL = "http://127.0.0.1:5174"
 npm run qa:mobile
 ```
 
+The overflow audit treats clipped, scrollable Home product carousels on **landscape, tablet and desktop** as intentional: a card parked beyond the visible carousel region is not a page-overflow error as long as its containing rail stays within the viewport. **Portrait phone rails are never exempt:** any horizontally overflowing product rail fails QA. Document-wide width overflow and other unconstrained elements always fail.
+
 This is **local browser automation**, not a claim that iOS Safari, camera, soft-keyboard or physical-device interactions are already verified. Keep manual QA for those behaviors. `npm run test:mobile` remains the faster dependency-free source contract test.
 
 ## Validate local connectivity
