@@ -388,6 +388,81 @@ async function checkMobileAccountTabs(page, viewport) {
   return [];
 }
 
+async function checkFavoritesCardDensity(page, viewport) {
+  // No signed-in customer needed: render sample card geometry using the real
+  // Account styles. Product count, pagination and un-favorite use source tests.
+  const state = await page.evaluate(() => {
+    const app = document.querySelector(".customer-app");
+    if (!app) return null;
+    const fixture = document.createElement("section");
+    fixture.className = "customer-account-page-v2";
+    fixture.setAttribute("aria-hidden", "true");
+    fixture.style.cssText =
+      "position:absolute;left:0;top:0;width:100%;visibility:hidden;pointer-events:none;";
+    fixture.innerHTML = `
+      <div class="customer-account-layout-v2">
+        <main class="customer-account-content-v2">
+          <section id="favorites-panel" class="customer-account-section">
+            <div class="customer-account-favorites-grid">
+              ${Array.from({ length: 8 }, (_, index) => `
+                <article class="customer-product-card">
+                  <div class="customer-product-card__media">
+                    <a class="customer-product-card__visual-link">
+                      <div class="customer-product-visual"></div>
+                    </a>
+                  </div>
+                  <div class="customer-product-card__body">
+                    <p class="customer-eyebrow">Canned Goods</p>
+                    <h3>Saved product ${index + 1}</h3>
+                    <div class="customer-product-card__price-row">₱42.00</div>
+                    <div class="customer-product-card__actions"></div>
+                  </div>
+                </article>`).join("")}
+            </div>
+          </section>
+        </main>
+      </div>`;
+    app.appendChild(fixture);
+    try {
+      const grid = fixture.querySelector(".customer-account-favorites-grid");
+      const cards = [...grid.querySelectorAll(".customer-product-card")];
+      const gridRect = grid.getBoundingClientRect();
+      const rects = cards.map((card) => card.getBoundingClientRect());
+      const visuals = cards.map((card) =>
+        card.querySelector(".customer-product-visual").getBoundingClientRect()
+      );
+      return {
+        display: getComputedStyle(grid).display,
+        columns: getComputedStyle(grid).gridTemplateColumns,
+        width: gridRect.width,
+        scrollWidth: grid.scrollWidth,
+        clientWidth: grid.clientWidth,
+        cardCount: cards.length,
+        widths: rects.map((rect) => rect.width),
+        images: visuals.map((rect) => ({ width: rect.width, height: rect.height })),
+        clipped: rects.some((rect) => rect.left < gridRect.left - 1 || rect.right > gridRect.right + 1)
+      };
+    } finally {
+      fixture.remove();
+    }
+  });
+  if (!state) return ["Account favorites sizing fixture could not render"];
+  const expectedColumns = viewport.width <= 640 ? 2 : viewport.width <= 1050 ? 3 : 4;
+  const firstImage = state.images[0];
+  const expectedCardMax = (state.width / expectedColumns) + 2;
+  if (
+    state.display !== "grid" ||
+    state.cardCount !== 8 ||
+    state.clipped ||
+    state.scrollWidth > state.clientWidth + 2 ||
+    state.widths.some((width) => width > expectedCardMax || width < 85) ||
+    state.images.some((image) => image.height <= 0 || image.height > image.width * 0.81 + 1)
+  ) {
+    return [`Favorites cards are oversized or overflowing at ${viewport.width}px: ${JSON.stringify(state)}`];
+  }
+  return [];
+}
+
 async function checkActiveDeliveryDarkContrast(page, viewport) {
   // Theme probe for the actual Account > Orders styles. Never uses live
   // customer data, mutations, delivery confirmation or network requests.
@@ -1449,6 +1524,7 @@ async function run() {
           });
 
           if (route === "/shop") {
+            issues.push(...(await checkFavoritesCardDensity(page, viewport)));
             issues.push(...(await checkCheckoutDarkBackground(page, viewport)));
             issues.push(...(await checkDeliveryTrackingContrast(page, viewport)));
             issues.push(...(await checkActiveDeliveryDarkContrast(page, viewport)));
