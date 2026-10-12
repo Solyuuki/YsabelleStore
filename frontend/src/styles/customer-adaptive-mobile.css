@@ -14,6 +14,12 @@
   display: none;
 }
 
+/* Full labels remain available on desktop and wide views. */
+.customer-product-badge__label-mobile,
+.customer-product-card__add-mobile {
+  display: none;
+}
+
 @media (max-width: 1180px) {
   .customer-app.ys-material-canvas > .customer-mobile-dock {
     position: relative;
@@ -859,6 +865,191 @@
     width: 100%;
     padding-inline: 0.25rem;
     font-size: clamp(0.67rem, 2.8vw, 0.78rem);
+  }
+
+  /*
+   * Compact product-card controls, shared by Home merchandising and Shop.
+   * At 320px each card is ~144px wide. Badge + favorite are separate overlays;
+   * reserve a 44px favorite target plus 8px gap, without clipping "Trending".
+   */
+  .customer-app .customer-product-card__media {
+    min-width: 0;
+  }
+
+  .customer-app .customer-product-badge {
+    top: 6px;
+    left: 6px;
+    display: inline-flex;
+    min-width: 0;
+    min-height: 24px;
+    max-width: calc(100% - 60px);
+    align-items: center;
+    gap: 3px;
+    padding: 3px 6px;
+    border: 0;
+    border-radius: 0.4rem;
+    clip-path: none;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1.1;
+    text-transform: none;
+    white-space: nowrap;
+  }
+
+  .customer-app .customer-product-badge__label-full {
+    display: none;
+  }
+
+  .customer-app .customer-product-badge__label-mobile {
+    display: inline;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .customer-app .customer-product-badge__fire,
+  .customer-app .customer-product-badge__medal-icon,
+  .customer-app .customer-product-badge__icon {
+    width: 13px;
+    height: 13px;
+    flex: none;
+  }
+
+  .customer-app .customer-product-badge__fire-outer {
+    width: 13px;
+    height: 13px;
+  }
+
+  .customer-app .customer-product-badge__fire-inner {
+    width: 8px;
+    height: 8px;
+  }
+
+  .customer-app .customer-product-card__favorite {
+    top: 2px;
+    right: 2px;
+    z-index: 5;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    transform: none;
+  }
+
+  .customer-app .customer-product-card__favorite::before {
+    position: absolute;
+    inset: 5px;
+    border: 1px solid #d4d9eb;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 3px 8px rgb(24 31 60 / 12%);
+    content: "";
+    pointer-events: none;
+  }
+
+  .customer-app .customer-product-card__favorite > svg {
+    position: relative;
+    z-index: 1;
+    width: 16px;
+    height: 16px;
+  }
+
+  .customer-app .customer-product-card__favorite::after {
+    display: none;
+  }
+
+  .customer-app .customer-product-card__favorite[aria-pressed="true"]::before {
+    border-color: #7b52e8;
+    background: #f7eaff;
+  }
+
+  :root.dark .customer-app .customer-product-card__favorite {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  :root.dark .customer-app .customer-product-card__favorite::before {
+    border-color: #6d779e;
+    background: #2b3a55;
+  }
+
+  :root.dark .customer-app .customer-product-card__favorite[aria-pressed="true"]::before {
+    border-color: #a378d7;
+    background: #4b2e57;
+  }
+
+  .customer-app .customer-product-card h3 {
+    display: -webkit-box;
+    min-height: calc(2 * 1.3em);
+    max-height: calc(2 * 1.3em);
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow-wrap: break-word;
+  }
+
+  .customer-app .customer-product-card__rating .customer-product-card__review-count {
+    display: none;
+  }
+
+  .customer-app .customer-product-card__price-row {
+    gap: 0.1rem 0.35rem;
+  }
+
+  .customer-app .customer-product-card__actions {
+    padding-top: 0.35rem;
+  }
+
+  .customer-app .customer-product-card__purchase-row {
+    gap: 0.3rem;
+  }
+
+  .customer-app .customer-product-card__actions .customer-quantity {
+    height: 44px;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    border-radius: 0.65rem;
+    box-shadow: none;
+  }
+
+  .customer-app .customer-product-card__actions .customer-quantity > button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .customer-app .customer-product-card__actions .customer-button {
+    min-height: 44px;
+    height: 44px;
+    border-radius: 0.65rem;
+    box-shadow: 0 3px 9px rgb(79 70 229 / 14%);
+  }
+
+  .customer-app .customer-product-card__cart-button {
+    justify-self: end;
+    width: min(100%, 92px);
+    padding-inline: 0.4rem;
+    gap: 0.3rem;
+    font-size: clamp(0.67rem, 2.8vw, 0.78rem);
+    white-space: nowrap;
+  }
+
+  .customer-app .customer-product-card__cart-button svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
+  }
+
+  .customer-app .customer-product-card__add-full {
+    display: none;
+  }
+
+  .customer-app .customer-product-card__add-mobile {
+    display: inline;
+    min-width: 0;
   }
 
   /* The checkout/story section follows the same compact type and spacing scale.
