@@ -17,9 +17,13 @@ test("mobile mode shares the existing backend and uses a separate Vite port", ()
   assert.match(launcher, /const state = await probeStack\(\)/);
   assert.match(launcher, /state === "partial"/);
   assert.match(launcher, /state === "none"/);
+  assert.match(launcher, /state === "backend-only"/);
+  assert.match(launcher, /if \(!frontendOccupied\) return "backend-only";/);
+  assert.match(launcher, /payload\?\.data\?\.service !== "ysabellestore-backend"/);
   assert.match(launcher, /predev:web/);
   assert.match(launcher, /--web-only/);
   assert.match(launcher, /Reusing the existing YsabelleStore web server/);
+  assert.match(launcher, /Reusing the healthy YsabelleStore backend/);
   assert.match(launcher, /YSABELLE_MOBILE_PREVIEW: "1"/);
   assert.match(launcher, /VITE_MOBILE_PREVIEW: "1"/);
   assert.match(launcher, /ownedStack\.send\(\{ type: "shutdown" \}\)/);
