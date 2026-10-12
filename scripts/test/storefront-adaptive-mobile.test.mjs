@@ -230,3 +230,37 @@ test("browser QA permits only clipped carousel items outside viewport on non-por
   assert.match(qa, /Horizontal product rails in portrait:/);
   assert.match(qa, /Elements outside viewport:/);
 });
+
+test("phone category cards share consistent height, title space, and action", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const home = read("frontend/src/pages/customer/CustomerHomePage.tsx");
+  const presentation = read("frontend/src/utils/storefrontCategoryPresentation.ts");
+  const qa = read("tools/mobile-qa/run.mjs");
+
+  assert.match(home, /getCustomerCategoryDescription\(category\.description\)/);
+  assert.match(home, /className="home-category-card__description"/);
+  assert.match(home, /className="home-category-card__mobile-cta"/);
+  assert.match(home, /Browse products/);
+  assert.match(presentation, /export function getCustomerCategoryDescription\(description: string \| null\)/);
+  assert.match(presentation, /reviewed category for source\[- \]mapped\|source\[- \]mapped SARIM/i);
+  assert.match(presentation, /return "Explore this aisle"/);
+
+  const portrait = css.split("/* Consistent phone scale: portrait")[1]?.split(
+    "/* A wide portrait phone/foldable"
+  )[0];
+  assert.ok(portrait, "Missing phone portrait category CSS");
+  assert.match(portrait, /\.customer-home \.home-category-grid > \.home-reveal--card\s*\{[^}]*height: 100%;/);
+  assert.match(portrait, /\.customer-home \.home-category-card__visual\s*\{[^}]*aspect-ratio: 4 \/ 3;/);
+  assert.match(portrait, /\.customer-home \.home-category-card__body\s*\{[^}]*min-height: clamp\(88px, 25vw, 96px\);/);
+  assert.match(portrait, /\.customer-home \.home-category-card__body strong\s*\{[^}]*-webkit-line-clamp: 3;/);
+  assert.match(portrait, /\.customer-home \.home-category-card__description\s*\{\s*display: none;/);
+  assert.match(portrait, /\.customer-home \.home-category-card__mobile-cta\s*\{\s*display: inline-flex;/);
+  assert.match(css, /:root\.dark \.customer-app \.home-category-card__mobile-cta/);
+
+  assert.match(qa, /\.home-category-grid \.home-category-card/);
+  assert.match(qa, /unevenCardHeights/);
+  assert.match(qa, /unevenImageHeights/);
+  assert.match(qa, /missingBrowsingActions/);
+  assert.match(qa, /visibleDescriptions/);
+  assert.match(qa, /Category cards have inconsistent heights/);
+});
