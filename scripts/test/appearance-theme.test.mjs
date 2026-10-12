@@ -116,3 +116,43 @@ test("printed receipts remain explicitly light", () => {
   assert.match(print, /@media print/);
   assert.match(print, /background: #ffffff !important/);
 });
+
+test("logout confirmation reuses the About galaxy and keeps both themes readable", () => {
+  const modal = read("frontend/src/components/shared/LogoutConfirmationModal.tsx");
+  const darkStyles = read("frontend/src/styles/logout-confirmation.css");
+  const theme = read("frontend/src/styles/theme-retail.css");
+
+  assert.match(modal, /@\/styles\/logout-confirmation\.css/);
+  assert.match(theme, /--storefront-galaxy-background:/);
+  assert.match(darkStyles, /:root\.dark \.logout-confirmation-backdrop/);
+  assert.match(darkStyles, /background-image: var\(--storefront-galaxy-background\)/);
+  assert.match(darkStyles, /background-size: 72px 72px/);
+
+  for (const part of [
+    "panel",
+    "header",
+    "warning",
+    "title",
+    "description",
+    "notice",
+    "actions",
+    "cancel"
+  ]) {
+    assert.ok(
+      modal.includes(`logout-confirmation-${part}`),
+      `Missing logout component target: ${part}`
+    );
+    assert.ok(
+      darkStyles.includes(`.logout-confirmation-${part}`),
+      `Missing scoped dark-mode contrast: ${part}`
+    );
+  }
+
+  // Light-mode utility styles and the original session controls remain intact.
+  assert.match(modal, /bg-white\/95/);
+  assert.match(modal, /bg-indigo-50\/80/);
+  assert.match(modal, /onClick=\{onCancel\}/);
+  assert.match(modal, /onClick=\{onConfirm\}/);
+  assert.match(modal, /event\.key === "Escape"/);
+  assert.match(modal, /isLoggingOut \? "Securing session\.\.\."/);
+});
