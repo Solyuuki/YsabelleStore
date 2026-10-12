@@ -199,6 +199,59 @@ async function measurePage(page, viewport) {
   }, viewport);
 }
 
+async function checkShopCategories(page, viewport) {
+  const issues = [];
+  const toggle = page.locator(".shop-category-toggle");
+  await toggle.click();
+
+  const menu = page.locator(".shop-category-navigation");
+  const geometry = await menu.evaluate((element) => {
+    const options = [...element.querySelectorAll(":scope > a")].filter(
+      (link) => getComputedStyle(link).display !== "none"
+    );
+    const rows = options.map((link) => link.getBoundingClientRect());
+    const columns = [...new Set(rows.map((rect) => Math.round(rect.left)))].length;
+    const menuBounds = element.getBoundingClientRect();
+    return {
+      expanded: element.classList.contains("is-expanded"),
+      optionCount: options.length,
+      columns,
+      maxHeight: menuBounds.height,
+      horizontalOverflow: element.scrollWidth > element.clientWidth + 2,
+      overflowingOptionLabels: options.filter((link) => {
+        const label = link.querySelector("span");
+        return label && label.scrollWidth > label.clientWidth + 2;
+      }).length,
+      smallOptions: rows.filter((rect) => rect.height < 43).length
+    };
+  });
+  if (!geometry.expanded || geometry.optionCount < 2) {
+    issues.push("Expanded category list does not show dynamic category choices");
+  }
+  if (viewport.width <= 430 && geometry.columns !== 1) {
+    issues.push(`Narrow category picker stretched into ${geometry.columns} columns`);
+  }
+  if (geometry.maxHeight > Math.min(viewport.height * 0.48, 320) + 2) {
+    issues.push("Expanded category panel takes too much vertical space");
+  }
+  if (geometry.horizontalOverflow || geometry.overflowingOptionLabels) {
+    issues.push("Expanded category names or counts overflow horizontally");
+  }
+  if (geometry.smallOptions) {
+    issues.push("Category options below 44px tap height");
+  }
+
+  await page.screenshot({
+    path: join(OUTPUT_DIRECTORY, `${viewport.name}-shop-categories.png`),
+    animations: "disabled"
+  });
+  await menu.locator(":scope > a").first().click();
+  if ((await toggle.getAttribute("aria-expanded")) !== "false") {
+    issues.push("Category picker did not collapse after choosing an option");
+  }
+  return issues;
+}
+
 async function checkMorePanel(page, viewport) {
   const openButton = page.getByRole("button", { name: "Open more options" });
   await openButton.click();
@@ -403,6 +456,9 @@ async function run() {
             fullPage: false
           });
 
+          if (route === "/shop" && viewport.width <= 430 && viewport.height > viewport.width) {
+            issues.push(...(await checkShopCategories(page, viewport)));
+          }
           if (route === "/shop" && viewport.width <= 1180) {
             issues.push(...(await checkMorePanel(page, viewport)));
           }
