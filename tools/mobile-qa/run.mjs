@@ -107,7 +107,9 @@ async function checkMorePanel(page, viewport) {
       (element) => element.getBoundingClientRect().top
     );
     if (rect.y + rect.height > dockTop - 6) {
-      issues.push("More panel overlaps the bottom dock instead of floating above it");
+      issues.push(
+        `More panel overlaps dock: panelBottom=${Math.round(rect.y + rect.height)}, dockTop=${Math.round(dockTop)}`
+      );
     }
   }
 
@@ -135,6 +137,11 @@ async function run() {
         hasTouch: viewport.width < 1180,
         reducedMotion: "reduce"
       });
+      // Visit the real Home layout rather than its first-visit Welcome screen.
+      // This lives only in the isolated QA browser context, not the user's session.
+      await context.addInitScript(() => {
+        window.sessionStorage.setItem("ysabelle-store-entrance-entered", "true");
+      });
       const page = await context.newPage();
 
       try {
@@ -143,15 +150,9 @@ async function run() {
           const url = new URL(route, BASE_URL);
           await page.goto(url.href, { waitUntil: "domcontentloaded", timeout: 20000 });
 
-          if (route === "/") {
-            // The Storefront entrance precedes CustomerLayout on a clean session.
-            const start = page.getByText("Get Started", { exact: true });
-            if (await start.count()) {
-              await start.first().click();
-            }
-          }
-
-          await page.locator(".customer-app").waitFor({ timeout: 15000 });
+          // StoreEntrance shares .customer-app but has no navbar. The layout
+          // class is the stable marker for actual Home and Shop content.
+          await page.locator(".customer-app.ys-material-canvas").waitFor({ timeout: 15000 });
           await page.evaluate(() => document.fonts.ready);
           const dismiss = page.getByRole("button", { name: "Dismiss privacy notice" });
           if (await dismiss.isVisible().catch(() => false)) await dismiss.click();
