@@ -26,7 +26,8 @@ async function openBrowser() {
       return await chromium.launch({ headless: true });
     } catch {
       throw new Error(
-        "Cannot launch Chrome/Chromium. Install Chrome or run: npm --prefix tools/mobile-qa exec playwright install chromium",
+        "Cannot launch Chrome/Chromium. Install Chrome or run: " +
+          "npm --prefix tools/mobile-qa exec playwright install chromium",
         { cause: error }
       );
     }
@@ -169,7 +170,9 @@ async function run() {
             issues.push(`Document overflow: ${result.scrollWidth}px > ${viewport.width}px`);
           }
           if (result.overflowing.length) {
-            issues.push(`Elements outside viewport: ${JSON.stringify(result.overflowing.slice(0, 6))}`);
+            issues.push(
+              `Elements outside viewport: ${JSON.stringify(result.overflowing.slice(0, 6))}`
+            );
           }
           if (viewport.width <= 1180) {
             if (!result.dockVisible || result.dockSlots !== 5) {
@@ -192,9 +195,9 @@ async function run() {
           if (issues.length) {
             failures.push({ viewport: viewport.name, route, issues });
           }
-          process.stdout.write(
-            `${issues.length ? "FAIL" : "PASS"} ${viewport.name} ${pageName}: ${issues.join("; ") || "width and navigation checks passed"}\n`
-          );
+          const status = issues.length ? "FAIL" : "PASS";
+          const details = issues.join("; ") || "width and navigation checks passed";
+          process.stdout.write(`${status} ${viewport.name} ${pageName}: ${details}\n`);
         }
       } catch (error) {
         failures.push({ viewport: viewport.name, route: "runtime", issues: [String(error)] });
