@@ -121,7 +121,14 @@ export function ProductCard({
               ) : (
                 <CircleAlert aria-hidden="true" className="customer-product-badge__icon" />
               )}
-              <span>{resolvedBadge.label}</span>
+              <span className="customer-product-badge__label-full">{resolvedBadge.label}</span>
+              <span className="customer-product-badge__label-mobile">
+                {resolvedBadge.tone === "trending"
+                  ? "Trending"
+                  : resolvedBadge.tone === "best-seller"
+                    ? "Best seller"
+                    : resolvedBadge.label}
+              </span>
             </span>
           ) : null}
         </CustomerLink>
@@ -154,7 +161,7 @@ export function ProductCard({
         >
           <Star aria-hidden="true" fill={hasReviews ? "currentColor" : "none"} />
           {hasReviews ? <strong>{formattedRating}</strong> : null}
-          <span>
+          <span className="customer-product-card__review-count">
             {hasReviews
               ? `(${product.reviewCount} ${product.reviewCount === 1 ? "review" : "reviews"})`
               : "No reviews yet"}
@@ -186,12 +193,22 @@ export function ProductCard({
               <button
                 className="customer-button customer-button--compact customer-product-card__cart-button"
                 data-tour={tourTarget ? "add-to-cart" : undefined}
+                aria-label={
+                  isReady
+                    ? `Add ${selectedQuantity} ${product.name} to cart`
+                    : "Cart loading"
+                }
                 disabled={!isReady}
                 onClick={handleAddToCart}
                 type="button"
               >
                 <ShoppingCart aria-hidden="true" size={17} strokeWidth={2} />
-                {isReady ? "Add to cart" : "Cart loading"}
+                <span className="customer-product-card__add-full">
+                  {isReady ? "Add to cart" : "Cart loading"}
+                </span>
+                <span aria-hidden="true" className="customer-product-card__add-mobile">
+                  {isReady ? "Add" : "Wait"}
+                </span>
               </button>
             </div>
           ) : (
