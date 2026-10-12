@@ -302,6 +302,16 @@
     line-height: 1.2;
   }
 
+  /* The compact label must also fit landscape phones and two-up tablet cards. */
+  .customer-app .customer-product-card__add-full {
+    display: none;
+  }
+
+  .customer-app .customer-product-card__add-mobile {
+    display: inline;
+    min-width: 0;
+  }
+
   .customer-shop-page .shop-product-grid,
   .customer-shop-page .customer-product-grid--loading,
   .customer-shop-page .shop-catalog-refresh__grid {
