@@ -33,13 +33,6 @@ async function openBrowser() {
   }
 }
 
-function isVisible(element) {
-  if (!(element instanceof HTMLElement)) return false;
-  const style = getComputedStyle(element);
-  const rect = element.getBoundingClientRect();
-  return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0;
-}
-
 async function measurePage(page, viewport) {
   return page.evaluate(({ width, height }) => {
     const selectors = [
@@ -149,15 +142,16 @@ async function run() {
           const pageName = route === "/" ? "home" : "shop";
           const url = new URL(route, BASE_URL);
           await page.goto(url.href, { waitUntil: "domcontentloaded", timeout: 20000 });
-          await page.locator(".customer-app").waitFor({ timeout: 15000 });
 
           if (route === "/") {
+            // The Storefront entrance precedes CustomerLayout on a clean session.
             const start = page.getByText("Get Started", { exact: true });
             if (await start.count()) {
               await start.first().click();
             }
           }
 
+          await page.locator(".customer-app").waitFor({ timeout: 15000 });
           await page.evaluate(() => document.fonts.ready);
           const dismiss = page.getByRole("button", { name: "Dismiss privacy notice" });
           if (await dismiss.isVisible().catch(() => false)) await dismiss.click();
