@@ -209,6 +209,15 @@ export function ShopPage({
     navigate(buildShopUrl({ search: search.trim(), availability: nextAvailability, page: 1 }));
   }
 
+  const categoryNavigationClassName = [
+    "customer-filter-panel",
+    "shop-category-navigation",
+    categoryNavigationReveal.isVisible ? "is-visible" : "",
+    categoriesExpanded ? "is-expanded" : ""
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <div className="customer-page customer-shop-page">
       <section
@@ -277,7 +286,7 @@ export function ShopPage({
         <ShopCatalogBackdrop />
         <aside
           aria-label="Shop filters"
-          className={`customer-filter-panel shop-category-navigation ${categoryNavigationReveal.isVisible ? "is-visible" : ""}${categoriesExpanded ? " is-expanded" : ""}`}
+          className={categoryNavigationClassName}
           id="categories"
           ref={categoryNavigationReveal.ref}
         >
