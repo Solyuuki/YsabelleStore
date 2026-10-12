@@ -23,6 +23,12 @@ From the repository root, use `npm run dev:mob`.
 - To suppress automatic browser launch, use `npm run dev:mob -- --no-open`.
 - Run fast regression checks with `npm run test:mobile`.
 
+## Logo-free HTTP status pages
+
+Sprint 12 removes the oversized Ysabelle Store logo header from the shared full-screen `StatusScreen` component. HTTP **401 session expired**, **403 access denied**, **404 not found**, and the existing **503/system reliability states** now present only the dedicated status illustration, code, explanation, and recovery actions. All status variants share the same logo-free layout, so desktop and mobile use balanced vertical padding after the old top header is removed. Regular storefront, customer authentication forms, and store navigation retain their existing branding.
+
+Regression contracts: `scripts/http-status-fullscreen-ui-test.ts` rejects branded status headers, and `scripts/test/status-screen-appearance.test.mjs` verifies the shared portal/theme/focus behavior, dark-mode readability, and logo-free rendering. Retest 401, 403, 404, and 503 in light/dark mode and on mobile/desktop; source tests do not replace live screenshots or end-to-end session expiry.
+
 ## Adaptive customer Storefront (Sprint 12)
 
 The mobile preview now reuses the live Storefront, not a separately cloned UI.
