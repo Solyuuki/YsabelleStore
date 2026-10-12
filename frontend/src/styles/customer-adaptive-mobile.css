@@ -16,7 +16,8 @@
 
 /* Full labels remain available on desktop and wide views. */
 .customer-product-badge__label-mobile,
-.customer-product-card__add-mobile {
+.customer-product-card__add-mobile,
+.customer-select__mobile-glyph {
   display: none;
 }
 
