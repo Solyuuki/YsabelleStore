@@ -78,14 +78,22 @@ test("frontend runtime can load without Vite-injected import.meta.env", async ()
   assert.equal(resolveApiUrl("/api/customer-auth/me").pathname, "/api/customer-auth/me");
 });
 
-test("mobile preview supports phone sizes, rotation and live routes", () => {
+test("mobile preview supports portrait-only phones, rotating tablets and live routes", () => {
   const page = read("frontend/mobile-preview.html");
 
   for (const width of ["320,640", "360,800", "390,844", "430,932", "768,1024"]) {
     assert.ok(page.includes(width), "Missing preview width: " + width);
   }
   assert.match(page, /<iframe[^>]+title="YsabelleStore live mobile viewport"/);
-  assert.match(page, /id="rotate"/);
+  assert.match(page, /id="rotate"[^>]+disabled/);
+  for (const phone of ["320,640", "360,800", "375,812", "390,844", "412,915", "430,932"]) {
+    assert.ok(page.includes(`data-orientation="portrait" value="${phone}"`));
+  }
+  assert.match(page, /data-orientation="both" value="768,1024"/);
+  assert.match(page, /id="orientation-hint"/);
+  assert.match(page, /rotateButton\.disabled = !tablet/);
+  assert.match(page, /if \(!canRotate\(\)\) return;/);
+  assert.match(page, /if \(!tablet\) landscape = false;/);
   assert.match(page, /data-view="welcome" data-route="\/\?preview=welcome"/);
   assert.match(page, /data-view="pos" data-route="\/pos"/);
   assert.match(page, /data-view="dashboard" data-route="\/dashboard"/);
@@ -112,6 +120,7 @@ test("preview route selection restores from hash, highlights the active view and
       attributes: { ...attributes },
       clientWidth: 900,
       value: "390,844",
+      selectedOptions: [{ dataset: { orientation: "portrait" } }],
       textContent: "",
       addEventListener(name, callback) {
         listeners.set(name, callback);
@@ -152,6 +161,7 @@ test("preview route selection restores from hash, highlights the active view and
     preview,
     dimensions: element(),
     rotate: element(),
+    "orientation-hint": element(),
     "full-page-link": fullPage
   };
   const events = new Map();
@@ -197,6 +207,35 @@ test("preview route selection restores from hash, highlights the active view and
   fakeWindow.location.hash = "#not-a-route";
   events.get("hashchange")();
   assert.equal(preview.src, "/?preview=welcome");
+
+  // Phone presets remain portrait even if the user clicks Rotate.
+  assert.equal(ids.rotate.disabled, true);
+  assert.equal(ids.dimensions.textContent, "390 × 844 CSS pixels");
+  assert.equal(ids["orientation-hint"].textContent, "Phone · portrait only");
+  ids.rotate.trigger("click");
+  assert.equal(ids.dimensions.textContent, "390 × 844 CSS pixels");
+
+  // Only the tablet preset enables rotation in either direction.
+  ids.device.value = "768,1024";
+  ids.device.selectedOptions[0].dataset.orientation = "both";
+  ids.device.trigger("change");
+  assert.equal(ids.rotate.disabled, false);
+  assert.equal(ids.dimensions.textContent, "768 × 1024 CSS pixels");
+  assert.equal(ids["orientation-hint"].textContent, "Tablet · portrait and landscape");
+  ids.rotate.trigger("click");
+  assert.equal(ids.dimensions.textContent, "1024 × 768 CSS pixels");
+  ids.rotate.trigger("click");
+  assert.equal(ids.dimensions.textContent, "768 × 1024 CSS pixels");
+
+  // Switching back from a landscape tablet must force portrait on the phone.
+  ids.rotate.trigger("click");
+  ids.device.value = "320,640";
+  ids.device.selectedOptions[0].dataset.orientation = "portrait";
+  ids.device.trigger("change");
+  assert.equal(ids.rotate.disabled, true);
+  assert.equal(ids.dimensions.textContent, "320 × 640 CSS pixels");
+  ids.rotate.trigger("click");
+  assert.equal(ids.dimensions.textContent, "320 × 640 CSS pixels");
 });
 
 test("store entrance fits short landscape phone viewports without scroll clipping", () => {
