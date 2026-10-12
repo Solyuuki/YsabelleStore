@@ -420,7 +420,9 @@ async function checkMobileCart(page, viewport) {
   // Cart operations must still work after the layout changes.
   const firstRemove = cards.first().getByRole("button", { name: /Remove .* from cart/ });
   await firstRemove.click();
-  if ((await cards.count()) !== visibleCount - 1) {
+  // Removing from a six-item basket pulls the sixth item onto page one,
+  // so five rows should remain visible; three-item carts shrink to two.
+  if ((await cards.count()) !== Math.min(itemsToAdd - 1, 5)) {
     issues.push("Remove cart item did not update list");
   }
   return issues;
