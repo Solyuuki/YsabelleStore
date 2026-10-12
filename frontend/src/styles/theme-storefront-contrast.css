@@ -668,6 +668,22 @@
 :root.dark .customer-app .customer-success-card :is(p, small) {
   color: #b8c6d8;
 }
+
+/* Order Success delivery tracking: the light-mode slate ink (#58627a /
+   #737c92) had insufficient contrast on the dark #1b2638 panel.
+   Scope the fix to this text group in BOTH mobile and desktop layouts. */
+:root.dark .customer-app .customer-success-card .customer-success-pickup strong {
+  color: #eef3ff;
+}
+:root.dark .customer-app .customer-success-card .customer-success-pickup span {
+  color: #d5e0f2;
+}
+:root.dark .customer-app .customer-success-card .customer-success-pickup small {
+  color: #bfcfe7;
+}
+:root.dark .customer-app .customer-success-card .customer-success-pickup > svg {
+  color: #b6c5ff;
+}
 :root.dark .customer-app .customer-order-reference {
   border-color: #7685a5;
 }
