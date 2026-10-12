@@ -316,6 +316,92 @@ async function checkShopAvailability(page, viewport) {
   return issues;
 }
 
+async function checkMobileCart(page, viewport) {
+  const issues = [];
+  // Isolated browser context: only a guest cart in localStorage is touched;
+  // no real checkout, paid order, or customer account state is mutated.
+  const addButtons = page.locator(
+    ".shop-product-grid-shell .customer-product-card__cart-button:not([disabled])"
+  );
+  await addButtons.first().waitFor({ state: "visible", timeout: 12000 });
+  const available = await addButtons.count();
+  if (available < 3) return ["Not enough in-stock products to verify a multi-item cart"];
+
+  for (let index = 0; index < 3; index += 1) {
+    await addButtons.nth(index).click();
+  }
+  await page.goto(new URL("/cart", BASE_URL).href, { waitUntil: "domcontentloaded" });
+  const cards = page.locator(".customer-cart-list .customer-cart-item");
+  await cards.first().waitFor({ state: "visible", timeout: 15000 });
+
+  const metrics = await page.evaluate(() => {
+    const cards = [...document.querySelectorAll(".customer-cart-list .customer-cart-item")];
+    return {
+      count: cards.length,
+      pageWidth: document.documentElement.scrollWidth,
+      hasSummary: Boolean(document.querySelector(".customer-cart-summary-stack .customer-order-summary")),
+      results: cards.map((card) => {
+        const bounds = card.getBoundingClientRect();
+        const image = card.querySelector(".customer-product-visual")?.getBoundingClientRect();
+        const info = card.querySelector(".customer-cart-item__info")?.getBoundingClientRect();
+        const actions = card.querySelector(".customer-cart-item__quantity")?.getBoundingClientRect();
+        const remove = card.querySelector(".customer-cart-item__info button");
+        const minus = card.querySelector(".customer-quantity button");
+        const total = card.querySelector(".customer-cart-item__quantity > strong")?.getBoundingClientRect();
+        const fits = (rect) =>
+          !!rect &&
+          rect.left >= bounds.left - 1 &&
+          rect.right <= bounds.right + 1 &&
+          rect.bottom <= bounds.bottom + 1;
+        return {
+          height: bounds.height,
+          imageWidth: image?.width ?? 0,
+          imageHeight: image?.height ?? 0,
+          imageFits: fits(image),
+          infoFits: fits(info),
+          actionFits: fits(actions),
+          totalFits: fits(total),
+          controlsHeight: minus?.getBoundingClientRect().height ?? 0,
+          removeHeight: remove?.getBoundingClientRect().height ?? 0,
+          labeledRemove: remove?.getAttribute("aria-label")?.startsWith("Remove ") ?? false,
+          contentOverflows: card.scrollWidth > card.clientWidth + 2
+        };
+      })
+    };
+  });
+
+  if (metrics.count !== 3) issues.push(`Expected 3 cart lines, found ${metrics.count}`);
+  if (!metrics.hasSummary) issues.push("Order summary missing from multi-item cart");
+  if (metrics.pageWidth > viewport.width + 1) issues.push("Multi-item cart overflows screen width");
+  if (metrics.results.some((item) =>
+    item.height > 235 ||
+    item.imageWidth > 102 ||
+    item.imageHeight > 102 ||
+    !item.imageFits ||
+    !item.infoFits ||
+    !item.actionFits ||
+    !item.totalFits ||
+    item.controlsHeight < 43 ||
+    item.removeHeight < 43 ||
+    !item.labeledRemove ||
+    item.contentOverflows
+  )) {
+    issues.push("Cart line is oversized, clipped, or has unusable actions");
+  }
+
+  await page.screenshot({
+    path: join(OUTPUT_DIRECTORY, `${viewport.name}-cart.png`),
+    animations: "disabled",
+    fullPage: false
+  });
+
+  // Cart operations must still work after the layout changes.
+  const firstRemove = cards.first().getByRole("button", { name: /Remove .* from cart/ });
+  await firstRemove.click();
+  if ((await cards.count()) !== 2) issues.push("Remove cart item did not update list");
+  return issues;
+}
+
 async function checkMobileProductDetail(page, viewport) {
   const issues = [];
   const href = await page.locator(".customer-product-card__visual-link").first().getAttribute("href");
@@ -795,6 +881,10 @@ async function run() {
           }
           if (route === "/shop" && viewport.width <= 430 && viewport.height > viewport.width) {
             issues.push(...(await checkMobileProductDetail(page, viewport)));
+            await page.goto(new URL("/shop?availability=in-stock", BASE_URL).href, {
+              waitUntil: "domcontentloaded"
+            });
+            issues.push(...(await checkMobileCart(page, viewport)));
           }
           if (issues.length) {
             failures.push({ viewport: viewport.name, route, issues });
