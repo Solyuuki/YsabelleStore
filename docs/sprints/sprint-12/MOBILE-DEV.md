@@ -29,7 +29,10 @@ The mobile preview now reuses the live Storefront, not a separately cloned UI.
 At the preview toolbar choose **Welcome** and **Get Started** to inspect the customer homepage.
 The **Storefront** button opens the product catalog directly.
 
-- Small portrait phones (320–430 CSS px) use a compact two-column category/catalog grid and a four-item fixed bottom navigation (Home, Shop, Cart, Account). Cart quantity remains connected to the existing cart state.
+- Small portrait phones (320–430 CSS px) use a compact two-column category/catalog/product grid and a four-item fixed bottom navigation (Home, Shop, Cart, Account). Cart quantity remains connected to the existing cart state.
+- **Portrait is vertically scrollable only:** Trending, Best Sellers and Everyday Essentials product rails become normal two-column grids; category filters wrap rather than forming a horizontal scroller. Rail arrows are hidden only when the entire grid is visible.
+- Mobile design uses shared CSS sizing tokens (12–16px gutters, 8–12px card gaps and 20–30px section spacing). Titles, photos, pricing and CTA controls scale together, not as independent device-specific designs.
+- Portrait widths 600–700px can show three columns without changing the Storefront design language; regular portrait phones keep two columns. Interactive quantity/CTA controls retain their 44px+ touch target dimensions.
 - Landscape phones use a compact navigation row beneath the header, adaptive photo proportions and no horizontally scrolling category sidebar.
 - Tablets use the compact navigation row and three-column category grid; desktop keeps its original full Storefront navigation.
 - The Shop category navigation is collapsed by default on mobile and expands into a wrapping grid with a 44px minimum interactive target instead of a horizontal scroller.
