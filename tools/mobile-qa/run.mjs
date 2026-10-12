@@ -90,9 +90,11 @@ async function measurePage(page, viewport) {
     }
 
     const categoryCards = [...document.querySelectorAll(".home-category-grid .home-category-card")];
-    const cardHeights = categoryCards.map((card) => card.getBoundingClientRect().height);
+    // Use untransformed layout heights. The entrance/reveal animation scales
+    // cards as they enter view and is not a structural height mismatch.
+    const cardHeights = categoryCards.map((card) => card.offsetHeight);
     const categoryImages = categoryCards.map((card) =>
-      card.querySelector(".home-category-card__visual")?.getBoundingClientRect().height ?? 0
+      card.querySelector(".home-category-card__visual")?.offsetHeight ?? 0
     );
     const unevenHeights = (values) =>
       values.length > 1 && Math.max(...values) - Math.min(...values) > 2;
