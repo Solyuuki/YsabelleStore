@@ -45,7 +45,7 @@ export function CustomerOrderPolicyInfo() {
 
         <div className="customer-order-policy__content">
           <p>You can review and change your cart until you submit the order.</p>
-          <p>
+          <p lang="en">
             Once your order is placed, you cannot cancel it directly from My Account. You may
             contact the store to request a cancellation, subject to the order's preparation,
             delivery and payment status. Paid orders may need a separate refund process.
