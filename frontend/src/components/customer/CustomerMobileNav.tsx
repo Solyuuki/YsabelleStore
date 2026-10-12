@@ -83,7 +83,9 @@ export function CustomerMobileNav({
     const positionMenu = () => {
       const trigger = accountTriggerRef.current;
       if (!trigger) return;
-      setAccountMenuRight(Math.max(12, Math.ceil(window.innerWidth - trigger.getBoundingClientRect().right)));
+      setAccountMenuRight(
+        Math.max(12, Math.ceil(window.innerWidth - trigger.getBoundingClientRect().right))
+      );
     };
     positionMenu();
     window.addEventListener("resize", positionMenu);
@@ -110,17 +112,28 @@ export function CustomerMobileNav({
       setAccountOpen(false);
       accountTriggerRef.current?.focus();
     };
+    const dismissFocusOutside = (event: FocusEvent) => {
+      if (!(event.target instanceof Node)) return;
+      if (accountTriggerRef.current?.contains(event.target)) return;
+      if (accountMenuRef.current?.contains(event.target)) return;
+      setAccountOpen(false);
+    };
     document.addEventListener("pointerdown", dismissOutside, true);
     document.addEventListener("keydown", dismissEscape);
+    document.addEventListener("focusin", dismissFocusOutside);
     return () => {
       document.removeEventListener("pointerdown", dismissOutside, true);
       document.removeEventListener("keydown", dismissEscape);
+      document.removeEventListener("focusin", dismissFocusOutside);
     };
   }, [accountOpen]);
 
   const accountHref = status === "authenticated" ? "/account" : "/login";
-  const activeAccountView = new URL(location, window.location.origin).searchParams.get("view") ?? "orders";
-  const accountActive = ["/account", "/login", "/register", "/account-recovery"].includes(pathname);
+  const activeAccountView =
+    new URL(location, window.location.origin).searchParams.get("view") ?? "orders";
+  const accountActive = ["/account", "/login", "/register", "/account-recovery"].includes(
+    pathname
+  );
   const accountViews = [
     { view: "orders", label: "Orders", icon: History },
     { view: "favorites", label: "Favorites", icon: Heart },
