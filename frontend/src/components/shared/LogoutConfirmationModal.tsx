@@ -2,6 +2,7 @@ import { LoaderCircle, LogOut, ShieldCheck, TriangleAlert } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
+import "@/styles/logout-confirmation.css";
 
 type LogoutConfirmationModalProps = {
   isLoggingOut: boolean;
@@ -78,22 +79,22 @@ export function LogoutConfirmationModal({
     <div
       aria-labelledby="logout-confirmation-title"
       aria-modal="true"
-      className="logout-modal-enter fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 px-6 py-8 backdrop-blur-sm"
+      className="logout-confirmation-backdrop logout-modal-enter fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 px-4 py-8 backdrop-blur-sm sm:px-6"
       role="dialog"
     >
-      <div className="w-[min(92vw,600px)] overflow-hidden rounded-xl border border-indigo-100 bg-white/95 text-slate-950 shadow-[0_28px_90px_rgba(30,41,59,0.26)] backdrop-blur-xl">
-        <div className="flex items-start gap-5 border-b border-slate-100 px-7 py-6">
+      <div className="logout-confirmation-panel max-h-[calc(100dvh-3rem)] w-[min(92vw,600px)] overflow-y-auto rounded-xl border border-indigo-100 bg-white/95 text-slate-950 shadow-[0_28px_90px_rgba(30,41,59,0.26)] backdrop-blur-xl">
+        <div className="logout-confirmation-header flex items-start gap-5 border-b border-slate-100 px-7 py-6">
           <div
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-50 text-amber-700"
+            className="logout-confirmation-warning flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-50 text-amber-700"
             aria-hidden="true"
           >
             <TriangleAlert className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <h2 id="logout-confirmation-title" className="type-h4 text-slate-950">
+            <h2 id="logout-confirmation-title" className="logout-confirmation-title type-h4 text-slate-950">
               End current session?
             </h2>
-            <p className="type-body-sm mt-2.5 text-slate-600">
+            <p className="logout-confirmation-description type-body-sm mt-2.5 text-slate-600">
               You are about to sign out of YsabelleStore. Your autosaved changes and local workspace
               activity will remain available when you sign in again.
             </p>
@@ -101,7 +102,7 @@ export function LogoutConfirmationModal({
         </div>
 
         <div className="px-7 py-5">
-          <div className="flex items-center gap-3.5 rounded-lg border border-indigo-200 bg-indigo-50/80 px-4 py-3.5 text-sm leading-6 text-indigo-800 shadow-[0_8px_24px_rgba(98,91,255,0.07)]">
+          <div className="logout-confirmation-notice flex items-center gap-3.5 rounded-lg border border-indigo-200 bg-indigo-50/80 px-4 py-3.5 text-sm leading-6 text-indigo-800 shadow-[0_8px_24px_rgba(98,91,255,0.07)]">
             <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>
               {isLoggingOut
@@ -111,9 +112,9 @@ export function LogoutConfirmationModal({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-slate-100 bg-slate-50/55 px-7 py-5">
+        <div className="logout-confirmation-actions flex justify-end gap-3 border-t border-slate-100 bg-slate-50/55 px-7 py-5">
           <Button
-            className="h-11 px-4"
+            className="logout-confirmation-cancel h-11 px-4"
             disabled={isLoggingOut}
             onClick={onCancel}
             ref={cancelButtonRef}
