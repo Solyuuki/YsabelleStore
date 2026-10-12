@@ -316,6 +316,126 @@ async function checkShopAvailability(page, viewport) {
   return issues;
 }
 
+async function checkCheckoutContentDensity(page, viewport) {
+  // Measure responsive Checkout CSS with a hidden, realistic form fixture.
+  // The suite can run as a guest: no checkout attempt or payment state changes.
+  const metrics = await page.evaluate(() => {
+    const app = document.querySelector(".customer-app");
+    if (!app) return null;
+    const fixture = document.createElement("div");
+    fixture.className = "customer-checkout-page";
+    fixture.setAttribute("aria-hidden", "true");
+    fixture.style.cssText =
+      "position:absolute;left:0;top:0;width:100vw;visibility:hidden;pointer-events:none;z-index:-1;";
+    fixture.innerHTML = `
+      <div class="customer-container">
+        <form class="customer-checkout-layout">
+          <div class="customer-checkout-form">
+            <section>
+              <div class="customer-checkout-section-title">
+                <span>1</span><div><h2>Your details</h2>
+                <p>We prefilled your account details. You can edit them for this order.</p></div>
+              </div>
+              <div class="customer-form-grid">
+                <label><span>Full name</span><input type="text" value="Ysabelle Store" /></label>
+                <label><span>Mobile number</span><input type="tel" /></label>
+                <label class="customer-form-grid__full">
+                  <span>Email (optional)</span><input type="email" />
+                </label>
+              </div>
+              <label class="customer-address-save-option">
+                <input type="checkbox" /> <span>Save as my default delivery address</span>
+              </label>
+            </section>
+            <section>
+              <div class="customer-checkout-section-title">
+                <span>3</span><div><h2>Payment method</h2>
+                <p>Pay securely online now or pay in cash when your order arrives.</p></div>
+              </div>
+              <div class="customer-payment-options" role="radiogroup">
+                <label class="customer-payment-option is-selected">
+                  <input type="radio" checked name="test-pay" />
+                  <svg viewBox="0 0 24 24"></svg>
+                  <span><strong>PayMongo online payment</strong>
+                    <small>Secure hosted test checkout. Pay before delivery.</small></span>
+                  <svg viewBox="0 0 24 24"></svg>
+                </label>
+                <label class="customer-payment-option">
+                  <input type="radio" name="test-pay" />
+                  <svg viewBox="0 0 24 24"></svg>
+                  <span><strong>Cash on Delivery</strong>
+                    <small>Pay in cash when your order arrives.</small></span>
+                </label>
+              </div>
+            </section>
+          </div>
+          <aside class="customer-order-summary customer-checkout-summary">
+            <div class="customer-order-summary__heading"><h2>Final review</h2></div>
+            <div class="customer-order-summary__row"><span>Delivery</span><strong>Store coordinated</strong></div>
+            <div class="customer-order-summary__total"><span>Total</span><strong>₱250.00</strong></div>
+          </aside>
+        </form>
+      </div>`;
+    app.appendChild(fixture);
+    try {
+      const get = (selector) => fixture.querySelector(selector);
+      const container = get(".customer-container");
+      const section = get(".customer-checkout-form > section");
+      const input = get(".customer-form-grid input[type=text]");
+      const option = get(".customer-payment-option");
+      const save = get(".customer-address-save-option");
+      const summary = get(".customer-checkout-summary");
+      if (![container, section, input, option, save, summary].every(Boolean)) return null;
+      const containerBounds = container.getBoundingClientRect();
+      const sectionBounds = section.getBoundingClientRect();
+      const optionBounds = option.getBoundingClientRect();
+      const summaryBounds = summary.getBoundingClientRect();
+      const inputBounds = input.getBoundingClientRect();
+      const padding = getComputedStyle(section);
+      const width = window.innerWidth;
+      const inContainer = (bounds) =>
+        bounds.left >= containerBounds.left - 1 &&
+        bounds.right <= containerBounds.right + 1;
+      return {
+        gutterLeft: containerBounds.left,
+        gutterRight: width - containerBounds.right,
+        sectionPadding: parseFloat(padding.paddingLeft),
+        sectionWidth: sectionBounds.width,
+        inputHeight: inputBounds.height,
+        inputFontSize: parseFloat(getComputedStyle(input).fontSize),
+        optionHeight: optionBounds.height,
+        saveHeight: save.getBoundingClientRect().height,
+        saveBorder: getComputedStyle(save).borderLeftWidth,
+        sectionFits: inContainer(sectionBounds),
+        optionFits: optionBounds.left >= sectionBounds.left - 1 &&
+          optionBounds.right <= sectionBounds.right + 1,
+        summaryFits: inContainer(summaryBounds),
+        horizontalOverflow: fixture.scrollWidth > fixture.clientWidth + 2
+      };
+    } finally {
+      fixture.remove();
+    }
+  });
+
+  if (!metrics) return ["Checkout content density fixture did not render"];
+  const issues = [];
+  if (
+    metrics.gutterLeft < 11 || metrics.gutterRight < 11 ||
+    metrics.sectionPadding < 13 || metrics.sectionPadding > 18 ||
+    metrics.sectionWidth < 270 ||
+    metrics.inputHeight < 47 || metrics.inputFontSize < 16 ||
+    metrics.optionHeight < 70 || metrics.saveHeight < 43 ||
+    parseFloat(metrics.saveBorder) > 1 ||
+    !metrics.sectionFits || !metrics.optionFits || !metrics.summaryFits ||
+    metrics.horizontalOverflow
+  ) {
+    issues.push(
+      `Checkout content remains cramped or overflows at ${viewport.width}px: ${JSON.stringify(metrics)}`
+    );
+  }
+  return issues;
+}
+
 async function checkCheckoutPolicySpacing(page, viewport) {
   // This renders the actual checkout summary CSS in an isolated measurement
   // fixture. No authentication, cart mutation, or payment submission needed.
@@ -970,6 +1090,7 @@ async function run() {
 
           if (route === "/shop" && viewport.width <= 430 && viewport.height > viewport.width) {
             issues.push(...(await checkCheckoutPolicySpacing(page, viewport)));
+            issues.push(...(await checkCheckoutContentDensity(page, viewport)));
             issues.push(...(await checkShopCategories(page, viewport)));
             issues.push(...(await checkShopAvailability(page, viewport)));
           }
