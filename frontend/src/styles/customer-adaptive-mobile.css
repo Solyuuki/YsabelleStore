@@ -4,7 +4,8 @@
  */
 
 /* Desktop keeps its existing full navigation. Tablet uses a compact top row. */
-.customer-mobile-dock {
+.customer-mobile-dock,
+.shop-category-toggle {
   display: none;
 }
 
