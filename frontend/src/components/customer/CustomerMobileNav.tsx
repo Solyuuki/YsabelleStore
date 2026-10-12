@@ -10,7 +10,7 @@ import {
   UserRound,
   X
 } from "lucide-react";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 
 import { useCart } from "@/context/CartContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
@@ -29,6 +29,37 @@ export function CustomerMobileNav({
   const { itemCount } = useCart();
   const { status } = useCustomerAuth();
   const [moreOpen, setMoreOpen] = useState(false);
+  const dockRef = useRef<HTMLElement>(null);
+  const [occupiedDockHeight, setOccupiedDockHeight] = useState<number | null>(null);
+
+  useLayoutEffect(() => {
+    const dock = dockRef.current;
+    if (!dock) return;
+
+    const measure = () => {
+      // The dock is fixed in portrait only. Landscape/tablet uses normal flow,
+      // so the floating menu follows its own landscape CSS positioning.
+      if (getComputedStyle(dock).position !== "fixed") {
+        setOccupiedDockHeight(null);
+        return;
+      }
+
+      const occupied = Math.ceil(Math.max(0, window.innerHeight - dock.getBoundingClientRect().top));
+      setOccupiedDockHeight((previous) => (previous === occupied ? previous : occupied));
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(dock);
+    window.addEventListener("resize", measure);
+    window.visualViewport?.addEventListener("resize", measure);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+      window.visualViewport?.removeEventListener("resize", measure);
+    };
+  }, [moreOpen]);
   const accountHref = status === "authenticated" ? "/account" : "/login";
 
   const links = [
@@ -71,7 +102,7 @@ export function CustomerMobileNav({
 
   return (
     <DialogPrimitive.Root onOpenChange={setMoreOpen} open={moreOpen}>
-      <nav aria-label="Mobile storefront navigation" className="customer-mobile-dock">
+      <nav aria-label="Mobile storefront navigation" className="customer-mobile-dock" ref={dockRef}>
         {links.slice(0, 2).map(renderLink)}
         <DialogPrimitive.Trigger asChild>
           <button
@@ -91,7 +122,16 @@ export function CustomerMobileNav({
 
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="customer-mobile-more__overlay" />
-        <DialogPrimitive.Content className="customer-mobile-more__sheet">
+        <DialogPrimitive.Content
+          className="customer-mobile-more__sheet"
+          style={
+            occupiedDockHeight === null
+              ? undefined
+              : ({
+                  "--store-mobile-measured-dock-height": `${occupiedDockHeight}px`
+                } as CSSProperties)
+          }
+        >
           <div className="customer-mobile-more__header">
             <div>
               <DialogPrimitive.Title className="customer-mobile-more__title">
