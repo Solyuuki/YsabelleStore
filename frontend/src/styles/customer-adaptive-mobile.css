@@ -147,7 +147,7 @@
     transform: rotate(180deg);
   }
 
-  .customer-shop-page .shop-category-navigation:not(.is-expanded) > a:not(.is-active):not(:first-of-type) {
+  .shop-category-navigation:not(.is-expanded) > a:not(.is-active):not(:first-of-type) {
     display: none;
   }
 
