@@ -2048,3 +2048,132 @@
   border-color: #b07e9c;
   color: #ffe0ed;
 }
+
+/* Checkout dark-mode completion: saved preferences and payment choices. */
+/* These controls were light-first despite the dark checkout form. Scope every
+   surface and state to the customer checkout so light mode remains unchanged. */
+:root.dark .customer-app .customer-checkout-page {
+  --checkout-choice-bg: #202e47;
+  --checkout-choice-border: #6f82a6;
+  --checkout-choice-ink: #f0f4ff;
+  --checkout-choice-body: #c4d2e8;
+  --checkout-choice-accent: #c8baff;
+}
+
+:root.dark
+  .customer-app
+  .customer-checkout-page
+  :is(.customer-profile-default-option, .customer-address-save-option) {
+  background: linear-gradient(135deg, #263550, #1d2b43);
+  border-color: var(--checkout-choice-border);
+  color: var(--checkout-choice-ink);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 5%);
+}
+
+:root.dark
+  .customer-app
+  .customer-checkout-page
+  :is(.customer-profile-default-option, .customer-address-save-option)
+  strong {
+  color: var(--checkout-choice-ink);
+}
+
+:root.dark
+  .customer-app
+  .customer-checkout-page
+  :is(.customer-profile-default-option, .customer-address-save-option)
+  small {
+  color: var(--checkout-choice-body);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-address-save-checkbox {
+  border-color: #94a7c8;
+  background: #16243a;
+  color: #ffffff;
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-address-save-checkbox[data-checked] {
+  border-color: #c5b8ff;
+  background: #6257b9;
+  color: #ffffff;
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-address-save-checkbox:focus-visible {
+  outline-color: #c9bdff;
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-payment-option {
+  background: linear-gradient(135deg, #24324a, #1d2b43);
+  border-color: var(--checkout-choice-border);
+  color: var(--checkout-choice-ink);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 4%);
+}
+
+:root.dark
+  .customer-app
+  .customer-checkout-page
+  .customer-payment-option:hover:not(.is-selected):not(:has(input:disabled)) {
+  background: #2e3e5b;
+  border-color: #a6b5d5;
+}
+
+:root.dark
+  .customer-app
+  .customer-checkout-page
+  .customer-payment-option:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-payment-option.is-selected {
+  background: linear-gradient(125deg, #39385f, #292f50);
+  border-color: #c0afff;
+  box-shadow:
+    0 0 0 1px rgb(192 175 255 / 16%),
+    inset 0 1px 0 rgb(245 240 255 / 9%);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-payment-option > span strong {
+  color: var(--checkout-choice-ink);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-payment-option > span small {
+  color: var(--checkout-choice-body);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-payment-option > svg {
+  color: var(--checkout-choice-accent);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-payment-option:has(input:focus-visible) {
+  outline: 3px solid #c9bdff;
+  outline-offset: 2px;
+}
+
+/* Complete the matching saved-contact and order-summary surfaces so there
+   are no bright inherited islands beside the corrected preference cards. */
+:root.dark .customer-app .customer-checkout-page .customer-checkout-saved-phone {
+  background: var(--checkout-choice-bg);
+  border-color: var(--checkout-choice-border);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-checkout-saved-phone__copy strong {
+  color: var(--checkout-choice-ink);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-checkout-saved-phone > svg {
+  color: var(--checkout-choice-accent);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-order-summary__payment {
+  background: #273551;
+  border-color: var(--checkout-choice-border);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-order-summary__payment strong {
+  color: var(--checkout-choice-ink);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-order-summary__payment span {
+  color: var(--checkout-choice-body);
+}
