@@ -29,11 +29,13 @@ The mobile preview now reuses the live Storefront, not a separately cloned UI.
 At the preview toolbar choose **Welcome** and **Get Started** to inspect the customer homepage.
 The **Storefront** button opens the product catalog directly.
 
-- Small portrait phones (320–430 CSS px) use a compact two-column category/catalog/product grid and a four-item fixed bottom navigation (Home, Shop, Cart, Account). Cart quantity remains connected to the existing cart state.
+- Small portrait phones (320–430 CSS px) use compact two-column category/catalog/product grids and a **five-slot bottom dock**: Home, Shop, **More**, Cart, Account. The center More button opens an accessible modal bottom sheet for About Us, Customer Support and Shopping Guide; cart count and account authorization still come from existing state.
 - **Portrait is vertically scrollable only:** Trending, Best Sellers and Everyday Essentials product rails become normal two-column grids; category filters wrap rather than forming a horizontal scroller. Rail arrows are hidden only when the entire grid is visible.
 - Mobile design uses shared CSS sizing tokens (12–16px gutters, 8–12px card gaps and 20–30px section spacing). Titles, photos, pricing and CTA controls scale together, not as independent device-specific designs.
 - Portrait widths 600–700px can show three columns without changing the Storefront design language; regular portrait phones keep two columns. Interactive quantity/CTA controls retain their 44px+ touch target dimensions.
 - Landscape phones use a compact navigation row beneath the header, adaptive photo proportions and no horizontally scrolling category sidebar.
+- The legacy hamburger/mobile-panel is hidden wherever the mobile dock is active (including landscape and tablet), avoiding duplicated navigation. The original desktop navigation is unaffected.
+- At the 320px portrait baseline the five dock slots use minmax(0,1fr), no width-growing labels, and a 42–44px center action; the header/search and dock are width-constrained to the viewport rather than allowed to create horizontal overflow.
 - Tablets use the compact navigation row and three-column category grid; desktop keeps its original full Storefront navigation.
 - The Shop category navigation is collapsed by default on mobile and expands into a wrapping grid with a 44px minimum interactive target instead of a horizontal scroller.
 - The new layout styles are in `frontend/src/styles/customer-adaptive-mobile.css` and are imported last so they do not override desktop theme rules outside responsive breakpoints.
