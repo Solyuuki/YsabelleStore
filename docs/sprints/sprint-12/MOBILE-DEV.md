@@ -45,6 +45,12 @@ The **Storefront** button opens the product catalog directly.
 
 **Manual visual QA still required:** use the preview's 320 × 640, 390 × 844, 640 × 320, and 768 × 1024 options, switch light/dark modes, inspect both Home and Shop, and verify there is no body-wide horizontal overflow or clipped buttons. Real phone testing is still required for soft keyboards, touch behavior and safe areas.
 
+## Compact phone header search
+
+At portrait and short-landscape phone widths (up to 700 CSS px), global search no longer occupies a permanent second row of the sticky header. The header shows a 44px search icon; tapping it opens a temporary search field beneath the header with Base UI's existing catalog autocomplete. The suggestion popup is capped at 19rem / the available viewport height, with independently scrollable results. Close it with the header icon, Escape, or by tapping outside. Shop routes keep their existing in-page catalog search and filter controls; the desktop global search remains unchanged.
+
+The Playwright QA now checks that the compact header stays within 110px before search opens, that the suggestions popup is no taller than 310px, and that it stays within the viewport and above the portrait bottom navigation. These checks run on the five portrait phone sizes and write `*-search.png` screenshots.
+
 ## Automated browser QA (Playwright)
 
 Use the **existing** `npm run dev:mob` stack with the backend ready, then open a second terminal in the repository root:
