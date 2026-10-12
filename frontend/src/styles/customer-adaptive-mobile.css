@@ -3,7 +3,7 @@
  * Loaded after legacy Storefront themes to keep desktop and existing assets intact.
  */
 
-/* Desktop keeps its existing full navigation. Tablet uses a compact top row. */
+/* Desktop keeps its existing full navigation. Phone and tablet docks stay in the thumb zone. */
 .customer-mobile-dock,
 .shop-category-toggle {
   display: none;
@@ -31,17 +31,34 @@
 
 @media (max-width: 1180px) {
   .customer-app.ys-material-canvas > .customer-mobile-dock {
-    position: relative;
-    z-index: 75;
+    position: fixed;
+    z-index: 90;
+    right: 0;
+    bottom: 0;
+    left: 0;
     display: grid;
+    box-sizing: border-box;
     width: 100%;
+    max-width: 100%;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: clamp(0px, 0.5vw, 5px);
-    padding: 0.45rem max(1rem, calc((100vw - 820px) / 2));
-    border-bottom: 1px solid rgb(98 91 255 / 14%);
+    padding: 0.45rem max(1rem, env(safe-area-inset-right))
+      calc(0.45rem + env(safe-area-inset-bottom))
+      max(1rem, env(safe-area-inset-left));
+    border-top: 1px solid rgb(98 91 255 / 20%);
+    border-bottom: 0;
     background: rgb(248 249 255 / 94%);
-    box-shadow: 0 5px 16px rgb(26 35 70 / 5%);
+    box-shadow: 0 -8px 28px rgb(18 30 60 / 9%);
     backdrop-filter: blur(16px);
+  }
+
+  /* Leave room for the fixed dock at tablet as well as phone widths. */
+  .customer-app.ys-material-canvas {
+    padding-bottom: calc(var(--store-mobile-dock-clearance) + env(safe-area-inset-bottom));
+  }
+
+  .customer-app .customer-privacy-notice {
+    bottom: calc(var(--store-mobile-dock-clearance) + env(safe-area-inset-bottom));
   }
 
   .customer-mobile-dock__link {
@@ -1530,14 +1547,8 @@
   color: #1c2440;
 }
 
-/* Floating More panel keeps physical separation from the bottom dock on
-   portrait phones and leaves room for the top navigation on landscape/tablets. */
-@media (min-width: 701px), (orientation: landscape) {
-  .customer-mobile-more__sheet {
-    bottom: max(12px, env(safe-area-inset-bottom));
-    max-height: calc(100dvh - 24px - env(safe-area-inset-bottom));
-  }
-}
+/* Every compact viewport has a fixed bottom dock; the More sheet uses
+   the measured dock height and never overlaps navigation. */
 
 .customer-mobile-more__header {
   display: flex;
@@ -2062,10 +2073,8 @@
   }
 }
 
-/* Compact related-products carousel and unobtrusive page scrollbars.
-   Keep native document scroll and horizontal swipe behavior: only hide
-   the visible browser scrollbar in phone portrait. */
-@media (max-width: 700px) and (orientation: portrait) {
+/* Hide only the scrollbar chrome on phone/tablet; preserve page scrolling. */
+@media (max-width: 1180px) {
   html[data-appearance-scope="storefront"],
   html[data-appearance-scope="storefront"] body {
     scrollbar-width: none;
@@ -2078,7 +2087,10 @@
     width: 0;
     height: 0;
   }
+}
 
+/* Compact related-products carousel remains a phone portrait layout. */
+@media (max-width: 700px) and (orientation: portrait) {
   .customer-app .customer-product-page .customer-related-products__rail-shell {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 44px 44px minmax(0, 1fr);
