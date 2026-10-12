@@ -4,16 +4,23 @@ import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 
-test("cart offers a clickable order cancellation policy before checkout", () => {
+test("cart policy badge is above the summary card and opens a centered modal", () => {
   const cart = read("frontend/src/pages/customer/CartPage.tsx");
-  const disclosure = read("frontend/src/components/customer/CustomerOrderPolicyInfo.tsx");
+  const policy = read("frontend/src/components/customer/CustomerOrderPolicyInfo.tsx");
 
-  assert.match(cart, /<CustomerOrderPolicyInfo \/>/);
-  assert.ok(cart.indexOf("<CustomerOrderPolicyInfo />") < cart.indexOf("Proceed to checkout"));
-  assert.match(disclosure, /<details className="customer-order-policy">/);
-  assert.match(disclosure, /<summary className="customer-order-policy__trigger">/);
-  assert.match(disclosure, /cannot cancel it directly from your account/);
-  assert.match(disclosure, /Contact the\s+store to request a cancellation/);
+  assert.match(cart, /<div className="customer-cart-summary-stack">/);
+  assert.ok(cart.indexOf("<CustomerOrderPolicyInfo />") < cart.indexOf('<aside className="customer-order-summary">'));
+  assert.ok(cart.indexOf('<aside className="customer-order-summary">') < cart.indexOf("Proceed to checkout"));
+  assert.match(policy, /<Dialog>/);
+  assert.match(policy, /<DialogTrigger asChild>/);
+  assert.match(policy, /<DialogContent className="customer-order-policy__dialog">/);
+  assert.match(policy, /<DialogTitle/);
+  assert.match(policy, /<DialogDescription/);
+  assert.match(policy, /<DialogClose asChild>/);
+  assert.match(policy, /type="button"/);
+  assert.doesNotMatch(policy, /<details\b|<summary\b/);
+  assert.match(policy, /cannot cancel it directly from My Account/);
+  assert.match(policy, /contact the store to request a cancellation/);
 });
 
 test("only new storefront orders require explicit acceptance before order creation", () => {
@@ -29,14 +36,17 @@ test("only new storefront orders require explicit acceptance before order creati
   assert.match(checkout, /Retry PayMongo checkout/);
 });
 
-test("order policy stays readable in light and dark storefront themes", () => {
-  const customerApp = read("frontend/src/app/CustomerApp.tsx");
+test("policy popup is viewport-centered, scroll-safe and supports light/dark themes", () => {
+  const app = read("frontend/src/app/CustomerApp.tsx");
   const css = read("frontend/src/styles/customer-order-policy.css");
 
-  assert.match(customerApp, /import "@\/styles\/customer-order-policy\.css";/);
-  assert.match(css, /\.customer-app \.customer-order-policy__trigger/);
-  assert.match(css, /:root\.dark \.customer-app \.customer-order-policy/);
-  assert.match(css, /:root\.dark \.customer-app \.customer-order-agreement__checkbox/);
+  assert.match(app, /import "@\/styles\/customer-order-policy\.css";/);
+  assert.match(css, /\.customer-cart-page \.customer-cart-summary-stack/);
+  assert.match(css, /body \.customer-order-policy__dialog/);
+  assert.match(css, /max-height: calc\(100dvh - 32px\)/);
+  assert.match(css, /overflow-y: auto/);
+  assert.match(css, /:root\.dark body \.customer-order-policy__dialog/);
+  assert.match(css, /:root\.dark \.customer-app \.customer-order-agreement/);
   assert.match(css, /:focus-visible/);
-  assert.match(css, /prefers-reduced-motion/);
+  assert.match(css, /@media \(max-width: 480px\)/);
 });
