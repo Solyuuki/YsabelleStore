@@ -341,7 +341,7 @@ async function checkDeliveryTrackingContrast(page, viewport) {
     app.appendChild(fixture);
 
     const rgb = (color) => {
-      const channels = color.match(/[\\d.]+/g)?.slice(0, 3).map(Number);
+      const channels = color.match(/[0-9.]+/g)?.slice(0, 3).map(Number);
       return channels?.length === 3 ? channels : null;
     };
     const luminance = (color) => {
