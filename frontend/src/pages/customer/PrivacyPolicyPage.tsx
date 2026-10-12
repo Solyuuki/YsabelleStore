@@ -1,6 +1,7 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   BadgeCheck,
+  ChevronDown,
   Clock3,
   Cookie,
   Database,
@@ -42,6 +43,8 @@ const TABLE_OF_CONTENTS = [
 ] as const;
 
 export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => void }) {
+  const [tocOpen, setTocOpen] = useState(false);
+
   return (
     <section className="customer-privacy-page">
       <div className="customer-privacy-hero">
@@ -95,11 +98,25 @@ export function PrivacyPolicyPage({ navigate }: { navigate: (path: string) => vo
           <StorefrontGalaxyArtwork className="customer-privacy-body__cosmos" />
         </div>
         <div className="customer-container customer-privacy-layout">
-          <aside className="customer-privacy-toc" aria-label="Privacy policy sections">
-            <span>On this page</span>
-            <nav>
+          <aside
+            aria-label="Privacy policy sections"
+            className="customer-privacy-toc"
+            data-mobile-open={tocOpen}
+          >
+            <span className="customer-privacy-toc__eyebrow">On this page</span>
+            <button
+              aria-controls="customer-privacy-toc-links"
+              aria-expanded={tocOpen}
+              className="customer-privacy-toc__toggle"
+              onClick={() => setTocOpen((open) => !open)}
+              type="button"
+            >
+              <span>On this page</span>
+              <ChevronDown aria-hidden="true" size={18} />
+            </button>
+            <nav id="customer-privacy-toc-links">
               {TABLE_OF_CONTENTS.map(([id, label]) => (
-                <a href={`#${id}`} key={id}>
+                <a href={`#${id}`} key={id} onClick={() => setTocOpen(false)}>
                   {label}
                 </a>
               ))}
