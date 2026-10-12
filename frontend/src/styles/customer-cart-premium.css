@@ -394,7 +394,7 @@
   .customer-app .customer-cart-page .customer-cart-item__info button {
     width: fit-content;
     min-width: 0;
-    min-height: 36px;
+    min-height: 44px;
     margin: 0;
     padding-inline: 0.25rem;
     touch-action: manipulation;
