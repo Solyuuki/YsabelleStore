@@ -78,7 +78,7 @@ test("expanded categories adapt to narrow width without stretching the shop", ()
   assert.match(qa, /Category picker did not collapse after choosing an option/);
 });
 
-test("mobile shop filters use one compact search row and retain dynamic native controls", () => {
+test("mobile shop filters keep desktop native select and expose a bounded phone options panel", () => {
   const css = read("frontend/src/styles/customer-adaptive-mobile.css");
   const shop = read("frontend/src/pages/customer/ShopPage.tsx");
   const phone = css.split("@media (max-width: 700px) {")[1]?.split("/* On portrait phones")[0];
@@ -88,7 +88,12 @@ test("mobile shop filters use one compact search row and retain dynamic native c
   assert.match(phone, /\.customer-shop-page \.customer-filter-panel\.shop-category-navigation\s*\{[^}]*border: 0;/);
   assert.match(phone, /\.customer-shop-page \.customer-shop-toolbar\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\) 44px;[^}]*padding: 0;[^}]*border: 0;/);
   assert.match(phone, /\.customer-shop-page \.customer-select--availability\s*\{[^}]*width: 44px;[^}]*height: 44px;/);
-  assert.match(phone, /\.customer-shop-page \.customer-select--availability select\s*\{[^}]*position: absolute;[^}]*opacity: 0;/);
+  assert.match(phone, /\.customer-shop-page \.customer-select--availability \.customer-select__desktop\s*\{\s*display: none;/);
+  assert.match(phone, /\.customer-shop-page \.customer-select__mobile-trigger\s*\{[^}]*display: grid;[^}]*min-width: 44px;/);
+  assert.match(phone, /\.customer-shop-page \.customer-select__mobile-options\s*\{[^}]*right: 0;[^}]*display: grid;[^}]*width: min\(12rem, calc\(100vw - 32px\)\);/);
+  assert.match(phone, /\.customer-shop-page \.customer-select__mobile-options > button\s*\{[^}]*min-height: 44px;/);
+  assert.match(phone, /\.customer-shop-page \.customer-shop-search input\s*\{[^}]*background: transparent;[^}]*background-image: none;[^}]*box-shadow: none;/);
+  assert.match(phone, /:root\.dark \.customer-app \.customer-shop-page \.customer-shop-search input\s*\{[^}]*background: transparent !important;[^}]*background-image: none !important;/);
   assert.match(phone, /\.customer-shop-page \.customer-results-meta\s*\{[^}]*padding-block: 0\.9rem 0\.7rem;/);
   assert.match(phone, /:root\.dark \.customer-app \.customer-shop-page \.customer-shop-search input/);
 
@@ -101,6 +106,13 @@ test("mobile shop filters use one compact search row and retain dynamic native c
   assert.match(shop, /<option value="in-stock">In stock<\/option>/);
   assert.match(shop, /<option value="out-of-stock">Out of stock<\/option>/);
   assert.match(shop, /customer-select__active-dot/);
+  assert.match(shop, /className="customer-select__desktop"/);
+  assert.match(shop, /aria-expanded=\{availabilityOpen\}/);
+  assert.match(shop, /role="group"/);
+  assert.match(shop, /aria-pressed=\{availabilityParam === value\}/);
+  assert.match(shop, /setAvailabilityOpen\(false\)/);
+  assert.match(shop, /document\.addEventListener\("pointerdown", closeWhenOutside\)/);
+  assert.match(shop, /document\.addEventListener\("keydown", closeOnEscape\)/);
 });
 
 test("compact catalog product controls and rail remain accessible in portrait", () => {
@@ -329,7 +341,9 @@ test("mobile global search occupies one header row until explicitly opened", () 
   assert.match(header, /aria-controls="customer-global-search"/);
   assert.match(header, /is-mobile-open/);
   assert.match(header, /setMobileSearchOpen\(false\)/);
-  assert.match(header, /if \(event\.key === "Escape"\) setMobileSearchOpen\(false\)/);
+  assert.match(header, /document\.addEventListener\("keydown", dismissOnEscape, true\)/);
+  assert.match(header, /document\.removeEventListener\("keydown", dismissOnEscape, true\)/);
+  assert.match(header, /mobileSearchTriggerRef\.current\?\.focus\(\)/);
   assert.match(header, /autoFocus=\{mobileSearchOpen\}/);
   assert.match(header, /if \(!mobileSearchOpen\) return;/);
   assert.match(header, /target\.closest\("\.customer-mobile-search-trigger"\)/);
@@ -378,7 +392,7 @@ test("small-phone product cards retain semantics with compact badges and Add", (
     "/* A wide portrait phone/foldable"
   )[0];
   assert.ok(portrait, "Missing portrait product rules");
-  assert.match(css, /\.customer-product-badge__label-mobile,[\s\S]*?\.customer-product-card__add-mobile,[\s\S]*?\.customer-select__mobile-glyph\s*\{\s*display: none;/);
+  assert.match(css, /\.customer-product-badge__label-mobile,[\s\S]*?\.customer-product-card__add-mobile,[\s\S]*?\.customer-shop-page \.customer-select__mobile-trigger,[\s\S]*?\.customer-shop-page \.customer-select__mobile-options\s*\{\s*display: none;/);
   assert.match(portrait, /\.customer-app \.customer-product-badge\s*\{[^}]*max-width: calc\(100% - 60px\);/);
   assert.match(portrait, /\.customer-app \.customer-product-badge__label-full\s*\{\s*display: none;/);
   assert.match(portrait, /\.customer-app \.customer-product-badge__label-mobile\s*\{\s*display: block;/);
