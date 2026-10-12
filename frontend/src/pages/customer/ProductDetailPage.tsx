@@ -665,13 +665,20 @@ function ReviewsSection({
                     : (summary.distribution.find((entry) => entry.rating === rating)?.count ?? 0);
                 return (
                   <button
+                    aria-label={rating === null ? `All reviews (${count})` : `${rating}-star reviews (${count})`}
                     aria-pressed={ratingFilter === rating}
                     className={ratingFilter === rating ? "is-active" : ""}
                     key={rating ?? "all"}
                     onClick={() => onFilterChange(rating)}
                     type="button"
                   >
-                    {rating === null ? "All" : `${rating} Star`} <span>{count}</span>
+                    <strong aria-hidden="true" className="customer-review-filter__label-full">
+                      {rating === null ? "All" : `${rating} Star`}
+                    </strong>
+                    <strong aria-hidden="true" className="customer-review-filter__label-compact">
+                      {rating === null ? "All" : `${rating} ★`}
+                    </strong>
+                    <span aria-hidden="true">{count}</span>
                   </button>
                 );
               })}
