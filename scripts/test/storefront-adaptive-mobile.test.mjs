@@ -420,7 +420,11 @@ test("phone recommendation carousel stays compact while page scrolling works wit
   assert.match(styles, /html\[data-appearance-scope="storefront"\][\s\S]*?scrollbar-width: none;/);
   assert.match(styles, /html\[data-appearance-scope="storefront"\]::-webkit-scrollbar/);
   assert.doesNotMatch(styles, /(?:html|body)[^{]*\{[^}]*overflow(?:-y)?: hidden/);
-  assert.match(styles, /\.customer-related-products__viewport\s*\{[^}]*overflow-x: auto;[^}]*scroll-snap-type: x mandatory;/);
+  assert.match(styles, /\.customer-related-products__rail-shell\s*\{[^}]*display: grid;[^}]*grid-template-columns: minmax\(0, 1fr\) 44px 44px minmax\(0, 1fr\);/);
+  assert.match(styles, /\.customer-related-products__arrow\s*\{[^}]*position: static;[^}]*display: grid;[^}]*width: 44px;[^}]*height: 44px;/);
+  assert.match(styles, /\.customer-related-products__arrow--previous\s*\{[^}]*grid-column: 2;[^}]*grid-row: 2;/);
+  assert.match(styles, /\.customer-related-products__arrow--next\s*\{[^}]*grid-column: 3;[^}]*grid-row: 2;/);
+  assert.match(styles, /\.customer-related-products__viewport\s*\{[^}]*grid-column: 1 \/ -1;[^}]*grid-row: 1;[^}]*overflow-x: auto;[^}]*scroll-snap-type: x mandatory;/);
   assert.match(styles, /\.customer-related-products__viewport > \.customer-product-card\s*\{[^}]*flex: 0 0 calc\(\(100% - var\(--store-phone-card-gap, 8px\)\) \/ 2\);/);
   assert.match(styles, /\.customer-product-visual\s*\{[^}]*aspect-ratio: 4 \/ 3;/);
   assert.match(styles, /\.customer-product-card__purchase-row\s*\{[^}]*grid-template-columns: minmax\(0, 1\.4fr\) minmax\(0, 1fr\);/);
@@ -430,6 +434,10 @@ test("phone recommendation carousel stays compact while page scrolling works wit
   assert.match(related, /className="customer-related-products__viewport" ref=\{railRef\}/);
   assert.match(related, /behavior: "smooth"/);
   assert.match(qa, /Related-product carousel cards are oversized, clipped or not swipeable/);
+  assert.match(qa, /Related-product arrows overlap cards or fall outside their navigation row/);
+  assert.match(qa, /arrow\.top >= relatedBounds\.bottom \+ 1/);
+  assert.match(qa, /arrow\.width >= 43 && arrow\.height >= 43/);
+  assert.match(qa, /getComputedStyle\(button\)\.position === "static"/);
   assert.match(qa, /Mobile storefront still shows a persistent document scrollbar/);
   assert.match(qa, /state\.relatedLayout\.count >= 2/);
 });
