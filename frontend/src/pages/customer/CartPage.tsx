@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, ShoppingBasket, Trash2 } from "lucide-react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
+import { CustomerOrderPolicyInfo } from "@/components/customer/CustomerOrderPolicyInfo";
 import { formatCurrency, formatUnit } from "@/components/customer/ProductCard";
 import { ProductVisual } from "@/components/customer/ProductVisual";
 import { QuantityControl } from "@/components/customer/QuantityControl";
@@ -130,9 +131,10 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
               </div>
               <p>
                 {status === "authenticated"
-                  ? "Final stock availability is checked when you place your pickup order."
+                  ? "Final stock availability is checked when you place your delivery order."
                   : "Sign in to move this guest cart into your account and continue to checkout."}
               </p>
+              <CustomerOrderPolicyInfo />
               <CustomerLink
                 className="customer-button customer-button--full"
                 href={checkoutHref}
