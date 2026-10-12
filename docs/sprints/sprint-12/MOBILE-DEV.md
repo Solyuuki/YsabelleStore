@@ -34,7 +34,7 @@ The **Storefront** button opens the product catalog directly.
 - Mobile design uses shared CSS sizing tokens (12–16px gutters, 8–12px card gaps and 20–30px section spacing). Titles, photos, pricing and CTA controls scale together, not as independent device-specific designs.
 - Portrait widths 600–700px can show three columns without changing the Storefront design language; regular portrait phones keep two columns. Interactive quantity/CTA controls retain their 44px+ touch target dimensions.
 - Landscape phones use a compact navigation row beneath the header, adaptive photo proportions and no horizontally scrolling category sidebar.
-- The legacy hamburger/mobile-panel is hidden wherever the mobile dock is active (including landscape and tablet), avoiding duplicated navigation. The original desktop navigation is unaffected.
+- The redundant legacy hamburger/mobile-panel has been removed from the Storefront header. The responsive dock is the only mobile navigation (portrait/landscape/tablet), while the existing desktop link navigation remains unchanged.
 - At the 320px portrait baseline the five dock slots use minmax(0,1fr), no width-growing labels, and a 42–44px center action; the header/search and dock are width-constrained to the viewport rather than allowed to create horizontal overflow.
 - Tablets use the compact navigation row and three-column category grid; desktop keeps its original full Storefront navigation.
 - The Shop category navigation is collapsed by default on mobile and expands into a wrapping grid with a 44px minimum interactive target instead of a horizontal scroller.
