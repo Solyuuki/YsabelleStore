@@ -57,6 +57,27 @@ test("mobile mode shares the existing backend and uses a separate Vite port", ()
   assert.match(frontend, /window\.location\.origin/);
 });
 
+test("frontend runtime can load without Vite-injected import.meta.env", async () => {
+  const runtime = read("frontend/src/config/runtime.ts");
+  // Exercise the same runtime code under native Node ESM without introducing
+  // the browser-only Vite variables. Stub only the imported env schema and
+  // erase the two TypeScript parameter/return annotations for this probe.
+  const executable = runtime
+    .replace(
+      'import { frontendEnv } from "@/schemas/frontendEnv.schema";',
+      'const frontendEnv = { VITE_API_BASE_URL: "http://localhost:3001", VITE_APP_NAME: "YsabelleStore", VITE_APP_VERSION: "0.1.0" };'
+    )
+    .replace("resolveApiUrl(path: string): URL", "resolveApiUrl(path)");
+  assert.notEqual(executable, runtime, "Runtime Node probe must replace its imported schema");
+  assert.doesNotMatch(executable, /resolveApiUrl\(path: string\)/);
+
+  const url = `data:text/javascript;base64,${Buffer.from(executable).toString("base64")}`;
+  const { frontendRuntimeConfig, resolveApiUrl } = await import(url);
+  assert.equal(frontendRuntimeConfig.apiBaseUrl, "http://localhost:3001");
+  assert.equal(frontendRuntimeConfig.appName, "YsabelleStore");
+  assert.equal(resolveApiUrl("/api/customer-auth/me").pathname, "/api/customer-auth/me");
+});
+
 test("mobile preview supports phone sizes, rotation and live routes", () => {
   const page = read("frontend/mobile-preview.html");
 
