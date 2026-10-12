@@ -1371,6 +1371,74 @@ async function checkCompactSearch(page, viewport) {
   return issues;
 }
 
+async function checkAboutMobileIntelligence(page, viewport) {
+  // Exercise the actual About screens without changing operational data.
+  await page.locator(".about-forecast-demo__chart-mobile").waitFor({
+    state: "visible", timeout: 20000
+  });
+  const picker = page.locator(".system-preview__mobile-stage-picker select");
+  await picker.waitFor({ state: "visible", timeout: 20000 });
+  await page.locator(".story-delivery__frame").waitFor({ state: "attached", timeout: 20000 });
+
+  const result = await page.evaluate(() => {
+    const metrics = (selector) => {
+      const element = document.querySelector(selector);
+      if (!element) return null;
+      const bounds = element.getBoundingClientRect();
+      return {
+        width: bounds.width,
+        scrollWidth: element.scrollWidth,
+        clientWidth: element.clientWidth,
+        display: getComputedStyle(element).display
+      };
+    };
+    return {
+      chart: metrics(".about-forecast-demo__chart-mobile"),
+      chartWrap: metrics(".about-forecast-demo__chart-wrap"),
+      desktopChart: metrics(".about-forecast-demo__chart"),
+      legacyStageRail: metrics(".system-preview__nav ol"),
+      stagePicker: metrics(".system-preview__mobile-stage-picker"),
+      deliveryStage: metrics(".story-delivery__stage"),
+      deliveryFrame: metrics(".story-delivery__frame")
+    };
+  });
+  const issues = [];
+  if (
+    !result.chart || result.chart.display === "none" ||
+    !result.chartWrap || result.chartWrap.scrollWidth > result.chartWrap.clientWidth + 2 ||
+    result.desktopChart?.display !== "none"
+  ) {
+    issues.push("Forecast phone chart hidden or horizontally scrollable");
+  }
+  if (
+    result.legacyStageRail?.display !== "none" ||
+    result.stagePicker?.display === "none"
+  ) {
+    issues.push("System Intelligence stage picker not replacing the 7-column rail");
+  }
+  if (
+    !result.deliveryStage || !result.deliveryFrame ||
+    result.deliveryStage.width > viewport.width + 1 ||
+    result.deliveryFrame.width > result.deliveryStage.width + 2
+  ) {
+    issues.push("Delivery visual overflows the phone stage");
+  }
+  if ((await picker.locator("option").count()) !== 7) {
+    issues.push("System Intelligence selector missing one or more stages");
+  } else {
+    await picker.selectOption("6");
+    if ((await picker.inputValue()) !== "6") {
+      issues.push("System Intelligence stage 7 cannot be selected");
+    }
+  }
+  await page.screenshot({
+    path: join(OUTPUT_DIRECTORY, `${viewport.name}-about-intelligence.png`),
+    animations: "disabled",
+    fullPage: false
+  });
+  return issues;
+}
+
 async function run() {
   await mkdir(OUTPUT_DIRECTORY, { recursive: true });
   const failures = [];
@@ -1568,6 +1636,20 @@ async function run() {
           const status = issues.length ? "FAIL" : "PASS";
           const details = issues.join("; ") || "width and navigation checks passed";
           process.stdout.write(`${status} ${viewport.name} ${pageName}: ${details}\n`);
+        }
+        if (viewport.width <= 430 && viewport.height > viewport.width) {
+          const aboutRoute = "/about";
+          await page.goto(new URL(aboutRoute, BASE_URL).href, {
+            waitUntil: "domcontentloaded",
+            timeout: 20000
+          });
+          const aboutIssues = await checkAboutMobileIntelligence(page, viewport);
+          if (aboutIssues.length) {
+            failures.push({ viewport: viewport.name, route: aboutRoute, issues: aboutIssues });
+          }
+          process.stdout.write(
+            `${aboutIssues.length ? "FAIL" : "PASS"} ${viewport.name} About: ${aboutIssues.join("; ") || "mobile intelligence fits"}\n`
+          );
         }
       } catch (error) {
         failures.push({ viewport: viewport.name, route: "runtime", issues: [String(error)] });
