@@ -315,6 +315,57 @@ async function checkShopAvailability(page, viewport) {
   return issues;
 }
 
+async function checkMobileProductDetail(page, viewport) {
+  const issues = [];
+  const href = await page.locator(".customer-product-card__visual-link").first().getAttribute("href");
+  if (!href) return ["No shop product link available for product detail QA"];
+  await page.goto(new URL(href, BASE_URL).href, { waitUntil: "domcontentloaded", timeout: 20000 });
+  const hero = page.locator(".customer-product-page .customer-product-visual--large");
+  await hero.waitFor({ state: "visible", timeout: 15000 });
+
+  const state = await page.evaluate(() => {
+    const hero = document.querySelector(".customer-product-page .customer-product-visual--large");
+    const rail = document.querySelector(".customer-product-page .customer-product-size-selector__options");
+    const options = rail ? [...rail.querySelectorAll(".customer-product-size-option")] : [];
+    const arrows = [...document.querySelectorAll(".customer-product-page .customer-product-size-selector__arrow")];
+    const reviewForm = document.querySelector(".customer-review-composer");
+    return {
+      heroHeight: hero?.getBoundingClientRect().height ?? 0,
+      scrollWidth: document.documentElement.scrollWidth,
+      railWidth: rail?.getBoundingClientRect().width ?? 0,
+      overflowingVariantLabels: options.filter((element) => {
+        const title = element.querySelector(".customer-product-size-option__copy");
+        return title && title.scrollWidth > title.clientWidth + 2;
+      }).length,
+      hasLongTooltip: options.some((option) => option.hasAttribute("title")),
+      visibleArrows: arrows.filter((arrow) => getComputedStyle(arrow).display !== "none").length,
+      hasReviewForm: Boolean(reviewForm)
+    };
+  });
+
+  if (state.heroHeight > 342 || state.heroHeight < 220) {
+    issues.push(`Mobile detail image has incorrect height: ${Math.round(state.heroHeight)}px`);
+  }
+  if (state.scrollWidth > viewport.width + 1) {
+    issues.push(`Product detail horizontal overflow: ${state.scrollWidth}px`);
+  }
+  if (state.hasLongTooltip || state.overflowingVariantLabels) {
+    issues.push("Pack-size controls have obstructive tooltips or clipped labels");
+  }
+  if (state.visibleArrows) {
+    issues.push("Pack-size arrows still consume mobile rail width");
+  }
+  if (!state.hasReviewForm) {
+    issues.push("Product detail review form is missing");
+  }
+
+  await page.screenshot({
+    path: join(OUTPUT_DIRECTORY, `${viewport.name}-product-detail.png`),
+    animations: "disabled"
+  });
+  return issues;
+}
+
 async function checkMorePanel(page, viewport) {
   const openButton = page.getByRole("button", { name: "Open more options" });
   await openButton.click();
@@ -528,6 +579,9 @@ async function run() {
           }
           if (route === "/" && viewport.width <= 700 && viewport.height > viewport.width) {
             issues.push(...(await checkCompactSearch(page, viewport)));
+          }
+          if (route === "/shop" && viewport.width <= 430 && viewport.height > viewport.width) {
+            issues.push(...(await checkMobileProductDetail(page, viewport)));
           }
           if (issues.length) {
             failures.push({ viewport: viewport.name, route, issues });
