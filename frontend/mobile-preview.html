@@ -15,6 +15,8 @@
       .tools { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
       button, select, a.tool { min-height: 42px; border-radius: 10px; border: 1px solid #61749a; color: #eef2ff; background: #243553; padding: 8px 12px; font: inherit; font-size: .83rem; cursor: pointer; }
       button:hover, a.tool:hover { background: #344d72; }
+      button[data-view][aria-pressed="true"] { background: #4c5ed1; border-color: #b8c4ff; color: #fff; box-shadow: inset 0 0 0 1px #ffffff33; }
+      button[data-view][aria-pressed="true"]:hover { background: #586be5; }
       button:focus-visible, select:focus-visible, a.tool:focus-visible { outline: 3px solid #aabbff; outline-offset: 3px; }
       a.tool { text-decoration: none; display: inline-flex; align-items: center; }
       .view { display: flex; flex: 1; justify-content: center; align-items: flex-start; padding: 24px 12px; overflow: auto; min-height: 430px; }
@@ -45,16 +47,17 @@
             <option value="768,1024">Tablet · 768 × 1024</option>
           </select>
           <button id="rotate" type="button" aria-label="Rotate preview">Rotate</button>
-          <button type="button" data-route="/pos">Retail POS</button>
-          <button type="button" data-route="/dashboard">Dashboard</button>
-          <button type="button" data-route="/shop">Storefront</button>
-          <a class="tool" href="/pos" target="_blank" rel="noopener noreferrer">Open full page</a>
+          <button type="button" data-view="welcome" data-route="/?preview=welcome" aria-pressed="true">Welcome</button>
+          <button type="button" data-view="storefront" data-route="/shop" aria-pressed="false">Storefront</button>
+          <button type="button" data-view="pos" data-route="/pos" aria-pressed="false">Retail POS</button>
+          <button type="button" data-view="dashboard" data-route="/dashboard" aria-pressed="false">Dashboard</button>
+          <a class="tool" id="full-page-link" href="/?preview=welcome" target="_blank" rel="noopener noreferrer">Open full page</a>
         </div>
       </header>
       <main class="view" id="stage">
         <div class="mount" id="mount">
           <div class="device" id="frame">
-            <iframe id="preview" title="YsabelleStore live mobile viewport" src="/pos"></iframe>
+            <iframe id="preview" title="YsabelleStore live mobile viewport" src="/?preview=welcome"></iframe>
           </div>
         </div>
       </main>
@@ -103,14 +106,40 @@
         landscape = !landscape;
         draw();
       });
-      document.querySelectorAll("[data-route]").forEach((button) => {
-        button.addEventListener("click", () => {
-          const route = button.getAttribute("data-route");
+      const fullPageLink = document.getElementById("full-page-link");
+      const routeButtons = [...document.querySelectorAll("[data-view][data-route]")];
+      const routes = new Map(
+        routeButtons.map((button) => [button.dataset.view, button.dataset.route])
+      );
+
+      function selectView(view, reload = false) {
+        const selected = routes.has(view) ? view : "welcome";
+        const route = routes.get(selected);
+
+        if (reload || preview.getAttribute("src") !== route) {
           preview.src = route;
-          document.querySelector("a.tool").href = route;
+        }
+        fullPageLink.href = route;
+        routeButtons.forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.view === selected));
+        });
+      }
+
+      routeButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const view = button.dataset.view;
+          // Reload even when reselecting Welcome after Get Started changed the iframe route.
+          selectView(view, true);
+          if (window.location.hash !== "#" + view) {
+            window.location.hash = view;
+          }
         });
       });
+      window.addEventListener("hashchange", () => {
+        selectView(window.location.hash.slice(1));
+      });
       window.addEventListener("resize", draw);
+      selectView(window.location.hash.slice(1));
       draw();
     </script>
   </body>
