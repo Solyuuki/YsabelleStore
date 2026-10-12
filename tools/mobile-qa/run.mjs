@@ -332,6 +332,41 @@ async function checkMobileProductDetail(page, viewport) {
     const rail = document.querySelector(".customer-product-page .customer-product-size-selector__options");
     const options = rail ? [...rail.querySelectorAll(".customer-product-size-option")] : [];
     const arrows = [...document.querySelectorAll(".customer-product-page .customer-product-size-selector__arrow")];
+    const relatedRail = document.querySelector(".customer-product-page .customer-related-products__viewport");
+    const relatedCards = relatedRail
+      ? [...relatedRail.querySelectorAll(":scope > .customer-product-card")]
+      : [];
+    const relatedBounds = relatedRail?.getBoundingClientRect();
+    const relatedCardBounds = relatedCards.map((card) => card.getBoundingClientRect());
+    const relatedGap = relatedRail
+      ? parseFloat(getComputedStyle(relatedRail).gap) || 0
+      : 0;
+    const relatedLayout = {
+      count: relatedCards.length,
+      railWidth: relatedBounds?.width ?? 0,
+      cardWidths: relatedCardBounds.map((rect) => rect.width),
+      largestImageHeight: Math.max(
+        0,
+        ...relatedCards.map(
+          (card) => card.querySelector(".customer-product-visual")?.getBoundingClientRect().height ?? 0
+        )
+      ),
+      hasSnap: relatedRail ? getComputedStyle(relatedRail).scrollSnapType.includes("mandatory") : false,
+      canSwipe: relatedRail
+        ? relatedRail.scrollWidth > relatedRail.clientWidth + 2
+        : false,
+      cardOverflowsHeight: relatedCards.some((card) => card.scrollHeight > card.clientHeight + 2),
+      countOfClippedActions: relatedCards.filter((card) => {
+        const parent = card.getBoundingClientRect();
+        const action = card.querySelector(".customer-product-card__cart-button")?.getBoundingClientRect();
+        return action && (
+          action.left < parent.left - 1 ||
+          action.right > parent.right + 1 ||
+          action.bottom > parent.bottom + 1
+        );
+      }).length
+    };
+    const visibleDocumentScrollbar = getComputedStyle(document.documentElement).scrollbarWidth;
     const reviewForm = document.querySelector(".customer-review-composer");
     const reviewFilters = document.querySelector(".customer-product-page .customer-review-filters");
     const reviewFilterButtons = reviewFilters ? [...reviewFilters.querySelectorAll("button")] : [];
@@ -355,6 +390,8 @@ async function checkMobileProductDetail(page, viewport) {
     };
     return {
       reviewFilterGeometry,
+      relatedLayout,
+      visibleDocumentScrollbar,
       heroHeight: hero?.getBoundingClientRect().height ?? 0,
       scrollWidth: document.documentElement.scrollWidth,
       railWidth: rail?.getBoundingClientRect().width ?? 0,
@@ -387,6 +424,26 @@ async function checkMobileProductDetail(page, viewport) {
       hasReviewForm: Boolean(reviewForm)
     };
   });
+
+  // A product can have zero related recommendations in an empty fixture.
+  // When at least two exist, they must form a two-up swipeable rail with
+  // compact, fully-contained cards and reachable cart buttons.
+  if (state.relatedLayout.count >= 2) {
+    const maxExpectedWidth = (state.relatedLayout.railWidth - 8) / 2 + 2;
+    if (
+      state.relatedLayout.cardWidths.some((width) => width > maxExpectedWidth) ||
+      state.relatedLayout.largestImageHeight > 205 ||
+      !state.relatedLayout.hasSnap ||
+      !state.relatedLayout.canSwipe ||
+      state.relatedLayout.cardOverflowsHeight ||
+      state.relatedLayout.countOfClippedActions
+    ) {
+      issues.push("Related-product carousel cards are oversized, clipped or not swipeable");
+    }
+  }
+  if (state.visibleDocumentScrollbar !== "none") {
+    issues.push("Mobile storefront still shows a persistent document scrollbar");
+  }
 
   if (state.heroHeight > 342 || state.heroHeight < 220) {
     issues.push(`Mobile detail image has incorrect height: ${Math.round(state.heroHeight)}px`);
