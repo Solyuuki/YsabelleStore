@@ -337,15 +337,40 @@
     margin-left: auto;
   }
 
+  /* Four account views always fit in a 2×2 phone grid. Never use a
+     horizontal scroll rail: it clips the Security tab and exposes a bar. */
   .customer-account-nav {
     order: 3;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
-    overflow-x: auto;
-    justify-content: flex-start;
+    min-width: 0;
+    gap: 8px;
+    overflow: visible;
+    justify-content: stretch;
+    align-items: stretch;
   }
 
   .customer-account-nav button {
-    flex: 1 0 auto;
+    display: inline-flex;
+    flex: none;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0.55rem 0.3rem;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    font-size: clamp(0.76rem, 3.5vw, 0.85rem);
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+
+  .customer-account-nav button svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
   }
 
   .customer-account-hero,
