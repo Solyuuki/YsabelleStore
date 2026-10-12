@@ -136,3 +136,12 @@ export function getEssentialShelfItems() {
 export function getCategoryPresentation(slug: string) {
   return presentationBySlug[slug] ?? null;
 }
+
+/** Internal catalog review notes are not customer-facing merchandising copy. */
+export function getCustomerCategoryDescription(description: string | null): string {
+  const value = description?.trim() ?? "";
+  if (!value || /reviewed category for source[- ]mapped|source[- ]mapped SARIM/i.test(value)) {
+    return "Explore this aisle";
+  }
+  return value;
+}
