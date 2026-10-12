@@ -51,6 +51,12 @@ At portrait and short-landscape phone widths (up to 700 CSS px), global search n
 
 The Playwright QA now checks that the compact header stays within 110px before search opens, that the suggestions popup is no taller than 310px, and that it stays within the viewport and above the portrait bottom navigation. These checks run on the five portrait phone sizes and write `*-search.png` screenshots.
 
+## Compact Shop filters
+
+On phones up to 700 CSS px, the Shop category chooser is one 44px-tall row when collapsed; the selected category name is shown on its toggle instead of a second always-visible "All categories" tile. Opening it reveals the existing category navigation choices. The Shop search and the **Availability** native select share a single horizontal row: the search expands, while the select uses an accessible 44px filter-icon target. A small indicator appears whenever In stock or Out of stock is selected. The outer toolbar and collapsed-category panel borders/padding are removed in mobile layouts; the result heading follows with a smaller gap. The search debounce, query parameters, pagination reset and availability API semantics are unchanged.
+
+This is phone-only. Wider tablet/desktop controls retain their text dropdown. The mobile select stays a real keyboard-accessible native `select`, not a custom nonfunctional icon; focused and active states have contrasting light/dark-mode colors. Confirm at 320px, 390px and 430px, including search text overflow, category expansion, changing availability, Clear filters and dark mode.
+
 ## Compact product-card purchase controls
 
 At 320–430 CSS px in portrait, the **Home and Shop** product cards retain a two-column grid but use concise, readable merchandising. A short badge label (Trending, Best seller, or Low stock) is reserved its own space beside a 44px favorite hit target with a visually smaller 34px heart circle; no text or overlay collision is permitted. Product titles are clamped at two lines and review counts are visually hidden on phones, while the full rating summary is preserved in accessible text. Pricing, stock messages, favorite state, whole-unit quantity changes, and the existing `addItem(product, selectedQuantity)` behavior remain unchanged.
