@@ -77,6 +77,14 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Browser pages cannot reliably lock a phone's physical orientation.
+         Show an upright-mode notice on small touch phones in landscape.
+         Tablets remain usable in both orientations. -->
+    <div class="phone-orientation-notice" id="phone-orientation-notice" role="status" aria-live="polite">
+      <span class="phone-orientation-notice__icon" aria-hidden="true">↻</span>
+      <strong>Portrait mode on phones</strong>
+      <p>Rotate your phone upright to continue using Ysabelle Store.</p>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
