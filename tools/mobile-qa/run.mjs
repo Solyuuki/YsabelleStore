@@ -316,6 +316,66 @@ async function checkShopAvailability(page, viewport) {
   return issues;
 }
 
+async function checkCheckoutPolicySpacing(page, viewport) {
+  // This renders the actual checkout summary CSS in an isolated measurement
+  // fixture. No authentication, cart mutation, or payment submission needed.
+  const metrics = await page.evaluate(() => {
+    const app = document.querySelector(".customer-app");
+    if (!app) return null;
+    const fixture = document.createElement("div");
+    fixture.className = "customer-checkout-page";
+    fixture.setAttribute("aria-hidden", "true");
+    fixture.style.cssText = "position:absolute;left:0;top:0;width:calc(100vw - 32px);visibility:hidden;pointer-events:none;z-index:-1;";
+    fixture.innerHTML = `
+      <aside class="customer-order-summary customer-checkout-summary">
+        <div class="customer-checkout-policy-group">
+          <p class="customer-order-summary__helper">Store staff will prepare your order and coordinate the courier. You can follow its delivery status from My Account.</p>
+          <button class="customer-order-policy__trigger" type="button">Order cancellation policy</button>
+        </div>
+      </aside>`;
+    app.appendChild(fixture);
+    try {
+      const group = fixture.querySelector(".customer-checkout-policy-group");
+      const helper = fixture.querySelector(".customer-order-summary__helper");
+      const button = fixture.querySelector(".customer-order-policy__trigger");
+      if (!group || !helper || !button) return null;
+      const groupStyle = getComputedStyle(group);
+      const paragraphStyle = getComputedStyle(helper);
+      const helperBounds = helper.getBoundingClientRect();
+      const buttonBounds = button.getBoundingClientRect();
+      const groupBounds = group.getBoundingClientRect();
+      return {
+        gap: buttonBounds.top - helperBounds.bottom,
+        groupGap: groupStyle.rowGap,
+        display: groupStyle.display,
+        helperMarginBottom: paragraphStyle.marginBottom,
+        buttonHeight: buttonBounds.height,
+        buttonFits: buttonBounds.left >= groupBounds.left - 1 &&
+          buttonBounds.right <= groupBounds.right + 1,
+        paragraphFits: helperBounds.left >= groupBounds.left - 1 &&
+          helperBounds.right <= groupBounds.right + 1
+      };
+    } finally {
+      fixture.remove();
+    }
+  });
+  if (!metrics) return ["Checkout policy spacing fixture could not render"];
+  const issues = [];
+  if (
+    metrics.display !== "grid" ||
+    metrics.gap < 14 ||
+    metrics.gap > 22 ||
+    metrics.buttonHeight < 43 ||
+    !metrics.buttonFits ||
+    !metrics.paragraphFits
+  ) {
+    issues.push(
+      `Checkout delivery text and policy button gap is too small or clipped: ${metrics.gap.toFixed(1)}px at ${viewport.width}px`
+    );
+  }
+  return issues;
+}
+
 async function checkMobileCart(page, viewport) {
   const issues = [];
   // Isolated browser context: only a guest cart in localStorage is touched;
@@ -909,6 +969,7 @@ async function run() {
           });
 
           if (route === "/shop" && viewport.width <= 430 && viewport.height > viewport.width) {
+            issues.push(...(await checkCheckoutPolicySpacing(page, viewport)));
             issues.push(...(await checkShopCategories(page, viewport)));
             issues.push(...(await checkShopAvailability(page, viewport)));
           }
