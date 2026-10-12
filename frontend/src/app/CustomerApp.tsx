@@ -141,6 +141,10 @@ function CustomerAppRoutes({
   const authPageKind = getCustomerAuthPageKind(pathname);
   const protectedRoute = isCustomerProtectedRoute(pathname);
   const [storeEntranceDismissed, setStoreEntranceDismissed] = useState(readStoreEntranceState);
+  // Preview-only entry route keeps Welcome inspectable after Get Started; production is unchanged.
+  const previewWelcome =
+    import.meta.env.VITE_MOBILE_PREVIEW === "1" &&
+    locationUrl.searchParams.get("preview") === "welcome";
 
   useEffect(() => {
     if (redirect) navigate(redirect);
@@ -163,12 +167,13 @@ function CustomerAppRoutes({
     );
   }
 
-  if (pathname === "/" && !storeEntranceDismissed) {
+  if (pathname === "/" && (previewWelcome || !storeEntranceDismissed)) {
     return (
       <StoreEntrance
         onEnter={() => {
           writeStoreEntranceState();
           setStoreEntranceDismissed(true);
+          if (previewWelcome) navigate("/");
         }}
       />
     );
