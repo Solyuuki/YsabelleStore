@@ -317,8 +317,8 @@ async function checkShopAvailability(page, viewport) {
 }
 
 async function checkMobileAccountTabs(page, viewport) {
-  // Real loaded Account CSS with an inert navigation fixture: no login,
-  // account changes or tab routing are necessary for a geometry regression.
+  // Compact navigation replaces the redundant Account rail on phones/tablets.
+  // Use a layout fixture so no signed-in session or account mutation is needed.
   const state = await page.evaluate(() => {
     const app = document.querySelector(".customer-app");
     if (!app) return null;
@@ -330,60 +330,38 @@ async function checkMobileAccountTabs(page, viewport) {
     fixture.innerHTML = `
       <div class="customer-account-layout-v2">
         <aside class="customer-account-rail">
-          <div class="customer-account-identity-card"><div><h1>My Account</h1></div></div>
           <nav class="customer-account-nav" role="tablist" aria-label="Account views">
-            <button role="tab" aria-selected="true" type="button">Orders</button>
-            <button role="tab" aria-selected="false" type="button">Favorites</button>
-            <button role="tab" aria-selected="false" type="button">Profile</button>
-            <button role="tab" aria-selected="false" type="button">Security</button>
+            <button type="button">Orders</button><button type="button">Favorites</button>
+            <button type="button">Profile</button><button type="button">Security</button>
           </nav>
           <button class="customer-account-signout" type="button">Sign out</button>
         </aside>
+        <main class="customer-account-content-v2"><section class="customer-account-section">Orders content</section></main>
       </div>`;
     app.appendChild(fixture);
     try {
-      const nav = fixture.querySelector(".customer-account-nav");
-      if (!nav) return null;
-      const navRect = nav.getBoundingClientRect();
-      const buttons = [...nav.querySelectorAll("button")];
+      const rail = fixture.querySelector(".customer-account-rail");
+      const content = fixture.querySelector(".customer-account-content-v2");
+      const layout = fixture.querySelector(".customer-account-layout-v2");
       return {
-        display: getComputedStyle(nav).display,
-        columns: getComputedStyle(nav).gridTemplateColumns,
-        width: navRect.width,
-        scrollWidth: nav.scrollWidth,
-        clientWidth: nav.clientWidth,
-        buttons: buttons.map((button) => {
-          const rect = button.getBoundingClientRect();
-          return {
-            x: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
-            width: rect.width, height: rect.height,
-            fits: rect.left >= navRect.left - 1 && rect.right <= navRect.right + 1,
-            label: button.textContent?.trim()
-          };
-        })
+        railDisplay: getComputedStyle(rail).display,
+        contentDisplay: getComputedStyle(content).display,
+        contentWidth: content.getBoundingClientRect().width,
+        layoutWidth: layout.getBoundingClientRect().width
       };
     } finally {
       fixture.remove();
     }
   });
 
-  if (!state) return ["Account tabs could not render a mobile layout fixture"];
-  const buttons = state.buttons;
-  const twoRows = buttons.length === 4 &&
-    Math.abs(buttons[0].top - buttons[1].top) < 2 &&
-    Math.abs(buttons[2].top - buttons[3].top) < 2 &&
-    buttons[2].top >= Math.max(buttons[0].bottom, buttons[1].bottom) &&
-    buttons[0].right <= buttons[1].x + 1 &&
-    buttons[2].right <= buttons[3].x + 1;
+  if (!state) return ["Account layout fixture could not render"];
   if (
-    state.display !== "grid" ||
-    !twoRows ||
-    state.scrollWidth > state.clientWidth + 2 ||
-    buttons.some((button) => !button.fits || button.height < 43 || button.width < 70)
+    state.railDisplay !== "none" ||
+    state.contentDisplay === "none" ||
+    state.contentWidth <= 0 ||
+    state.contentWidth > state.layoutWidth + 2
   ) {
-    return [
-      `Account tabs are clipped or horizontally scrolling at ${viewport.width}px: ${JSON.stringify(state)}`
-    ];
+    return [`Account rail still occupies mobile space at ${viewport.width}px: ${JSON.stringify(state)}`];
   }
   return [];
 }
