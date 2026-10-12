@@ -1,0 +1,37 @@
+# Sprint 12 — Mobile Development Mode
+
+From the repository root, use `npm run dev:mob`.
+
+## Concurrent development modes
+
+- If `npm run dev` (Electron + web) or `npm run dev:web` is already running, the mobile launcher reuses the existing frontend, backend, and development database. It never creates a second backend or database.
+- If the standard stack is not running, the mobile launcher runs the same `predev:web` checks and starts a single owned web/backend stack. When stopped it shuts down only the stack it started.
+- If only one of the ports 3001/5173 is running, or an unexpected service is listening, startup fails instead of stealing/terminating a port.
+- The mobile frontend is an additional Vite instance at port **5174**, with strict port enforcement. It proxies `/api` to the existing local API at port 3001.
+- `dev` and `dev:web` remain their normal stack launch modes; you do not need to run both.
+
+## Preview URLs
+
+- Desktop phone-sized preview: `http://localhost:5174/mobile-preview.html`
+- Direct browser app: `http://localhost:5174/`
+- Actual Android/iPhone on the same trusted Wi-Fi: `http://<PC-LAN-IP>:5174/`
+- The terminal prints detected private IPv4 candidates. Try the IP for your active Wi-Fi/LAN adapter.
+- The preview toolbar offers multiple phone and tablet viewport widths, portrait/landscape rotation and direct links to POS, Dashboard and Storefront.
+- To suppress automatic browser launch, use `npm run dev:mob -- --no-open`.
+- Run fast regression checks with `npm run test:mobile`.
+
+## Validate local connectivity
+
+Use `npm run runtime:report` to inspect the configured frontend, backend and database target; it checks the live health endpoint when the services are running.
+
+On the host PC, verify `http://localhost:3001/api/ready`.
+On a phone, verify `http://<PC-LAN-IP>:5174/api/ready`; it should reach the same backend through the Vite proxy. The database must be connected for readiness.
+
+## Security and limitations
+
+- **Development-only LAN preview.** Port 5174 listens on all interfaces. Use on a trusted private network; keep your firewall enabled and do not port-forward or publish this preview on the internet.
+- Never open database port 3306 to phones. Login/authorization checks continue to run on the existing backend.
+- Real-device tests require the host PC and backend to be online. This is not an offline MPOS app.
+- The desktop embedded iframe preview changes layout dimensions, but does not emulate iOS Safari, mobile keyboard behavior or touch hardware. Test critical flows on real phones.
+- Phone camera APIs generally require an HTTPS secure context; that is a separate setup after mobile appearance QA.
+- `dev:mob` does not change the production/storefront hosting architecture, installer database rules or any sales/inventory authority.
