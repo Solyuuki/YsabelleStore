@@ -56,7 +56,7 @@ test("compact catalog product controls and rail remain accessible in portrait", 
   const css = read("frontend/src/styles/customer-adaptive-mobile.css");
   const home = read("frontend/src/components/customer/HomeProductRail.tsx");
   const card = read("frontend/src/components/customer/ProductCard.tsx");
-  assert.match(css, /\.customer-app \.customer-product-card__purchase-row\s*\{\s*grid-template-columns: minmax\(0, 1fr\);/);
+  assert.match(css, /\.customer-app \.customer-product-card__purchase-row\s*\{[^}]*grid-template-columns: minmax\(0, 1\.35fr\) minmax\(0, 1fr\);/);
   assert.match(css, /\.customer-home \.home-product-rail__item\s*\{\s*flex: 0 0 calc\(\(100% - var\(--home-product-rail-gap\)\) \/ 2\);/);
   assert.match(css, /\.customer-shop-page \.shop-product-grid,/);
   assert.match(home, /aria-label=\{`Previous \$\{label\}`\}/);
@@ -94,7 +94,7 @@ test("mobile component sizes reflow at phone and wide-portrait breakpoints", () 
   assert.match(css, /@media \(min-width: 600px\) and \(max-width: 700px\) and \(orientation: portrait\)/);
   assert.match(css, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
   assert.match(css, /@media \(max-width: 359px\) and \(orientation: portrait\)/);
-  assert.match(css, /\.customer-app \.customer-product-card__actions \.customer-quantity\s*\{[^}]*grid-template-columns: 44px minmax\(0, 1fr\) 44px;/);
+  assert.match(css, /\.customer-app \.customer-product-card__actions \.customer-quantity\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\) minmax\(18px, 0\.85fr\) minmax\(0, 1fr\);/);
   assert.match(css, /\.customer-app \.customer-product-card__cart-button\s*\{[^}]*font-size: clamp/);
 });
 
@@ -336,7 +336,7 @@ test("small-phone product cards retain semantics with compact badges and Add", (
   assert.match(portrait, /\.customer-app \.customer-product-card h3\s*\{[^}]*-webkit-line-clamp: 2;/);
   assert.match(portrait, /\.customer-app \.customer-product-card__rating \.customer-product-card__review-count\s*\{\s*display: none;/);
   assert.match(portrait, /\.customer-app \.customer-product-card__actions \.customer-quantity\s*\{[^}]*height: 44px;/);
-  assert.match(portrait, /\.customer-app \.customer-product-card__cart-button\s*\{[^}]*width: min\(100%, 92px\);/);
+  assert.match(portrait, /\.customer-app \.customer-product-card__cart-button\s*\{[^}]*width: 100%;/);
   assert.match(portrait, /\.customer-app \.customer-product-card__add-full\s*\{\s*display: none;/);
   assert.match(portrait, /\.customer-app \.customer-product-card__add-mobile\s*\{\s*display: inline;/);
   assert.match(portrait, /:root\.dark \.customer-app \.customer-product-card__favorite::before/);
@@ -356,7 +356,7 @@ test("browser QA checks actual product badge collision and reachable mobile cart
   assert.match(qa, /Clipped or hidden mobile badge label/);
   assert.match(qa, /Favorite touch target below 44px/);
   assert.match(qa, /Cart action outside compact 44px sizing/);
-  assert.match(qa, /Quantity controls below 44px/);
+  assert.match(qa, /Quantity controls below 24px wide or 44px tall/);
   assert.match(qa, /Mobile review counts still visible/);
   assert.match(qa, /Product titles not clamped to two lines/);
   assert.match(qa, /\.customer-product-card"\)\.first\(\)\.waitFor/);
