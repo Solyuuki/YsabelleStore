@@ -108,6 +108,24 @@ test("mobile preview supports portrait-only phones, rotating tablets and live ro
   assert.doesNotMatch(page, /http:\/\/localhost:3001/);
 });
 
+test("Google Quick Sign escapes the embedded phone preview before OAuth", () => {
+  const service = read("frontend/src/services/customerSocialAuthService.ts");
+  const preview = read("frontend/mobile-preview.html");
+  const login = read("frontend/src/pages/customer/CustomerLoginPage.tsx");
+  const register = read("frontend/src/pages/customer/CustomerRegisterPage.tsx");
+
+  assert.match(service, /customerSocialAuthNavigationWindow\(currentWindow: Window\): Window/);
+  assert.match(service, /if \(currentWindow\.self === currentWindow\.top\) return currentWindow;/);
+  assert.match(service, /parent === currentWindow\.top/);
+  assert.match(service, /parent\.location\.origin === currentWindow\.location\.origin/);
+  assert.match(service, /parent\.location\.pathname === "\/mobile-preview\.html"/);
+  assert.match(service, /throw new Error\([\s\S]*?Open Ysabelle Store in a full browser tab/);
+  assert.match(service, /customerSocialAuthNavigationWindow\(window\)\.location\.assign\(url\.toString\(\)\)/);
+  assert.match(login, /startCustomerSocialAuth\(provider, quickSignReturnTo, "login"\)/);
+  assert.match(register, /startCustomerSocialAuth\(provider, returnTo, "register"\)/);
+  assert.match(preview, /Google Quick Sign opens the full browser page/);
+});
+
 test("small touch phones show portrait guidance while tablets support either orientation", () => {
   const html = read("frontend/index.html");
   const css = read("frontend/src/styles/global.css");
