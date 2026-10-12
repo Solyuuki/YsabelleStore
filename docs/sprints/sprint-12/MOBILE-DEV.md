@@ -19,9 +19,17 @@ From the repository root, use `npm run dev:mob`.
 - The terminal prints detected private IPv4 candidates. Try the IP for your active Wi-Fi/LAN adapter.
 - The preview defaults to **Welcome**, reproducing the Storefront entrance at `/?preview=welcome` in mobile development mode (including after Get Started). The preview-only query does not change desktop or production storefront behavior.
 - The toolbar offers Welcome, Storefront, Retail POS and Dashboard, highlights the selected view, and saves it in the preview URL hash (e.g. `mobile-preview.html#pos`) so reloads and browser back/forward restore the selection. **Open full page** follows the selected view.
-- The toolbar also offers multiple phone and tablet viewport widths and portrait/landscape rotation.
+- The toolbar offers multiple phone and tablet presets. **Phones (320–430px presets) are portrait-only**, so Rotate is disabled; **Tablet (768 × 1024) supports both portrait and landscape**. Switching from a rotated tablet back to any phone automatically resets the phone preview to portrait. The footer reports the orientation policy.
 - To suppress automatic browser launch, use `npm run dev:mob -- --no-open`.
 - Run fast regression checks with `npm run test:mobile`.
+
+## Phone portrait-only vs. tablet rotation
+
+Phone landscape is disabled in the `mobile-preview.html` simulator for every phone preset and cannot be enabled by switching from a rotated tablet. Only explicit `data-orientation="both"` tablet presets enable the Rotate control. This is a **viewport QA policy**, not a browser permission or hardware lock.
+
+On direct Android/iOS browsers, browser tabs do not reliably support `ScreenOrientation.lock("portrait")`. Instead, `frontend/index.html` and `frontend/src/styles/global.css` provide a full-screen, accessible **Rotate your phone upright** notice at touch-device landscape widths up to 1180px with a short side no greater than 500px. Portrait phones see no notice; typical tablets have a taller landscape viewport and remain usable in both orientations. Mouse-driven desktop windows are not restricted. The notice does not change authentication, the actual screen orientation, or persisted preferences.
+
+`npm run test:mobile` checks both the preview rotation behavior via an executable DOM stub and the CSS/HTML orientation contract. `npm run qa:mobile` checks the rotation notice in the touch-enabled 640 × 320 phone-landscape fixture and ensures it stays hidden on both 768 × 1024 and 1024 × 768 tablets. For physical iOS/Android QA, rotate a real phone and tablet; some browsers show transient system scrollbars or UI chrome independent of the app.
 
 ## Frontend Node test runner compatibility
 
@@ -57,7 +65,7 @@ The **Storefront** button opens the product catalog directly.
 - **Portrait is vertically scrollable only:** Trending, Best Sellers and Everyday Essentials product rails become normal two-column grids; category filters wrap rather than forming a horizontal scroller. Rail arrows are hidden only when the entire grid is visible.
 - Mobile sizing is centralized in `frontend/src/styles/customer-mobile-tokens.css` (12–16px gutters, 8–12px card gaps, 20–30px section spacing and bottom dock clearance), imported before `customer-adaptive-mobile.css`. Phone sizing scales from the 320px baseline; no per-device visual redesign.
 - Portrait widths 600–700px can show three columns without changing the Storefront design language; regular portrait phones keep two columns. Interactive quantity/CTA controls retain their 44px+ touch target dimensions.
-- Landscape phones use a compact navigation row beneath the header, adaptive photo proportions and no horizontally scrolling category sidebar.
+- **Phone landscape is no longer a supported browsing mode:** the preview prevents it, and real small touch phones display a portrait-only rotation notice in landscape. Tablet portrait and landscape remain supported. Existing short-landscape responsive CSS remains as a fallback for other browser contexts; the guard is not an operating-system rotation lock.
 - The redundant legacy hamburger/mobile-panel has been removed from the Storefront header. The responsive dock is the only mobile navigation (portrait/landscape/tablet), while the existing desktop link navigation remains unchanged.
 - At the 320px portrait baseline the five dock slots use minmax(0,1fr), no width-growing labels, and a 42–44px center action; the header/search and dock are width-constrained to the viewport rather than allowed to create horizontal overflow.
 - Tablets use the compact navigation row and three-column category grid; desktop keeps its original full Storefront navigation.
@@ -66,7 +74,7 @@ The **Storefront** button opens the product catalog directly.
 - The established Storefront routes, category/product source, visual assets, owner/staff POS screens and backend remain unchanged.
 - Run `npm run test:mobile` to check mobile preview navigation and Storefront responsive contracts.
 
-**Manual visual QA still required:** use the preview's 320 × 640, 390 × 844, 640 × 320, and 768 × 1024 options, switch light/dark modes, inspect both Home and Shop, and verify there is no body-wide horizontal overflow or clipped buttons. Real phone testing is still required for soft keyboards, touch behavior and safe areas.
+**Manual visual QA still required:** use the preview's 320 × 640 and 390 × 844 phone presets in portrait. Check that Rotate is disabled. Select Tablet 768 × 1024, rotate to 1024 × 768 and back, then change to a phone preset and verify auto-reset to portrait. On a physical phone in landscape, confirm the accessible rotate-upright notice; it disappears when returned to portrait. On tablet landscape, the notice stays hidden. Switch light/dark modes and inspect Home and Shop for overflow and clipped controls. Real device tests are required because ordinary browsers cannot guarantee OS-level orientation locking.
 
 ## Compact phone header search
 
