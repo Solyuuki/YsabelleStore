@@ -773,3 +773,45 @@ test("account view tabs fit as two-by-two grid on narrow phones", () => {
   assert.match(qa, /state\.scrollWidth > state\.clientWidth \+ 2/);
   assert.match(qa, /issues\.push\(\.\.\.\(await checkMobileAccountTabs\(page, viewport\)\)\)/);
 });
+
+test("Favorites card density and pagination stay bounded with removal", () => {
+  const page = read("frontend/src/pages/customer/CustomerAccountPage.tsx");
+  const style = read("frontend/src/styles/customer-commerce-premium.css");
+  const qa = read("tools/mobile-qa/run.mjs");
+  const scoped = style.split("/* Sprint 12 Favorites: bounded product density")[1];
+  assert.ok(scoped, "Favorites-only product sizing styles are missing");
+
+  assert.match(page, /const \[favoritesPage, setFavoritesPage\] = useState\(1\);/);
+  assert.match(page, /const favoritesPageSize = 8;/);
+  assert.match(page, /Math\.max\(1, Math\.ceil\(favoriteProducts\.length \/ favoritesPageSize\)\)/);
+  assert.match(page, /favoriteProducts\.slice\(\(favoritesPage - 1\) \* favoritesPageSize, favoritesPage \* favoritesPageSize\)/);
+  assert.match(page, /if \(favoritesPage > favoritesTotalPages\) setFavoritesPage\(favoritesTotalPages\);/);
+  assert.match(page, /paginatedFavoriteProducts\.map\(\(product\) =>/);
+  assert.match(page, /favoriteProducts\.length > favoritesPageSize \? \(/);
+  assert.match(page, /className="customer-account-history-pagination customer-account-favorites-pagination"/);
+  assert.match(page, /itemLabel="favorites"/);
+  assert.match(page, /onPageChange=\{setFavoritesPage\}/);
+  assert.match(page, /pageSize=\{favoritesPageSize\}/);
+  assert.match(page, /totalItems=\{favoriteProducts\.length\}/);
+
+  assert.match(scoped, /\.customer-app #favorites-panel \.customer-account-favorites-grid\s*\{[^}]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/);
+  assert.match(scoped, /\.customer-app #favorites-panel \.customer-account-favorites-grid \.customer-product-visual\s*\{[^}]*aspect-ratio: 4 \/ 3;/);
+  assert.match(scoped, /@media \(min-width: 641px\) and \(max-width: 1050px\)/);
+  assert.match(scoped, /@media \(max-width: 640px\)\s*\{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
+  assert.match(scoped, /\.customer-account-favorites-grid \.customer-product-card__actions \.customer-quantity > button,[\s\S]*?min-height: 44px;/);
+  assert.match(qa, /async function checkFavoritesCardDensity\(page, viewport\)/);
+  assert.match(qa, /Favorites cards are oversized or overflowing/);
+  assert.match(qa, /await checkFavoritesCardDensity\(page, viewport\)/);
+});
+
+test("Active order contrast QA models the actual Account tree and diagnoses missing dark styles", () => {
+  const qa = read("tools/mobile-qa/run.mjs");
+  const contrast = read("frontend/src/styles/theme-storefront-contrast.css");
+  assert.match(qa, /fixture\.className = "customer-account-page-v2 ys-glass-flow-background"/);
+  assert.match(qa, /<main class="customer-account-content-v2">/);
+  assert.match(qa, /<section id="orders-panel" role="tabpanel"/);
+  assert.match(qa, /selectorMatches: !!card\?\.matches\(darkSelector\)/);
+  assert.match(qa, /documentDark: root\.classList\.contains\("dark"\)/);
+  assert.match(qa, /check\.ratio < 4\.5/);
+  assert.match(contrast, /:root\.dark \.customer-app \.customer-account-page-v2 #orders-panel \.customer-account-order-v2--active \.customer-account-delivery-overview > div\s*\{[^}]*background: #2b3b55;/);
+});
