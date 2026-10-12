@@ -103,11 +103,28 @@ const catalogImageStoragePaths = resolveCatalogImageStoragePaths(
 export const catalogImageStorageRoot = catalogImageStoragePaths.root;
 export const catalogImageStorageFallbackRoots = catalogImageStoragePaths.fallbackRoots;
 
+// Mobile QA runs Vite on 5174 against the same backend and session cookie.
+// Explicitly trust only this development preview port on loopback or this
+// machine's private LAN interfaces; never relax production's origin allowlist.
+const localMobilePreviewOrigins = [
+  "http://localhost:5174",
+  "http://127.0.0.1:5174",
+  ...Object.values(os.networkInterfaces())
+    .flatMap((interfaces) => interfaces ?? [])
+    .filter(
+      (address) =>
+        address.family === "IPv4" &&
+        !address.internal &&
+        /^(?:10\\.|192\\.168\\.|172\\.(?:1[6-9]|2\\d|3[01])\\.)/.test(address.address)
+    )
+    .map((address) => `http://${address.address}:5174`)
+];
 const localCorsOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
   "http://localhost:4173",
   "http://127.0.0.1:4173",
+  ...localMobilePreviewOrigins,
   "null"
 ];
 const configuredCorsOrigins = env.CORS_ORIGINS ?? env.CORS_ORIGIN;
