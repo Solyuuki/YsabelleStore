@@ -279,6 +279,10 @@ export function CustomerMobileNav({
               <Headphones aria-hidden="true" size={20} />
               <span>Customer Support</span>
             </CustomerLink>
+            <CustomerLink href="/privacy" navigate={navigate} onClick={() => setMoreOpen(false)}>
+              <ShieldCheck aria-hidden="true" size={20} />
+              <span>Privacy &amp; Cookies</span>
+            </CustomerLink>
             <button
               onClick={() => {
                 setMoreOpen(false);
