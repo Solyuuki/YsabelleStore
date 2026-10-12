@@ -26,6 +26,7 @@ test("cart policy badge is above the summary card and opens a centered modal", (
   assert.match(policy, /type="button"/);
   assert.doesNotMatch(policy, /<details\b|<summary\b/);
   assert.match(policy, /cannot cancel it directly from My Account/);
+  assert.match(policy, /<p lang="en">/);
   assert.match(policy, /contact the store to request a cancellation/);
 });
 
@@ -63,6 +64,10 @@ test("policy popup is viewport-centered, scroll-safe and supports light/dark the
   assert.match(css, /body \.customer-order-policy__dialog/);
   assert.match(css, /max-height: calc\(100dvh - 32px\)/);
   assert.match(css, /overflow-y: auto/);
+  assert.match(css, /\.customer-order-policy__content p \+ p/);
+  assert.match(css, /text-align: justify;/);
+  assert.match(css, /text-align-last: left;/);
+  assert.match(css, /hyphens: auto;/);
   assert.match(css, /:root\.dark body \.customer-order-policy__dialog/);
   assert.match(css, /:root\.dark \.customer-app \.customer-order-agreement/);
   assert.match(css, /:focus-visible/);
