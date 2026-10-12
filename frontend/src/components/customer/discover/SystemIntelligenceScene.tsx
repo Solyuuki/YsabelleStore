@@ -559,6 +559,21 @@ export function SystemIntelligenceScene({
               <strong>{String(activeStage + 1).padStart(2, "0")} / 07</strong>
             </header>
 
+            <label className="system-preview__mobile-stage-picker">
+              <span>Explore a system stage</span>
+              <select
+                aria-label="Choose a system intelligence stage"
+                onChange={(event) => selectStage(Number(event.target.value))}
+                value={activeStage}
+              >
+                {previewStages.map(({ label, title }, index) => (
+                  <option key={title} value={index}>
+                    {String(index + 1).padStart(2, "0")} · {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
             <ol>
               {previewStages.map(({ icon: Icon, label, title }, index) => (
                 <li className={index === 0 ? "system-preview__first-stage" : undefined} key={title}>
