@@ -808,12 +808,13 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
               </div>
             </div>
 
-            <p className="customer-order-summary__helper">
-              Store staff will prepare your order and coordinate the courier. You can follow its
-              delivery status from My Account.
-            </p>
-
-            <CustomerOrderPolicyInfo />
+            <div className="customer-checkout-policy-group">
+              <p className="customer-order-summary__helper">
+                Store staff will prepare your order and coordinate the courier. You can follow its
+                delivery status from My Account.
+              </p>
+              <CustomerOrderPolicyInfo />
+            </div>
 
             {!pendingPaymongoOrder ? (
               <label className="customer-order-agreement">
