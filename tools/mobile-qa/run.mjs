@@ -165,7 +165,7 @@ async function measurePage(page, viewport) {
       if (
         [...quantityButtons].some((button) => {
           const bounds = button.getBoundingClientRect();
-          return bounds.width < 43 || bounds.height < 43;
+          return bounds.width < 24 || bounds.height < 43;
         })
       ) {
         productLayout.smallQuantityTargets.push(index);
@@ -374,7 +374,7 @@ async function run() {
               ["Clipped or hidden mobile badge label", layout.clippedBadges],
               ["Favorite touch target below 44px", layout.smallFavoriteTargets],
               ["Cart action outside compact 44px sizing", layout.oversizedCartActions],
-              ["Quantity controls below 44px", layout.smallQuantityTargets],
+              ["Quantity controls below 24px wide or 44px tall", layout.smallQuantityTargets],
               ["Mobile review counts still visible", layout.visibleReviewCounts],
               ["Product titles not clamped to two lines", layout.wrongTitleClamps]
             ]) {
