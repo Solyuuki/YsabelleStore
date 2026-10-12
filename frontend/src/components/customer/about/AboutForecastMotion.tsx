@@ -136,6 +136,54 @@ export function AboutForecastMotion() {
               </g>
             </svg>
 
+            {/* Phone chart redraw: same illustrative trend, fewer large labels,
+                and no sideways scrolling through a 920px desktop graphic. */}
+            <svg
+              aria-label="Illustrative demand grows from 18.4 thousand units in 2023 to a forecast of 31.1 thousand in 2028"
+              className="about-forecast-demo__chart-mobile"
+              role="img"
+              viewBox="0 0 320 186"
+            >
+              <title>Annual unit demand: observed 2023–2025, forecast 2026–2028</title>
+              <g className="about-forecast-demo__grid">
+                <line x1="14" y1="30" x2="306" y2="30" />
+                <line x1="14" y1="76" x2="306" y2="76" />
+                <line x1="14" y1="122" x2="306" y2="122" />
+                <line x1="14" y1="158" x2="306" y2="158" />
+              </g>
+              <path
+                className="about-forecast-demo__confidence"
+                d="M134 95 C188 65 253 51 306 27 L306 82 C257 99 188 112 134 113 Z"
+                fill="rgba(124, 92, 255, 0.12)"
+              />
+              <line
+                className="about-forecast-demo__forecast-divider"
+                x1="134"
+                x2="134"
+                y1="22"
+                y2="159"
+              />
+              <path
+                className="about-forecast-demo__actual-line"
+                d="M16 144 L75 119 L134 95"
+              />
+              <path
+                className="about-forecast-demo__forecast-line"
+                d="M134 95 L190 74 L248 50 L304 35"
+              />
+              <circle cx="16" cy="144" r="4.5" fill="#23b4ae" />
+              <circle cx="134" cy="95" r="4.5" fill="#23b4ae" />
+              <circle cx="304" cy="35" r="5" fill="#aa91ff" />
+              <g className="about-forecast-demo__mobile-chart-labels">
+                <text x="16" y="166">2023</text>
+                <text x="139" y="166">2025</text>
+                <text x="271" y="166">2028</text>
+                <text x="16" y="136">18.4k</text>
+                <text x="139" y="88">24.1k</text>
+                <text x="267" y="25">31.1k</text>
+              </g>
+            </svg>
+
             <div className="about-forecast-demo__years">
               {annualForecast.map((item) => (
                 <div
