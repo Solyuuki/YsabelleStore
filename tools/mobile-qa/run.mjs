@@ -14,6 +14,7 @@ const VIEWPORTS = [
   { name: "large-phone", width: 430, height: 932 },
   { name: "phone-landscape", width: 640, height: 320 },
   { name: "tablet", width: 768, height: 1024 },
+  { name: "tablet-landscape", width: 1024, height: 768 },
   { name: "desktop", width: 1280, height: 800 }
 ];
 
@@ -646,6 +647,55 @@ async function run() {
           const pageName = route === "/" ? "home" : "shop";
           const url = new URL(route, BASE_URL);
           await page.goto(url.href, { waitUntil: "domcontentloaded", timeout: 20000 });
+
+          // Physical phones cannot always be OS-locked from a browser tab.
+          // On a small touch phone in landscape, verify the portrait-only
+          // notice instead of treating the cramped storefront as supported.
+          const orientationNotice = page.locator("#phone-orientation-notice");
+          if (viewport.name === "phone-landscape") {
+            const issues = [];
+            await orientationNotice.waitFor({ state: "visible", timeout: 10000 });
+            const notice = await orientationNotice.evaluate((element) => {
+              const rect = element.getBoundingClientRect();
+              const style = getComputedStyle(element);
+              return {
+                fixed: style.position === "fixed",
+                width: rect.width,
+                height: rect.height,
+                title: element.textContent ?? ""
+              };
+            });
+            if (
+              !notice.fixed ||
+              notice.width < viewport.width - 2 ||
+              notice.height < viewport.height - 2 ||
+              !notice.title.includes("Rotate your phone upright")
+            ) {
+              issues.push("Landscape phone did not show full-screen portrait orientation notice");
+            }
+            await page.screenshot({
+              path: join(OUTPUT_DIRECTORY, `${viewport.name}-${pageName}.png`),
+              animations: "disabled",
+              fullPage: false
+            });
+            if (issues.length) failures.push({ viewport: viewport.name, route, issues });
+            process.stdout.write(
+              `${issues.length ? "FAIL" : "PASS"} ${viewport.name} ${pageName}: ${issues.join("; ") || "portrait notice visible"}\n`
+            );
+            continue;
+          }
+          if (
+            (viewport.name === "tablet" || viewport.name === "tablet-landscape") &&
+            (await orientationNotice.isVisible())
+          ) {
+            failures.push({
+              viewport: viewport.name,
+              route,
+              issues: ["Tablet orientation was incorrectly restricted"]
+            });
+            process.stderr.write(`FAIL ${viewport.name} ${pageName}: Tablet orientation was incorrectly restricted\n`);
+            continue;
+          }
 
           // StoreEntrance shares .customer-app but has no navbar. The layout
           // class is the stable marker for actual Home and Shop content.
