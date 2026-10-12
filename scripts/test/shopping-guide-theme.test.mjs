@@ -149,3 +149,40 @@ test("dark guide popup has readable progress and visibly disabled Back button", 
   assert.ok(source.includes(scope + " .driver-popover-next-btn:disabled"));
   assert.ok(source.includes("background: #192438 !important;"));
 });
+
+
+test("mobile shopping guide uses its own counter row and two even, readable actions", () => {
+  const css = read("frontend/src/styles/shopping-guide.css");
+  const hook = read("frontend/src/hooks/useShoppingGuide.ts");
+  const phone = css.split("/* Sprint 12: true phone popover composition.")[1];
+  assert.ok(phone, "Missing compact Shopping Guide stylesheet");
+
+  assert.match(phone, /@media \(max-width: 480px\)/);
+  assert.match(phone, /\.ysabelle-guide\.driver-popover\s*\{[^}]*box-sizing: border-box;[^}]*max-width: calc\(100vw - 1\.5rem\);/);
+  assert.match(phone, /\.ysabelle-guide \.driver-popover-title\s*\{[^}]*max-width: calc\(100% - 3\.4rem\);/);
+  assert.match(phone, /\.ysabelle-guide \.driver-popover-footer\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\);/);
+  assert.match(phone, /\.ysabelle-guide \.driver-popover-progress-text\s*\{[^}]*font-variant-numeric: tabular-nums;[^}]*white-space: nowrap;/);
+  assert.match(phone, /\.ysabelle-guide \.driver-popover-navigation-btns\s*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
+  assert.match(phone, /\.ysabelle-guide \.driver-popover-navigation-btns > button\s*\{[^}]*min-height: 44px;[^}]*white-space: nowrap;/);
+  assert.match(phone, /@media \(max-width: 359px\)/);
+  assert.doesNotMatch(phone, /transform: translate\(|position: fixed;|pointer-events: none;/);
+
+  const steps = hook.split(/\n\s*popover: \{/).length - 1;
+  assert.equal(steps, 7, "Compact guide must preserve all seven existing steps");
+  assert.match(hook, /progressText: "{{current}} of {{total}}"/);
+  assert.match(hook, /doneBtnText: "Start shopping"/);
+  assert.match(hook, /prevBtnText: "Back"/);
+  assert.match(hook, /nextBtnText: "Next"/);
+  assert.match(hook, /popover\.closeButton\.textContent = "Skip"/);
+  assert.match(hook, /waitForScrollSettle\(completeMove\)/);
+});
+
+test("disabled Back remains legible in dark guide without changing its disabled behavior", () => {
+  const css = read("frontend/src/styles/theme-storefront.css");
+  const rule = css.match(
+    /\.driver-popover-next-btn:disabled:is\(:hover, :focus-visible\)\s*\{([^}]+)\}/
+  )?.[1] ?? "";
+  assert.match(rule, /color: #aab9d0 !important;/);
+  assert.match(rule, /background: #192438 !important;/);
+  assert.match(css, /\.ysabelle-guide\.driver-popover \.driver-popover-footer button:disabled\s*\{[^}]*opacity: 1;/);
+});
