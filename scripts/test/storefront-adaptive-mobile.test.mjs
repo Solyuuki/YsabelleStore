@@ -570,22 +570,32 @@ test("browser QA checks actual product badge collision and reachable mobile cart
 
 test("checkout confirmation keeps readable mobile spacing without changing payment consent", () => {
   const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const policyCss = read("frontend/src/styles/customer-order-policy.css");
   const checkout = read("frontend/src/pages/customer/CheckoutPage.tsx");
+  const qa = read("tools/mobile-qa/run.mjs");
   const block = css.split("/* Sprint 12: breathe between checkout explanation")[1];
   assert.ok(block, "Missing checkout confirmation phone-spacing override");
 
   assert.match(block, /@media \(max-width: 700px\)/);
   assert.match(block, /\.customer-checkout-summary\s*\{[^}]*padding: clamp\(1rem, 4vw, 1\.3rem\);/);
-  assert.match(block, /\.customer-checkout-summary > \.customer-order-summary__helper\s*\{[^}]*margin: 1rem 0 0 !important;[^}]*padding-bottom: 1rem;[^}]*line-height: 1\.65 !important;/);
-  assert.match(block, /\.customer-checkout-summary > \.customer-order-policy__trigger\s*\{[^}]*display: flex;[^}]*width: fit-content;[^}]*margin: 0;/);
+  assert.match(block, /\.customer-checkout-summary > \.customer-checkout-policy-group\s*\{[^}]*gap: 1rem;/);
+  assert.match(block, /\.customer-checkout-policy-group > \.customer-order-summary__helper\s*\{[^}]*line-height: 1\.65 !important;/);
+  assert.match(policyCss, /\.customer-checkout-summary > \.customer-checkout-policy-group\s*\{[^}]*display: grid;[^}]*grid-template-columns: minmax\(0, 1fr\);[^}]*gap: 1rem;/);
+  assert.match(policyCss, /\.customer-checkout-policy-group > \.customer-order-summary__helper\s*\{[^}]*margin: 0 !important;[^}]*padding: 0 !important;/);
+  assert.match(policyCss, /\.customer-checkout-policy-group > \.customer-order-policy__trigger\s*\{[^}]*display: inline-flex;/);
+  assert.doesNotMatch(block, /\.customer-checkout-summary > \.customer-order-policy__trigger/);
   assert.match(block, /\.customer-checkout-summary > \.customer-order-agreement\s*\{[^}]*margin-top: 1rem;[^}]*padding: 1rem 0\.9rem;/);
   assert.match(block, /\.customer-checkout-summary > \.customer-order-summary__action\s*\{[^}]*min-height: 48px;[^}]*margin-top: 1\.15rem;/);
 
-  const helper = checkout.indexOf('className="customer-order-summary__helper"');
+  const group = checkout.indexOf('className="customer-checkout-policy-group"');
+  const helper = checkout.indexOf('className="customer-order-summary__helper"', group);
   const policy = checkout.indexOf("<CustomerOrderPolicyInfo />", helper);
-  const consent = checkout.indexOf('className="customer-order-agreement"', policy);
+  const groupClose = checkout.indexOf("</div>", policy);
+  const consent = checkout.indexOf('className="customer-order-agreement"', groupClose);
   const payment = checkout.indexOf("customer-order-summary__action", consent);
-  assert.ok(helper >= 0 && helper < policy && policy < consent && consent < payment);
+  assert.ok(group >= 0 && group < helper && helper < policy && policy < groupClose && groupClose < consent && consent < payment);
+  assert.match(qa, /async function checkCheckoutPolicySpacing\(page, viewport\)/);
+  assert.match(qa, /Checkout delivery text and policy button gap is too small/);
   assert.match(checkout, /checked=\{orderPolicyAccepted\}/);
   assert.match(checkout, /required\s+type="checkbox"/);
   assert.match(checkout, /Continue to PayMongo/);
