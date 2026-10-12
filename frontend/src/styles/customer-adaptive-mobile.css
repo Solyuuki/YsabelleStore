@@ -406,6 +406,11 @@
     box-shadow: 0 -8px 28px rgb(18 30 60 / 9%);
   }
 
+  /* Keep the privacy disclosure readable without covering thumb navigation. */
+  .customer-app .customer-privacy-notice {
+    bottom: calc(65px + env(safe-area-inset-bottom));
+  }
+
   .customer-mobile-dock__link {
     min-height: 52px;
     flex-direction: column;
