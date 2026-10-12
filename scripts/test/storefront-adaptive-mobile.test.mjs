@@ -305,3 +305,59 @@ test("browser QA covers compact search suggestions without covering mobile dock"
   assert.match(qa, /await checkCompactSearch\(page, viewport\)/);
   assert.match(qa, /page\.keyboard\.press\("Escape"\)/);
 });
+
+test("small-phone product cards retain semantics with compact badges and Add", () => {
+  const card = read("frontend/src/components/customer/ProductCard.tsx");
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+
+  assert.match(card, /customer-product-badge__label-full/);
+  assert.match(card, /customer-product-badge__label-mobile/);
+  assert.match(card, /resolvedBadge\.tone === "trending"/);
+  assert.match(card, /resolvedBadge\.tone === "best-seller"/);
+  assert.match(card, /customer-product-card__review-count/);
+  assert.match(card, /customer-product-card__add-full/);
+  assert.match(card, /customer-product-card__add-mobile/);
+  assert.match(card, /Add \$\{selectedQuantity\} \$\{product\.name\} to cart/);
+  assert.match(card, /addItem\(product, selectedQuantity\)/);
+  assert.match(card, /toggleFavorite\(product\.id\)/);
+  assert.match(card, /onChange=\{handleQuantityChange\}/);
+  assert.match(card, /disabled=\{!isReady\}/);
+
+  const portrait = css.split("/* Consistent phone scale: portrait")[1]?.split(
+    "/* A wide portrait phone/foldable"
+  )[0];
+  assert.ok(portrait, "Missing portrait product rules");
+  assert.match(css, /\.customer-product-badge__label-mobile,[\s\S]*?\.customer-product-card__add-mobile\s*\{\s*display: none;/);
+  assert.match(portrait, /\.customer-app \.customer-product-badge\s*\{[^}]*max-width: calc\(100% - 60px\);/);
+  assert.match(portrait, /\.customer-app \.customer-product-badge__label-full\s*\{\s*display: none;/);
+  assert.match(portrait, /\.customer-app \.customer-product-badge__label-mobile\s*\{\s*display: inline;/);
+  assert.match(portrait, /\.customer-app \.customer-product-card__favorite\s*\{[^}]*width: 44px;[^}]*height: 44px;/);
+  assert.match(portrait, /\.customer-app \.customer-product-card__favorite::before\s*\{[^}]*inset: 5px;/);
+  assert.match(portrait, /\.customer-app \.customer-product-card h3\s*\{[^}]*-webkit-line-clamp: 2;/);
+  assert.match(portrait, /\.customer-app \.customer-product-card__rating \.customer-product-card__review-count\s*\{\s*display: none;/);
+  assert.match(portrait, /\.customer-app \.customer-product-card__actions \.customer-quantity\s*\{[^}]*height: 44px;/);
+  assert.match(portrait, /\.customer-app \.customer-product-card__cart-button\s*\{[^}]*width: min\(100%, 92px\);/);
+  assert.match(portrait, /\.customer-app \.customer-product-card__add-full\s*\{\s*display: none;/);
+  assert.match(portrait, /\.customer-app \.customer-product-card__add-mobile\s*\{\s*display: inline;/);
+  assert.match(portrait, /:root\.dark \.customer-app \.customer-product-card__favorite::before/);
+});
+
+test("browser QA checks actual product badge collision and reachable mobile cart controls", () => {
+  const qa = read("tools/mobile-qa/run.mjs");
+
+  assert.match(qa, /const productCards = portraitPhone/);
+  assert.match(qa, /\.customer-product-badge__label-mobile/);
+  assert.match(qa, /badgeBounds\.right > favoriteBounds\.left - 1/);
+  assert.match(qa, /getComputedStyle\(title\)\.webkitLineClamp !== "2"/);
+  assert.match(qa, /favoriteBounds|bounds\.width < 43 \|\| bounds\.height < 43/);
+  assert.match(qa, /if \(add && !add\.disabled\)/);
+  assert.match(qa, /bounds\.width > 97 \|\| bounds\.height > 48 \|\| bounds\.height < 43/);
+  assert.match(qa, /Overlapping product badge and favorite/);
+  assert.match(qa, /Clipped or hidden mobile badge label/);
+  assert.match(qa, /Favorite touch target below 44px/);
+  assert.match(qa, /Cart action outside compact 44px sizing/);
+  assert.match(qa, /Quantity controls below 44px/);
+  assert.match(qa, /Mobile review counts still visible/);
+  assert.match(qa, /Product titles not clamped to two lines/);
+  assert.match(qa, /\.customer-product-card"\)\.first\(\)\.waitFor/);
+});
