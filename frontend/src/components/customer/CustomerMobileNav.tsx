@@ -1,19 +1,34 @@
-import { House, LayoutGrid, ShoppingBasket, UserRound } from "lucide-react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import {
+  BookOpen,
+  Headphones,
+  House,
+  LayoutGrid,
+  Plus,
+  ShoppingBasket,
+  Store,
+  UserRound,
+  X
+} from "lucide-react";
+import { useState } from "react";
 
 import { useCart } from "@/context/CartContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { CustomerLink } from "./CustomerLink";
 
-/** Shared mobile routes: fixed thumb navigation in portrait, compact row in landscape/tablet. */
+/** Single mobile navigation: four destinations and an accessible central More menu. */
 export function CustomerMobileNav({
   navigate,
+  onStartGuide,
   pathname
 }: {
   navigate: (path: string) => void;
+  onStartGuide: () => void;
   pathname: string;
 }) {
   const { itemCount } = useCart();
   const { status } = useCustomerAuth();
+  const [moreOpen, setMoreOpen] = useState(false);
   const accountHref = status === "authenticated" ? "/account" : "/login";
 
   const links = [
@@ -33,25 +48,100 @@ export function CustomerMobileNav({
     }
   ];
 
+  function renderLink({ href, label, active, icon: Icon }: (typeof links)[number]) {
+    return (
+      <CustomerLink
+        aria-current={active ? "page" : undefined}
+        className={`customer-mobile-dock__link${active ? " is-active" : ""}`}
+        href={href}
+        key={label}
+        navigate={navigate}
+        onClick={() => setMoreOpen(false)}
+      >
+        <Icon aria-hidden="true" size={19} strokeWidth={2} />
+        <span>{label}</span>
+        {label === "Cart" && itemCount > 0 ? (
+          <span className="customer-mobile-dock__count">
+            {itemCount > 99 ? "99+" : itemCount}
+          </span>
+        ) : null}
+      </CustomerLink>
+    );
+  }
+
   return (
-    <nav aria-label="Mobile storefront navigation" className="customer-mobile-dock">
-      {links.map(({ href, label, active, icon: Icon }) => (
-        <CustomerLink
-          aria-current={active ? "page" : undefined}
-          className={`customer-mobile-dock__link${active ? " is-active" : ""}`}
-          href={href}
-          key={label}
-          navigate={navigate}
-        >
-          <Icon aria-hidden="true" size={19} strokeWidth={2} />
-          <span>{label}</span>
-          {label === "Cart" && itemCount > 0 ? (
-            <span className="customer-mobile-dock__count">
-              {itemCount > 99 ? "99+" : itemCount}
+    <DialogPrimitive.Root onOpenChange={setMoreOpen} open={moreOpen}>
+      <nav aria-label="Mobile storefront navigation" className="customer-mobile-dock">
+        {links.slice(0, 2).map(renderLink)}
+        <DialogPrimitive.Trigger asChild>
+          <button
+            aria-label={moreOpen ? "Close more options" : "Open more options"}
+            aria-expanded={moreOpen}
+            className="customer-mobile-dock__more"
+            type="button"
+          >
+            <span aria-hidden="true" className="customer-mobile-dock__more-icon">
+              {moreOpen ? <X size={22} /> : <Plus size={22} />}
             </span>
-          ) : null}
-        </CustomerLink>
-      ))}
-    </nav>
+            <span>More</span>
+          </button>
+        </DialogPrimitive.Trigger>
+        {links.slice(2).map(renderLink)}
+      </nav>
+
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="customer-mobile-more__overlay" />
+        <DialogPrimitive.Content className="customer-mobile-more__sheet">
+          <div className="customer-mobile-more__header">
+            <div>
+              <DialogPrimitive.Title className="customer-mobile-more__title">
+                Explore Ysabelle
+              </DialogPrimitive.Title>
+              <DialogPrimitive.Description className="customer-mobile-more__description">
+                More ways to shop and get help.
+              </DialogPrimitive.Description>
+            </div>
+            <DialogPrimitive.Close asChild>
+              <button
+                aria-label="Close more options"
+                className="customer-mobile-more__close"
+                type="button"
+              >
+                <X aria-hidden="true" size={20} />
+              </button>
+            </DialogPrimitive.Close>
+          </div>
+
+          <div className="customer-mobile-more__options">
+            <CustomerLink
+              href="/about"
+              navigate={navigate}
+              onClick={() => setMoreOpen(false)}
+            >
+              <Store aria-hidden="true" size={20} />
+              <span>About Us</span>
+            </CustomerLink>
+            <CustomerLink
+              href="/support"
+              navigate={navigate}
+              onClick={() => setMoreOpen(false)}
+            >
+              <Headphones aria-hidden="true" size={20} />
+              <span>Customer Support</span>
+            </CustomerLink>
+            <button
+              onClick={() => {
+                setMoreOpen(false);
+                onStartGuide();
+              }}
+              type="button"
+            >
+              <BookOpen aria-hidden="true" size={20} />
+              <span>Shopping Guide</span>
+            </button>
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
