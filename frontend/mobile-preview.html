@@ -14,7 +14,8 @@
       .sub { display: block; margin-top: 4px; font-size: .76rem; color: #b8c7dd; }
       .tools { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
       button, select, a.tool { min-height: 42px; border-radius: 10px; border: 1px solid #61749a; color: #eef2ff; background: #243553; padding: 8px 12px; font: inherit; font-size: .83rem; cursor: pointer; }
-      button:hover, a.tool:hover { background: #344d72; }
+      button:hover:not(:disabled), a.tool:hover { background: #344d72; }
+      button:disabled { cursor: not-allowed; opacity: 0.55; }
       button[data-view][aria-pressed="true"] { background: #4c5ed1; border-color: #b8c4ff; color: #fff; box-shadow: inset 0 0 0 1px #ffffff33; }
       button[data-view][aria-pressed="true"]:hover { background: #586be5; }
       button:focus-visible, select:focus-visible, a.tool:focus-visible { outline: 3px solid #aabbff; outline-offset: 3px; }
@@ -38,15 +39,15 @@
         <div class="tools">
           <label for="device">Viewport</label>
           <select id="device" aria-label="Preview screen size">
-            <option value="320,640">Small phone · 320 × 640</option>
-            <option value="360,800">Android · 360 × 800</option>
-            <option value="375,812">Compact iPhone · 375 × 812</option>
-            <option value="390,844" selected>iPhone · 390 × 844</option>
-            <option value="412,915">Large Android · 412 × 915</option>
-            <option value="430,932">Large phone · 430 × 932</option>
-            <option value="768,1024">Tablet · 768 × 1024</option>
+            <option data-orientation="portrait" value="320,640">Small phone · 320 × 640</option>
+            <option data-orientation="portrait" value="360,800">Android · 360 × 800</option>
+            <option data-orientation="portrait" value="375,812">Compact iPhone · 375 × 812</option>
+            <option data-orientation="portrait" value="390,844" selected>iPhone · 390 × 844</option>
+            <option data-orientation="portrait" value="412,915">Large Android · 412 × 915</option>
+            <option data-orientation="portrait" value="430,932">Large phone · 430 × 932</option>
+            <option data-orientation="both" value="768,1024">Tablet · 768 × 1024</option>
           </select>
-          <button id="rotate" type="button" aria-label="Rotate preview">Rotate</button>
+          <button id="rotate" type="button" aria-label="Rotate preview" disabled title="Phone previews are portrait-only">Rotate</button>
           <button type="button" data-view="welcome" data-route="/?preview=welcome" aria-pressed="true">Welcome</button>
           <button type="button" data-view="storefront" data-route="/shop" aria-pressed="false">Storefront</button>
           <button type="button" data-view="pos" data-route="/pos" aria-pressed="false">Retail POS</button>
@@ -63,6 +64,7 @@
       </main>
       <footer class="status">
         <strong id="dimensions" aria-live="polite">390 × 844 CSS pixels</strong>
+        <span id="orientation-hint" aria-live="polite">Phone · portrait only</span>
         <span class="disclaimer">
           Layout preview only. Real Android/iOS testing is required for touch, keyboard,
           camera and Safari behavior. Use the LAN URL directly on your phone.
@@ -76,9 +78,23 @@
       const frame = document.getElementById("frame");
       const preview = document.getElementById("preview");
       const dimensions = document.getElementById("dimensions");
+      const orientationHint = document.getElementById("orientation-hint");
+      const rotateButton = document.getElementById("rotate");
       let landscape = false;
 
+      // Explicit preset capability, not a width guess: tablet can rotate,
+      // phone is always rendered upright (even after switching from tablet).
+      function canRotate() {
+        return selector.selectedOptions[0]?.dataset.orientation === "both";
+      }
+
       function draw() {
+        const tablet = canRotate();
+        if (!tablet) landscape = false;
+        rotateButton.disabled = !tablet;
+        rotateButton.setAttribute("aria-disabled", String(!tablet));
+        rotateButton.title = tablet ? "Rotate tablet preview" : "Phone previews are portrait-only";
+        orientationHint.textContent = tablet ? "Tablet · portrait and landscape" : "Phone · portrait only";
         const sizes = selector.value.split(",").map(Number);
         const width = landscape ? sizes[1] : sizes[0];
         const height = landscape ? sizes[0] : sizes[1];
@@ -101,8 +117,12 @@
         dimensions.textContent = width + " × " + height + " CSS pixels";
       }
 
-      selector.addEventListener("change", draw);
-      document.getElementById("rotate").addEventListener("click", () => {
+      selector.addEventListener("change", () => {
+        landscape = false;
+        draw();
+      });
+      rotateButton.addEventListener("click", () => {
+        if (!canRotate()) return;
         landscape = !landscape;
         draw();
       });
