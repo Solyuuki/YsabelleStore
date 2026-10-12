@@ -417,6 +417,19 @@ async function checkMobileCart(page, viewport) {
     }
   }
 
+  // Check quantity mutations too, when the first product has spare stock.
+  const quantityInput = cards.first().locator(".customer-quantity input");
+  const currentQuantity = Number(await quantityInput.inputValue());
+  const increaseQuantity = cards.first().getByRole("button", {
+    name: /Increase Quantity for/
+  });
+  if (!(await increaseQuantity.isDisabled())) {
+    await increaseQuantity.click();
+    if (Number(await quantityInput.inputValue()) !== currentQuantity + 1) {
+      issues.push("Cart quantity control did not update selected quantity");
+    }
+  }
+
   // Cart operations must still work after the layout changes.
   const firstRemove = cards.first().getByRole("button", { name: /Remove .* from cart/ });
   await firstRemove.click();
