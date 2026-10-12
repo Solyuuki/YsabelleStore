@@ -1261,18 +1261,20 @@
     height: 8px;
   }
 
-  /* Keep the 44px heart tap target above the product's full-image link.
-     Only the button receives the tap; the photo still opens the product page. */
+  /* Match desktop's single circular Favorite surface. The complete 44px
+     button is both the visible circle and the touch target: no nested halo. */
   .customer-app .customer-product-card__favorite {
-    top: 2px;
-    right: 2px;
+    top: 6px;
+    right: 6px;
     z-index: 10;
     width: 44px;
     height: 44px;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-    backdrop-filter: none;
+    border: 1px solid #d7ddea;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 94%);
+    box-shadow: 0 4px 12px rgb(17 24 39 / 12%);
+    color: #625bff;
+    backdrop-filter: blur(10px);
     pointer-events: auto;
     touch-action: manipulation;
     cursor: pointer;
@@ -1283,58 +1285,60 @@
     cursor: progress;
   }
 
-  .customer-app .customer-product-card__favorite > svg {
-    pointer-events: none;
-  }
-
-  .customer-app .customer-product-card__favorite::before {
-    position: absolute;
-    inset: 5px;
-    border: 1px solid #d4d9eb;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 3px 8px rgb(24 31 60 / 12%);
-    content: "";
-    pointer-events: none;
+  /* Old mobile styling painted a second 34px disc within the 44px button. */
+  .customer-app .customer-product-card__favorite::before,
+  .customer-app .customer-product-card__favorite::after {
+    display: none;
+    content: none;
   }
 
   .customer-app .customer-product-card__favorite > svg {
     position: relative;
     z-index: 1;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
+    pointer-events: none;
   }
 
-  .customer-app .customer-product-card__favorite::after {
-    display: none;
+  .customer-app .customer-product-card__favorite:not(:disabled):hover {
+    border-color: #c871d9;
+    background: #fff7fe;
+    box-shadow: 0 5px 14px rgb(117 70 229 / 16%);
+    color: #a62da5;
+    transform: none;
   }
 
-  .customer-app .customer-product-card__favorite[aria-pressed="true"]::before {
-    border-color: #7b52e8;
-    background: #f7eaff;
+  .customer-app .customer-product-card__favorite:focus-visible {
+    outline: 3px solid #625bff;
+    outline-offset: 2px;
+  }
+
+  .customer-app .customer-product-card__favorite[aria-pressed="true"] {
+    border-color: #8a73ed;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed 58%, #b832d0);
+    box-shadow: 0 5px 14px rgb(79 70 229 / 23%);
+    color: #fff;
   }
 
   :root.dark .customer-app .customer-product-card__favorite {
-    border: 0;
-    background: transparent;
-    box-shadow: none;
+    border-color: #6b7c98;
+    background: #26344c;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 24%);
+    color: #e1e9ff;
   }
 
-  :root.dark .customer-app .customer-product-card__favorite::before {
-    border-color: #6d779e;
-    background: #2b3a55;
+  :root.dark .customer-app .customer-product-card__favorite:not(:disabled):hover,
+  :root.dark .customer-app .customer-product-card__favorite:focus-visible {
+    border-color: #a99ce8;
+    background: #354664;
+    color: #fff;
   }
 
-  :root.dark .customer-app .customer-product-card__favorite[aria-pressed="true"],
-  :root.dark .customer-app .customer-product-card__favorite:is(:hover, :focus-visible) {
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-
-  :root.dark .customer-app .customer-product-card__favorite[aria-pressed="true"]::before {
-    border-color: #a378d7;
-    background: #4b2e57;
+  :root.dark .customer-app .customer-product-card__favorite[aria-pressed="true"] {
+    border-color: #a99cf0;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed 58%, #b832d0);
+    box-shadow: 0 5px 14px rgb(38 27 90 / 35%);
+    color: #fff;
   }
 
   .customer-app .customer-product-card h3 {
