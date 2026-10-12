@@ -409,6 +409,31 @@ test("mobile review ratings fit six filters in a two-row grid without a scroll r
   assert.match(qa, /getByRole\("button", \{ name: \/All reviews\/ \}\)/);
 });
 
+test("phone recommendation carousel stays compact while page scrolling works without bars", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const related = read("frontend/src/pages/customer/ProductDetailPage.tsx");
+  const qa = read("tools/mobile-qa/run.mjs");
+  const styles = css.split("/* Compact related-products carousel and unobtrusive page scrollbars.")[1];
+  assert.ok(styles, "Missing scoped phone carousel CSS");
+
+  assert.match(styles, /@media \(max-width: 700px\) and \(orientation: portrait\)/);
+  assert.match(styles, /html\[data-appearance-scope="storefront"\][\s\S]*?scrollbar-width: none;/);
+  assert.match(styles, /html\[data-appearance-scope="storefront"\]::-webkit-scrollbar/);
+  assert.doesNotMatch(styles, /(?:html|body)[^{]*\{[^}]*overflow(?:-y)?: hidden/);
+  assert.match(styles, /\.customer-related-products__viewport\s*\{[^}]*overflow-x: auto;[^}]*scroll-snap-type: x mandatory;/);
+  assert.match(styles, /\.customer-related-products__viewport > \.customer-product-card\s*\{[^}]*flex: 0 0 calc\(\(100% - var\(--store-phone-card-gap, 8px\)\) \/ 2\);/);
+  assert.match(styles, /\.customer-product-visual\s*\{[^}]*aspect-ratio: 4 \/ 3;/);
+  assert.match(styles, /\.customer-product-card__purchase-row\s*\{[^}]*grid-template-columns: minmax\(0, 1\.4fr\) minmax\(0, 1fr\);/);
+  assert.match(styles, /\.customer-product-card__cart-button\s*\{[^}]*min-height: 44px;/);
+  assert.match(styles, /\.customer-product-card__add-mobile\s*\{\s*display: inline;/);
+
+  assert.match(related, /className="customer-related-products__viewport" ref=\{railRef\}/);
+  assert.match(related, /behavior: "smooth"/);
+  assert.match(qa, /Related-product carousel cards are oversized, clipped or not swipeable/);
+  assert.match(qa, /Mobile storefront still shows a persistent document scrollbar/);
+  assert.match(qa, /state\.relatedLayout\.count >= 2/);
+});
+
 test("mobile product detail keeps sizes readable and explains verified-review eligibility", () => {
   const css = read("frontend/src/styles/customer-adaptive-mobile.css");
   const sizes = read("frontend/src/components/customer/ProductSizeSelector.tsx");
