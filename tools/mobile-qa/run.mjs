@@ -1393,16 +1393,20 @@ async function checkSupportMobileLayout(page, viewport) {
         : { selector, missing: true };
     });
     const select = document.querySelector(".customer-support-form select");
+    const arrow = document.querySelector(".customer-support-select-chevron");
     const faq = document.querySelector(".customer-support-faq__list");
     const tips = document.querySelector(".customer-support-sidebar__content");
     const styles = select ? getComputedStyle(select) : null;
+    const selectRect = select?.getBoundingClientRect();
+    const arrowRect = arrow?.getBoundingClientRect();
     return {
       bounds,
       bodyWidth: document.documentElement.scrollWidth,
-      selectPosition: styles?.backgroundPosition ?? "",
       selectAppearance: styles?.appearance ?? "",
       selectPaddingRight: Number.parseFloat(styles?.paddingRight ?? "0"),
       selectChevronImage: styles?.backgroundImage ?? "",
+      selectChevronCount: document.querySelectorAll(".customer-support-select-chevron").length,
+      selectChevronRightGutter: selectRect && arrowRect ? selectRect.right - arrowRect.right : -1,
       faqClosed: faq ? getComputedStyle(faq).display === "none" : false,
       tipsClosed: tips ? getComputedStyle(tips).display === "none" : false
     };
@@ -1419,10 +1423,13 @@ async function checkSupportMobileLayout(page, viewport) {
   }
   if (
     dimensions.selectAppearance !== "none" ||
-    dimensions.selectPaddingRight < 36 ||
-    !dimensions.selectChevronImage.includes("data:image/svg+xml")
+    dimensions.selectPaddingRight < 40 ||
+    dimensions.selectChevronImage !== "none" ||
+    dimensions.selectChevronCount !== 1 ||
+    dimensions.selectChevronRightGutter < 12 ||
+    dimensions.selectChevronRightGutter > 20
   ) {
-    issues.push("Support concern selector does not preserve the chevron gutter");
+    issues.push("Support concern selector must display exactly one non-tiled chevron 16px from the edge");
   }
   if (!dimensions.faqClosed || !dimensions.tipsClosed) {
     issues.push("Supplementary Support tips/FAQ should start collapsed on phone");
