@@ -44,7 +44,7 @@ try {
     const state = await probeStack();
     if (state === "partial") {
       throw new Error(
-        "A development port is used by another service or the backend is unhealthy. Check ports 3001/5173 and run npm run runtime:report before retrying dev:mob."
+        "The shared backend could not be verified. See the backend diagnostics above, then run npm run runtime:report; leave unrelated frontend processes running."
       );
     }
     if (state === "none") {
@@ -67,7 +67,7 @@ try {
       await waitUntil(async () => (await probeStack()) === "complete", ownedStack, "Web/backend stack");
     } else if (state === "backend-only") {
       console.info("Reusing the healthy YsabelleStore backend and database.");
-      console.info("Port 5173 is not running; the independent mobile frontend does not require it.");
+      console.info("Mobile frontend runs independently on port 5174; port 5173 is optional.");
     } else {
       console.info("Reusing the existing YsabelleStore web server, backend, and database.");
     }
@@ -116,33 +116,44 @@ try {
 if (ownedPreview || ownedStack) await shutdown(process.exitCode ?? 0);
 
 async function probeStack() {
+  // Verify the backend by its HTTP identity, not an IPv4/IPv6-dependent TCP probe.
+  // Port 5173 is not a dependency of mobile Vite, even if another web server owns it.
+  try {
+    const response = await fetch(new URL("/api/health", runtime.apiBaseUrl + "/"), {
+      signal: AbortSignal.timeout(4000)
+    });
+    const payload = await response.json();
+    if (response.ok && payload?.data?.service === "ysabellestore-backend") {
+      if (payload?.data?.checks?.database !== "connected") {
+        console.error("YsabelleStore backend is online, but the database is not connected.");
+        return "partial";
+      }
+      return "backend-only";
+    }
+    console.error(
+      "Backend identity check failed:",
+      "HTTP " + response.status,
+      "service=" + String(payload?.data?.service ?? "unknown")
+    );
+  } catch (error) {
+    console.info(
+      "Backend HTTP check:",
+      error instanceof Error ? error.message : "not reachable"
+    );
+  }
+
+  // Only decide whether to start an owned stack after the HTTP probe fails.
   const [backendOccupied, frontendOccupied] = await Promise.all([
     occupied(runtime.backendPort, new URL(runtime.apiBaseUrl).hostname),
     occupied(runtime.frontendPort, new URL(runtime.frontendUrl).hostname)
   ]);
   if (!backendOccupied && !frontendOccupied) return "none";
-  if (!backendOccupied) return "partial";
-  try {
-    const backend = await fetch(runtime.apiBaseUrl + "/api/health", {
-      signal: AbortSignal.timeout(1800)
-    });
-    const payload = await backend.json();
-    if (!backend.ok || payload?.data?.service !== "ysabellestore-backend") {
-      return "partial";
-    }
-    // A healthy backend is sufficient: the mobile Vite frontend is independent of port 5173.
-    if (!frontendOccupied) return "backend-only";
 
-    const frontend = await fetch(runtime.frontendUrl, {
-      signal: AbortSignal.timeout(1800)
-    });
-    const html = await frontend.text();
-    return frontend.ok && html.includes('id="root"') && html.includes("YsabelleStore")
-      ? "complete"
-      : "partial";
-  } catch {
-    return "partial";
-  }
+  console.error(
+    "Backend:", backendOccupied ? "port occupied but not verified" : "not listening",
+    "| Web:", frontendOccupied ? "port 5173 in use" : "port 5173 free"
+  );
+  return "partial";
 }
 
 async function probePreview() {
