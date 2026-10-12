@@ -635,3 +635,48 @@ test("checkout content uses wider readable form sections without changing naviga
   assert.match(qa, /issues\.push\(\.\.\.\(await checkCheckoutContentDensity\(page, viewport\)\)\)/);
   assert.match(qa, /metrics\.inputHeight < 47 \|\| metrics\.inputFontSize < 16/);
 });
+
+test("order success delivery tracking stays readable in light and dark on phone and desktop", () => {
+  const base = read("frontend/src/styles/customer.css");
+  const dark = read("frontend/src/styles/theme-storefront-contrast.css");
+  const page = read("frontend/src/pages/customer/OrderSuccessPage.tsx");
+  const qa = read("tools/mobile-qa/run.mjs");
+
+  assert.match(page, /className="customer-success-pickup"/);
+  assert.match(page, /Delivery tracking starts here/);
+  assert.match(page, /Open My Account to follow Preparing/);
+  assert.match(page, /Courier booking is coordinated by store staff/);
+
+  assert.match(base, /\.customer-success-pickup span\s*\{[^}]*font-size: 0\.78rem;[^}]*line-height: 1\.55;/);
+  assert.match(base, /\.customer-success-pickup small\s*\{[^}]*font-size: 0\.74rem;[^}]*line-height: 1\.55;/);
+
+  const foregrounds = {};
+  for (const tag of ["strong", "span", "small"]) {
+    const selector = new RegExp(
+      ":root\\.dark \\.customer-app \\.customer-success-card \\.customer-success-pickup " +
+        tag + "\\s*\\{\\s*color: (#[a-f0-9]{6});",
+      "i"
+    );
+    const color = dark.match(selector)?.[1];
+    assert.ok(color, "Missing dark delivery tracking " + tag + " text color");
+    foregrounds[tag] = color;
+  }
+
+  function luminance(hex) {
+    const channels = hex.slice(1).match(/../g).map((value) => {
+      const srgb = parseInt(value, 16) / 255;
+      return srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
+    });
+    return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+  }
+  const background = luminance("#1b2638");
+  for (const [tag, color] of Object.entries(foregrounds)) {
+    const light = Math.max(luminance(color), background);
+    const darkSide = Math.min(luminance(color), background);
+    assert.ok((light + 0.05) / (darkSide + 0.05) >= 7,
+      "Insufficient dark delivery tracking " + tag + " contrast: " + color);
+  }
+
+  assert.match(qa, /async function checkDeliveryTrackingContrast\(page, viewport\)/);
+  assert.match(qa, /Delivery tracking text contrast is insufficient/);
+});
