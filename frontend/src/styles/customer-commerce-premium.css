@@ -1125,3 +1125,97 @@
     animation: none;
   }
 }
+
+/* Sprint 12 Favorites: bounded product density, independent of the Shop/Home
+   grids. Card size follows this Account panel instead of stretching to three
+   giant columns. Natural product images remain contained, not cropped. */
+.customer-app #favorites-panel .customer-account-favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(0.6rem, 1.1vw, 0.85rem);
+  width: 100%;
+  min-width: 0;
+  align-items: stretch;
+}
+.customer-app #favorites-panel .customer-account-favorites-grid > .customer-product-card {
+  min-width: 0;
+  max-width: 100%;
+}
+.customer-app #favorites-panel .customer-account-favorites-grid .customer-product-visual {
+  min-height: 0;
+  aspect-ratio: 4 / 3;
+}
+.customer-app #favorites-panel .customer-account-favorites-grid .customer-product-card__visual-link {
+  padding: 0.45rem 0.45rem 0;
+}
+.customer-app #favorites-panel .customer-account-favorites-grid .customer-product-card__body {
+  min-width: 0;
+  padding: clamp(0.6rem, 1vw, 0.85rem);
+}
+.customer-app #favorites-panel .customer-account-favorites-grid .customer-product-card h3 {
+  display: -webkit-box;
+  min-height: 2.6em;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow-wrap: anywhere;
+  font-size: clamp(0.8rem, 1vw, 0.94rem);
+  line-height: 1.3;
+}
+.customer-app #favorites-panel .customer-account-favorites-grid .customer-product-card__price-row {
+  margin-top: 0.5rem;
+}
+.customer-app #favorites-panel .customer-account-favorites-grid .customer-product-card__actions {
+  padding-top: 0.6rem;
+}
+.customer-app #favorites-panel .customer-account-favorites-pagination {
+  margin-top: 0.9rem;
+  min-width: 0;
+}
+@media (min-width: 641px) and (max-width: 1050px) {
+  .customer-app #favorites-panel .customer-account-favorites-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .customer-app #favorites-panel .customer-account-favorites-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .customer-app #favorites-panel .customer-account-favorites-grid .customer-product-card__visual-link {
+    padding: 0.35rem 0.35rem 0;
+  }
+  .customer-app #favorites-panel .customer-account-favorites-grid .customer-product-card__body {
+    padding: clamp(7px, 2.2vw, 10px);
+  }
+  .customer-app #favorites-panel .customer-account-favorites-grid .customer-product-card h3 {
+    font-size: clamp(0.76rem, 3.3vw, 0.87rem);
+  }
+  .customer-app #favorites-panel .customer-account-favorites-grid .customer-product-card__rating .customer-product-card__review-count {
+    display: none;
+  }
+  .customer-app #favorites-panel .customer-account-favorites-grid .customer-product-card__purchase-row {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 4px;
+  }
+  .customer-app #favorites-panel .customer-account-favorites-grid .customer-product-card__actions .customer-quantity {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(18px, 0.85fr) minmax(0, 1fr);
+  }
+  .customer-app #favorites-panel .customer-account-favorites-grid .customer-product-card__actions .customer-quantity > button,
+  .customer-app #favorites-panel .customer-account-favorites-grid .customer-product-card__cart-button {
+    min-height: 44px;
+  }
+  .customer-app #favorites-panel .customer-account-favorites-grid .customer-product-card__cart-button {
+    min-width: 0;
+    padding-inline: 2px;
+  }
+  .customer-app #favorites-panel .customer-account-favorites-grid .customer-product-card__add-full {
+    display: none;
+  }
+  .customer-app #favorites-panel .customer-account-favorites-grid .customer-product-card__add-mobile {
+    display: inline;
+  }
+}
