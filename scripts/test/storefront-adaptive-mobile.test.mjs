@@ -108,11 +108,20 @@ test("mobile shop filters keep desktop native select and expose a bounded phone 
   assert.match(shop, /customer-select__active-dot/);
   assert.match(shop, /className="customer-select__desktop"/);
   assert.match(shop, /aria-expanded=\{availabilityOpen\}/);
+  assert.match(shop, /function toggleAvailability\(\)/);
+  assert.match(shop, /availabilityOpensAbove \? " is-above" : ""/);
+  assert.match(phone, /\.customer-shop-page \.customer-select__mobile-options\.is-above\s*\{[^}]*top: auto;[^}]*bottom: calc\(100% \+ 6px\);/);
   assert.match(shop, /role="group"/);
   assert.match(shop, /aria-pressed=\{availabilityParam === value\}/);
   assert.match(shop, /setAvailabilityOpen\(false\)/);
   assert.match(shop, /document\.addEventListener\("pointerdown", closeWhenOutside\)/);
   assert.match(shop, /document\.addEventListener\("keydown", closeOnEscape\)/);
+  const qa = read("tools/mobile-qa/run.mjs");
+  assert.match(qa, /async function checkShopAvailability\(page, viewport\)/);
+  assert.match(qa, /Availability menu extends beyond the mobile viewport/);
+  assert.match(qa, /Availability menu is clipped by the screen edge or bottom dock/);
+  assert.match(qa, /Search input has a separate rectangular background or shadow/);
+  assert.match(qa, /await region\.waitFor\(\{ state: "hidden" \}\)/);
 });
 
 test("compact catalog product controls and rail remain accessible in portrait", () => {
