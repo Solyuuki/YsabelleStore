@@ -260,6 +260,8 @@ test("phone category cards share consistent height, title space, and action", ()
   assert.match(qa, /\.home-category-grid \.home-category-card/);
   assert.match(qa, /unevenCardHeights/);
   assert.match(qa, /unevenImageHeights/);
+  assert.match(qa, /card\.offsetHeight/);
+  assert.match(qa, /\?\.offsetHeight \?\? 0/);
   assert.match(qa, /missingBrowsingActions/);
   assert.match(qa, /visibleDescriptions/);
   assert.match(qa, /Category cards have inconsistent heights/);
