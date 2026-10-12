@@ -746,6 +746,17 @@
   }
 }
 
+/* A wide portrait phone/foldable can show one more column without changing the visual design. */
+@media (min-width: 600px) and (max-width: 700px) and (orientation: portrait) {
+  .customer-home .home-category-grid,
+  .customer-home .home-product-rail__track,
+  .customer-shop-page .shop-product-grid,
+  .customer-shop-page .customer-product-grid--loading,
+  .customer-shop-page .shop-catalog-refresh__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 359px) and (orientation: portrait) {
   .customer-home .home-category-grid,
   .customer-home .home-product-rail__track,
