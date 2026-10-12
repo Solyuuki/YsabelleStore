@@ -14,6 +14,8 @@
     "dev": "node --env-file=.env scripts/dev.mjs",
     "predev:web": "node scripts/install-about-origin-video.mjs --verify && node scripts/install-about-delivery-video.mjs --if-present && node --env-file=.env scripts/customer-order-fixture-quarantine.mjs --apply",
     "dev:web": "node --env-file=.env scripts/dev.mjs --web-only",
+    "dev:mob": "node --env-file=.env scripts/dev-mobile.mjs",
+    "test:mobile": "node --test scripts/test/mobile-preview.test.mjs",
     "dev:lifecycle-test": "node --env-file=.env scripts/dev-lifecycle-smoke.mjs",
     "build": "npm run storefront:about-origin:verify && npm run build --workspaces && npm run prisma:validate",
     "lint": "eslint backend/src backend/test frontend/src frontend/vite.config.ts frontend/tailwind.config.ts frontend/postcss.config.js electron/src electron/electron-builder.config.cjs scripts tools/repo-context database/seed eslint.config.mjs",

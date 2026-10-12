@@ -23,6 +23,15 @@ export default defineConfig(({ mode }) => {
     process.env.FRONTEND_URL ?? loadedEnvironment.FRONTEND_URL ?? "http://localhost:5173"
   );
 
+  // Separate Vite preview; desktop renderer and backend remain on their original ports.
+  const mobilePreview = mode === "development" && process.env.YSABELLE_MOBILE_PREVIEW === "1";
+  const apiUrl = new URL(
+    process.env.VITE_API_BASE_URL ?? loadedEnvironment.VITE_API_BASE_URL ?? "http://localhost:3001"
+  );
+  if (mobilePreview && !["localhost", "127.0.0.1", "[::1]"].includes(apiUrl.hostname)) {
+    throw new Error("Mobile preview may proxy only to a local development API.");
+  }
+
   if (!frontendUrl.port) {
     throw new Error("FRONTEND_URL must include the development server port.");
   }
@@ -44,9 +53,19 @@ export default defineConfig(({ mode }) => {
       }
     },
     server: {
-      host: frontendUrl.hostname,
-      port: Number(frontendUrl.port),
-      strictPort: true
+      host: mobilePreview ? "0.0.0.0" : frontendUrl.hostname,
+      port: mobilePreview ? 5174 : Number(frontendUrl.port),
+      strictPort: true,
+      ...(mobilePreview
+        ? {
+            proxy: {
+              "/api": {
+                target: apiUrl.origin,
+                changeOrigin: true
+              }
+            }
+          }
+        : {})
     },
     preview: {
       host: frontendUrl.hostname,
