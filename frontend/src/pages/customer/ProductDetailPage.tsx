@@ -376,6 +376,8 @@ function ReviewsSection({
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
   const [reviewSaving, setReviewSaving] = useState(false);
+  const [reviewContextLoading, setReviewContextLoading] = useState(false);
+  const [reviewContextRetry, setReviewContextRetry] = useState(0);
   const [reviewMessage, setReviewMessage] = useState<string | null>(null);
   const [reviewError, setReviewError] = useState<string | null>(null);
 
@@ -389,11 +391,15 @@ function ReviewsSection({
       setReviewComment("");
     }
 
+    setReviewError(null);
     if (authStatus !== "authenticated") {
       setReviewContext(null);
+      setReviewContextLoading(false);
       return;
     }
 
+    setReviewContext(null);
+    setReviewContextLoading(true);
     const controller = new AbortController();
     void fetchStorefrontReviewContext(productId, controller.signal)
       .then((context) => {
@@ -409,10 +415,13 @@ function ReviewsSection({
             reason instanceof Error ? reason.message : "Review eligibility could not be checked."
           );
         }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setReviewContextLoading(false);
       });
 
     return () => controller.abort();
-  }, [authStatus, productId]);
+  }, [authStatus, productId, reviewContextRetry]);
 
   async function handleReviewSubmit() {
     setReviewMessage(null);
@@ -434,10 +443,7 @@ function ReviewsSection({
       return;
     }
     if (!reviewContext?.eligible) {
-      setReviewError(
-        reviewContext?.reason ??
-          "A completed signed-in purchase is required before publishing this review."
-      );
+      setReviewError("Only verified purchasers can publish. Check your completed orders below.");
       return;
     }
 
@@ -536,9 +542,13 @@ function ReviewsSection({
                 <h3>{reviewContext?.review ? "Update your review" : "Write a review"}</h3>
                 <p>
                   {authStatus === "authenticated"
-                    ? reviewContext?.eligible
-                      ? "Verified purchase detected. Your rating and comment can be published."
-                      : (reviewContext?.reason ?? "Checking your purchase eligibility.")
+                    ? reviewContextLoading
+                      ? "Checking your completed orders..."
+                      : reviewContext?.eligible
+                        ? "Verified purchase found. You can publish your review."
+                        : reviewError
+                          ? "Could not verify your purchase history. Try again below."
+                          : "You are signed in, but no completed order for this product was found on your account."
                     : "Write now if you want. Your draft will be kept when you sign in."}
                 </p>
               </div>
@@ -559,7 +569,10 @@ function ReviewsSection({
                   aria-checked={reviewRating === star}
                   aria-label={`${star} star rating`}
                   key={star}
-                  onClick={() => setReviewRating(star)}
+                  onClick={() => {
+                    setReviewRating(star);
+                    writeReviewDraft(productId, { rating: star, comment: reviewComment });
+                  }}
                   role="radio"
                   type="button"
                 >
@@ -570,7 +583,12 @@ function ReviewsSection({
             <textarea
               aria-label="Your review"
               maxLength={1000}
-              onChange={(event) => setReviewComment(event.target.value)}
+              onChange={(event) => {
+                setReviewComment(event.target.value);
+                if (reviewRating > 0) {
+                  writeReviewDraft(productId, { rating: reviewRating, comment: event.target.value });
+                }
+              }}
               placeholder="What did you like about this product?"
               rows={4}
               value={reviewComment}
@@ -579,19 +597,49 @@ function ReviewsSection({
               <span>{reviewComment.trim().length}/1000</span>
               <button
                 className="customer-button customer-button--compact"
-                disabled={reviewSaving || reviewRating === 0 || reviewComment.trim().length < 3}
+                disabled={
+                  reviewSaving ||
+                  reviewRating === 0 ||
+                  reviewComment.trim().length < 3 ||
+                  (authStatus === "authenticated" && !reviewContext?.eligible)
+                }
                 onClick={() => void handleReviewSubmit()}
                 type="button"
               >
                 {reviewSaving
                   ? "Saving..."
                   : authStatus === "authenticated"
-                    ? reviewContext?.review
-                      ? "Update review"
-                      : "Publish review"
+                    ? reviewContext?.eligible
+                      ? reviewContext.review
+                        ? "Update review"
+                        : "Publish review"
+                      : "Purchase required"
                     : "Sign in to publish"}
               </button>
             </div>
+            {authStatus === "authenticated" && !reviewContextLoading && !reviewContext?.eligible ? (
+              <div className="customer-review-composer__eligibility" role="status">
+                <strong>{reviewError ? "Purchase verification unavailable" : "Signed in · Purchase not verified"}</strong>
+                <p>
+                  {reviewError
+                    ? "We couldn't verify your orders right now. Retry the eligibility check."
+                    : "Reviews require a completed order containing this exact product, linked to your customer account. Signing in alone isn't enough."}
+                </p>
+                {reviewError ? (
+                  <button
+                    className="customer-review-composer__orders-link"
+                    onClick={() => setReviewContextRetry((value) => value + 1)}
+                    type="button"
+                  >
+                    Retry verification
+                  </button>
+                ) : (
+                  <CustomerLink className="customer-review-composer__orders-link" href="/account" navigate={navigate}>
+                    Check order history
+                  </CustomerLink>
+                )}
+              </div>
+            ) : null}
             {reviewError ? (
               <p className="customer-review-composer__error" role="alert">
                 {reviewError}
