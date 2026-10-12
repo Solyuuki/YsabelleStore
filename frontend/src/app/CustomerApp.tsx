@@ -212,7 +212,8 @@ function CustomerAppRoutes({
   else if (pathname === "/register") page = <CustomerRegisterPage navigate={navigate} />;
   else if (pathname === "/account-recovery")
     page = <CustomerAccountRecoveryPage location={location} navigate={navigate} />;
-  else if (pathname === "/account") page = <CustomerAccountPage navigate={navigate} />;
+  else if (pathname === "/account")
+    page = <CustomerAccountPage location={location} navigate={navigate} />;
   else if (pathname === "/support") page = <CustomerSupportPage navigate={navigate} />;
   else if (pathname === "/privacy") page = <PrivacyPolicyPage navigate={navigate} />;
   else page = <CustomerNotFoundPage navigate={navigate} />;
