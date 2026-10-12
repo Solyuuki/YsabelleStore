@@ -1891,10 +1891,52 @@
     min-width: 0;
     max-width: 100%;
     min-height: 0;
-    grid-template-rows: 70px minmax(0, auto);
-    gap: 0.25rem;
+    /* A 70px thumbnail clipped tall bottles at the bottom. Reserve enough
+       image height before the label, without growing with its contents. */
+    grid-template-rows: 100px minmax(0, auto);
+    gap: 0.35rem;
     padding: 0.45rem;
     scroll-snap-align: start;
+  }
+
+  .customer-product-page .customer-product-size-option__visual {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Use a single contained thumbnail contract for every catalog shape.
+     Override the global low-resolution and tall/wide image metrics only in
+     the pack-size selector so the full package remains visible. */
+  .customer-product-page .customer-product-size-option__image {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    --catalog-image-target-block: 90%;
+    --catalog-image-target-inline: 90%;
+    --catalog-image-cap-block: 90%;
+    --catalog-image-cap-inline: 90%;
+  }
+
+  .customer-product-page .customer-product-size-option__image > img {
+    display: block;
+    width: 90%;
+    height: 90%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .customer-product-page .customer-product-size-option__image[data-image-resolution="low"] > img {
+    width: auto;
+    height: auto;
+    max-width: min(90%, var(--catalog-image-natural-width));
+    max-height: min(90%, var(--catalog-image-natural-height));
+    object-fit: contain;
   }
 
   .customer-product-page .customer-product-size-option__copy {
