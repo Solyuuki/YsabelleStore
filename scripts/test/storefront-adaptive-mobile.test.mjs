@@ -600,3 +600,38 @@ test("checkout confirmation keeps readable mobile spacing without changing payme
   assert.match(checkout, /required\s+type="checkbox"/);
   assert.match(checkout, /Continue to PayMongo/);
 });
+
+test("checkout content uses wider readable form sections without changing navigation", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const checkout = read("frontend/src/pages/customer/CheckoutPage.tsx");
+  const qa = read("tools/mobile-qa/run.mjs");
+  const phone = css.split("/* Sprint 12 checkout content breathing room — portrait phones only.")[1];
+  assert.ok(phone, "Missing phone-only checkout refinements");
+
+  assert.match(phone, /@media \(max-width: 700px\) and \(orientation: portrait\)/);
+  assert.match(phone, /\.customer-checkout-page > \.customer-container\s*\{[^}]*width: calc\(100% - 2 \* clamp\(12px, 3\.5vw, 16px\)\);/);
+  assert.match(phone, /\.customer-checkout-page \.customer-checkout-form > section\s*\{[^}]*padding: clamp\(14px, 4vw, 16px\);/);
+  assert.match(phone, /\.customer-checkout-page \.customer-form-grid,[\s\S]*?grid-template-columns: minmax\(0, 1fr\);/);
+  assert.match(phone, /\.customer-checkout-page \.customer-form-grid :is\(input:not\(\[type="checkbox"\]\), select\),[\s\S]*?min-height: 48px;[^}]*font-size: 16px;/);
+  assert.match(phone, /\.customer-checkout-page \.customer-payment-option\s*\{[^}]*min-height: 72px;[^}]*grid-template-columns: 20px minmax\(0, 1fr\) auto;/);
+  assert.match(phone, /\.customer-checkout-page :is\(\.customer-profile-default-option, \.customer-address-save-option\)\s*\{[^}]*min-height: 44px;[^}]*border: 0;[^}]*background: transparent;/);
+  assert.match(phone, /:root\.dark \.customer-app \.customer-checkout-page :is\(\.customer-profile-default-option, \.customer-address-save-option\)\s*\{[^}]*background: transparent;/);
+  assert.match(phone, /\.customer-checkout-page \.customer-checkout-summary\s*\{[^}]*padding: clamp\(14px, 4vw, 16px\);/);
+  assert.match(phone, /\.customer-checkout-page \.customer-checkout-policy-group > \.customer-order-summary__helper\s*\{[^}]*font-size: 0\.78rem !important;/);
+
+  assert.doesNotMatch(phone, /\.customer-header__bar|\.customer-mobile-dock|\.customer-header__actions/);
+  assert.match(checkout, /<form className="customer-checkout-layout" noValidate onSubmit=\{submit\}>/);
+  assert.match(checkout, /className="customer-payment-options"/);
+  assert.match(checkout, /checked=\{paymentMethod === "PAYMONGO"\}/);
+  assert.match(checkout, /checked=\{paymentMethod === "CASH_ON_DELIVERY"\}/);
+  assert.match(checkout, /checked=\{orderPolicyAccepted\}/);
+  assert.match(checkout, /<CustomerOrderPolicyInfo \/>/);
+  assert.match(checkout, /formatCurrency\(subtotal\)/);
+  assert.match(checkout, /Continue to PayMongo/);
+  assert.match(checkout, /Place COD order/);
+
+  assert.match(qa, /async function checkCheckoutContentDensity\(page, viewport\)/);
+  assert.match(qa, /Checkout content remains cramped or overflows/);
+  assert.match(qa, /issues\.push\(\.\.\.\(await checkCheckoutContentDensity\(page, viewport\)\)\)/);
+  assert.match(qa, /metrics\.inputHeight < 47 \|\| metrics\.inputFontSize < 16/);
+});
