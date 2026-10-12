@@ -44,12 +44,38 @@ test("mobile categories form an adaptive grid instead of a sideways carousel", (
   assert.match(css, /scroll-snap-type: none/);
   assert.match(css, /aspect-ratio: 4 \/ 3/);
   assert.match(css, /\.customer-shop-page \.customer-filter-panel\.shop-category-navigation\s*\{\s*display: grid;/);
-  assert.match(css, /\.shop-category-navigation:not\(\.is-expanded\) > a:not\(\.is-active\):not\(:first-of-type\)/);
+  assert.match(css, /\.customer-shop-page \.shop-category-navigation:not\(\.is-expanded\) > a\s*\{\s*display: none;/);
   assert.match(shop, /\[categoriesExpanded, setCategoriesExpanded\] = useState\(false\)/);
   assert.match(shop, /aria-expanded=\{categoriesExpanded\}/);
   assert.match(shop, /className="shop-category-toggle"/);
   assert.match(shop, /setCategoriesExpanded\(\(current\) => !current\)/);
   assert.match(css, /overflow-wrap: anywhere/);
+});
+
+test("expanded categories adapt to narrow width without stretching the shop", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const shop = read("frontend/src/pages/customer/ShopPage.tsx");
+  const qa = read("tools/mobile-qa/run.mjs");
+  const phone = css.split("@media (max-width: 700px) {")[1]?.split("/* On portrait phones")[0];
+  assert.ok(phone, "Expected phone category layout overrides");
+
+  assert.match(phone, /grid-template-columns: repeat\(auto-fit, minmax\(min\(100%, 14rem\), 1fr\)\)/);
+  assert.match(phone, /grid-auto-rows: minmax\(44px, auto\)/);
+  assert.match(phone, /\.shop-category-navigation\.is-expanded\s*\{[^}]*max-height: min\(48dvh, 20rem\);[^}]*overflow-y: auto;/);
+  assert.match(phone, /\.shop-category-navigation > \.shop-category-toggle\s*\{[^}]*position: sticky;[^}]*top: 0;/);
+  assert.match(phone, /\.shop-category-navigation > a\s*\{[^}]*min-height: 44px;[^}]*align-self: start;/);
+  assert.match(phone, /\.shop-category-navigation > a > small\s*\{[^}]*flex: none;/);
+  assert.equal(
+    shop.split("onClick={() => setCategoriesExpanded(false)}").length - 1,
+    2,
+    "Both All Categories and dynamic category links must close the mobile selector"
+  );
+
+  assert.match(qa, /async function checkShopCategories\(page, viewport\)/);
+  assert.match(qa, /viewport\.width <= 430 && geometry\.columns !== 1/);
+  assert.match(qa, /Expanded category panel takes too much vertical space/);
+  assert.match(qa, /Expanded category names or counts overflow horizontally/);
+  assert.match(qa, /Category picker did not collapse after choosing an option/);
 });
 
 test("mobile shop filters use one compact search row and retain dynamic native controls", () => {
