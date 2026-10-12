@@ -265,6 +265,47 @@
   color: var(--store-contrast-ink);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 3%);
 }
+
+/* Account order history and Favorites share AppPagination. Its base controls
+   use white Tailwind surfaces; keep those only in light mode. */
+:root.dark .customer-app .customer-account-history-pagination :is(p, label) {
+  color: #d5e0f2;
+}
+:root.dark .customer-app .customer-account-history-pagination p > span {
+  color: #c9bdff;
+}
+:root.dark .customer-app .customer-account-history-pagination nav button:not([aria-current="page"]) {
+  border-color: #637596;
+  background: #283a55;
+  color: #eef3ff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 5%);
+}
+:root.dark .customer-app .customer-account-history-pagination nav button:not(:disabled):not([aria-current="page"]):hover {
+  border-color: #a299e5;
+  background: #394a6b;
+  color: #fff;
+}
+:root.dark .customer-app .customer-account-history-pagination nav button[aria-current="page"] {
+  border-color: #9c8cef;
+  background: linear-gradient(135deg, #315fc1, #5d45b8 60%, #833881);
+  color: #fff;
+  box-shadow: 0 5px 14px rgb(15 14 40 / 28%);
+  opacity: 1;
+}
+:root.dark .customer-app .customer-account-history-pagination nav button:disabled:not([aria-current="page"]) {
+  border-color: #53637d;
+  background: #223047;
+  color: #aebfd8;
+  opacity: 0.82;
+}
+:root.dark .customer-app .customer-account-history-pagination nav button:focus-visible {
+  outline: 2px solid #c3b6ff;
+  outline-offset: 2px;
+}
+:root.dark .customer-app .customer-account-history-pagination nav span[aria-hidden="true"] {
+  color: #b8c9e3;
+}
+
 :root.dark .customer-app #profile-panel .customer-account-inline-action-form,
 :root.dark
   .customer-app
