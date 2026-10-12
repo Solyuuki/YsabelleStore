@@ -130,10 +130,32 @@ function isCustomerSessionError(reason: unknown) {
   );
 }
 
-export function CustomerAccountPage({ navigate }: { navigate: (path: string) => void }) {
+export function CustomerAccountPage({
+  location,
+  navigate
+}: {
+  location: string;
+  navigate: (path: string) => void;
+}) {
   const { customer, error, logout, refreshSession } = useCustomerAuth();
   const { favoriteProducts, loading: favoritesLoading } = useCustomerFavorites();
   const [activeTab, setActiveTab] = useState<AccountTab>("orders");
+
+  // The compact Account popover links to the existing tab panels without
+  // duplicating account content or mounting a second set of forms.
+  useEffect(() => {
+    const requestedView = new URL(location, window.location.origin).searchParams.get("view");
+    if (
+      requestedView === "orders" ||
+      requestedView === "favorites" ||
+      requestedView === "profile" ||
+      requestedView === "security"
+    ) {
+      setActiveTab(requestedView);
+    } else {
+      setActiveTab("orders");
+    }
+  }, [location]);
   const [orders, setOrders] = useState<StorefrontOrder[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [ordersError, setOrdersError] = useState<string | null>(null);
