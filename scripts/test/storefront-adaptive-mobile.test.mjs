@@ -680,3 +680,64 @@ test("order success delivery tracking stays readable in light and dark on phone 
   assert.match(qa, /async function checkDeliveryTrackingContrast\(page, viewport\)/);
   assert.match(qa, /Delivery tracking text contrast is insufficient/);
 });
+
+test("dark active delivery tracking has no white tiles or invisible text", () => {
+  const css = read("frontend/src/styles/theme-storefront-contrast.css");
+  const premium = read("frontend/src/styles/customer-account-premium.css");
+  const account = read("frontend/src/pages/customer/CustomerAccountPage.tsx");
+  const qa = read("tools/mobile-qa/run.mjs");
+  const prefix = ":root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active";
+  const rule = (selector) => {
+    const start = css.indexOf(prefix + " " + selector + " {");
+    assert.ok(start >= 0, "Missing active order dark selector " + selector);
+    const end = css.indexOf("}", start);
+    assert.ok(end > start, "Invalid active order rule " + selector);
+    return css.slice(start, end + 1);
+  };
+
+  // Base styles are intentionally light; dark must override their nested
+  // surfaces rather than only setting the outer active-order background.
+  assert.match(premium, /\.customer-account-delivery-overview > div\s*\{[^}]*background: #fafbfe;/);
+  assert.match(rule(".customer-account-delivery-overview > div"), /background: #2b3b55;/);
+  assert.match(rule(".customer-account-order-topline > div > strong"), /color: #f2f5ff;/);
+  assert.match(rule(".customer-account-delivery-address, .customer-account-delivery-courier").replace(/\s+/g, " "), /./);
+  assert.match(rule(".customer-delivery-stepper__marker"), /background: #30415c;/);
+  assert.match(rule(".customer-delivery-stepper__copy strong"), /color: #e1eafa;/);
+  assert.match(rule(".customer-delivery-stepper__copy small"), /color: #c2d0e5;/);
+  assert.match(rule(".customer-delivery-stepper li.is-current .customer-delivery-stepper__copy strong"), /color: #cbbcff;/);
+  assert.match(rule(".customer-account-confirm-delivery"), /background: #303955;/);
+  assert.match(rule(".customer-account-payment-gate"), /background: #3a342d;/);
+
+  const luminance = (hex) => {
+    const channels = hex.slice(1).match(/../g).map((part) => {
+      const value = parseInt(part, 16) / 255;
+      return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+    });
+    return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+  };
+  const contrast = (foreground, background) => {
+    const a = luminance(foreground);
+    const b = luminance(background);
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  };
+  for (const [foreground, background] of [
+    ["#f2f5ff", "#223149"], // order number
+    ["#c1cee2", "#223149"], // delivery ticket
+    ["#c6d3e7", "#2b3b55"], // tile label
+    ["#f3f6ff", "#2b3b55"], // tile value
+    ["#cfdaec", "#223149"], // address
+    ["#e1eafa", "#223149"], // pending timeline label
+    ["#c2d0e5", "#223149"], // pending timeline note
+    ["#f2f6ff", "#30415c"], // numbered pending step
+    ["#eeeaff", "#38365c"] // order status
+  ]) {
+    assert.ok(contrast(foreground, background) >= 7,
+      "Active dark delivery text should have >=7:1 contrast: " + foreground);
+  }
+  assert.match(account, /className="customer-account-order-v2 customer-account-order-v2--active"/);
+  assert.match(account, /className="customer-account-delivery-overview"/);
+  assert.match(account, /<DeliveryProgress order=\{order\} \/>/);
+  assert.match(qa, /async function checkActiveDeliveryDarkContrast\(page, viewport\)/);
+  assert.match(qa, /Delivery tracking dark summary tiles reverted to light-mode surfaces/);
+  assert.match(qa, /Delivery tracking order text contrast is insufficient/);
+});
