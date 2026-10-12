@@ -404,6 +404,12 @@ test("mobile product detail keeps sizes readable and explains verified-review el
   assert.match(service, /status: CustomerOrderStatus\.COMPLETED,/);
   assert.match(service, /items: \{ some: \{ productId \} \}/);
   assert.match(service, /code: "CUSTOMER_REVIEW_PURCHASE_REQUIRED"/);
+
+  const qa = read("tools/mobile-qa/run.mjs");
+  assert.match(qa, /async function checkMobileProductDetail\(page, viewport\)/);
+  assert.match(qa, /Mobile detail image has incorrect height/);
+  assert.match(qa, /Pack-size controls have obstructive tooltips or clipped labels/);
+  assert.match(qa, /Product detail review form is missing/);
 });
 
 test("small-phone product cards retain semantics with compact badges and Add", () => {
