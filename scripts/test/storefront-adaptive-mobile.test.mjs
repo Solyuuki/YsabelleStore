@@ -125,8 +125,9 @@ test("the five-slot mobile dock has a centered accessible expandable More menu",
   assert.match(css, /max-height: min\(75dvh, 460px\)/);
   assert.match(css, /safe-area-inset-bottom/);
 
-  // The desktop menu is preserved for larger screens, not deleted globally.
-  assert.match(header, /className="customer-menu-button"/);
+  // The legacy duplicate mobile panel is gone; the desktop links remain.
+  assert.doesNotMatch(header, /customer-menu-button|customer-mobile-panel|menuOpen/);
+  assert.match(header, /aria-label="Customer navigation"/);
   assert.match(css, /@media \(max-width: 1180px\)/);
 });
 
