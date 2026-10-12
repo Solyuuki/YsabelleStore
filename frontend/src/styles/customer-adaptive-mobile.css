@@ -133,6 +133,12 @@
     text-align: left;
   }
 
+  :root.dark .customer-app .shop-category-navigation > .shop-category-toggle {
+    border-color: #627596;
+    background: #293b57;
+    color: #e3dcff;
+  }
+
   .customer-shop-page .shop-category-toggle__chevron {
     transition: transform 160ms ease;
   }
