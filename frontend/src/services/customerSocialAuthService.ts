@@ -53,10 +53,37 @@ export async function completeCustomerSocialLink(): Promise<void> {
   }
 }
 
+/**
+ * Google's authorization page must not be loaded inside our iframe preview.
+ * Navigate the trusted, same-origin preview host instead so OAuth can complete
+ * in a full browser tab. Never redirect an unknown embedding page.
+ */
+export function customerSocialAuthNavigationWindow(currentWindow: Window): Window {
+  if (currentWindow.self === currentWindow.top) return currentWindow;
+
+  try {
+    const parent = currentWindow.parent;
+    if (
+      parent === currentWindow.top &&
+      parent.location.origin === currentWindow.location.origin &&
+      parent.location.pathname === "/mobile-preview.html"
+    ) {
+      return parent;
+    }
+  } catch {
+    // Cross-origin embedding must not take control of its parent window.
+  }
+
+  throw new Error(
+    "Google sign-in cannot run inside an embedded page. Open Ysabelle Store in a full browser tab, then try again."
+  );
+}
+
 export function startCustomerSocialAuth(
   provider: CustomerSocialAuthProvider,
   returnPath = "/account",
   authPage: CustomerSocialAuthPage = "login"
 ): void {
-  globalThis.location.assign(buildCustomerSocialAuthStartUrl(provider, returnPath, authPage));
+  const url = buildCustomerSocialAuthStartUrl(provider, returnPath, authPage);
+  customerSocialAuthNavigationWindow(window).location.assign(url.toString());
 }
