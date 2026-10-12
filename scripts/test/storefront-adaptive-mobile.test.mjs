@@ -10,7 +10,7 @@ test("mobile navigation uses existing storefront routes and cart/auth state", ()
   const app = read("frontend/src/app/CustomerApp.tsx");
   const css = read("frontend/src/styles/customer-adaptive-mobile.css");
 
-  assert.match(layout, /<CustomerMobileNav navigate=\{navigate\} onStartGuide=\{startGuide\} pathname=\{pathname\} \/>/);
+  assert.match(layout, /<CustomerMobileNav[\s\S]*?location=\{location\}[\s\S]*?navigate=\{navigate\}[\s\S]*?pathname=\{pathname\}/);
   assert.match(nav, /aria-label="Mobile storefront navigation"/);
   assert.match(nav, /aria-current=\{active \? "page" : undefined\}/);
   assert.match(nav, /useCustomerAuth\(\)/);
@@ -742,36 +742,41 @@ test("dark active delivery tracking has no white tiles or invisible text", () =>
   assert.match(qa, /Delivery tracking order text contrast is insufficient/);
 });
 
-test("account view tabs fit as two-by-two grid on narrow phones", () => {
-  const css = read("frontend/src/styles/customer-account-premium.css");
+test("mobile Account button opens five actions and removes the redundant rail", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const nav = read("frontend/src/components/customer/CustomerMobileNav.tsx");
   const account = read("frontend/src/pages/customer/CustomerAccountPage.tsx");
+  const app = read("frontend/src/app/CustomerApp.tsx");
   const qa = read("tools/mobile-qa/run.mjs");
 
-  const phone = css.split("@media (max-width: 640px) {")[1];
-  assert.ok(phone, "Missing phone account navigation breakpoint");
-  assert.match(phone, /\.customer-account-nav\s*\{[^}]*order: 3;[^}]*display: grid;[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);[^}]*overflow: visible;/);
-  assert.match(phone, /\.customer-account-nav button\s*\{[^}]*width: 100%;[^}]*min-height: 44px;[^}]*white-space: normal;/);
-  assert.match(phone, /\.customer-account-nav button svg\s*\{[^}]*width: 16px;[^}]*flex: none;/);
-  assert.doesNotMatch(phone.split(".customer-account-nav button svg")[0], /overflow-x:\s*auto/);
-  assert.match(css, /\.customer-account-nav button\[aria-selected="true"\]\s*\{[^}]*background: linear-gradient\(135deg, #168cff, #645cff 54%, #c94fa6\);/);
+  assert.match(css, /@media \(max-width: 1180px\)\s*\{[\s\S]*?\.customer-app \.customer-account-page-v2 \.customer-account-rail\s*\{\s*display: none;/);
+  assert.match(css, /\.customer-mobile-account__popover\s*\{[^}]*position: fixed;[^}]*z-index: 215;[^}]*bottom: calc\(var\(--store-mobile-measured-dock-height, 76px\) \+ 12px\);/);
+  assert.match(css, /:root\.dark \.customer-mobile-account__popover/);
+  assert.match(css, /\.customer-mobile-account__view\[aria-current="page"\]/);
 
-  const nav = account.split('aria-label="Account views" role="tablist"')[1]?.split("</nav>")[0];
-  assert.ok(nav, "Account tablist missing");
-  for (const [tab, panel] of [
-    ["orders", "orders-panel"],
-    ["favorites", "favorites-panel"],
-    ["profile", "profile-panel"],
-    ["security", "security-panel"]
-  ]) {
-    assert.match(nav, new RegExp('aria-controls="' + panel + '"'));
-    assert.ok(nav.includes('aria-selected={activeTab === "' + tab + '"}'));
-    assert.ok(nav.includes('onClick={() => setActiveTab("' + tab + '")}'));
+  assert.match(nav, /aria-haspopup="dialog"/);
+  assert.match(nav, /aria-expanded=\{accountOpen\}/);
+  assert.match(nav, /role="dialog"/);
+  assert.match(nav, /document\.addEventListener\("pointerdown", dismissOutside, true\)/);
+  assert.match(nav, /document\.addEventListener\("keydown", dismissEscape\)/);
+  for (const view of ["orders", "favorites", "profile", "security"]) {
+    assert.ok(nav.includes('view: "' + view + '"'), "Missing account option " + view);
   }
+  assert.match(nav, /navigate\(\`\/account\?view=\$\{view\}\`\)/);
+  assert.match(nav, /await logout\(\)/);
+  assert.match(nav, /createPortal\(/);
 
+  assert.match(account, /const \[activeTab, setActiveTab\] = useState<AccountTab>\("orders"\)/);
+  assert.match(account, /new URL\(location, window\.location\.origin\)\.searchParams\.get\("view"\)/);
+  assert.match(app, /<CustomerAccountPage location=\{location\} navigate=\{navigate\}/);
+
+  const accountTablist = account.split('aria-label="Account views" role="tablist"')[1]?.split("</nav>")[0];
+  assert.ok(accountTablist, "Desktop account tablist missing");
+  for (const view of ["orders", "favorites", "profile", "security"]) {
+    assert.ok(accountTablist.includes('onClick={() => setActiveTab("' + view + '")}'));
+  }
   assert.match(qa, /async function checkMobileAccountTabs\(page, viewport\)/);
-  assert.match(qa, /Account tabs are clipped or horizontally scrolling/);
-  assert.match(qa, /state\.scrollWidth > state\.clientWidth \+ 2/);
-  assert.match(qa, /issues\.push\(\.\.\.\(await checkMobileAccountTabs\(page, viewport\)\)\)/);
+  assert.match(qa, /Account rail still occupies mobile space/);
 });
 
 test("Favorites card density and pagination stay bounded with removal", () => {
