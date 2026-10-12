@@ -6,7 +6,8 @@ From the repository root, use `npm run dev:mob`.
 
 - If `npm run dev` (Electron + web) or `npm run dev:web` is already running, the mobile launcher reuses the existing frontend, backend, and development database. It never creates a second backend or database.
 - If the standard stack is not running, the mobile launcher runs the same `predev:web` checks and starts a single owned web/backend stack. When stopped it shuts down only the stack it started.
-- If only one of the ports 3001/5173 is running, or an unexpected service is listening, startup fails instead of stealing/terminating a port.
+- If only the **healthy, verified YsabelleStore backend** is running on 3001, the launcher reuses it and starts just the independent mobile preview on 5174. It does not require the desktop frontend on 5173.
+- If the backend is missing while 5173 is occupied, or an unexpected service owns a required port, startup fails safely instead of stealing/terminating a port.
 - The mobile frontend is an additional Vite instance at port **5174**, with strict port enforcement. It proxies `/api` to the existing local API at port 3001.
 - `dev` and `dev:web` remain their normal stack launch modes; you do not need to run both.
 
