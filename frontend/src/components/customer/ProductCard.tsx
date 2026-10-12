@@ -3,6 +3,7 @@ import { CircleAlert, Flame, Heart, ShoppingCart, Star } from "lucide-react";
 import { useState } from "react";
 
 import { useCart } from "@/context/CartContext";
+import { useToast } from "@/components/shared/ToastProvider";
 import { useCustomerFavorites } from "@/context/CustomerFavoritesContext";
 import type { StorefrontProduct } from "@/types/storefront";
 import { buildCustomerAuthPath } from "@/utils/customerRoutes";
@@ -53,10 +54,12 @@ export function ProductCard({
   tourTarget?: boolean;
 }) {
   const { addItem, isReady } = useCart();
+  const { pushToast } = useToast();
   const { favoriteIds, toggleFavorite } = useCustomerFavorites();
   const outOfStock = product.availableStock <= 0;
   const isFavorite = favoriteIds.has(product.id);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [isUpdatingFavorite, setIsUpdatingFavorite] = useState(false);
   const resolvedBadge = badge === undefined ? getStorefrontProductBadge(product) : badge;
   const showStockMessage =
     outOfStock || (product.stockStatus === "LOW_STOCK" && resolvedBadge?.tone !== "low-stock");
@@ -73,10 +76,23 @@ export function ProductCard({
     : "No reviews yet.";
 
   async function handleFavorite() {
-    const result = await toggleFavorite(product.id);
-    if (result === "auth-required") {
-      const returnTo = `${window.location.pathname}${window.location.search}`;
-      navigate(buildCustomerAuthPath("/login", returnTo));
+    if (isUpdatingFavorite) return;
+
+    setIsUpdatingFavorite(true);
+    try {
+      const result = await toggleFavorite(product.id);
+      if (result === "auth-required") {
+        const returnTo = `${window.location.pathname}${window.location.search}`;
+        navigate(buildCustomerAuthPath("/login", returnTo));
+      }
+    } catch {
+      pushToast({
+        title: "Couldn't update favorites",
+        message: "Please check your connection and try again.",
+        variant: "error"
+      });
+    } finally {
+      setIsUpdatingFavorite(false);
     }
   }
 
@@ -139,8 +155,10 @@ export function ProductCard({
               : `Save ${product.name} to favorites`
           }
           aria-pressed={isFavorite}
+          aria-busy={isUpdatingFavorite}
           className="customer-product-card__favorite"
-          data-tooltip={isFavorite ? "Remove from favorites" : "Save to favorites"}
+          data-tooltip={isUpdatingFavorite ? "Updating favorites..." : isFavorite ? "Remove from favorites" : "Save to favorites"}
+          disabled={isUpdatingFavorite}
           onClick={() => void handleFavorite()}
           type="button"
         >
