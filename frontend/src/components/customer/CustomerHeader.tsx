@@ -23,6 +23,7 @@ export function CustomerHeader({
   const { itemCount } = useCart();
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const mobileSearchRef = useRef<HTMLDivElement>(null);
+  const mobileSearchTriggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setMobileSearchOpen(false);
@@ -40,8 +41,21 @@ export function CustomerHeader({
       setMobileSearchOpen(false);
     };
 
+    // GlobalSearch can stop its own Escape keydown when dismissing suggestions.
+    // A capture listener closes the mobile search shell regardless of nested
+    // autocomplete key handling or portaled results.
+    const dismissOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setMobileSearchOpen(false);
+      mobileSearchTriggerRef.current?.focus();
+    };
+
     document.addEventListener("pointerdown", dismissOutsideSearch);
-    return () => document.removeEventListener("pointerdown", dismissOutsideSearch);
+    document.addEventListener("keydown", dismissOnEscape, true);
+    return () => {
+      document.removeEventListener("pointerdown", dismissOutsideSearch);
+      document.removeEventListener("keydown", dismissOnEscape, true);
+    };
   }, [mobileSearchOpen]);
   const { storefrontTheme, setStorefrontTheme } = useAppearance();
   const { customer, status } = useCustomerAuth();
@@ -91,9 +105,6 @@ export function CustomerHeader({
           aria-hidden={isShopRoute || undefined}
           className={`customer-header__search-region ${isShopRoute ? "is-hidden" : ""} ${mobileSearchOpen ? "is-mobile-open" : ""}`}
           inert={isShopRoute || undefined}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") setMobileSearchOpen(false);
-          }}
           ref={mobileSearchRef}
         >
           <GlobalStorefrontSearch
@@ -112,6 +123,7 @@ export function CustomerHeader({
               aria-label={mobileSearchOpen ? "Close storefront search" : "Open storefront search"}
               className="customer-theme-toggle customer-mobile-search-trigger"
               onClick={() => setMobileSearchOpen((current) => !current)}
+              ref={mobileSearchTriggerRef}
               type="button"
             >
               {mobileSearchOpen ? (
