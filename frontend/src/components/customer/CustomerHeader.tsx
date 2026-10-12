@@ -1,6 +1,4 @@
-import { CircleHelp, Menu, MoonStar, ShoppingBasket, Sun, UserRound, X } from "lucide-react";
-import { useState } from "react";
-
+import { CircleHelp, MoonStar, ShoppingBasket, Sun, UserRound } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAppearance } from "@/context/AppearanceContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
@@ -24,7 +22,6 @@ export function CustomerHeader({
   const { itemCount } = useCart();
   const { storefrontTheme, setStorefrontTheme } = useAppearance();
   const { customer, status } = useCustomerAuth();
-  const [menuOpen, setMenuOpen] = useState(false);
   const isShopRoute = isCustomerShopRoute(pathname);
   const accountHref = status === "authenticated" ? "/account" : "/login";
   const accountLabel = status === "authenticated" ? "My Account" : "Sign In";
@@ -127,39 +124,9 @@ export function CustomerHeader({
               <MoonStar aria-hidden="true" size={19} />
             )}
           </button>
-          <button
-            aria-expanded={menuOpen}
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            className="customer-menu-button"
-            onClick={() => setMenuOpen((current) => !current)}
-            type="button"
-          >
-            {menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
-          </button>
         </div>
       </div>
 
-      <div className={`customer-mobile-panel ${menuOpen ? "is-open" : ""}`}>
-        <nav aria-label="Mobile customer navigation">
-          {links.map((link) => (
-            <CustomerLink
-              href={link.href}
-              key={link.href}
-              navigate={navigate}
-              onClick={() => setMenuOpen(false)}
-              onFocus={link.href === "/about" ? () => preloadAboutExperience() : undefined}
-            >
-              {link.label}
-            </CustomerLink>
-          ))}
-          <CustomerLink href={accountHref} navigate={navigate} onClick={() => setMenuOpen(false)}>
-            {accountLabel}
-          </CustomerLink>
-          <button onClick={onStartGuide} type="button">
-            Shopping Guide
-          </button>
-        </nav>
-      </div>
     </header>
   );
 }
