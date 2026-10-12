@@ -2524,3 +2524,214 @@
     box-shadow: none;
   }
 }
+
+
+/* Compact account navigation: the bottom Account action owns the five choices.
+   Hide the redundant page rail only while the fixed dock is available. */
+.customer-mobile-account__popover {
+  display: none;
+}
+
+@media (max-width: 1180px) {
+  .customer-app .customer-account-page-v2 .customer-account-rail {
+    display: none;
+  }
+
+  .customer-app .customer-account-page-v2 .customer-account-layout-v2 {
+    gap: 0;
+  }
+
+  .customer-app .customer-mobile-dock__account {
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .customer-mobile-account__popover {
+    position: fixed;
+    z-index: 215;
+    bottom: calc(var(--store-mobile-measured-dock-height, 76px) + 12px);
+    display: grid;
+    box-sizing: border-box;
+    width: min(280px, calc(100vw - 24px));
+    max-height: min(70dvh, 364px);
+    gap: 10px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 12px;
+    border: 1px solid #c9cce7;
+    border-radius: 18px;
+    background: #f9faff;
+    box-shadow: 0 20px 55px rgb(16 25 54 / 24%), inset 0 1px 0 rgb(255 255 255 / 88%);
+    color: #25304b;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .customer-mobile-account__popover::-webkit-scrollbar {
+    display: none;
+  }
+
+  .customer-mobile-account__identity {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 10px;
+    padding: 2px 3px 9px;
+    border-bottom: 1px solid #e1e4f0;
+  }
+
+  .customer-mobile-account__avatar {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    flex: none;
+    place-items: center;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #168cff, #645cff 54%, #c94fa6);
+    box-shadow: 0 8px 18px rgb(89 76 200 / 22%);
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 800;
+  }
+
+  .customer-mobile-account__identity-copy {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+  }
+
+  .customer-mobile-account__identity-copy small {
+    color: #68738e;
+    font-size: 0.61rem;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+  }
+
+  .customer-mobile-account__identity-copy strong {
+    overflow: hidden;
+    color: #24304c;
+    font-size: 0.87rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .customer-mobile-account__views {
+    display: grid;
+    gap: 3px;
+  }
+
+  .customer-mobile-account__view,
+  .customer-mobile-account__signout {
+    display: flex;
+    width: 100%;
+    min-height: 44px;
+    align-items: center;
+    gap: 11px;
+    padding: 9px 12px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    background: transparent;
+    color: #3e4a67;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 700;
+    text-align: left;
+    transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
+
+  .customer-mobile-account__view svg,
+  .customer-mobile-account__signout svg {
+    flex: none;
+  }
+
+  .customer-mobile-account__view:hover {
+    background: #eceafa;
+    color: #493caa;
+  }
+
+  .customer-mobile-account__view[aria-current="page"] {
+    border-color: rgb(98 91 255 / 24%);
+    background: linear-gradient(110deg, #3b7ff7, #6655e9 58%, #b24fa8);
+    box-shadow: 0 5px 14px rgb(92 79 204 / 18%);
+    color: #fff;
+  }
+
+  .customer-mobile-account__signout {
+    margin-top: 2px;
+    border-color: #edcddc;
+    background: #fff0f5;
+    color: #963c60;
+  }
+
+  .customer-mobile-account__signout:hover {
+    border-color: #dfa9c2;
+    background: #fce2ed;
+    color: #802e50;
+  }
+
+  .customer-mobile-account__view:focus-visible,
+  .customer-mobile-account__signout:focus-visible {
+    outline: 3px solid #9d8aff;
+    outline-offset: 2px;
+  }
+
+  .customer-mobile-account__signout:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
+
+  :root.dark .customer-mobile-account__popover {
+    border-color: #576b8f;
+    background: #18263e;
+    box-shadow: 0 20px 60px rgb(1 8 22 / 55%), inset 0 1px 0 rgb(200 217 255 / 8%);
+    color: #edf2ff;
+  }
+
+  :root.dark .customer-mobile-account__identity {
+    border-bottom-color: #344965;
+  }
+
+  :root.dark .customer-mobile-account__identity-copy small {
+    color: #b4c4df;
+  }
+
+  :root.dark .customer-mobile-account__identity-copy strong {
+    color: #f0f3ff;
+  }
+
+  :root.dark .customer-mobile-account__view {
+    color: #d8e3f7;
+  }
+
+  :root.dark .customer-mobile-account__view:hover {
+    background: #304364;
+    color: #fff;
+  }
+
+  :root.dark .customer-mobile-account__view[aria-current="page"] {
+    border-color: #a495e6;
+    color: #fff;
+  }
+
+  :root.dark .customer-mobile-account__signout {
+    border-color: #78475f;
+    background: #3c283f;
+    color: #ffd2e3;
+  }
+
+  :root.dark .customer-mobile-account__signout:hover {
+    border-color: #b67392;
+    background: #513049;
+    color: #fff;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-mobile-account__view,
+  .customer-mobile-account__signout {
+    transition: none;
+  }
+}
