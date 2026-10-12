@@ -448,7 +448,6 @@ async function checkFavoritesCardDensity(page, viewport) {
   });
   if (!state) return ["Account favorites sizing fixture could not render"];
   const expectedColumns = viewport.width <= 640 ? 2 : viewport.width <= 1050 ? 3 : 4;
-  const firstImage = state.images[0];
   const expectedCardMax = (state.width / expectedColumns) + 2;
   if (
     state.display !== "grid" ||
