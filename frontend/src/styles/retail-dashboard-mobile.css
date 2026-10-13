@@ -189,6 +189,9 @@
     margin-top: 0.35rem;
     font-size: clamp(0.83rem, 3.6vw, 1.1rem);
     line-height: 1.25;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
     overflow-wrap: anywhere;
     font-variant-numeric: tabular-nums;
   }
