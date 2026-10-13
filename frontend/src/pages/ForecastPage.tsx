@@ -1151,6 +1151,75 @@ function MonthlyForecastCard({
               </ResponsiveContainer>
             </div>
 
+
+            <div className="ys-forecast-v2-mobile-chart" aria-label="Forecast demand trend">
+              <div className="ys-forecast-v2-chart-heading"><strong>Demand forecast</strong><span>{totalForecastMonths} months</span></div>
+              <div className="ys-forecast-v2-chart-canvas">
+                <ResponsiveContainer height="100%" width="100%">
+                  <LineChart
+                    accessibilityLayer
+                    data={mobileChartData}
+                    margin={{ top: 12, right: 10, left: -22, bottom: 2 }}
+                    onClick={(state) => {
+                      const index = Number(state?.activeTooltipIndex);
+                      if (Number.isInteger(index) && index >= 0 && index < mobileChartData.length) {
+                        setMobileSelectedMonth(index);
+                      }
+                    }}
+                  >
+                    <CartesianGrid stroke="#526580" strokeDasharray="3 4" vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#B9C9E0" }} tickLine={false} axisLine={false} />
+                    <YAxis width={37} tick={{ fontSize: 10, fill: "#B9C9E0" }} tickLine={false} axisLine={false} allowDecimals={false} />
+                    <Tooltip active={false} />
+                    <Line
+                      dataKey="forecastedDemand"
+                      stroke="#8883ff"
+                      strokeWidth={2.5}
+                      dot={{ r: 4, fill: "#8883ff" }}
+                      activeDot={{ r: 5 }}
+                      isAnimationActive={false}
+                      onClick={(_, index) => setMobileSelectedMonth(index)}
+                    />
+                    <Line
+                      connectNulls={false}
+                      dataKey="priorYearComparison"
+                      stroke="#34c6a0"
+                      strokeWidth={2}
+                      dot={{ r: 3, fill: "#34c6a0" }}
+                      isAnimationActive={false}
+                      onClick={(_, index) => setMobileSelectedMonth(index)}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="ys-forecast-v2-legend"><span>Forecast</span><span>Prior year</span></div>
+              <div className="ys-forecast-v2-month-tabs" aria-label="Choose forecast month">
+                {mobileForecastRows.map((point, index) => (
+                  <button
+                    aria-pressed={index === mobileSelectedMonth}
+                    key={point.period}
+                    onClick={() => setMobileSelectedMonth(index)}
+                    type="button"
+                  >
+                    {formatMonthLabel(point.period).split(" ")[0]}
+                  </button>
+                ))}
+              </div>
+              {mobileMonthPoint ? (
+                <div className="ys-forecast-v2-selected-month" aria-live="polite">
+                  <div className="ys-forecast-v2-selected-title">
+                    <strong>{formatMonthLabel(mobileMonthPoint.period)}</strong>
+                    <span className={expectedChangeClassName(mobileMonthPoint.forecastVariancePercentage)}>
+                      {formatForecastVariance(mobileMonthPoint.forecastVariancePercentage)}
+                    </span>
+                  </div>
+                  <div className="ys-forecast-v2-selected-values">
+                    <span><small>Demand</small><strong>{formatNumber(mobileMonthPoint.predictedQuantity, 1)}</strong></span>
+                    <span><small>Prior year</small><strong>{formatNumber(mobileMonthPoint.comparisonSalesQuantity, 1)}{mobileMonthPoint.comparisonSalesEstimated ? " (est.)" : ""}</strong></span>
+                  </div>
+                </div>
+              ) : null}
+            </div>
             {hasEstimatedComparison ? (
               <p className="text-xs text-slate-500">
                 * Some prior-year values are reconstructed estimates because verified comparison
@@ -1159,7 +1228,33 @@ function MonthlyForecastCard({
               </p>
             ) : null}
 
-            <div className="rounded-md border border-slate-200">
+
+            <div className="ys-forecast-v2-mobile-breakdown">
+              <div className="ys-forecast-v2-breakdown-heading"><strong>Monthly breakdown</strong><span>{visibleForecastRows.length} months</span></div>
+              {visibleForecastRows.slice(0, showAllMobileMonths ? undefined : 3).map((point) => (
+                <article className="ys-forecast-v2-month-card" key={point.period}>
+                  <div className="ys-forecast-v2-month-heading">
+                    <strong>{formatMonthLabel(point.period)}</strong>
+                    <span className={expectedChangeClassName(point.forecastVariancePercentage)}>{formatForecastVariance(point.forecastVariancePercentage)}</span>
+                  </div>
+                  <div className="ys-forecast-v2-month-values">
+                    <span><small>Demand</small><strong>{formatNumber(point.predictedQuantity, 1)}</strong></span>
+                    <span><small>Prior yr</small><strong>{formatNumber(point.comparisonSalesQuantity, 1)}{point.comparisonSalesEstimated ? " (est.)" : ""}</strong></span>
+                  </div>
+                </article>
+              ))}
+              {visibleForecastRows.length > 3 ? (
+                <button
+                  className="ys-forecast-v2-view-months"
+                  onClick={() => setShowAllMobileMonths((current) => !current)}
+                  type="button"
+                >
+                  {showAllMobileMonths ? "Show fewer months" : `View full ${visibleForecastRows.length}-month forecast`}
+                  <ChevronDown aria-hidden="true" className="h-4 w-4" />
+                </button>
+              ) : null}
+            </div>
+            <div className="ys-forecast-v2-desktop-monthly rounded-md border border-slate-200">
               <table className="retail-mobile-data-table w-full text-sm">
                 <thead className="sticky top-0 bg-slate-50 text-xs uppercase text-slate-500">
                   <tr>
