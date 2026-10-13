@@ -55,3 +55,36 @@ test("stock activity becomes a readable six-field mobile timeline with no horizo
   assert.match(css, /\.retail-inventory-activity-table thead/);
   assert.match(css, /max-height: none;/);
 });
+
+test("phone inventory pagination shows previous, concise page label and next", () => {
+  const pager = read("frontend/src/components/shared/AppPagination.tsx");
+  assert.match(inventory, /className="ys-inventory-pagination"/);
+  assert.match(inventory, /mobileCompact/);
+  assert.match(pager, /mobileCompact\?: boolean;/);
+  assert.match(pager, /Page \{currentPage\} of \{resolvedTotalPages\}/);
+  assert.match(css, /\.ys-inventory-page-token \{ display: none; \}/);
+  assert.match(css, /\.ys-inventory-mobile-page-label/);
+});
+
+test("mobile stock receiving and adjustment remain horizontal and scrollable", () => {
+  assert.match(inventory, /ys-stock-receive-modal/);
+  assert.match(inventory, /ys-stock-adjust-modal/);
+  assert.match(inventory, /ys-stock-receipt-math/);
+  assert.match(inventory, /ys-stock-adjust-math/);
+  assert.equal((inventory.match(/ys-stock-quantity-stepper/g) || []).length, 2);
+  assert.equal((inventory.match(/ys-stock-dialog-footer/g) || []).length, 2);
+  assert.match(css, /grid-template-columns: 44px minmax\(0,1fr\) 44px !important;/);
+  assert.match(css, /\.ys-stock-receipt-math/);
+  assert.match(css, /\.ys-stock-adjust-math/);
+  assert.match(css, /overflow: hidden !important;/);
+  assert.match(inventory, /Removal quantity cannot exceed current stock/);
+  assert.match(inventory, /Batch\/Lot number is required/);
+});
+
+test("import Guide keeps a separate line from the exit control on phones", () => {
+  const importing = read("frontend/src/components/inventory/InventoryImportDialog.tsx");
+  assert.match(importing, /ys-inventory-import-header/);
+  assert.match(importing, /ys-inventory-import-heading/);
+  assert.match(importing, /setShowGuide\(\(current\) => !current\)/);
+  assert.match(css, /\.ys-inventory-import-heading \{\s*display: flex;\s*flex-direction: column;/);
+});
