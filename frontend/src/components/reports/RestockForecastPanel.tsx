@@ -112,8 +112,10 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
   const [localRefreshVersion, setLocalRefreshVersion] = useState(0);
   const [watchlistPage, setWatchlistPage] = useState(1);
   const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
+  const [mobileChartMonth, setMobileChartMonth] = useState(0);
   const [chartView, setChartView] = useState<ChartView>("DEMAND");
   const detailTransitionRef = useRef<HTMLDivElement | null>(null);
+  const productListRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -173,6 +175,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
 
   useEffect(() => {
     setChartView("DEMAND");
+    setMobileChartMonth(0);
   }, [selectedProductId]);
 
   useLayoutEffect(() => {
@@ -218,6 +221,8 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
     ? (activeRestockByProduct.get(selected.product.id) ?? null)
     : null;
   const productDemandChart = useMemo(() => buildDemandChart(selected), [selected]);
+  const mobileForecastPoints = productDemandChart.filter((point) => point.forecast !== null);
+  const activeMobileForecastPoint = mobileForecastPoints[Math.min(mobileChartMonth, Math.max(0, mobileForecastPoints.length - 1))] ?? null;
   const nextMonthPreview = useMemo(
     () => buildNextMonthRestockPreview(selected, selectedActiveRestock),
     [selected, selectedActiveRestock]
@@ -282,7 +287,19 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
 
   function openForecastProduct(productId: string) {
     setSelectedProductId(productId);
-    if (window.matchMedia("(max-width: 767px)").matches) setMobileDetailOpen(true);
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      setMobileDetailOpen(true);
+      window.requestAnimationFrame(() =>
+        detailTransitionRef.current?.scrollIntoView({ block: "start", behavior: "auto" })
+      );
+    }
+  }
+
+  function returnToProducts() {
+    setMobileDetailOpen(false);
+    window.requestAnimationFrame(() =>
+      productListRef.current?.scrollIntoView({ block: "start", behavior: "auto" })
+    );
   }
 
   function handleWatchlistPageChange(nextPage: number) {
@@ -388,7 +405,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
         ) : null}
 
         <div className="ys-report-v2-forecast-layout grid gap-3 xl:grid-cols-[0.9fr_1.1fr]">
-          <div className="ys-report-v2-product-list min-w-0 rounded-lg border border-slate-200 bg-white">
+          <div className="ys-report-v2-product-list min-w-0 rounded-lg border border-slate-200 bg-white" ref={productListRef}>
             <div className="border-b border-slate-200 px-4 py-3">
               <p className="text-sm font-semibold text-slate-950">Monthly product report</p>
               <p className="mt-1 text-xs text-slate-500">
@@ -517,7 +534,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
             className="ys-report-v2-product-detail min-w-0 rounded-lg border border-slate-200 bg-white"
             ref={detailTransitionRef}
           >
-            <button className="ys-report-v2-back" onClick={() => setMobileDetailOpen(false)} type="button">
+            <button className="ys-report-v2-back" onClick={returnToProducts} type="button">
               <ChevronLeft aria-hidden="true" className="h-4 w-4 shrink-0" />
               <span>Back to products</span>
             </button>
@@ -610,9 +627,23 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                     />
                   )}
                 </div>
+                {chartView === "DEMAND" && mobileForecastPoints.length > 0 ? (
+                  <div className="ys-report-v2-month-picker" aria-label="Select forecast month">
+                    {mobileForecastPoints.slice(0, 6).map((point, index) => (
+                      <button
+                        aria-pressed={mobileChartMonth === index}
+                        key={point.period}
+                        onClick={() => setMobileChartMonth(index)}
+                        type="button"
+                      >
+                        {point.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
                 <p className="ys-report-v2-chart-readout" aria-live="polite">
                   {chartView === "DEMAND"
-                    ? `Next expected demand: ${formatNumber(productDemandChart.find((point) => point.forecast !== null)?.forecast, 1)} units`
+                    ? `${activeMobileForecastPoint?.label ?? "Forecast"}: ${formatNumber(activeMobileForecastPoint?.forecast, 1)} units`
                     : `Estimated restock: ${formatNumber(displayedPreview?.estimatedRestock)} units`}
                 </p>
               </div>
@@ -703,6 +734,7 @@ function RecommendationCard({
   risk: RestockForecastRisk | null;
   selected: RestockPlanningCandidate;
 }) {
+  const [expandedMobileDetails, setExpandedMobileDetails] = useState(false);
   const tone = needsOrder ? "amber" : hasProcessedOrder ? "indigo" : "emerald";
   const classes = {
     amber: {
@@ -732,6 +764,7 @@ function RecommendationCard({
     <div
       className={`ys-restock-recommendation rounded-md border px-4 py-3 ${classes.box}`}
       data-tone={tone}
+      data-mobile-expanded={expandedMobileDetails}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
@@ -786,6 +819,14 @@ function RecommendationCard({
           </>
         ) : null}
       </div>
+      <button
+        aria-expanded={expandedMobileDetails}
+        className="ys-report-v2-details-toggle"
+        onClick={() => setExpandedMobileDetails((value) => !value)}
+        type="button"
+      >
+        {expandedMobileDetails ? "Less context" : "More context"}
+      </button>
     </div>
   );
 }

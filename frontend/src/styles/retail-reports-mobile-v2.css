@@ -168,3 +168,28 @@ background:#e9e8fa;color:#453a8f;font-size:10px;font-weight:800;white-space:nowr
 :root.dark .retail-workspace [data-retail-module="reports"] .ys-report-v2-short-action{
 background:#34355f;border-color:#8c83d2;color:#f1ecff}
 }
+
+.ys-report-v2-month-picker,.ys-report-v2-details-toggle{display:none}
+@media(max-width:767px){
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-month-picker{
+display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-month-picker button{
+min-width:0;min-height:35px;padding:5px 3px;border-radius:6px;
+border:1px solid #a0b4d0;background:#e8eef9;color:#273c58;font-size:10px;font-weight:800;white-space:nowrap}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-month-picker button[aria-pressed="true"]{
+border-color:#8072e6;background:#5144d5;color:#fff}
+.retail-workspace [data-retail-module="reports"] .ys-restock-recommendation{padding:10px}
+.retail-workspace [data-retail-module="reports"] .ys-restock-recommendation-title{font-size:15px;line-height:1.35}
+.retail-workspace [data-retail-module="reports"] .ys-restock-recommendation-body{font-size:11px;line-height:1.5}
+.retail-workspace [data-retail-module="reports"] .ys-restock-recommendation[data-mobile-expanded="false"] .ys-restock-recommendation-body{
+display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.retail-workspace [data-retail-module="reports"] .ys-restock-recommendation[data-mobile-expanded="false"] .ys-restock-recommendation-meta{display:none}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-details-toggle{
+display:inline-flex;align-items:center;justify-content:center;min-height:40px;margin-top:6px;
+padding:6px 10px;border:1px solid #8074b4;border-radius:7px;background:#5144d5;color:#fff;
+font-size:11px;font-weight:800}
+:root.dark .retail-workspace [data-retail-module="reports"] .ys-report-v2-month-picker button{
+background:#2b3c59;border-color:#627897;color:#ebf2ff}
+:root.dark .retail-workspace [data-retail-module="reports"] .ys-report-v2-month-picker button[aria-pressed="true"]{
+background:#5144d5;border-color:#a199fa;color:#fff}
+}
