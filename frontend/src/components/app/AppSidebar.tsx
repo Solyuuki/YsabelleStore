@@ -92,7 +92,7 @@ export function AppSidebar({
   return (
     <aside
       className={cn(
-        "relative flex h-full min-h-0 shrink-0 flex-col overflow-visible border-r border-violet-200/55 text-slate-700 shadow-[0_20px_48px_rgba(37,31,86,0.08)] transition-[width,background-color,border-color,box-shadow] duration-300 ease-out",
+        "retail-desktop-sidebar relative flex h-full min-h-0 shrink-0 flex-col overflow-visible border-r border-violet-200/55 text-slate-700 shadow-[0_20px_48px_rgba(37,31,86,0.08)] transition-[width,background-color,border-color,box-shadow] duration-300 ease-out",
         "bg-[rgba(248,247,255,0.92)]",
         collapsed ? "w-20" : "w-64"
       )}
