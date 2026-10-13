@@ -4,6 +4,7 @@ import {
   Boxes,
   CalendarDays,
   ChevronDown,
+  ChevronRight,
   CircleCheck,
   ClipboardList,
   FileUp,
@@ -1246,35 +1247,48 @@ function InventoryDetailsDialog({
             </div>
           ) : null}
         </div>
-        <DialogFooter className="border-t border-slate-200 bg-white/95">
+        <DialogFooter className="ys-inventory-details-footer border-t border-slate-200 bg-white/95">
           <div className="retail-inventory-details-actions flex w-full flex-wrap items-center justify-between gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onOpenMovements}
-              disabled={!inventory || isLoading}
-            >
-              <History className="h-4 w-4" />
-              Stock activity
-            </Button>
+            <div className="ys-inventory-stock-actions-head">
+              <span className="ys-inventory-stock-actions-title">Stock actions</span>
+              <Button
+                className="ys-inventory-history-action"
+                type="button"
+                variant="secondary"
+                onClick={onOpenMovements}
+                disabled={!inventory || isLoading}
+              >
+                <History className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span className="ys-inventory-history-desktop">Stock activity</span>
+                <span className="ys-inventory-history-mobile">View history</span>
+                <ChevronRight
+                  className="ys-inventory-history-chevron h-4 w-4 shrink-0"
+                  aria-hidden="true"
+                />
+              </Button>
+            </div>
             {isOwner ? (
               <div className="retail-inventory-owner-actions flex flex-wrap items-center gap-2">
                 <Button
+                  className="ys-inventory-adjust-action"
                   type="button"
                   variant="secondary"
                   onClick={onOpenAdjust}
                   disabled={!inventory || isLoading || mutationPending}
+                  aria-label="Adjust quantity"
                 >
-                  <PencilLine className="h-4 w-4" />
-                  Adjust quantity
+                  <PencilLine className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="ys-inventory-adjust-desktop">Adjust quantity</span>
+                  <span className="ys-inventory-adjust-mobile">Adjust qty</span>
                 </Button>
                 <Button
+                  className="ys-inventory-receive-action"
                   type="button"
                   onClick={onOpenStockIn}
                   disabled={!inventory || isLoading || mutationPending}
                 >
-                  <PackagePlus className="h-4 w-4" />
-                  Receive stock
+                  <PackagePlus className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>Receive stock</span>
                 </Button>
               </div>
             ) : null}

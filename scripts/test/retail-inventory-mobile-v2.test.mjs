@@ -118,3 +118,24 @@ test("Inventory toolbar stacks search above Filters when the usable content widt
   assert.match(css, /\.retail-inventory-toolbar > \.retail-inventory-filter-panel\s*\{\s*grid-column: 1;\s*grid-row: 3;/);
   assert.match(css, /\.retail-inventory-filter-toggle > span:not\(\.retail-inventory-filter-count\)/);
 });
+
+
+test("Inventory mobile stock actions display history in a compact header and two role-gated buttons", () => {
+  const start = inventory.indexOf('className="ys-inventory-details-footer');
+  const end = inventory.indexOf("</DialogFooter>", start);
+  assert.ok(start > 0 && end > start);
+  const actions = inventory.slice(start, end);
+  assert.match(actions, /ys-inventory-stock-actions-head/);
+  assert.match(actions, /Stock actions/);
+  assert.match(actions, /ys-inventory-history-mobile">View history/);
+  assert.match(actions, /ys-inventory-adjust-mobile">Adjust qty/);
+  assert.match(actions, /ys-inventory-receive-action/);
+  assert.match(actions, /onClick=\{onOpenMovements\}/);
+  assert.match(actions, /onClick=\{onOpenAdjust\}/);
+  assert.match(actions, /onClick=\{onOpenStockIn\}/);
+  assert.match(actions, /\{isOwner \? \(/);
+  assert.match(actions, /disabled=\{!inventory \|\| isLoading \|\| mutationPending\}/);
+  assert.match(css, /\.ys-inventory-stock-actions-head \{ display: contents; \}/);
+  assert.match(css, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
+  assert.match(css, /:root\.dark\[data-appearance-scope="retail"\] \.ys-inventory-details-modal \.ys-inventory-history-action/);
+});
