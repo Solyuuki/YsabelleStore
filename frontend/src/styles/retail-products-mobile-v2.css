@@ -298,10 +298,31 @@
     font-size: 0.65rem;
   }
   .ys-product-image-preview .ys-product-preview-canvas {
-    aspect-ratio: auto;
-    height: clamp(78px, 23vw, 126px);
+    /* Reserve enough space for the full portrait product instead of a cropped strip. */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    place-items: center;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    height: auto;
     min-width: 0;
-    padding: 0.4rem;
+    min-height: 126px;
+    max-height: 216px;
+    padding: 0.45rem;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  .ys-product-image-preview .ys-product-preview-canvas img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center;
   }
   .ys-product-image-quality-card {
     display: grid;

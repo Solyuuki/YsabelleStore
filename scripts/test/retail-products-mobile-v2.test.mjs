@@ -112,3 +112,24 @@ test("approved photo hides redundant mobile upload guidance without removing upl
   assert.match(component, /Upload a normal product photo/);
   assert.match(component, /onClick=\{openPicker\}/);
 });
+
+
+test("Original and Optimized product thumbnails show the full portrait photo at narrow widths", () => {
+  const component = read("frontend/src/components/catalog/ProductImageUploadPanel.tsx");
+  assert.match(component, /<ImagePreview title="Original" url=\{originalPreviewUrl\} \/>/);
+  assert.match(component, /title="Optimized"/);
+  assert.match(component, /className="block h-full w-full min-h-0 min-w-0 object-contain object-center"/);
+  const canvasRule = css.match(/\.ys-product-image-preview \.ys-product-preview-canvas \{([^}]*)\}/)?.[1];
+  assert.ok(canvasRule, "Mobile preview container CSS missing");
+  assert.match(canvasRule, /aspect-ratio: 4 \/ 5;/);
+  assert.match(canvasRule, /min-height: 126px;/);
+  assert.match(canvasRule, /max-height: 216px;/);
+  assert.match(canvasRule, /grid-template-rows: minmax\(0, 1fr\);/);
+  assert.doesNotMatch(canvasRule, /height:\s*clamp\(78px,\s*23vw,\s*126px\)/);
+  const imageRule = css.match(/\.ys-product-image-preview \.ys-product-preview-canvas img \{([^}]*)\}/)?.[1];
+  assert.ok(imageRule, "Image fit rule missing");
+  assert.match(imageRule, /object-fit: contain;/);
+  assert.match(imageRule, /object-position: center;/);
+  assert.match(imageRule, /height: 100%;/);
+  assert.match(css, /\.ys-product-image-previews\s*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
+});
