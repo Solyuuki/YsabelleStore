@@ -38,7 +38,7 @@ test("affected retail native selects use an opt-in, theme-aware chevron", () => 
 
   for (const [path, count] of [
     ["frontend/src/pages/ForecastPage.tsx", 3],
-    ["frontend/src/pages/CustomerSupportInboxPage.tsx", 2],
+    ["frontend/src/pages/CustomerSupportInboxPage.tsx", 3],
     ["frontend/src/pages/UserManagementPage.tsx", 3],
     ["frontend/src/pages/SettingsPage.tsx", 1],
     ["frontend/src/pages/ProductsPageLegacy.tsx", 2],
