@@ -6,6 +6,7 @@ import { RetailMobileNavigation } from "@/components/app/RetailMobileNavigation"
 import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
 import type { AuthUser } from "@/types/auth";
 import "@/styles/retail-mobile-navigation.css";
+import "@/styles/retail-responsive-workspaces.css";
 
 type AppLayoutProps = {
   activePath: string;
@@ -55,6 +56,7 @@ export function AppLayout({
         <main
           className="relative z-10 min-h-0 flex-1 overflow-auto px-[clamp(1.25rem,2vw,1.5rem)] py-[clamp(1.25rem,2vw,1.5rem)]"
           data-layout="app"
+          data-retail-module={activePath.replace(/^\//, "")}
         >
           <div className="mx-auto max-w-[1540px] space-y-6">{children}</div>
         </main>
