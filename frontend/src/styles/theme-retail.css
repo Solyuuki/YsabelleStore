@@ -2272,3 +2272,18 @@
   outline: 2px solid #b7a7ff;
   outline-offset: 2px;
 }
+
+/* Staff-only desktop sidebar appearance control; Owner Settings remains unchanged. */
+:root.dark .app-shell-ambient > aside .ys-staff-sidebar-theme-toggle {
+  border-color: #667b99;
+  background: #2b3d59;
+  color: #e7efff;
+}
+:root.dark .app-shell-ambient > aside .ys-staff-sidebar-theme-toggle:hover {
+  border-color: #a39aeb;
+  background: #374d6c;
+  color: #fff;
+}
+:root.dark .app-shell-ambient > aside .ys-staff-sidebar-theme-toggle:focus-visible {
+  outline-color: #b9adff;
+}

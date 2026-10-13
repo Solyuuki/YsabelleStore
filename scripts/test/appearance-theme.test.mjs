@@ -186,3 +186,25 @@ test("About dark preference themes mobile dock and portaled menus without changi
   assert.doesNotMatch(scoped, /\.discover-story|\.story-welcome|\.story-catalog/);
   assert.doesNotMatch(scoped, /:root\.light/);
 });
+
+test("staff sidebar has an icon-only persisted appearance toggle in expanded and collapsed layouts", () => {
+  const sidebar = read("frontend/src/components/app/AppSidebar.tsx");
+  const theme = read("frontend/src/styles/theme-retail.css");
+  const appearance = read("frontend/src/context/AppearanceContext.tsx");
+  const mobile = read("frontend/src/components/app/RetailMobileNavigation.tsx");
+
+  assert.match(sidebar, /import \{ ChevronLeft, LogOut, Moon, Sun \} from "lucide-react";/);
+  assert.match(sidebar, /useAppearance\(\)/);
+  assert.match(sidebar, /user\?\.role === "STAFF" \? \(/);
+  assert.match(sidebar, /className="ys-staff-sidebar-theme-toggle/);
+  assert.match(sidebar, /aria-label=\{\`Switch to \$\{retailTheme === "dark" \? "light" : "dark"\} mode\`\}/);
+  assert.match(sidebar, /aria-pressed=\{retailTheme === "dark"\}/);
+  assert.match(sidebar, /setRetailTheme\(retailTheme === "dark" \? "light" : "dark"\)/);
+  assert.match(sidebar, /collapsed \? "justify-center" : "justify-between"/);
+  assert.match(sidebar, /<Sun aria-hidden="true"/);
+  assert.match(sidebar, /<Moon aria-hidden="true"/);
+  assert.match(theme, /:root\.dark \.app-shell-ambient > aside \.ys-staff-sidebar-theme-toggle/);
+  assert.match(theme, /\.ys-staff-sidebar-theme-toggle:focus-visible/);
+  assert.match(appearance, /ysabellestore\.appearance\.retail\.v1/);
+  assert.match(mobile, /setRetailTheme\(retailTheme === "dark" \? "light" : "dark"\)/);
+});
