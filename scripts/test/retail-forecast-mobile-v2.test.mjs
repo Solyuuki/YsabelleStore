@@ -72,3 +72,13 @@ test("Desktop chart keeps a measurable Recharts canvas and existing theme contra
   assert.ok(page.includes('<ResponsiveContainer height="100%" width="100%">'));
   assert.ok(css.includes(".ys-forecast-v2-desktop-chart,\n  .retail-workspace .ys-forecast-v2 .ys-forecast-v2-desktop-monthly { display: none; }"));
 });
+
+test("Desktop chart keeps axis ticks within its border and explains absent comparisons", () => {
+  assert.ok(page.includes('<LineChart data={chartData} margin={{ top: 12, right: 18, bottom: 8, left: 8 }}>'));
+  assert.ok(page.includes('<XAxis dataKey="month" minTickGap={24} padding={{ left: 40, right: 40 }} tickMargin={10} />'));
+  assert.ok(page.includes('<Legend height={36} verticalAlign="bottom" wrapperStyle={{ fontSize: 12 }} />'));
+  assert.ok(page.includes('point.comparisonSalesQuantity === null'));
+  assert.ok(page.includes('unavailableComparisonMonths.length > 0'));
+  assert.ok(page.includes('The line stops at missing data rather than showing invented values.'));
+  assert.ok(page.includes('connectNulls={false}'));
+});

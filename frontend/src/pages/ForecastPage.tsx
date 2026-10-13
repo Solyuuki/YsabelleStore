@@ -908,6 +908,9 @@ function MonthlyForecastCard({
     effectiveWindowStart + effectiveWindowMonths
   );
   const chartData = useMemo(() => buildChartData(visibleForecastRows), [visibleForecastRows]);
+  const unavailableComparisonMonths = visibleForecastRows
+    .filter((point) => point.comparisonSalesQuantity === null)
+    .map((point) => formatMonthLabel(point.period));
   const mobileForecastRows = visibleForecastRows.slice(0, 4);
   const mobileChartData = buildChartData(mobileForecastRows);
   const mobileMonthPoint = mobileForecastRows[Math.min(mobileSelectedMonth, Math.max(0, mobileForecastRows.length - 1))] ?? null;
@@ -1132,12 +1135,12 @@ function MonthlyForecastCard({
             <div className="ys-forecast-v2-desktop-chart">
             <div className="ys-forecast-chart min-h-[20rem] flex-1">
               <ResponsiveContainer height="100%" width="100%">
-                <LineChart data={chartData}>
+                <LineChart data={chartData} margin={{ top: 12, right: 18, bottom: 8, left: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" minTickGap={16} />
+                  <XAxis dataKey="month" minTickGap={24} padding={{ left: 40, right: 40 }} tickMargin={10} />
                   <YAxis allowDecimals={false} />
                   <Tooltip formatter={(value) => formatNumber(Number(value), 1)} />
-                  <Legend />
+                  <Legend height={36} verticalAlign="bottom" wrapperStyle={{ fontSize: 12 }} />
                   <Line
                     connectNulls={false}
                     dataKey="forecastedDemand"
@@ -1155,6 +1158,14 @@ function MonthlyForecastCard({
                 </LineChart>
               </ResponsiveContainer>
             </div>
+            {unavailableComparisonMonths.length > 0 ? (
+              <p className="px-2 pt-2 text-xs text-slate-500">
+                {unavailableComparisonMonths.length === 1
+                  ? `Prior-year comparison is unavailable for ${unavailableComparisonMonths[0]}.`
+                  : `Prior-year comparison is unavailable for ${unavailableComparisonMonths.length} months (including ${unavailableComparisonMonths.slice(0, 2).join(", ")}).`}
+                {" "}The line stops at missing data rather than showing invented values.
+              </p>
+            ) : null}
             </div>
 
             <div className="ys-forecast-v2-mobile-chart" aria-label="Forecast demand trend">
