@@ -105,3 +105,14 @@ test("Support conversation occupies the actual app workspace rather than using a
   assert.match(appLayout, /retail-workspace relative z-10 flex min-h-0 min-w-0 flex-1 flex-col/);
   assert.match(appLayout, /min-h-0 flex-1 overflow-auto/);
 });
+
+test("Long mobile Support conversations constrain messages to the middle grid row", () => {
+  assert.match(css, /\.ys-support-conversation-layout\s*\{[^}]*display: grid;[^}]*grid-template-rows: auto auto minmax\(0, 1fr\) auto;/);
+  assert.match(css, /\.ys-support-mobile-chat-header\s*\{[^}]*grid-row: 1;/);
+  assert.match(css, /\.ys-support-mobile-ticket-details\[data-open="true"\]\s*\{[^}]*grid-row: 2;/);
+  assert.match(css, /\.ys-support-thread\s*\{[^}]*grid-row: 3;[^}]*min-height: 0;[^}]*overflow-y: auto;[^}]*touch-action: pan-y;/);
+  assert.match(css, /\.ys-support-mobile-composer\s*\{[^}]*grid-row: 4;/);
+  assert.match(page, /aria-label="Conversation messages"/);
+  assert.match(page, /role="region"/);
+  assert.match(page, /tabIndex=\{0\}/);
+});

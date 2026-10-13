@@ -840,7 +840,13 @@ function SupportConversation({
         </div>
       </header>
 
-      <div className="ys-support-thread min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain bg-slate-50/70 p-5" ref={mobileThreadRef}>
+      <div
+        aria-label="Conversation messages"
+        className="ys-support-thread min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain bg-slate-50/70 p-5"
+        ref={mobileThreadRef}
+        role="region"
+        tabIndex={0}
+      >
         <div className="mx-auto max-w-4xl space-y-3">
           {detail.messages.map((message) => (
             <ConversationMessage
