@@ -472,12 +472,20 @@
 
   /* Inventory month — statistics visible immediately, purchase decision
      stays behind the existing real Reports navigation action. */
-  .retail-workspace .retail-dashboard-page .ys-dashboard-inventory-recommendation > :is([class*="card-header"], [class*="card-content"]) {
+  .retail-workspace .retail-dashboard-page .ys-dashboard-inventory-recommendation > div {
     min-width: 0;
   }
 
-  .retail-workspace .retail-dashboard-page .ys-dashboard-inventory-recommendation > :first-child + div {
-    min-width: 0;
+  .retail-workspace .retail-dashboard-page .ys-dashboard-inventory-recommendation > :nth-child(2) {
+    padding: 0.9rem 0.8rem 0.7rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-inventory-recommendation > :nth-child(3) {
+    padding: 0.75rem 0.8rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-recommendation-description {
+    display: none;
   }
 
   .retail-workspace .retail-dashboard-page .ys-dashboard-inventory-recommendation .ys-dashboard-report-stats {
