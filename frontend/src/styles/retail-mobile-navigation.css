@@ -1,0 +1,436 @@
+/* Internal retail navigation foundation — phones only.
+   At 768px+ the original collapsible desktop/sidebar layout is retained. */
+.retail-mobile-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .app-shell-ambient > .retail-desktop-sidebar {
+    display: none;
+  }
+
+  .app-shell-ambient .retail-mobile-nav {
+    position: relative;
+    z-index: 30;
+    display: block;
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
+  .app-shell-ambient .retail-mobile-nav__topbar {
+    box-sizing: border-box;
+    display: flex;
+    height: calc(60px + env(safe-area-inset-top, 0px));
+    min-width: 0;
+    align-items: center;
+    gap: 0.65rem;
+    padding:
+      env(safe-area-inset-top, 0px)
+      max(0.75rem, env(safe-area-inset-right, 0px))
+      0
+      max(0.75rem, env(safe-area-inset-left, 0px));
+    border-bottom: 1px solid #d2d7ed;
+    background: rgb(247 249 255 / 96%);
+    color: #283450;
+    box-shadow: 0 6px 20px rgb(24 35 68 / 7%);
+    backdrop-filter: blur(14px);
+  }
+
+  .app-shell-ambient .retail-mobile-nav__icon-button {
+    box-sizing: border-box;
+    display: grid;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-items: center;
+    flex: none;
+    padding: 0;
+    border: 1px solid #ced5ed;
+    border-radius: 0.8rem;
+    background: #eef1fc;
+    color: #42516f;
+    cursor: pointer;
+    transition: background 150ms ease, border-color 150ms ease;
+  }
+
+  .app-shell-ambient .retail-mobile-nav__icon-button:hover {
+    border-color: #aaa0e7;
+    background: #e8e4fb;
+    color: #453f9c;
+  }
+
+  .app-shell-ambient .retail-mobile-nav__icon-button:focus-visible,
+  .retail-mobile-nav__drawer button:focus-visible {
+    outline: 3px solid #998cff;
+    outline-offset: 2px;
+  }
+
+  .app-shell-ambient .retail-mobile-nav__brand {
+    display: flex;
+    min-width: 0;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.88rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  .app-shell-ambient .retail-mobile-nav__brand > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .app-shell-ambient .retail-mobile-nav__account-anchor {
+    position: relative;
+    flex: none;
+  }
+
+  .app-shell-ambient .retail-mobile-nav__account-popover {
+    position: absolute;
+    z-index: 70;
+    top: calc(100% + 0.65rem);
+    right: 0;
+    box-sizing: border-box;
+    width: min(270px, calc(100vw - 1.5rem));
+    min-width: 0;
+    padding: 0.55rem;
+    border: 1px solid #cbd3eb;
+    border-radius: 1rem;
+    background: #f9faff;
+    box-shadow: 0 16px 36px rgb(20 27 57 / 22%);
+    color: #25334d;
+  }
+
+  .app-shell-ambient .retail-mobile-nav__account-identity {
+    display: grid;
+    min-width: 0;
+    gap: 0.2rem;
+    padding: 0.65rem 0.65rem 0.75rem;
+    border-bottom: 1px solid #e1e5f1;
+  }
+
+  .app-shell-ambient .retail-mobile-nav__account-identity strong {
+    overflow: hidden;
+    font-size: 0.85rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .app-shell-ambient .retail-mobile-nav__account-identity > span {
+    font-size: 0.73rem;
+    color: #576583;
+  }
+
+  .app-shell-ambient .retail-mobile-nav__account-action {
+    box-sizing: border-box;
+    display: flex;
+    width: 100%;
+    min-height: 44px;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.65rem 0.7rem;
+    border: 1px solid transparent;
+    border-radius: 0.7rem;
+    background: transparent;
+    color: #354463;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 720;
+    text-align: left;
+  }
+
+  .app-shell-ambient .retail-mobile-nav__account-action:hover {
+    background: #eceafa;
+  }
+
+  .app-shell-ambient .retail-mobile-nav__account-action--danger {
+    color: #a14266;
+  }
+
+  .app-shell-ambient .retail-mobile-nav__account-action--danger:hover {
+    background: #ffedf5;
+  }
+
+  /* Existing layout uses a vertically scrolling workspace, not document
+     scrolling. Phone-safe inner gutters must not force horizontal overflow. */
+  .app-shell-ambient .retail-workspace > main[data-layout="app"] {
+    padding: 0.85rem max(0.75rem, env(safe-area-inset-right, 0px))
+      calc(1rem + env(safe-area-inset-bottom, 0px))
+      max(0.75rem, env(safe-area-inset-left, 0px));
+  }
+
+  :root.dark .app-shell-ambient .retail-mobile-nav__topbar {
+    border-bottom-color: #455673;
+    background: rgb(21 32 51 / 96%);
+    color: #f0f4ff;
+    box-shadow: 0 6px 22px rgb(0 0 0 / 18%);
+  }
+
+  :root.dark .app-shell-ambient .retail-mobile-nav__icon-button {
+    border-color: #526480;
+    background: #283a54;
+    color: #e7efff;
+  }
+
+  :root.dark .app-shell-ambient .retail-mobile-nav__icon-button:hover {
+    border-color: #968ed4;
+    background: #36486a;
+    color: #fff;
+  }
+
+  :root.dark .app-shell-ambient .retail-mobile-nav__account-popover {
+    border-color: #5b6d8d;
+    background: #1c2b43;
+    color: #eef3ff;
+  }
+
+  :root.dark .app-shell-ambient .retail-mobile-nav__account-identity {
+    border-bottom-color: #435571;
+  }
+
+  :root.dark .app-shell-ambient .retail-mobile-nav__account-identity > span {
+    color: #c2d0e7;
+  }
+
+  :root.dark .app-shell-ambient .retail-mobile-nav__account-action {
+    color: #e0e9fc;
+  }
+
+  :root.dark .app-shell-ambient .retail-mobile-nav__account-action:hover {
+    background: #314566;
+  }
+
+  :root.dark .app-shell-ambient .retail-mobile-nav__account-action--danger {
+    color: #ffd0e1;
+  }
+
+  :root.dark .app-shell-ambient .retail-mobile-nav__account-action--danger:hover {
+    background: #4b3249;
+    color: #fff;
+  }
+}
+
+/* The Sheet is rendered in a Radix portal beneath <body>, so selectors here
+   must not rely on .app-shell-ambient or the header for light/dark styling. */
+@media (max-width: 767px) {
+  .retail-mobile-nav__drawer[role="dialog"] {
+    box-sizing: border-box;
+    top: 0;
+    left: 0;
+    display: flex;
+    width: min(330px, calc(100vw - 1.75rem));
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    flex-direction: column;
+    padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+    border: 0;
+    border-right: 1px solid #ccd3ea;
+    border-radius: 0 1.2rem 1.2rem 0;
+    background: #f7f9ff;
+    color: #27354e;
+    box-shadow: 18px 0 50px rgb(3 9 32 / 27%);
+  }
+
+  .retail-mobile-nav__drawer-heading {
+    display: flex;
+    min-height: 70px;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.8rem;
+    border-bottom: 1px solid #dce2f0;
+  }
+
+  .retail-mobile-nav__drawer-heading-copy {
+    display: grid;
+    min-width: 0;
+    flex: 1 1 auto;
+    gap: 0.16rem;
+  }
+
+  .retail-mobile-nav__drawer-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: #25344d;
+  }
+
+  .retail-mobile-nav__drawer-description {
+    font-size: 0.69rem;
+    line-height: 1.25;
+    color: #586a88;
+  }
+
+  .retail-mobile-nav__drawer .retail-mobile-nav__icon-button {
+    box-sizing: border-box;
+    display: grid;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid #d0d7eb;
+    border-radius: 0.8rem;
+    background: #ecf0fb;
+    color: #3c4d6a;
+    cursor: pointer;
+  }
+
+  .retail-mobile-nav__links {
+    display: grid;
+    min-height: 0;
+    flex: 1 1 auto;
+    align-content: start;
+    gap: 1rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.85rem 0.75rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .retail-mobile-nav__links::-webkit-scrollbar {
+    display: none;
+  }
+
+  .retail-mobile-nav__group {
+    display: grid;
+    gap: 0.28rem;
+  }
+
+  .retail-mobile-nav__group-label {
+    margin: 0 0.4rem 0.2rem;
+    color: #65728b;
+    font-size: 0.68rem;
+    font-weight: 850;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .retail-mobile-nav__link {
+    box-sizing: border-box;
+    display: flex;
+    width: 100%;
+    min-height: 46px;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid transparent;
+    border-radius: 0.85rem;
+    background: transparent;
+    color: #40506b;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.87rem;
+    font-weight: 710;
+    text-align: left;
+  }
+
+  .retail-mobile-nav__link svg {
+    flex: none;
+  }
+
+  .retail-mobile-nav__link:hover {
+    border-color: #e4e0fc;
+    background: #ebecfa;
+    color: #5246b3;
+  }
+
+  .retail-mobile-nav__link[aria-current="page"] {
+    border-color: #8c7de4;
+    background: linear-gradient(120deg, #307bf1, #6554dc 63%, #a245a6);
+    box-shadow: 0 5px 16px rgb(83 66 181 / 17%);
+    color: #fff;
+  }
+
+  .retail-mobile-nav__drawer-footer {
+    display: flex;
+    min-width: 0;
+    min-height: 60px;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.7rem 0.95rem;
+    border-top: 1px solid #dce2f0;
+    color: #465674;
+  }
+
+  .retail-mobile-nav__footer-name {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .retail-mobile-nav__role {
+    flex: none;
+    padding: 0.25rem 0.46rem;
+    border: 1px solid #d7d0f8;
+    border-radius: 100px;
+    background: #f0edff;
+    color: #554aaf;
+    font-size: 0.67rem;
+    font-weight: 820;
+  }
+
+  :root.dark .retail-mobile-nav__drawer[role="dialog"] {
+    border-right-color: #506380;
+    background: #18263c;
+    color: #f0f4ff;
+  }
+
+  :root.dark .retail-mobile-nav__drawer-heading,
+  :root.dark .retail-mobile-nav__drawer-footer {
+    border-color: #3d506d;
+  }
+
+  :root.dark .retail-mobile-nav__drawer-title {
+    color: #f1f5ff;
+  }
+
+  :root.dark .retail-mobile-nav__drawer-description,
+  :root.dark .retail-mobile-nav__group-label,
+  :root.dark .retail-mobile-nav__drawer-footer {
+    color: #bcccdf;
+  }
+
+  :root.dark .retail-mobile-nav__drawer .retail-mobile-nav__icon-button {
+    border-color: #607394;
+    background: #2a3c56;
+    color: #edf2ff;
+  }
+
+  :root.dark .retail-mobile-nav__link {
+    color: #e3ebff;
+  }
+
+  :root.dark .retail-mobile-nav__link:hover {
+    border-color: #6576a3;
+    background: #2e4261;
+    color: #fff;
+  }
+
+  :root.dark .retail-mobile-nav__link[aria-current="page"] {
+    border-color: #aaa1eb;
+    color: #fff;
+  }
+
+  :root.dark .retail-mobile-nav__role {
+    border-color: #7165ad;
+    background: #38335c;
+    color: #e3d9ff;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .retail-mobile-nav__link,
+    .retail-mobile-nav__icon-button {
+      transition: none;
+    }
+  }
+}
