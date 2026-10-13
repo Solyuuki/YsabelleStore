@@ -789,6 +789,7 @@ export function InventoryPage() {
           {meta && meta.totalItems > 0 ? (
             <AppPagination
               className="ys-inventory-pagination"
+              mobileCompact
               isLoading={isLoading}
               itemLabel="inventory records"
               page={page}

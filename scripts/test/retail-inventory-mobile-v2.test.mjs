@@ -59,14 +59,15 @@ test("stock activity becomes a readable six-field mobile timeline with no horizo
   assert.match(css, /max-height: none;/);
 });
 
-test("Inventory mobile pagination matches Deliveries: selector left and numbered page actions right", () => {
+test("Inventory pagination mirrors Deliveries: compact current-page button between arrows, selector left", () => {
   const pager = read("frontend/src/components/shared/AppPagination.tsx");
   assert.match(inventory, /className="ys-inventory-pagination"/);
-  assert.doesNotMatch(inventory.slice(inventory.indexOf('className="ys-inventory-pagination"'), inventory.indexOf("itemLabel=\"inventory records\"")), /mobileCompact/);
-  assert.match(pager, /aria-label=\{`Page \$\{token\}`\}/);
+  assert.match(inventory, /mobileCompact/);
+  assert.match(pager, /aria-label=\{`Page \${currentPage} of \${resolvedTotalPages}`\}/);
   assert.match(css, /\.ys-inventory-pagination > div > label > span\s*\{\s*display: none;/);
+  assert.match(css, /\.ys-inventory-page-token\s*\{\s*display: none;/);
+  assert.match(css, /\.ys-inventory-pagination \.ys-inventory-mobile-page-label/);
   assert.match(css, /\.ys-inventory-pagination nav > ul/);
-  assert.match(css, /justify-content: space-between;/);
 });
 
 test("mobile stock receiving and adjustment remain horizontal and scrollable", () => {

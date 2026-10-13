@@ -127,7 +127,9 @@ export function AppPagination({
 
               {mobileCompact ? (
                 <PaginationItem className="ys-inventory-mobile-page-label">
-                  <span aria-live="polite">Page {currentPage} of {resolvedTotalPages}</span>
+                  <span aria-current="page" aria-label={`Page ${currentPage} of ${resolvedTotalPages}`} aria-live="polite">
+                    {currentPage}
+                  </span>
                 </PaginationItem>
               ) : null}
 
