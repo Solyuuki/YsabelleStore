@@ -64,6 +64,8 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
   const [month, setMonth] = useState(today.slice(0, 7));
   const [selectedDate, setSelectedDate] = useState(today);
   const [view, setView] = useState<"calendar" | "performance">("calendar");
+  const [mobileWindowStart, setMobileWindowStart] = useState(0);
+  const [mobileMonthExpanded, setMobileMonthExpanded] = useState(false);
   const [calendar, setCalendar] = useState<DashboardSalesCalendar | null>(null);
   const [detail, setDetail] = useState<DashboardSalesDayDetail | null>(null);
   const [, setLoadingCalendar] = useState(true);
@@ -134,11 +136,34 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
 
   const selectedCalendarDay = calendar?.days.find((day) => day.date === selectedDate) ?? null;
   const trailingDays = calendar ? (7 - ((firstWeekday + calendar.days.length) % 7)) % 7 : 0;
+  const maxMobileWindowStart = Math.max(0, (calendar?.days.length ?? 0) - 5);
+  const mobileWindowDays = (calendar?.days ?? []).slice(mobileWindowStart, mobileWindowStart + 5);
+  const moveMobileWindow = (offset: number) => {
+    if (!calendar?.days.length) return;
+    const start = Math.max(0, Math.min(maxMobileWindowStart, mobileWindowStart + offset));
+    setMobileWindowStart(start);
+    const nextDay = calendar.days[start];
+    if (nextDay) setSelectedDate(nextDay.date);
+  };
+
+  useEffect(() => {
+    if (!calendar || !selectedDate.startsWith(calendar.month)) return;
+    const index = calendar.days.findIndex((day) => day.date === selectedDate);
+    if (index < 0) return;
+    if (index < mobileWindowStart || index >= mobileWindowStart + 5) {
+      setMobileWindowStart(Math.min(Math.floor(index / 5) * 5, Math.max(0, calendar.days.length - 5)));
+    }
+  }, [calendar, selectedDate, mobileWindowStart]);
+
   const chartData = (detail?.activity ?? []).map((bucket) => ({
     amount: Number(bucket.totalAmount),
     label: bucket.label,
     sales: bucket.saleCount
   }));
+  const noHourlyActivity =
+    detail?.actualDataAvailable === true &&
+    chartData.length > 0 &&
+    chartData.every((bucket) => bucket.amount === 0);
   const monthlyPerformanceData = (calendar?.days ?? []).map((day) => ({
     actual: day.actualDataAvailable ? Number(day.actualAmount) : null,
     label: String(Number(day.date.slice(-2))),
@@ -155,16 +180,16 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
     detail?.actualDataAvailable ?? selectedCalendarDay?.actualDataAvailable ?? false;
 
   return (
-    <Card className={brandCardClass}>
+    <Card className={`${brandCardClass} ys-dashboard-sales-pulse`}>
       <div className="ys-material-accent-strip" aria-hidden="true" />
-      <CardHeader className="border-b border-slate-100 pb-4 pt-6">
+      <CardHeader className="ys-sales-pulse-header border-b border-slate-100 pb-4 pt-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#625bff]">
               Sales pulse
             </p>
             <CardTitle className="mt-1">Retail activity</CardTitle>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="ys-sales-pulse-description mt-1 text-xs text-slate-500">
               Past actuals, today's progress, future targets, and monthly forecast context.
             </p>
           </div>
@@ -189,7 +214,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
         </div>
       </CardHeader>
 
-      <CardContent className="pt-5">
+      <CardContent className="ys-sales-pulse-body pt-5">
         {error ? (
           <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
             {error}
@@ -198,7 +223,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
 
         {view === "calendar" ? (
           <div className="space-y-5">
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="ys-sales-summary-grid grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <SummaryTile
                 helper={
                   calendar
@@ -300,7 +325,62 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                   </Button>
                 </div>
 
-                <div className="ys-sales-weekdays grid grid-cols-7 border-b border-slate-100 bg-slate-50/80">
+                <div className="ys-sales-mobile-week" aria-label="Sales date navigator">
+                  <div className="ys-sales-mobile-week__header">
+                    <strong>{formatMonthLabel(month)}</strong>
+                    <button
+                      aria-controls="ys-sales-full-month"
+                      aria-expanded={mobileMonthExpanded}
+                      className="ys-sales-mobile-week__expand"
+                      onClick={() => setMobileMonthExpanded((expanded) => !expanded)}
+                      type="button"
+                    >
+                      {mobileMonthExpanded ? "Hide month" : "View month"}
+                    </button>
+                  </div>
+                  <div className="ys-sales-mobile-week__days">
+                    <button
+                      aria-label="Previous five sales dates"
+                      className="ys-sales-mobile-week__arrow"
+                      disabled={!calendar || mobileWindowStart === 0}
+                      onClick={() => moveMobileWindow(-5)}
+                      type="button"
+                    >
+                      <ChevronLeft aria-hidden="true" size={18} />
+                    </button>
+                    {mobileWindowDays.map((day) => (
+                      <button
+                        aria-label={`Show sales for ${day.date}`}
+                        aria-pressed={selectedDate === day.date}
+                        className="ys-sales-mobile-week__day"
+                        key={day.date}
+                        onClick={() => setSelectedDate(day.date)}
+                        type="button"
+                      >
+                        <span>{formatShortWeekday(day.date)}</span>
+                        <strong>{Number(day.date.slice(-2))}</strong>
+                        {day.targetAmount || day.actualDataAvailable ? (
+                          <span aria-hidden="true" className="ys-sales-mobile-week__dot" />
+                        ) : (
+                          <span aria-hidden="true" className="ys-sales-mobile-week__dot-placeholder" />
+                        )}
+                      </button>
+                    ))}
+                    <button
+                      aria-label="Next five sales dates"
+                      className="ys-sales-mobile-week__arrow"
+                      disabled={!calendar || mobileWindowStart >= maxMobileWindowStart}
+                      onClick={() => moveMobileWindow(5)}
+                      type="button"
+                    >
+                      <ChevronRight aria-hidden="true" size={18} />
+                    </button>
+                  </div>
+                  {!calendar ? <p className="ys-sales-mobile-week__loading">Loading sales dates…</p> : null}
+                </div>
+
+                <div className="ys-sales-month-grid" id="ys-sales-full-month" data-mobile-open={mobileMonthExpanded}>
+                  <div className="ys-sales-weekdays grid grid-cols-7 border-b border-slate-100 bg-slate-50/80">
                   {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((weekday) => (
                     <div
                       className="px-1 py-2 text-center text-[10px] font-semibold uppercase tracking-wide text-slate-400 sm:text-xs"
@@ -369,6 +449,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                       key={`trailing-empty-${index}`}
                     />
                   ))}
+                  </div>
                 </div>
               </div>
 
@@ -514,7 +595,7 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                     </p>
                   </div>
                 </div>
-                <div className="h-56 w-full">
+                <div className="ys-sales-hourly-chart h-56 w-full" data-mobile-empty={noHourlyActivity}>
                   {loadingDetail ? (
                     <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/70 text-xs font-medium text-slate-400">
                       Loading selected-day activity…
@@ -526,7 +607,14 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                         : "Daily POS history is not available for this date. No zero-sales value is being assumed."}
                     </div>
                   ) : (
-                    <ResponsiveContainer height="100%" width="100%">
+                    <>
+                      {noHourlyActivity ? (
+                        <div className="ys-sales-hourly-chart__empty">
+                          No completed sales in these two-hour windows.
+                        </div>
+                      ) : null}
+                      <div className="ys-sales-hourly-chart__plot">
+                        <ResponsiveContainer height="100%" width="100%">
                       <AreaChart data={chartData} margin={{ bottom: 0, left: 0, right: 4, top: 8 }}>
                         <defs>
                           <linearGradient
@@ -545,8 +633,10 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                         <XAxis
                           axisLine={false}
                           dataKey="label"
-                          interval={1}
-                          tick={{ fill: "#94a3b8", fontSize: 11 }}
+                          interval="preserveStartEnd"
+                          minTickGap={12}
+                          tick={{ fill: "#94a3b8", fontSize: 10 }}
+                          tickFormatter={(label) => formatHourAxisTick(String(label))}
                           tickLine={false}
                         />
                         <Tooltip
@@ -563,6 +653,8 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                         />
                       </AreaChart>
                     </ResponsiveContainer>
+                      </div>
+                    </>
                   )}
                 </div>
               </div>
@@ -649,7 +741,7 @@ function SummaryTile({ helper, label, value }: { helper?: string; label: string;
   return (
     <div className="ys-sales-summary-tile rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-3">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="mt-1 truncate text-lg font-semibold tracking-tight text-slate-950">{value}</p>
+      <p className="ys-sales-summary-tile__value mt-1 text-lg font-semibold tracking-tight text-slate-950">{value}</p>
       {helper ? <p className="mt-1 text-[11px] text-slate-500">{helper}</p> : null}
     </div>
   );
@@ -671,6 +763,15 @@ function tabClass(active: boolean) {
       ? "bg-white text-[#625bff] shadow-sm ring-1 ring-slate-200"
       : "text-slate-500 hover:text-slate-900"
   ].join(" ");
+}
+
+function formatShortWeekday(date: string) {
+  return new Intl.DateTimeFormat("en-PH", { weekday: "short", timeZone: "UTC" })
+    .format(new Date(`${date}T00:00:00.000Z`));
+}
+
+function formatHourAxisTick(label: string) {
+  return label.split(/\s*[–—-]\s*/)[0]?.trim() ?? label;
 }
 
 function formatCurrency(value: string | number) {
