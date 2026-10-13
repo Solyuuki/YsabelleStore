@@ -503,9 +503,9 @@ export function CustomerSupportInboxPage() {
           </button>
           {!selectedTicketId ? (
             <EmptyConversation />
-          ) : detailLoading && !detail ? (
+          ) : detailLoading || (detail && detail.id !== selectedTicketId) ? (
             <EmptyConversation label="Loading conversation..." />
-          ) : detail ? (
+          ) : detail && detail.id === selectedTicketId ? (
             <SupportConversation
               key={detail.id}
               detail={detail}

@@ -50,3 +50,8 @@ test("Mobile conversation has dedicated scrolling and sticky readable compose co
   assert.match(css, /:root.dark .retail-workspace \[data-retail-module="customer-support"\] .ys-support-mobile-compose-row textarea/);
   assert.match(css, /@media \(max-width: 359px\)/);
 });
+
+test("Switching tickets never briefly renders another ticket's messages or status actions", () => {
+  assert.match(page, /detail && detail.id !== selectedTicketId/);
+  assert.match(page, /detail && detail.id === selectedTicketId/);
+});
