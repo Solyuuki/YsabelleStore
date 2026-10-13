@@ -4,7 +4,7 @@
   display: none;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
   .app-shell-ambient > .retail-desktop-sidebar {
     display: none;
   }
@@ -216,7 +216,7 @@
 
 /* The Sheet is rendered in a Radix portal beneath <body>, so selectors here
    must not rely on .app-shell-ambient or the header for light/dark styling. */
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
   .retail-mobile-nav__drawer[role="dialog"] {
     box-sizing: border-box;
     top: 0;
