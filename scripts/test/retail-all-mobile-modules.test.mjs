@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const read = (path) => readFileSync(new URL(`../../\${path}`, import.meta.url), "utf8");
+const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 
 const source = {
   layout: read("frontend/src/layouts/AppLayout.tsx"),
@@ -50,7 +50,7 @@ test("all operational tables use compact labelled cards with their original acti
     const current = source[module];
     assert.ok(current.includes("retail-mobile-data-table"), module + " misses the responsive table");
     for (const label of labels) {
-      assert.ok(current.includes(`data-label="\${label}"`), module + " missing " + label);
+      assert.ok(current.includes(`data-label="${label}"`), module + " missing " + label);
     }
   }
   assert.match(source.pos, /addProductToCart\(product,/);
@@ -96,7 +96,7 @@ test("remaining analytics and administration preserve functional screen content"
     "/sales", "/deliveries", "/customer-support", "/forecast", "/historical-sales",
     "/reports", "/users", "/settings"
   ]) {
-    assert.ok(source.routes.includes(`path: "\${pathname}"`), pathname + " missing route");
+    assert.ok(source.routes.includes(`path: "${pathname}"`), pathname + " missing route");
   }
   assert.match(source.dashboard, /ys-dashboard-monthly-batch/);
   assert.match(source.reports, /ResponsiveContainer/);
