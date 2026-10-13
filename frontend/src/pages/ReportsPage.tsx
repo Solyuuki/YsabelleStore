@@ -2,6 +2,7 @@ import {
   Boxes,
   CalendarClock,
   Download,
+  ChevronRight,
   PackageOpen,
   ReceiptText,
   RefreshCw,
@@ -22,6 +23,7 @@ import {
 } from "recharts";
 
 import { ReportDownloadDialog } from "@/components/reports/ReportDownloadDialog";
+import "@/styles/retail-reports-mobile-v2.css";
 import { RestockDraftsPanel } from "@/components/reports/RestockDraftsPanel";
 import { RestockForecastPanel } from "@/components/reports/RestockForecastPanel";
 import { RestockPlanningPanel } from "@/components/reports/RestockPlanningPanel";
@@ -64,6 +66,7 @@ export function ReportsPage() {
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [exportOpen, setExportOpen] = useState(false);
   const [draftsOpen, setDraftsOpen] = useState(true);
+  const [mobileSection, setMobileSection] = useState<"overview" | "recommendations" | "planner">("overview");
   const [restockOrdersRefreshVersion, setRestockOrdersRefreshVersion] = useState(0);
   const restockDraftsRef = useRef<HTMLDivElement | null>(null);
 
@@ -189,6 +192,7 @@ export function ReportsPage() {
 
   function openRestockDrafts() {
     setDraftsOpen(true);
+    setMobileSection("planner");
     window.requestAnimationFrame(() => {
       restockDraftsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
@@ -204,7 +208,7 @@ export function ReportsPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="ys-reports-v2 space-y-4" data-mobile-section={mobileSection}>
       <PageHeader
         eyebrow="Owner area"
         title="Reports"
@@ -234,6 +238,20 @@ export function ReportsPage() {
         }
       />
 
+      <nav aria-label="Reports mobile sections" className="ys-report-v2-tabs">
+        {(["overview", "recommendations", "planner"] as const).map((section) => (
+          <button
+            aria-current={mobileSection === section ? "page" : undefined}
+            aria-pressed={mobileSection === section}
+            key={section}
+            onClick={() => setMobileSection(section)}
+            type="button"
+          >
+            {section === "overview" ? "Overview" : section === "recommendations" ? "Recommendations" : "Planner"}
+          </button>
+        ))}
+      </nav>
+
       {loading && !summary ? (
         <LoadingState
           badge="Loading"
@@ -250,15 +268,35 @@ export function ReportsPage() {
 
       {summary ? (
         <>
-          <section className="grid gap-4 lg:grid-cols-3 xl:grid-cols-5">
+          <section className="ys-report-v2-mobile-summary" aria-label="Reports at a glance">
+            <div className="ys-report-v2-kpi-grid">
+              {stats.slice(0, 4).map((stat) => (
+                <div className="ys-report-v2-kpi" key={stat.title}>
+                  <span>{stat.title}</span>
+                  <strong>{stat.value}</strong>
+                </div>
+              ))}
+            </div>
+            <div className="ys-report-v2-summary-bottom">
+              <span>Expiry attention: <strong>{summary.expiry.nearExpiryBatches.toLocaleString()}</strong></span>
+              <span>Out of stock: <strong>{summary.inventory.outOfStockItems.toLocaleString()}</strong></span>
+            </div>
+            <button className="ys-report-v2-view-recommendations" onClick={() => setMobileSection("recommendations")} type="button">
+              <span>See recommendations</span>
+              <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0" />
+            </button>
+          </section>
+          <section className="ys-report-v2-desktop-stats grid gap-4 lg:grid-cols-3 xl:grid-cols-5">
             {stats.map((stat) => (
               <StatCard key={stat.title} {...stat} />
             ))}
           </section>
 
-          <section className="space-y-3">
+          <section className="ys-report-v2-recommendations space-y-3">
             <RestockForecastPanel refreshVersion={refreshVersion + restockOrdersRefreshVersion} />
 
+          </section>
+          <section className="ys-report-v2-planner space-y-3">
             <RestockPlanningPanel
               onOpenOrders={toggleRestockDrafts}
               onOrdersChanged={notifyRestockOrdersChanged}
@@ -274,8 +312,8 @@ export function ReportsPage() {
             ) : null}
           </section>
 
-          <section className="grid items-start gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-            <Card>
+          <section className="ys-report-v2-insights grid items-start gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+            <Card className="ys-report-v2-sales-card">
               <CardHeader className="pb-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <CardTitle>Recent receipt metrics</CardTitle>
@@ -337,7 +375,7 @@ export function ReportsPage() {
                   )}
                 </div>
 
-                <p className="mt-3 text-xs text-slate-500">
+                <p className="ys-report-v2-receipt-note mt-3 text-xs text-slate-500">
                   Based on recent completed receipts · Use Download report for printable or
                   spreadsheet copies.
                 </p>
