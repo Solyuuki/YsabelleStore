@@ -670,7 +670,7 @@ function ForecastedProductsCard({
           ) : pagination && pagination.items.length > 0 ? (
             <div className="flex h-full min-h-[32rem] flex-col justify-between gap-3">
               <div className="overflow-hidden rounded-md border border-slate-200">
-                <table className="w-full text-left text-sm">
+                <table className="retail-mobile-data-table w-full text-left text-sm">
                   <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                     <tr>
                       <th className="px-3 py-2">Product</th>
@@ -689,7 +689,7 @@ function ForecastedProductsCard({
                         key={product.productId}
                         onClick={() => onProductSelect(product.productId)}
                       >
-                        <td className="px-3 py-3">
+                        <td data-label="Product" className="px-3 py-3">
                           <p className="font-medium text-slate-950">{product.productName}</p>
                           <p className="text-xs text-slate-500">
                             {product.productId} - {product.category}
@@ -700,10 +700,10 @@ function ForecastedProductsCard({
                             {formatForecastVariance(product.forecastVariancePercentage)}
                           </p>
                         </td>
-                        <td className="px-3 py-3 text-right font-medium">
+                        <td data-label="Current Month" className="px-3 py-3 text-right font-medium">
                           {formatNumber(product.currentMonthForecastQuantity)}
                         </td>
-                        <td className="px-3 py-3 text-right font-medium">
+                        <td data-label="Horizon" className="px-3 py-3 text-right font-medium">
                           {formatNumber(product.forecastHorizonTotal)}
                         </td>
                       </tr>
@@ -1026,7 +1026,7 @@ function MonthlyForecastCard({
             ) : null}
 
             <div className="rounded-md border border-slate-200">
-              <table className="w-full text-sm">
+              <table className="retail-mobile-data-table w-full text-sm">
                 <thead className="sticky top-0 bg-slate-50 text-xs uppercase text-slate-500">
                   <tr>
                     <th className="px-3 py-2 text-left">Month</th>
@@ -1038,17 +1038,17 @@ function MonthlyForecastCard({
                 <tbody>
                   {visibleForecastRows.map((point) => (
                     <tr className="border-t border-slate-100" key={point.period}>
-                      <td className="px-3 py-2 font-medium">{formatMonthLabel(point.period)}</td>
-                      <td className="px-3 py-2 text-right">
+                      <td data-label="Month" className="px-3 py-2 font-medium">{formatMonthLabel(point.period)}</td>
+                      <td data-label="Forecasted Demand" className="px-3 py-2 text-right">
                         {formatNumber(point.predictedQuantity, 1)}
                       </td>
-                      <td className="px-3 py-2 text-right">
+                      <td data-label="Prior-Year Comparison" className="px-3 py-2 text-right">
                         {formatNumber(point.comparisonSalesQuantity)}
                         {point.comparisonSalesEstimated ? (
                           <span className="ml-1 text-xs text-slate-500">(est.)</span>
                         ) : null}
                       </td>
-                      <td
+                      <td data-label="Expected Change"
                         className={`px-3 py-2 text-right font-medium ${expectedChangeClassName(point.forecastVariancePercentage)}`}
                       >
                         {formatForecastVariance(point.forecastVariancePercentage)}
