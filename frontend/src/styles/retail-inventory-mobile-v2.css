@@ -308,7 +308,7 @@
   :root[data-appearance-scope="retail"] .ys-inventory-details-modal section.rounded-lg .mt-3 {
     margin-top: 0.5rem;
   }
-  :root[data-appearance-scope="retail"] .ys-inventory-details-modal section.rounded-lg .py-2\\.5 {
+  :root[data-appearance-scope="retail"] .ys-inventory-details-modal section.rounded-lg [class~="py-2.5"] {
     padding-block: 0.4rem;
   }
   :root[data-appearance-scope="retail"] .ys-inventory-details-actions {
