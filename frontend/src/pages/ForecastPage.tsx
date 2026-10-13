@@ -670,9 +670,66 @@ function ForecastedProductsCard({
             ))}
           </select>
         </div>
+
+        <div className="ys-forecast-v2-mobile-filters">
+          <button
+            aria-expanded={mobileFiltersOpen}
+            aria-controls="ys-forecast-v2-filter-panel"
+            className="ys-forecast-v2-filter-trigger"
+            disabled={listControlsDisabled}
+            onClick={() => setMobileFiltersOpen((open) => !open)}
+            type="button"
+          >
+            <SlidersHorizontal aria-hidden="true" className="h-4 w-4" />
+            <span>Filters &amp; sort</span>
+            {(selectedCategory || sortBy !== "alphabeticalAsc") ? <span className="ys-forecast-v2-filter-dot" /> : null}
+            <ChevronDown aria-hidden="true" className="h-4 w-4" />
+          </button>
+          {mobileFiltersOpen ? (
+            <div className="ys-forecast-v2-filter-panel" id="ys-forecast-v2-filter-panel">
+              <fieldset>
+                <legend>Category</legend>
+                {[{ value: "", label: "All categories" }, ...categories.map((category) => ({ value: category, label: category }))].map((option) => (
+                  <button
+                    aria-pressed={selectedCategory === option.value}
+                    className="ys-forecast-v2-filter-choice"
+                    key={option.value}
+                    onClick={() => onCategoryChange(option.value)}
+                    type="button"
+                  >
+                    <span>{option.label}</span>
+                    {selectedCategory === option.value ? <Check aria-hidden="true" className="h-4 w-4" /> : null}
+                  </button>
+                ))}
+              </fieldset>
+              <fieldset>
+                <legend>Sort by</legend>
+                {forecastSortOptions.map((option) => (
+                  <button
+                    aria-pressed={sortBy === option.value}
+                    className="ys-forecast-v2-filter-choice"
+                    key={option.value}
+                    onClick={() => onSortChange(option.value)}
+                    type="button"
+                  >
+                    <span>{option.label}</span>
+                    {sortBy === option.value ? <Check aria-hidden="true" className="h-4 w-4" /> : null}
+                  </button>
+                ))}
+              </fieldset>
+              <div className="ys-forecast-v2-filter-actions">
+                <button className="ys-forecast-v2-filter-reset" type="button" onClick={() => {
+                  onCategoryChange("");
+                  onSortChange("alphabeticalAsc");
+                }}>Reset</button>
+                <button className="ys-forecast-v2-filter-apply" type="button" onClick={() => setMobileFiltersOpen(false)}>Apply</button>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </CardHeader>
 
-      <CardContent className="min-h-0 flex-1 pt-0">
+      <CardContent className="ys-forecast-v2-list-content min-h-0 flex-1 pt-0">
         <div className="flex min-h-full flex-col gap-4" aria-busy={loading}>
           {loading ? (
             <div className="max-w-md" aria-live="polite">
@@ -695,8 +752,29 @@ function ForecastedProductsCard({
               title="No forecast data available"
             />
           ) : pagination && pagination.items.length > 0 ? (
-            <div className="flex h-full min-h-[32rem] flex-col justify-between gap-3">
-              <div className="overflow-hidden rounded-md border border-slate-200">
+            <div className="ys-forecast-v2-product-results flex h-full min-h-[32rem] flex-col justify-between gap-3">
+
+              <div className="ys-forecast-v2-mobile-cards" aria-label="Forecasted products">
+                {pagination.items.map((product) => (
+                  <button
+                    aria-label={`View forecast for ${product.productName}`}
+                    aria-pressed={selectedProductId === product.productId}
+                    className="ys-forecast-v2-product-card"
+                    key={product.productId}
+                    onClick={() => onProductSelect(product.productId)}
+                    type="button"
+                  >
+                    <span className="ys-forecast-v2-product-name">{product.productName}</span>
+                    <span className="ys-forecast-v2-product-category">{product.category}</span>
+                    <span className="ys-forecast-v2-product-metrics">
+                      <span><small>Curr. Mo.</small><strong>{formatNumber(product.currentMonthForecastQuantity)}</strong></span>
+                      <span><small>{forecastHorizonMonths} Mo.</small><strong>{formatNumber(product.forecastHorizonTotal)}</strong></span>
+                      <span><small>Δ vs PY</small><strong className={expectedChangeClassName(product.forecastVariancePercentage)}>{formatForecastVariance(product.forecastVariancePercentage)}</strong></span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <div className="ys-forecast-v2-desktop-products overflow-hidden rounded-md border border-slate-200">
                 <table className="retail-mobile-data-table w-full text-left text-sm">
                   <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                     <tr>
@@ -739,6 +817,7 @@ function ForecastedProductsCard({
                 </table>
               </div>
 
+              <div className="ys-forecast-v2-desktop-pagination">
               <AppPagination
                 isLoading={networkUpdating}
                 itemLabel="products"
@@ -749,6 +828,22 @@ function ForecastedProductsCard({
                 totalItems={pagination.totalItems}
                 totalPages={pagination.totalPages}
               />
+              </div>
+              <div className="ys-forecast-v2-mobile-pagination">
+                <AppPagination
+                  className="ys-forecast-v2-pager"
+                  mobileCompact
+                  isLoading={networkUpdating}
+                  itemLabel="products"
+                  onPageChange={onProductsPageChange}
+                  onPageSizeChange={onProductsPageSizeChange}
+                  page={pagination.page}
+                  pageSize={pagination.pageSize}
+                  pageSizeOptions={[7, 10, 20]}
+                  totalItems={pagination.totalItems}
+                  totalPages={pagination.totalPages}
+                />
+              </div>
             </div>
           ) : (
             <EmptyState
