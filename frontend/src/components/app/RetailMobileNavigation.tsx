@@ -1,8 +1,9 @@
-import { LogOut, Menu, Settings, UserRound, X } from "lucide-react";
+import { LogOut, Menu, Moon, Settings, Sun, UserRound, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { appRoutes, type AppRoutePath } from "@/app/routes";
 import { YsabelleBrandMark } from "@/components/customer/YsabelleBrandMark";
+import { useAppearance } from "@/context/AppearanceContext";
 import {
   Sheet,
   SheetClose,
@@ -47,6 +48,7 @@ export function RetailMobileNavigation({
   const [accountOpen, setAccountOpen] = useState(false);
   const accountTriggerRef = useRef<HTMLButtonElement>(null);
   const accountPanelRef = useRef<HTMLDivElement>(null);
+  const { retailTheme, setRetailTheme } = useAppearance();
   const role = user?.role ?? "STAFF";
   const roleLabel = role === "OWNER" ? "Owner" : "Staff";
 
@@ -215,6 +217,19 @@ export function RetailMobileNavigation({
                 <strong title={user?.name}>{user?.name || "Retail account"}</strong>
                 <span>{roleLabel} session</span>
               </div>
+              <button
+                aria-label={`Switch to ${retailTheme === "dark" ? "light" : "dark"} mode`}
+                className="retail-mobile-nav__account-action"
+                onClick={() => setRetailTheme(retailTheme === "dark" ? "light" : "dark")}
+                type="button"
+              >
+                {retailTheme === "dark" ? (
+                  <Sun aria-hidden="true" size={18} />
+                ) : (
+                  <Moon aria-hidden="true" size={18} />
+                )}
+                <span>{retailTheme === "dark" ? "Light mode" : "Dark mode"}</span>
+              </button>
               {role === "OWNER" ? (
                 <button
                   className="retail-mobile-nav__account-action"
