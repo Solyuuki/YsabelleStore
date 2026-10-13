@@ -1498,6 +1498,16 @@ async function checkAboutMobileIntelligence(page, viewport) {
       desktopChart: metrics(".about-forecast-demo__chart"),
       legacyStageRail: metrics(".system-preview__nav ol"),
       stagePicker: metrics(".system-preview__mobile-stage-picker"),
+      kpiLayout: (() => {
+        const container = Array.from(document.querySelectorAll(".system-preview__metrics"))
+          .find((node) => node.children.length === 3 && node.getBoundingClientRect().width > 0);
+        if (!container) return null;
+        const cards = Array.from(container.children).map((node) => {
+          const box = node.getBoundingClientRect();
+          return { top: box.top, bottom: box.bottom, width: box.width, left: box.left };
+        });
+        return { width: container.getBoundingClientRect().width, cards };
+      })(),
       deliveryStage: metrics(".story-delivery__stage"),
       deliveryFrame: metrics(".story-delivery__frame")
     };
@@ -1515,6 +1525,18 @@ async function checkAboutMobileIntelligence(page, viewport) {
     result.stagePicker?.display === "none"
   ) {
     issues.push("System Intelligence stage picker not replacing the 7-column rail");
+  }
+  // All three KPIs must occupy a complete 1 + 2 layout at 320–430px.
+  // Avoid relying on CSS source alone: check the rendered positions.
+  const kpi = result.kpiLayout;
+  if (
+    !kpi || kpi.cards.length !== 3 ||
+    Math.abs(kpi.cards[0].width - kpi.width) > 2 ||
+    Math.abs(kpi.cards[1].top - kpi.cards[2].top) > 2 ||
+    kpi.cards[0].bottom >= kpi.cards[1].top ||
+    Math.abs(kpi.cards[1].width - kpi.cards[2].width) > 2
+  ) {
+    issues.push("Three system KPIs leave an orphaned mobile grid cell");
   }
   if (
     !result.deliveryStage || !result.deliveryFrame ||
