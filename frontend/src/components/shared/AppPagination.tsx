@@ -17,6 +17,7 @@ type AppPaginationProps = {
   className?: string;
   isLoading?: boolean;
   itemLabel?: string;
+  mobileCompact?: boolean;
   onPageChange: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
   page: number;
@@ -35,6 +36,7 @@ export function AppPagination({
   className,
   isLoading = false,
   itemLabel = "items",
+  mobileCompact = false,
   onPageChange,
   onPageSizeChange,
   page,
@@ -123,10 +125,16 @@ export function AppPagination({
                 </PaginationPrevious>
               </PaginationItem>
 
+              {mobileCompact ? (
+                <PaginationItem className="ys-inventory-mobile-page-label">
+                  <span aria-live="polite">Page {currentPage} of {resolvedTotalPages}</span>
+                </PaginationItem>
+              ) : null}
+
               {pageTokens.map((token) => {
                 if (token === "start-ellipsis" || token === "end-ellipsis") {
                   return (
-                    <PaginationItem key={token}>
+                    <PaginationItem className={mobileCompact ? "ys-inventory-page-token" : undefined} key={token}>
                       <PaginationEllipsis />
                     </PaginationItem>
                   );
@@ -135,7 +143,7 @@ export function AppPagination({
                 const isActive = token === currentPage;
 
                 return (
-                  <PaginationItem key={token}>
+                  <PaginationItem className={mobileCompact ? "ys-inventory-page-token" : undefined} key={token}>
                     <PaginationLink
                       asChild
                       isActive={isActive}
