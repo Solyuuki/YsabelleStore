@@ -1028,7 +1028,7 @@ export function ProductsPage() {
                 ) : hasCatalogRows ? (
                   <div className={showCatalogOverlay ? "pointer-events-none opacity-70" : ""}>
                     <div className="overflow-hidden">
-                      <table className="w-full table-fixed border-collapse text-left text-sm">
+                      <table className="retail-mobile-data-table w-full table-fixed border-collapse text-left text-sm">
                         <thead className="bg-slate-100 text-slate-700">
                           <tr>
                             <th className="w-[48%] px-2 py-2.5 lg:w-[32%] xl:w-[28%]">Product</th>
@@ -1073,7 +1073,7 @@ export function ProductsPage() {
                                 }}
                                 tabIndex={0}
                               >
-                                <td className="px-2 py-2 align-top lg:py-2.5">
+                                <td data-label="Product" className="px-2 py-2 align-top lg:py-2.5">
                                   <div className="font-medium text-slate-950 xl:truncate">
                                     {product.name}
                                   </div>
@@ -1140,24 +1140,24 @@ export function ProductsPage() {
                                     </div>
                                   </div>
                                 </td>
-                                <td className="hidden px-2 py-2 align-top break-words lg:table-cell">
+                                <td data-label="SKU" className="hidden px-2 py-2 align-top break-words lg:table-cell">
                                   {product.sku}
                                 </td>
-                                <td className="hidden px-2 py-2 align-top break-words xl:table-cell">
+                                <td data-label="Barcode" className="hidden px-2 py-2 align-top break-words xl:table-cell">
                                   {product.barcode ?? "-"}
                                 </td>
-                                <td className="hidden px-2 py-2 align-top break-words lg:table-cell">
+                                <td data-label="Category" className="hidden px-2 py-2 align-top break-words lg:table-cell">
                                   {product.category.name}
                                 </td>
-                                <td className="px-2 py-2 align-top lg:py-2.5">
+                                <td data-label="Status" className="px-2 py-2 align-top lg:py-2.5">
                                   <StatusBadge variant={getProductStatusVariant(product.status)}>
                                     {getProductStatusLabel(product.status)}
                                   </StatusBadge>
                                 </td>
-                                <td className="hidden px-2 py-2 align-top tabular-nums lg:table-cell">
+                                <td data-label="Selling price" className="hidden px-2 py-2 align-top tabular-nums lg:table-cell">
                                   PHP {Number(product.sellingPrice).toFixed(2)}
                                 </td>
-                                <td className="px-2 py-2 align-top text-center lg:py-2.5">
+                                <td data-label="Action" className="px-2 py-2 align-top text-center lg:py-2.5">
                                   <div className="mx-auto inline-flex max-w-full flex-row flex-nowrap items-center justify-center gap-2 whitespace-nowrap">
                                     <Tooltip content="Edit product">
                                       <Button
