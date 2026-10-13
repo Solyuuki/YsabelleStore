@@ -131,6 +131,7 @@ export function CustomerSupportInboxPage() {
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [mobileConversationOpen, setMobileConversationOpen] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const mobileConversationOpenRef = useRef(false);
   const [detail, setDetail] = useState<StaffSupportTicketDetail | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StaffSupportStatus | "ALL">("ALL");
@@ -147,6 +148,10 @@ export function CustomerSupportInboxPage() {
   const [statusSaving, setStatusSaving] = useState(false);
   const [gmailStatus, setGmailStatus] = useState<SupportGmailStatus | null>(null);
   const [retryingMessageId, setRetryingMessageId] = useState<string | null>(null);
+
+  useEffect(() => {
+    mobileConversationOpenRef.current = mobileConversationOpen;
+  }, [mobileConversationOpen]);
 
   useEffect(() => {
     void fetchSupportGmailStatus()
@@ -175,7 +180,10 @@ export function CustomerSupportInboxPage() {
           setTickets(result.items);
           setMeta(result.meta);
           setSelectedTicketId((current) => {
-            if (current && result.items.some((ticket) => ticket.id === current)) {
+            if (
+              current &&
+              (mobileConversationOpenRef.current || result.items.some((ticket) => ticket.id === current))
+            ) {
               return current;
             }
             return result.items[0]?.id ?? null;
@@ -502,7 +510,12 @@ export function CustomerSupportInboxPage() {
               key={detail.id}
               detail={detail}
               gmailConfigured={gmailStatus?.configured === true}
-              onBack={() => setMobileConversationOpen(false)}
+              onBack={() => {
+                setMobileConversationOpen(false);
+                if (!tickets.some((ticket) => ticket.id === selectedTicketId)) {
+                  setSelectedTicketId(tickets[0]?.id ?? null);
+                }
+              }}
               onReopen={() => void saveStatus("OPEN")}
               onReplyChange={setReply}
               onReplySubmit={submitReply}
