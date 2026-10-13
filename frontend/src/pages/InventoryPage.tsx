@@ -947,7 +947,8 @@ function FilterSelect({
       setOpen(false);
     } else if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      choose(options[index].value);
+      const option = options[index];
+      if (option) choose(option.value);
     }
   }
 
