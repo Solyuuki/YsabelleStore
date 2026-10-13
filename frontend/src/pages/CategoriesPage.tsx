@@ -1,4 +1,8 @@
 import {
+  Check,
+  ChevronRight,
+  Eye,
+  EyeOff,
   Filter,
   Image as ImageIcon,
   LoaderCircle,
@@ -12,6 +16,7 @@ import {
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 
 import { CategoryCoverUploadPanel } from "@/components/catalog/CategoryCoverUploadPanel";
+import "@/styles/retail-categories-mobile-v2.css";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -192,6 +197,7 @@ export function CategoriesPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [refreshRevision, setRefreshRevision] = useState(0);
   const [createOpen, setCreateOpen] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ManagedCategoryRecord | null>(null);
   const requestIdRef = useRef(0);
   const { pushToast } = useToast();
@@ -286,7 +292,7 @@ export function CategoriesPage() {
     query.status !== "ALL";
 
   return (
-    <>
+    <div className="ys-category-v2">
       <PageHeader
         eyebrow="Owner workspace"
         title="Categories"
@@ -300,18 +306,18 @@ export function CategoriesPage() {
       />
 
       <section className="ys-category-page space-y-6">
-        <Card>
-          <CardHeader>
+        <Card className="ys-category-v2-directory">
+          <CardHeader className="ys-category-v2-directory-heading">
             <CardTitle>Category directory</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4 px-4 pb-4 pt-2 lg:px-5">
-            <div className="grid gap-3 xl:grid-cols-[minmax(240px,1fr)_180px_180px_170px_210px]">
+          <CardContent className="ys-category-v2-directory-content space-y-4 px-4 pb-4 pt-2 lg:px-5">
+            <div className="ys-category-v2-desktop-filters grid gap-3 xl:grid-cols-[minmax(240px,1fr)_180px_180px_170px_210px]">
               <label className="ys-category-search relative flex h-11 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3">
                 <Search className="h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
                 <input
                   aria-label="Search categories"
                   className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
-                  placeholder="Search name, slug, description"
+                  placeholder="Search category"
                   value={searchInput}
                   onChange={(event) => setSearchInput(event.target.value)}
                 />
@@ -398,6 +404,127 @@ export function CategoriesPage() {
               </FilterSelect>
             </div>
 
+
+            <div className="ys-category-v2-mobile-controls">
+              <label className="ys-category-v2-search">
+                <Search aria-hidden="true" className="h-4 w-4 shrink-0" />
+                <input
+                  aria-label="Search categories"
+                  onChange={(event) => setSearchInput(event.target.value)}
+                  placeholder="Search category"
+                  type="search"
+                  value={searchInput}
+                />
+                {loading && query.search ? <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" /> : null}
+              </label>
+              <button
+                aria-controls="ys-category-v2-filter-panel"
+                aria-expanded={mobileFiltersOpen}
+                className="ys-category-v2-filter-trigger"
+                onClick={() => setMobileFiltersOpen((open) => !open)}
+                type="button"
+              >
+                <Filter aria-hidden="true" className="h-4 w-4" />
+                <span>Filters &amp; sort</span>
+                {hasFilters ? <span aria-label="Filters active" className="ys-category-v2-filter-dot" /> : null}
+                <ChevronRight aria-hidden="true" className="h-4 w-4" />
+              </button>
+              {mobileFiltersOpen ? (
+                <div className="ys-category-v2-filter-panel" id="ys-category-v2-filter-panel">
+                  <h3>Category filters</h3>
+                  <fieldset>
+                    <legend>Cover image</legend>
+                    {([
+                      ["ALL", "All covers"], ["READY", "Ready"], ["MISSING", "Missing"],
+                      ["PROCESSING", "Processing"], ["NEEDS_REVIEW", "Needs review"], ["FAILED", "Failed"]
+                    ] as const).map(([value, label]) => (
+                      <button
+                        aria-pressed={query.coverStatus === value}
+                        className="ys-category-v2-option"
+                        key={value}
+                        onClick={() => applyQuery({ coverStatus: value, page: 1 })}
+                        type="button"
+                      >
+                        <span>{label}</span>
+                        {query.coverStatus === value ? <Check aria-hidden="true" className="h-4 w-4" /> : null}
+                      </button>
+                    ))}
+                  </fieldset>
+                  <fieldset>
+                    <legend>Storefront</legend>
+                    {([
+                      ["ALL", "All storefront"], ["VISIBLE", "Visible"], ["HIDDEN", "Hidden"]
+                    ] as const).map(([value, label]) => (
+                      <button
+                        aria-pressed={query.visibility === value}
+                        className="ys-category-v2-option"
+                        key={value}
+                        onClick={() => applyQuery({ visibility: value, page: 1 })}
+                        type="button"
+                      >
+                        <span>{label}</span>
+                        {query.visibility === value ? <Check aria-hidden="true" className="h-4 w-4" /> : null}
+                      </button>
+                    ))}
+                  </fieldset>
+                  <fieldset>
+                    <legend>Status</legend>
+                    {([
+                      ["ALL", "All statuses"], ["ACTIVE", "Active"], ["INACTIVE", "Inactive"]
+                    ] as const).map(([value, label]) => (
+                      <button
+                        aria-pressed={query.status === value}
+                        className="ys-category-v2-option"
+                        key={value}
+                        onClick={() => applyQuery({ status: value, page: 1 })}
+                        type="button"
+                      >
+                        <span>{label}</span>
+                        {query.status === value ? <Check aria-hidden="true" className="h-4 w-4" /> : null}
+                      </button>
+                    ))}
+                  </fieldset>
+                  <fieldset>
+                    <legend>Sort by</legend>
+                    {([
+                      ["updatedAt:desc", "Recently updated"],
+                      ["name:asc", "Name A–Z"], ["name:desc", "Name Z–A"],
+                      ["productCount:desc", "Most products"], ["productCount:asc", "Fewest products"]
+                    ] as const).map(([value, label]) => (
+                      <button
+                        aria-pressed={sortOptionFromQuery(query) === value}
+                        className="ys-category-v2-option"
+                        key={value}
+                        onClick={() => {
+                          const [sortBy, sortOrder] = value.split(":") as [CategorySortBy, CategorySortOrder];
+                          applyQuery({ sortBy, sortOrder, page: 1 });
+                        }}
+                        type="button"
+                      >
+                        <span>{label}</span>
+                        {sortOptionFromQuery(query) === value ? <Check aria-hidden="true" className="h-4 w-4" /> : null}
+                      </button>
+                    ))}
+                  </fieldset>
+                  <div className="ys-category-v2-filter-actions">
+                    <button
+                      className="ys-category-v2-reset"
+                      onClick={() => applyQuery({
+                        coverStatus: "ALL", visibility: "ALL", status: "ALL",
+                        sortBy: "updatedAt", sortOrder: "desc", page: 1
+                      })}
+                      type="button"
+                    >
+                      Reset
+                    </button>
+                    <button className="ys-category-v2-apply" onClick={() => setMobileFiltersOpen(false)} type="button">
+                      Apply filters
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
             {loadError ? (
               <Alert variant="destructive">
                 <AlertTitle>Categories could not be loaded</AlertTitle>
@@ -427,7 +554,59 @@ export function CategoriesPage() {
                   />
                 </div>
               ) : (
-                <div className="overflow-x-auto">
+                
+                <div aria-label="Category catalog" className="ys-category-v2-mobile-list">
+                  {categories.map((category) => (
+                    <article className="ys-category-v2-category-card" key={category.id}>
+                      <div className="ys-category-v2-card-main">
+                        <div className="ys-category-v2-thumb">
+                          <CategoryCoverThumbnail category={category} />
+                        </div>
+                        <div className="ys-category-v2-card-content">
+                          <h3>{category.name}</h3>
+                          <p className="ys-category-v2-slug">{category.slug}</p>
+                          <div className="ys-category-v2-card-chips">
+                            <span className="ys-category-v2-product-count">
+                              {category.productCount} {category.productCount === 1 ? "product" : "products"}
+                            </span>
+                            <span className="ys-category-v2-cover-status" data-status={category.coverStatus}>
+                              {coverStatusLabel(category.coverStatus)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="ys-category-v2-card-bottom">
+                        <div className="ys-category-v2-card-meta">
+                          <span className="ys-category-v2-visibility">
+                            {category.isStorefrontVisible
+                              ? <Eye aria-hidden="true" className="h-3.5 w-3.5" />
+                              : <EyeOff aria-hidden="true" className="h-3.5 w-3.5" />}
+                            {category.isStorefrontVisible ? "Visible" : "Hidden"}
+                            {!category.isActive ? " · Inactive" : ""}
+                          </span>
+                          <time className="ys-category-v2-date" dateTime={category.updatedAt}>
+                            {new Date(category.updatedAt).toLocaleDateString("en-PH", {
+                              day: "2-digit", month: "short", year: "numeric"
+                            })}
+                          </time>
+                        </div>
+                        <Button
+                          aria-label={`Edit ${category.name}`}
+                          className="ys-category-v2-edit"
+                          onClick={() => setSelectedCategory(category)}
+                          size="sm"
+                          type="button"
+                          variant="secondary"
+                        >
+                          <PencilLine aria-hidden="true" className="h-4 w-4" />
+                          Edit
+                        </Button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+
+                <div className="ys-category-v2-desktop-table overflow-x-auto">
                   <Table className="retail-mobile-data-table">
                     <TableHeader>
                       <TableRow className="bg-slate-50/80">
@@ -521,6 +700,8 @@ export function CategoriesPage() {
 
             {meta ? (
               <AppPagination
+                className="ys-category-v2-pagination"
+                mobileCompact
                 isLoading={loading}
                 itemLabel="categories"
                 onPageChange={(page) => applyQuery({ page })}
@@ -569,7 +750,7 @@ export function CategoriesPage() {
           });
         }}
       />
-    </>
+    </div>
   );
 }
 
@@ -1134,13 +1315,13 @@ function CategoryCoverPreview({
 
   return (
     <div className="ys-category-live-preview space-y-3 rounded-xl border border-slate-200 bg-white p-3">
-      <div className="flex items-center justify-between gap-3">
+      <div className="ys-category-v2-crop-toolbar flex items-center justify-between gap-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           Live crop preview
         </p>
         <div
           aria-label="Storefront preview size"
-          className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1"
+          className="ys-category-v2-preview-toggle inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1"
           role="group"
         >
           <Button
@@ -1168,7 +1349,7 @@ function CategoryCoverPreview({
         </div>
       </div>
 
-      <div className={previewMode === "MOBILE" ? "mx-auto w-full max-w-[18rem]" : "w-full"}>
+      <div className={previewMode === "MOBILE" ? "ys-category-v2-preview-frame mx-auto w-full max-w-[18rem]" : "ys-category-v2-preview-frame w-full"}>
         <div className="ys-category-preview-card overflow-hidden rounded-[1.15rem] border border-slate-200 bg-white shadow-sm">
           <div
             className={
