@@ -2,8 +2,10 @@ import type { ReactNode } from "react";
 
 import type { AppRoutePath } from "@/app/routes";
 import { AppSidebar } from "@/components/app/AppSidebar";
+import { RetailMobileNavigation } from "@/components/app/RetailMobileNavigation";
 import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
 import type { AuthUser } from "@/types/auth";
+import "@/styles/retail-mobile-navigation.css";
 
 type AppLayoutProps = {
   activePath: string;
@@ -44,6 +46,12 @@ export function AppLayout({
         <div aria-hidden="true" className="retail-workspace__artwork">
           <StorefrontGalaxyArtwork className="retail-workspace__cosmos" />
         </div>
+        <RetailMobileNavigation
+          activePath={activePath}
+          onLogout={onLogout}
+          onNavigate={onNavigate}
+          user={user}
+        />
         <main
           className="relative z-10 min-h-0 flex-1 overflow-auto px-[clamp(1.25rem,2vw,1.5rem)] py-[clamp(1.25rem,2vw,1.5rem)]"
           data-layout="app"
