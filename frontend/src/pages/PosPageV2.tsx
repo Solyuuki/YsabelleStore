@@ -1,6 +1,7 @@
 import {
   ChevronDown,
   ChevronUp,
+  Camera,
   LoaderCircle,
   Minus,
   PackageSearch,
@@ -14,6 +15,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { CashPaymentDialog } from "@/components/pos/CashPaymentDialog";
+import { PosCameraScanner } from "@/components/pos/PosCameraScanner";
 import { RetailReceiptDialog } from "@/components/receipt/RetailReceiptDialog";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -83,6 +85,7 @@ export function PosPage() {
   const [searchInput, setSearchInput] = useState("");
   const [cartLines, setCartLines] = useState<CartLine[]>([]);
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
+  const [cameraScannerOpen, setCameraScannerOpen] = useState(false);
   const [productResultsPage, setProductResultsPage] = useState(1);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
@@ -122,8 +125,11 @@ export function PosPage() {
   }, [mobileCartOpen]);
 
   useEffect(() => {
+    // Do not pop up the mobile keyboard before the cashier chooses manual input.
     const rafId = window.requestAnimationFrame(() => {
-      scannerInputRef.current?.focus({ preventScroll: true });
+      if (!window.matchMedia("(pointer: coarse) and (max-width: 767px)").matches) {
+        scannerInputRef.current?.focus({ preventScroll: true });
+      }
     });
 
     return () => window.cancelAnimationFrame(rafId);
@@ -131,14 +137,14 @@ export function PosPage() {
 
   useEffect(() => {
     const handleWindowFocus = () => {
-      if (!isCashDialogOpen && !isReceiptDialogOpen) {
+      if (!isCashDialogOpen && !isReceiptDialogOpen && !cameraScannerOpen) {
         focusScannerInput();
       }
     };
 
     window.addEventListener("focus", handleWindowFocus);
     return () => window.removeEventListener("focus", handleWindowFocus);
-  }, [isCashDialogOpen, isReceiptDialogOpen]);
+  }, [isCashDialogOpen, isReceiptDialogOpen, cameraScannerOpen]);
 
   useEffect(() => {
     setProductResultsPage(1);
@@ -182,7 +188,9 @@ export function PosPage() {
 
   function focusScannerInput() {
     window.requestAnimationFrame(() => {
-      scannerInputRef.current?.focus({ preventScroll: true });
+      if (!window.matchMedia("(pointer: coarse) and (max-width: 767px)").matches) {
+        scannerInputRef.current?.focus({ preventScroll: true });
+      }
     });
   }
 
@@ -249,8 +257,8 @@ export function PosPage() {
     return true;
   }
 
-  async function handleSearch(options: { autoAddExactMatch?: boolean; page?: number } = {}) {
-    const trimmedQuery = searchInput.trim();
+  async function handleSearch(options: { autoAddExactMatch?: boolean; page?: number; queryOverride?: string } = {}) {
+    const trimmedQuery = (options.queryOverride ?? searchInput).trim();
     const requestPage = options.page ?? productResultsPage;
     const startedAt = window.performance.now();
 
@@ -481,12 +489,12 @@ export function PosPage() {
 
       <section className="retail-pos-layout grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
         <div className="min-w-0 space-y-4">
-          <Card className="border-slate-200/80 bg-white/95 shadow-sm">
+          <Card className="retail-pos-search-card border-slate-200/80 bg-white/95 shadow-sm">
             <CardHeader>
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <CardTitle>Product search</CardTitle>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="retail-pos-search-help mt-1 text-sm text-slate-500">
                     USB barcode scanners work as keyboard input. Plug in the scanner and scan; no
                     pairing step is required.
                   </p>
@@ -496,7 +504,7 @@ export function PosPage() {
             </CardHeader>
             <CardContent>
               <form
-                className="grid gap-3 lg:grid-cols-[1fr_180px]"
+                className="retail-pos-search-form grid gap-3 lg:grid-cols-[1fr_180px]"
                 onSubmit={(event) => {
                   event.preventDefault();
                   void handleSearch({ autoAddExactMatch: true });
@@ -526,7 +534,7 @@ export function PosPage() {
                     }}
                   />
                 </label>
-                <Button disabled={searchState.isLoading} type="submit" variant="secondary">
+                <Button className="retail-pos-search-submit" disabled={searchState.isLoading} type="submit" variant="secondary">
                   {searchState.isLoading ? (
                     <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
                   ) : (
@@ -534,6 +542,15 @@ export function PosPage() {
                   )}
                   Search
                 </Button>
+                <button
+                  aria-label="Scan product barcode using phone camera"
+                  className="retail-pos-camera-launch"
+                  onClick={() => setCameraScannerOpen(true)}
+                  type="button"
+                >
+                  <Camera aria-hidden="true" size={20} />
+                  <span>Camera scan</span>
+                </button>
               </form>
               {searchState.error ? (
                 <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -543,7 +560,7 @@ export function PosPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200/80 bg-white/95 shadow-sm">
+          <Card className="retail-pos-results-card border-slate-200/80 bg-white/95 shadow-sm">
             <CardHeader>
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
@@ -894,6 +911,16 @@ export function PosPage() {
           </CardContent>
         </Card>
       </section>
+
+      <PosCameraScanner
+        onDetected={(barcode) => {
+          setCameraScannerOpen(false);
+          setSearchInput(barcode);
+          void handleSearch({ queryOverride: barcode, autoAddExactMatch: true, page: 1 });
+        }}
+        onOpenChange={setCameraScannerOpen}
+        open={cameraScannerOpen}
+      />
 
       <CashPaymentDialog
         error={checkoutError}
