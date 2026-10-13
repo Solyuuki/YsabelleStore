@@ -2,6 +2,7 @@ import {
   Banknote,
   Box,
   CheckCircle2,
+  ChevronDown,
   Clock3,
   CreditCard,
   MapPin,
@@ -9,8 +10,10 @@ import {
   PackageCheck,
   RefreshCw,
   Search,
+  SlidersHorizontal,
   Truck,
   UserRound,
+  X,
   XCircle
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -22,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -29,7 +33,6 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select } from "@/components/ui/select";
 import {
   Table,
@@ -52,6 +55,7 @@ import type {
   DeliveryTicketView
 } from "@/types/delivery";
 import type { StorefrontDeliveryStatus, StorefrontPaymentMethod } from "@/types/storefront";
+import "@/styles/retail-deliveries-mobile-v2.css";
 
 const dateTimeFormatter = new Intl.DateTimeFormat("en-PH", {
   dateStyle: "medium",
@@ -61,6 +65,16 @@ const currencyFormatter = new Intl.NumberFormat("en-PH", {
   style: "currency",
   currency: "PHP"
 });
+
+const DELIVERY_DESKTOP_PAGE_SIZE = 20;
+const DELIVERY_MOBILE_PAGE_SIZE = 10;
+const DELIVERY_MOBILE_QUERY = "(max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px)";
+
+function defaultDeliveryPageSize() {
+  return typeof window !== "undefined" && window.matchMedia(DELIVERY_MOBILE_QUERY).matches
+    ? DELIVERY_MOBILE_PAGE_SIZE
+    : DELIVERY_DESKTOP_PAGE_SIZE;
+}
 
 const DELIVERY_PROGRESS_STEPS: Array<{
   status: StorefrontDeliveryStatus;
@@ -177,7 +191,8 @@ export function DeliveriesPage() {
   });
   const [page, setPage] = useState(1);
   const [view, setView] = useState<DeliveryTicketView>("active");
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(defaultDeliveryPageSize);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [status, setStatus] = useState<StorefrontDeliveryStatus | "all">("all");
   const [paymentMethod, setPaymentMethod] = useState<StorefrontPaymentMethod | "all">("all");
   const [search, setSearch] = useState("");
@@ -249,6 +264,17 @@ export function DeliveriesPage() {
     setStaffNote(selected.deliveryNotes ?? "");
   }, [selected]);
 
+  useEffect(() => {
+    const media = window.matchMedia(DELIVERY_MOBILE_QUERY);
+    const onViewportChange = () => {
+      setPageSize(media.matches ? DELIVERY_MOBILE_PAGE_SIZE : DELIVERY_DESKTOP_PAGE_SIZE);
+      setPage(1);
+    };
+    media.addEventListener("change", onViewportChange);
+    return () => media.removeEventListener("change", onViewportChange);
+  }, []);
+
+  const activeFilterCount = Number(status !== "all") + Number(paymentMethod !== "all");
   const resolvedCourierProvider =
     courierProvider === "Other" ? customCourierProvider.trim() : courierProvider.trim();
 
@@ -313,7 +339,7 @@ export function DeliveriesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="ys-deliveries-page space-y-6">
       <PageHeader
         actions={
           <Button disabled={loading} onClick={() => void load()} type="button" variant="secondary">
@@ -329,15 +355,15 @@ export function DeliveriesPage() {
         title="Deliveries"
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="ys-delivery-metrics grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard icon={PackageCheck} label="Needs action" value={meta.counts.active} />
         <MetricCard icon={Box} label="Ready for delivery" value={meta.summary.READY_FOR_DELIVERY} />
         <MetricCard icon={Truck} label="On the way" value={meta.summary.OUT_FOR_DELIVERY} />
         <MetricCard icon={CheckCircle2} label="Delivered" value={meta.summary.DELIVERED} />
       </div>
 
-      <Card>
-        <CardHeader className="gap-1">
+      <Card className="ys-delivery-list-card">
+        <CardHeader className="ys-delivery-list-header gap-1">
           <CardTitle>
             {view === "history"
               ? "Ticket history"
@@ -353,8 +379,8 @@ export function DeliveriesPage() {
                 : "All retained delivery tickets with server-side pagination."}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div aria-label="Delivery ticket views" className="flex flex-wrap gap-2" role="group">
+        <CardContent className="ys-delivery-list-content space-y-4">
+          <div aria-label="Delivery ticket views" className="ys-delivery-view-tabs flex flex-wrap gap-2" role="group">
             {(["active", "history", "all"] as const).map((nextView) => (
               <Button
                 aria-pressed={view === nextView}
@@ -383,9 +409,9 @@ export function DeliveriesPage() {
               </Button>
             ))}
           </div>
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_220px]">
+          <div className="ys-delivery-toolbar grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_220px]">
             <form
-              className="flex min-w-0 gap-2"
+              className="ys-delivery-search-form flex min-w-0 gap-2"
               onSubmit={(event) => {
                 event.preventDefault();
                 applySearch();
@@ -397,18 +423,35 @@ export function DeliveriesPage() {
                   className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
                 />
                 <Input
+                  aria-label="Search delivery tickets"
                   className="pl-9"
                   onChange={(event) => setSearchInput(event.target.value)}
-                  placeholder="Search ticket, order, customer, phone..."
+                  placeholder="Ticket or customer"
                   value={searchInput}
                 />
               </div>
-              <Button type="submit" variant="secondary">
-                Search
+              <Button aria-label="Search delivery tickets" className="ys-delivery-search-submit" type="submit" variant="secondary">
+                <Search className="ys-delivery-search-submit-icon h-4 w-4" aria-hidden="true" />
+                <span>Search</span>
               </Button>
             </form>
-
-            <Select
+            <button
+              aria-controls="ys-delivery-filter-fields"
+              aria-expanded={mobileFiltersOpen}
+              aria-label={mobileFiltersOpen ? "Hide delivery filters" : "Show delivery filters"}
+              className="ys-delivery-filter-toggle"
+              onClick={() => setMobileFiltersOpen((open) => !open)}
+              type="button"
+            >
+              <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+              <span>Filters</span>
+              {activeFilterCount > 0 ? <span className="ys-delivery-filter-count">{activeFilterCount}</span> : null}
+              <ChevronDown className="ys-delivery-filter-chevron h-4 w-4" aria-hidden="true" />
+            </button>
+            <div className="ys-delivery-filter-fields" id="ys-delivery-filter-fields" data-open={mobileFiltersOpen}>
+              <label className="ys-delivery-filter-field">
+                <span>Delivery status</span>
+                <Select
               aria-label="Delivery status"
               onChange={(event) => {
                 setPage(1);
@@ -424,9 +467,11 @@ export function DeliveriesPage() {
               <option value="DELIVERED">Delivered</option>
               <option value="DELIVERY_FAILED">Delivery failed</option>
               <option value="CANCELLED">Cancelled</option>
-            </Select>
-
-            <Select
+                </Select>
+              </label>
+              <label className="ys-delivery-filter-field">
+                <span>Payment method</span>
+                <Select
               aria-label="Payment method"
               onChange={(event) => {
                 setPage(1);
@@ -437,7 +482,16 @@ export function DeliveriesPage() {
               <option value="all">All payment methods</option>
               <option value="CASH_ON_DELIVERY">Cash on Delivery</option>
               <option value="PAYMONGO">PayMongo</option>
-            </Select>
+                </Select>
+              </label>
+              {activeFilterCount > 0 ? (
+                <button className="ys-delivery-filter-reset" type="button" onClick={() => {
+                  setStatus("all");
+                  setPaymentMethod("all");
+                  setPage(1);
+                }}>Reset filters</button>
+              ) : null}
+            </div>
           </div>
 
           {error ? (
@@ -449,8 +503,8 @@ export function DeliveriesPage() {
             </div>
           ) : null}
 
-          <div className="overflow-x-auto rounded-xl border border-slate-200">
-            <Table className="retail-mobile-data-table">
+          <div className="ys-delivery-list-table-wrap overflow-x-auto rounded-xl border border-slate-200">
+            <Table className="ys-delivery-ticket-table retail-mobile-data-table">
               <TableHeader className="bg-slate-50/80">
                 <TableRow>
                   <TableHead>Ticket / Order</TableHead>
@@ -482,7 +536,7 @@ export function DeliveriesPage() {
                 ) : (
                   tickets.map((ticket) => (
                     <TableRow
-                      className="hover:bg-slate-50/70 dark:hover:bg-slate-700/50"
+                      className="ys-delivery-ticket-row hover:bg-slate-50/70 dark:hover:bg-slate-700/50"
                       key={ticket.id}
                     >
                       <TableCell data-label="Ticket / Order">
@@ -506,7 +560,7 @@ export function DeliveriesPage() {
                         </div>
                       </TableCell>
                       <TableCell data-label="Status">
-                        <Badge variant={operationalStatusTone(ticket)}>
+                        <Badge className="ys-delivery-status-badge" data-status={ticket.deliveryStatus} variant={operationalStatusTone(ticket)}>
                           {operationalStatusLabel(ticket)}
                         </Badge>
                       </TableCell>
@@ -535,6 +589,7 @@ export function DeliveriesPage() {
           </div>
 
           <AppPagination
+            className="ys-delivery-pagination"
             isLoading={loading}
             itemLabel="tickets"
             onPageChange={setPage}
@@ -557,10 +612,15 @@ export function DeliveriesPage() {
         }}
       >
         {selected ? (
-          <DialogContent className="max-h-[90vh] max-w-[900px] overflow-y-auto dark:text-slate-100">
-            <DialogHeader>
+          <DialogContent className="ys-delivery-ticket-dialog max-h-[90vh] max-w-[900px] overflow-y-auto dark:text-slate-100">
+            <DialogHeader className="ys-delivery-ticket-header">
+              <DialogClose asChild>
+                <Button aria-label="Close delivery ticket" className="ys-delivery-ticket-close" disabled={submitting} size="icon" type="button" variant="ghost">
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </Button>
+              </DialogClose>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant={operationalStatusTone(selected)}>
+                <Badge className="ys-delivery-status-badge" data-status={selected.deliveryStatus} variant={operationalStatusTone(selected)}>
                   {operationalStatusLabel(selected)}
                 </Badge>
                 <Badge className="dark:border-slate-500 dark:bg-slate-700/60 dark:text-slate-100">
@@ -574,8 +634,8 @@ export function DeliveriesPage() {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="grid gap-5 px-6 pb-2">
-              <div className="grid gap-3 md:grid-cols-3">
+            <div className="ys-delivery-ticket-body grid min-w-0 gap-5 px-6 pb-2">
+              <div className="ys-delivery-ticket-facts grid min-w-0 gap-3 md:grid-cols-3">
                 <TicketFact
                   detail={selected.customerPhone}
                   icon={UserRound}
@@ -668,9 +728,7 @@ export function DeliveriesPage() {
                 <p className="mb-3 text-xs text-slate-500 dark:text-slate-300">
                   Recorded delivery updates, cancellation notes and payment confirmations.
                 </p>
-                <ScrollArea
-                  style={{ height: Math.min(224, Math.max(66, selected.timeline.length * 72)) }}
-                >
+                <div className="ys-delivery-timeline overflow-y-auto" style={{ maxHeight: Math.min(224, Math.max(66, selected.timeline.length * 72)) }}>
                   <ol className="space-y-3 pr-3">
                     {selected.timeline.map((event) => (
                       <li
@@ -692,18 +750,14 @@ export function DeliveriesPage() {
                       </li>
                     ))}
                   </ol>
-                </ScrollArea>
+                </div>
               </section>
 
               <section>
                 <h3 className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">
                   Order items
                 </h3>
-                <ScrollArea
-                  className="rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-800/40"
-                  style={{ height: Math.min(300, Math.max(92, selected.items.length * 46)) }}
-                  viewportClassName="pr-3"
-                >
+                <div className="ys-delivery-order-items overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-800/40" style={{ maxHeight: Math.min(300, Math.max(92, selected.items.length * 46)) }}>
                   <div className="divide-y divide-slate-100 dark:divide-slate-600">
                     {selected.items.map((item) => (
                       <div
@@ -719,7 +773,7 @@ export function DeliveriesPage() {
                       </div>
                     ))}
                   </div>
-                </ScrollArea>
+                </div>
               </section>
 
               {!["DELIVERED", "CANCELLED"].includes(selected.deliveryStatus) ? (
@@ -805,7 +859,7 @@ export function DeliveriesPage() {
               ) : null}
             </div>
 
-            <DialogFooter className="flex-wrap">
+            <DialogFooter className="ys-delivery-ticket-footer flex-wrap">
               {selected.canConfirmCodCollected ? (
                 <Button disabled={submitting} onClick={() => void settleCod()} type="button">
                   <Banknote className="h-4 w-4" aria-hidden="true" />
@@ -887,8 +941,8 @@ function StaffDeliveryProgress({ ticket }: { ticket: DeliveryTicket }) {
   const eventByStatus = new Map(ticket.timeline.map((event) => [event.status, event] as const));
 
   return (
-    <div className="overflow-x-auto pb-1">
-      <ol className="flex min-w-[650px] list-none px-1 pb-0 pt-1">
+    <div className="ys-delivery-progress-scroll overflow-x-auto pb-1">
+      <ol className="ys-delivery-progress-steps flex min-w-[650px] list-none px-1 pb-0 pt-1">
         {DELIVERY_PROGRESS_STEPS.map((step, index) => {
           const event = eventByStatus.get(step.status);
           const isCurrent = ticket.deliveryStatus === step.status;
@@ -942,8 +996,8 @@ function MetricCard({
   value: number;
 }) {
   return (
-    <Card>
-      <CardContent className="flex items-center gap-4 pt-5">
+    <Card className="ys-delivery-metric">
+      <CardContent className="ys-delivery-metric-content flex items-center gap-4 pt-5">
         <span className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-50 text-indigo-700">
           <Icon className="h-5 w-5" aria-hidden="true" />
         </span>
@@ -976,8 +1030,8 @@ function TicketFact({
       </span>
       <div className="min-w-0">
         <p className="text-xs text-slate-500 dark:text-slate-300">{label}</p>
-        <p className="truncate text-sm font-semibold text-slate-950 dark:text-slate-50">{value}</p>
-        <p className="truncate text-xs text-slate-500 dark:text-slate-300">{detail}</p>
+        <p className="ys-delivery-fact-value truncate text-sm font-semibold text-slate-950 dark:text-slate-50">{value}</p>
+        <p className="ys-delivery-fact-detail truncate text-xs text-slate-500 dark:text-slate-300">{detail}</p>
       </div>
     </div>
   );
