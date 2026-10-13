@@ -208,6 +208,14 @@
     min-width: 0;
   }
 
+  /* The existing auth-panel-enter animation leaves translate3d(0,0,0)
+     applied with fill-mode:both. That makes position:fixed cart children
+     relative to the panel instead of the phone viewport. */
+  .retail-workspace [data-retail-module="pos"] .auth-panel-enter {
+    animation: none;
+    transform: none;
+  }
+
   /* No duplicate DOM tables; the same POS Add/Remove/Checkout functions run. */
   .retail-workspace [data-retail-module="pos"] .retail-pos-layout {
     display: block;
