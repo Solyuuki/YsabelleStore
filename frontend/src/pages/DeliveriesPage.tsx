@@ -833,7 +833,7 @@ export function DeliveriesPage() {
                     <Input
                       maxLength={255}
                       onChange={(event) => setStaffNote(event.target.value)}
-                      placeholder="Internal handoff note for owner/staff only"
+                      placeholder="Staff-only note"
                       value={staffNote}
                     />
                     <span className="text-xs font-normal leading-5 text-slate-500 dark:text-slate-300">
