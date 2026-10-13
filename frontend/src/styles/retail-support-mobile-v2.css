@@ -7,13 +7,35 @@
 .ys-support-mobile-composer { display: none; }
 
 @media (max-width: 1024px) {
+  /* The app shell already accounts for the mobile navbar and workspace
+     gutters. Stretch through its real remaining height instead of subtracting
+     a second, arbitrary 160px from 100dvh. This also tracks the visual
+     viewport when the phone keyboard changes available space. */
+  .retail-workspace > main[data-retail-module="customer-support"] {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .retail-workspace > main[data-retail-module="customer-support"] > div {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+  }
   .retail-workspace [data-retail-module="customer-support"] .ys-support-page {
-    display: flex; flex-direction: column; min-width: 0; min-height: 0;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
   }
   .retail-workspace [data-retail-module="customer-support"] .ys-support-desktop-page-header { display: none; }
   .retail-workspace [data-retail-module="customer-support"] .ys-support-inbox {
     display: flex; flex-direction: column; min-width: 0; width: 100%;
-    height: max(350px, calc(100dvh - 160px)); min-height: 0; max-height: none;
+    flex: 1 1 auto; height: auto; min-height: 0; max-height: none;
     margin-top: 0; overflow: hidden; border-radius: .8rem;
   }
   .retail-workspace [data-retail-module="customer-support"] .ys-support-inbox > aside {

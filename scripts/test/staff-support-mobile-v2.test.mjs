@@ -87,3 +87,21 @@ test("support More filters stacks complete select values based on actual panel w
   assert.match(css, /min-height: 44px;/);
   assert.match(css, /:root.dark .retail-workspace \[data-retail-module="customer-support"\] .ys-support-filter-select option/);
 });
+
+
+test("Support conversation occupies the actual app workspace rather than using a hardcoded viewport subtraction", () => {
+  const responsive = css.slice(css.indexOf("@media (max-width: 1024px)"));
+  assert.match(responsive, /\.retail-workspace > main\[data-retail-module="customer-support"\]\s*\{\s*display: flex;\s*flex-direction: column;\s*min-height: 0;/);
+  assert.match(responsive, /\.retail-workspace > main\[data-retail-module="customer-support"\] > div\s*\{\s*display: flex;\s*flex: 1 1 auto;\s*flex-direction: column;\s*min-height: 0;/);
+  assert.match(responsive, /\.ys-support-page\s*\{[^}]*flex: 1 1 auto;/);
+  assert.match(responsive, /\.ys-support-inbox\s*\{[^}]*flex: 1 1 auto;\s*height: auto;\s*min-height: 0;/);
+  assert.doesNotMatch(responsive, /height:\s*max\(350px,\s*calc\(100dvh - 160px\)\)/);
+  assert.match(responsive, /\.ys-support-inbox__conversation\s*\{[^}]*flex: 1 1 auto;/);
+  assert.match(responsive, /\.ys-support-thread\s*\{[^}]*flex: 1 1 auto;\s*min-height: 0;\s*overflow-y: auto;/);
+  assert.match(responsive, /\.ys-support-mobile-composer\s*\{[^}]*flex: none;/);
+
+  const appLayout = read("frontend/src/layouts/AppLayout.tsx");
+  assert.match(appLayout, /flex h-dvh min-h-0 overflow-hidden/);
+  assert.match(appLayout, /retail-workspace relative z-10 flex min-h-0 min-w-0 flex-1 flex-col/);
+  assert.match(appLayout, /min-h-0 flex-1 overflow-auto/);
+});
