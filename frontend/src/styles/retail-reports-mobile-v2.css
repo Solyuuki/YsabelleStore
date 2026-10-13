@@ -56,3 +56,51 @@
   :root.dark .retail-workspace [data-retail-module="reports"] .ys-report-v2-tabs button { color: #dce6f8; }
   :root.dark .retail-workspace [data-retail-module="reports"] .ys-report-v2-tabs button[aria-pressed="true"] { background: #5144d5; color: #fff; }
 }
+
+.ys-report-v2-back,.ys-report-v2-chart-readout{display:none}
+@media(max-width:767px){
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-forecast{min-width:0;max-width:100%}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-forecast > div{min-width:0;padding:10px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-forecast-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-forecast-metrics > div{min-width:0;padding:8px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-forecast-metrics p:first-child{font-size:10px;line-height:1.4}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-forecast-metrics p:nth-child(2){font-size:15px;margin-top:3px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-forecast-layout{display:block;min-width:0}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-forecast[data-mobile-detail="false"] .ys-report-v2-product-detail,
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-forecast[data-mobile-detail="true"] .ys-report-v2-product-list{display:none}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-forecast[data-mobile-detail="true"] .ys-report-v2-back{display:flex;align-items:center;gap:6px;width:100%;min-height:42px;padding:10px;border-bottom:1px solid #a8bad3;color:#c5b9ff;font-size:12px;font-weight:800;white-space:nowrap}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-product-list > div:first-child{padding:10px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-product-list > div:first-child p{display:none}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-watchlist-table{display:block;width:100%}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-watchlist-table thead{display:none}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-watchlist-table tbody{display:grid;min-width:0;gap:7px;padding:7px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-watchlist-table tbody tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;gap:5px;min-width:0;padding:9px;border:1px solid #aebfd8;border-radius:8px;background:#f4f8ff}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-watchlist-table td{display:flex;flex-direction:column;gap:2px;min-width:0;padding:0!important;font-size:10px;text-align:left;overflow-wrap:anywhere}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-watchlist-table td:first-child{grid-column:1/-1}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-watchlist-table td:first-child span:first-child{white-space:normal;overflow:visible;font-size:12px;line-height:1.4}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-watchlist-table td:first-child span:last-child{font-size:9px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-watchlist-table td:nth-child(3)::before{content:"Stock";color:#5a6e86;font-size:9px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-watchlist-table td:nth-child(4)::before{content:"Qty";color:#5a6e86;font-size:9px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-product-pager{min-width:0;padding:8px;border-radius:0;gap:6px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-product-pager > p{font-size:10px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-product-pager > div{justify-content:center;width:100%}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-product-pager ul{flex-wrap:nowrap;gap:5px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-product-pager .ys-inventory-page-token{display:none}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-product-pager .ys-inventory-mobile-page-label{display:inline-flex;align-items:center;justify-content:center;min-width:38px;min-height:38px;border-radius:7px;background:#5144d5;color:#fff;font-size:12px;font-weight:800}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-product-pager nav button{min-width:40px;min-height:40px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-product-detail > div{padding:10px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-product-detail .grid.grid-cols-2{gap:6px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-product-detail .grid.grid-cols-2 > div{min-width:0;padding:8px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-chart{height:188px;min-width:0;padding:6px;overflow:hidden}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-chart :is(.recharts-responsive-container,.recharts-wrapper){min-width:0;max-width:100%}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-chart .recharts-tooltip-wrapper{display:none!important}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-chart-readout{display:block;margin-top:6px;color:#485d78;font-size:10px}
+.retail-workspace [data-retail-module="reports"] [aria-label="Forecast chart view"]{display:flex;width:100%;max-width:100%;padding:3px}
+.retail-workspace [data-retail-module="reports"] [aria-label="Forecast chart view"] > button{min-width:0;flex:1 1 0;padding:8px 2px;font-size:10px;line-height:1.25}
+.retail-workspace [data-retail-module="reports"] .ys-restock-month-preview{padding:10px}
+.retail-workspace [data-retail-module="reports"] .ys-restock-month-preview > div:nth-child(2){margin-top:10px;gap:6px}
+.retail-workspace [data-retail-module="reports"] .ys-restock-month-preview-note{font-size:10px;line-height:1.45}
+:root.dark .retail-workspace [data-retail-module="reports"] .ys-report-v2-watchlist-table tbody tr{background:#253750;border-color:#617592}
+:root.dark .retail-workspace [data-retail-module="reports"] .ys-report-v2-watchlist-table td::before,
+:root.dark .retail-workspace [data-retail-module="reports"] .ys-report-v2-chart-readout{color:#cadaee}
+}

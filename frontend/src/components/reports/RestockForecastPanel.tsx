@@ -1,4 +1,4 @@
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { AlertTriangle, ChevronLeft, RefreshCw } from "lucide-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   Bar,
@@ -111,6 +111,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
   const [error, setError] = useState<string | null>(null);
   const [localRefreshVersion, setLocalRefreshVersion] = useState(0);
   const [watchlistPage, setWatchlistPage] = useState(1);
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
   const [chartView, setChartView] = useState<ChartView>("DEMAND");
   const detailTransitionRef = useRef<HTMLDivElement | null>(null);
 
@@ -279,7 +280,13 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
     !selectedNeedsOrder && selectedActiveRestock && selectedActiveRestock.totalRemaining > 0
   );
 
+  function openForecastProduct(productId: string) {
+    setSelectedProductId(productId);
+    if (window.matchMedia("(max-width: 767px)").matches) setMobileDetailOpen(true);
+  }
+
   function handleWatchlistPageChange(nextPage: number) {
+    setMobileDetailOpen(false);
     const page = Math.min(Math.max(nextPage, 1), watchlistTotalPages);
     setWatchlistPage(page);
 
@@ -331,7 +338,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
   }
 
   return (
-    <Card>
+    <Card className="ys-report-v2-forecast" data-mobile-detail={mobileDetailOpen}>
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
@@ -363,7 +370,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="ys-report-v2-forecast-metrics grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <ForecastMetric label="Products analyzed" value={summary.products} />
           <ForecastMetric label="Restock" value={summary.restock} />
           <ForecastMetric label="Reduce" value={summary.reduce} />
@@ -380,8 +387,8 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
           </div>
         ) : null}
 
-        <div className="grid gap-3 xl:grid-cols-[0.9fr_1.1fr]">
-          <div className="min-w-0 rounded-lg border border-slate-200 bg-white">
+        <div className="ys-report-v2-forecast-layout grid gap-3 xl:grid-cols-[0.9fr_1.1fr]">
+          <div className="ys-report-v2-product-list min-w-0 rounded-lg border border-slate-200 bg-white">
             <div className="border-b border-slate-200 px-4 py-3">
               <p className="text-sm font-semibold text-slate-950">Monthly product report</p>
               <p className="mt-1 text-xs text-slate-500">
@@ -391,7 +398,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
             </div>
             <div className="overflow-hidden">
               {items.length > 0 ? (
-                <Table aria-label="Forecast product watchlist">
+                <Table aria-label="Forecast product watchlist" className="ys-report-v2-watchlist-table">
                   <TableHeader className="bg-slate-50">
                     <TableRow>
                       <TableHead>Product</TableHead>
@@ -415,11 +422,11 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                               : "hover:bg-slate-50"
                           }`}
                           key={item.product.id}
-                          onClick={() => setSelectedProductId(item.product.id)}
+                          onClick={() => openForecastProduct(item.product.id)}
                           onKeyDown={(event) => {
                             if (event.key !== "Enter" && event.key !== " ") return;
                             event.preventDefault();
-                            setSelectedProductId(item.product.id);
+                            openForecastProduct(item.product.id);
                           }}
                           role="button"
                           tabIndex={0}
@@ -484,7 +491,8 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
             </div>
             {items.length > 0 ? (
               <AppPagination
-                className="rounded-none border-x-0 border-b-0"
+                mobileCompact
+                className="ys-report-v2-product-pager rounded-none border-x-0 border-b-0"
                 isLoading={loading}
                 itemLabel="products"
                 onPageChange={handleWatchlistPageChange}
@@ -497,9 +505,13 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
           </div>
 
           <div
-            className="min-w-0 rounded-lg border border-slate-200 bg-white"
+            className="ys-report-v2-product-detail min-w-0 rounded-lg border border-slate-200 bg-white"
             ref={detailTransitionRef}
           >
+            <button className="ys-report-v2-back" onClick={() => setMobileDetailOpen(false)} type="button">
+              <ChevronLeft aria-hidden="true" className="h-4 w-4 shrink-0" />
+              <span>Back to products</span>
+            </button>
             <div
               className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 px-4 py-3"
               data-product-transition
@@ -566,7 +578,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                   </div>
                   <ChartViewSwitch view={chartView} onChange={setChartView} />
                 </div>
-                <div className="relative h-56 rounded-md border border-slate-200 bg-white p-2">
+                <div className="ys-report-v2-chart relative h-56 rounded-md border border-slate-200 bg-white p-2">
                   {chartView === "DEMAND" ? (
                     productDemandChart.length > 0 ? (
                       <DemandChart data={productDemandChart} />
@@ -589,6 +601,11 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                     />
                   )}
                 </div>
+                <p className="ys-report-v2-chart-readout" aria-live="polite">
+                  {chartView === "DEMAND"
+                    ? `Next expected demand: ${formatNumber(productDemandChart.find((point) => point.forecast !== null)?.forecast, 1)} units`
+                    : `Estimated restock: ${formatNumber(displayedPreview?.estimatedRestock)} units`}
+                </p>
               </div>
 
               {displayedPreview ? (
@@ -807,7 +824,7 @@ function DemandChart({ data }: { data: ReturnType<typeof buildDemandChart> }) {
     <ResponsiveContainer height="100%" width="100%">
       <LineChart data={data} margin={{ bottom: 4, left: 0, right: 8, top: 8 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="label" minTickGap={18} tick={{ fontSize: 11 }} />
+        <XAxis dataKey="label" interval="preserveStartEnd" minTickGap={24} padding={{ left: 8, right: 16 }} tick={{ fontSize: 11 }} />
         <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={38} />
         <Tooltip formatter={(value, name) => [formatNumber(Number(value), 1), String(name)]} />
         <Line
@@ -838,7 +855,7 @@ function RestockPreviewChart({ data }: { data: ReturnType<typeof buildRestockPre
     <ResponsiveContainer height="100%" width="100%">
       <BarChart data={data} margin={{ bottom: 4, left: 0, right: 8, top: 8 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+        <XAxis dataKey="label" interval="preserveStartEnd" minTickGap={24} padding={{ left: 8, right: 16 }} tick={{ fontSize: 11 }} />
         <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={38} />
         <Tooltip formatter={(value) => [formatNumber(Number(value)), "Restock units"]} />
         <Bar dataKey="restock" fill="#4f46e5" name="Restock units" radius={[4, 4, 0, 0]} />
