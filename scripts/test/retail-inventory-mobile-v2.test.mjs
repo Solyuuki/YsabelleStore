@@ -109,3 +109,12 @@ test("narrow Inventory toolbar reserves readable search width by using an access
   assert.match(css, /\.retail-inventory-filter-toggle-chevron\s*\{\s*display: none;/);
   assert.match(css, /\.retail-inventory-filter-count\s*\{\s*position: absolute;/);
 });
+
+test("Inventory toolbar stacks search above Filters when the usable content width is small", () => {
+  assert.match(css, /container: inventory-panel \/ inline-size;/);
+  assert.match(css, /@container inventory-panel \(max-width: 345px\)/);
+  assert.match(css, /\.retail-inventory-toolbar > \.ys-inventory-search\s*\{\s*grid-column: 1;\s*grid-row: 1;/);
+  assert.match(css, /\.retail-inventory-toolbar > \.retail-inventory-filter-toggle\s*\{\s*grid-column: 1;\s*grid-row: 2;/);
+  assert.match(css, /\.retail-inventory-toolbar > \.retail-inventory-filter-panel\s*\{\s*grid-column: 1;\s*grid-row: 3;/);
+  assert.match(css, /\.retail-inventory-filter-toggle > span:not\(\.retail-inventory-filter-count\)/);
+});
