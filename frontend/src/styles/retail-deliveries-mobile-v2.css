@@ -1,0 +1,110 @@
+/* Sprint 12 Deliveries: phone density and status contrast. */
+.ys-delivery-filter-fields { display: contents; }
+.ys-delivery-filter-toggle, .ys-delivery-filter-reset, .ys-delivery-filter-field > span, .ys-delivery-search-submit-icon { display: none; }
+.ys-delivery-status-badge { max-width: 100%; white-space: normal; line-height: 1.35; overflow-wrap: anywhere; }
+.ys-delivery-status-badge:is([data-status="ORDER_PLACED"],[data-status="PREPARING"]) {
+  border-color: #a2b4cd !important; background-color: #e8edf7 !important; color: #263850 !important;
+}
+:root.dark .app-shell-ambient .ys-delivery-status-badge:is([data-status="ORDER_PLACED"],[data-status="PREPARING"]),
+:root.dark [role="dialog"].ys-delivery-ticket-dialog .ys-delivery-status-badge:is([data-status="ORDER_PLACED"],[data-status="PREPARING"]) {
+  border-color: #849cbe !important; background-color: #344763 !important; color: #f5f8ff !important;
+}
+:root.dark .app-shell-ambient .ys-delivery-filter-fields select,
+:root.dark [role="dialog"].ys-delivery-ticket-dialog select { color-scheme: dark !important; }
+:root.dark .app-shell-ambient .ys-delivery-filter-fields select option,
+:root.dark [role="dialog"].ys-delivery-ticket-dialog select option { background: #20334d !important; color: #f5f8ff !important; }
+:root:not(.dark) .ys-delivery-filter-fields select option,
+:root:not(.dark) [role="dialog"].ys-delivery-ticket-dialog select option { background: #fff !important; color: #1d2b42 !important; }
+
+@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+  .retail-workspace [data-retail-module="deliveries"] .ys-deliveries-page { min-width: 0; gap: .75rem; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); gap: .5rem; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-metric-content { min-height: 72px; min-width: 0; padding: .6rem; gap: .5rem; align-items: center; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-metric-content > span { flex: none; width: 30px; height: 30px; border-radius: .5rem; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-metric-content > span svg { width: 16px; height: 16px; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-metric-content > div { min-width: 0; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-metric-content p:first-child { font-size: .62rem; line-height: 1.35; letter-spacing: .02em; overflow-wrap: anywhere; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-metric-content p:last-child { margin-top: .15rem; font-size: 1.15rem; line-height: 1.2; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-list-header { padding: .75rem .7rem .35rem; gap: .25rem; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-list-content { padding: .5rem .6rem .7rem; min-width: 0; gap: .65rem; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-view-tabs { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .3rem; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-view-tabs > button { min-width: 0; min-height: 44px; justify-content: center; gap: .1rem; font-size: .69rem; white-space: nowrap; padding-inline: .25rem; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-view-tabs > button span { margin-left: .15rem; padding-inline: .3rem; font-size: .65rem; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-toolbar { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: .4rem; align-items: start; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-search-form { min-width: 0; gap: .35rem; grid-column: 1; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-search-form input { min-width: 0; width: 100%; font-size: 16px; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-search-submit { min-width: 44px; min-height: 44px; width: 44px; padding: 0; justify-content: center; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-search-submit > span { display: none; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-search-submit-icon { display: block; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-filter-toggle { display: inline-flex; grid-column: 2; min-height: 44px; align-items: center; justify-content: center; gap: .3rem; padding: .4rem .5rem; border: 1px solid #a7a0df; border-radius: .65rem; background: #f0edff; color: #5044a0; font-weight: 700; font-size: .75rem; white-space: nowrap; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-filter-chevron { display: none; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-filter-count { display: inline-grid; min-width: 18px; height: 18px; place-items: center; border-radius: 99px; background: #5549c1; color: white; font-size: .65rem; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-filter-fields { display: grid; grid-column: 1/-1; grid-template-columns: minmax(0,1fr); gap: .45rem; padding: .6rem; border: 1px solid #d1ddeb; border-radius: .7rem; background: #f5f8fe; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-filter-fields[data-open="false"] { display: none; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-filter-field { min-width: 0; display: grid; gap: .2rem; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-filter-field > span { display: block; font-size: .72rem; color: #526782; font-weight: 700; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-filter-field select { min-height: 44px; min-width: 0; width: 100%; font-size: 16px; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-filter-reset { display: block; justify-self: end; min-height: 40px; padding: .4rem; color: #5548b4; font-size: .8rem; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-list-table-wrap { border: 0; overflow-x: hidden; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-ticket-table tbody { gap: .45rem; padding: 0; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-ticket-table tbody > tr.ys-delivery-ticket-row { grid-template-columns: repeat(2,minmax(0,1fr)); gap: .4rem .55rem; padding: .65rem .7rem; border: 1px solid #d2dceb; border-radius: .75rem; background: #f8faff; box-shadow: none; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-ticket-table tbody > tr.ys-delivery-ticket-row > td { display: block; min-width: 0; max-width: 100%; width: auto !important; padding: 0; border: 0; white-space: normal !important; text-align: left !important; overflow-wrap: anywhere; font-size: .75rem; line-height: 1.35; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-ticket-table tbody > tr.ys-delivery-ticket-row > td::before { display: none; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-ticket-table td[data-label="Ticket / Order"] { grid-column: 1/-1; grid-row: 1; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-ticket-table td[data-label="Ticket / Order"] strong { font-size: .8rem; line-height: 1.3; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-ticket-table td[data-label="Ticket / Order"] span { font-size: .65rem; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-ticket-table td[data-label="Customer"] { grid-column: 1; grid-row: 2; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-ticket-table td[data-label="Payment"] { grid-column: 2; grid-row: 2; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-ticket-table td:is([data-label="Customer"],[data-label="Payment"])::before { display: block; content: attr(data-label); color: #62738c; font-size: .61rem; font-weight: 800; letter-spacing: .03em; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-ticket-table td[data-label="Status"] { grid-column: 1; grid-row: 3; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-ticket-table td[data-label="Updated"] { grid-column: 2; grid-row: 3; font-size: .68rem; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-ticket-table td[data-label="Total"] { grid-column: 1; grid-row: 4; align-self: center; font-size: .85rem; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-ticket-table td[data-label="Action"] { grid-column: 2; grid-row: 4; justify-self: end; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-ticket-table td[data-label="Action"] button { min-height: 44px; min-width: 44px; padding: .4rem .65rem; font-size: .75rem; }
+  :root.dark .retail-workspace [data-retail-module="deliveries"] .ys-delivery-filter-toggle { background: #322b55; border-color: #8d83c2; color: #f1ebff; }
+  :root.dark .retail-workspace [data-retail-module="deliveries"] .ys-delivery-filter-fields { background: #1c2b45; border-color: #506482; }
+  :root.dark .retail-workspace [data-retail-module="deliveries"] .ys-delivery-filter-field > span,
+  :root.dark .retail-workspace [data-retail-module="deliveries"] .ys-delivery-ticket-table td:is([data-label="Customer"],[data-label="Payment"])::before { color: #bbcae1; }
+  :root.dark .retail-workspace [data-retail-module="deliveries"] .ys-delivery-filter-reset { color: #cfc1ff; }
+  :root.dark .retail-workspace [data-retail-module="deliveries"] .ys-delivery-ticket-table tbody > tr.ys-delivery-ticket-row { background: #21334e; border-color: #506687; color: #eff4ff; }
+}
+
+@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+  :root[data-appearance-scope="retail"] [role="dialog"].ys-delivery-ticket-dialog {
+    box-sizing: border-box; position: fixed; top: 50%; left: 50%; right: auto;
+    width: calc(100vw - .75rem) !important; max-width: calc(100vw - .75rem) !important;
+    min-width: 0 !important; max-height: calc(100dvh - .75rem) !important; min-height: 0;
+    display: flex; flex-direction: column; gap: 0; padding: 0; border-radius: .85rem;
+    overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; animation: none;
+  }
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-dialog > * { box-sizing: border-box; min-width: 0; max-width: 100%; flex: none; }
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-header { position: sticky; top: 0; z-index: 2; gap: .25rem; padding: .7rem 2.75rem .7rem .75rem; border-bottom: 1px solid #d2dbea; background: #fff; }
+  :root.dark[data-appearance-scope="retail"] .ys-delivery-ticket-header { background: #1f3049; border-bottom-color: #516886; }
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-header [role="heading"] { font-size: .95rem; overflow-wrap: anywhere; }
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-header p { font-size: .69rem; overflow-wrap: anywhere; }
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-close { position: absolute; right: .55rem; top: .55rem; z-index: 3; min-width: 40px; min-height: 40px; }
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-body { display: grid; min-width: 0; width: 100%; gap: .65rem; padding: .65rem; }
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-body > :is(div,section) { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-body section { min-width: 0; padding: .7rem; }
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-facts { display: grid; grid-template-columns: minmax(0,1fr); gap: .4rem; }
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-facts > div { padding: .55rem .65rem; gap: .5rem; min-width: 0; align-items: center; }
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-facts > div > span { width: 28px; height: 28px; }
+  :root[data-appearance-scope="retail"] :is(.ys-delivery-fact-value,.ys-delivery-fact-detail) { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; line-height: 1.35; }
+  :root[data-appearance-scope="retail"] .ys-delivery-progress-scroll { overflow: visible; padding: 0; }
+  :root[data-appearance-scope="retail"] .ys-delivery-progress-steps { display: grid; grid-template-columns: minmax(0,1fr); gap: .45rem; min-width: 0; padding: 0; }
+  :root[data-appearance-scope="retail"] .ys-delivery-progress-steps > li { display: flex; min-width: 0; align-items: center; gap: .55rem; }
+  :root[data-appearance-scope="retail"] .ys-delivery-progress-steps > li > div:first-child { flex: none; }
+  :root[data-appearance-scope="retail"] .ys-delivery-progress-steps > li > div:first-child > span[aria-hidden="true"] { display: none; }
+  :root[data-appearance-scope="retail"] .ys-delivery-progress-steps > li > div:last-child { min-width: 0; margin: 0; padding: 0; }
+  :root[data-appearance-scope="retail"] :is(.ys-delivery-timeline,.ys-delivery-order-items) { max-height: none !important; height: auto !important; overflow: visible; }
+  :root[data-appearance-scope="retail"] .ys-delivery-timeline ol { padding-right: 0; gap: .4rem; }
+  :root[data-appearance-scope="retail"] .ys-delivery-timeline li { padding: .55rem .6rem; }
+  :root[data-appearance-scope="retail"] .ys-delivery-order-items > div > div { padding: .65rem .7rem; gap: .4rem; }
+  :root[data-appearance-scope="retail"] .ys-delivery-order-items strong { white-space: normal; overflow-wrap: anywhere; text-align: right; }
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-body :is(input,select) { min-width: 0; width: 100%; max-width: 100%; font-size: 16px; }
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-body :is(label,section) { min-width: 0; max-width: 100%; }
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-body :is(label,section) :is(p,span) { overflow-wrap: anywhere; }
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-footer { position: sticky; bottom: 0; z-index: 2; width: 100%; min-width: 0; display: grid; grid-template-columns: minmax(0,1fr); gap: .4rem; padding: .65rem .75rem calc(.65rem + env(safe-area-inset-bottom, 0px)); border-top: 1px solid #d2dbea; background: #fff; }
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-footer > button { min-width: 0; width: 100%; min-height: 44px; padding: .5rem; white-space: normal; }
+  :root.dark[data-appearance-scope="retail"] .ys-delivery-ticket-footer { background: #1f3049; border-top-color: #516886; }
+}
