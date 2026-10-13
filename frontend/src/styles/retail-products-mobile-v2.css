@@ -1,5 +1,7 @@
 /* Sprint 12 Products Mobile v2 — compact catalog, original desktop controls untouched. */
 .ys-products-v2-mobile-list, .ys-products-v2-toolbar { display: none; }
+/* AppPagination includes a compact current-page token. On desktop the full numbered pager owns that position. */
+.ys-products-v2-pagination .ys-inventory-mobile-page-label { display: none; }
 
 @media (max-width: 1024px) {
   .retail-workspace [data-retail-module="products"] .ys-products-v2-page,
