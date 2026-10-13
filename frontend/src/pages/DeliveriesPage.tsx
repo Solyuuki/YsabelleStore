@@ -560,7 +560,7 @@ export function DeliveriesPage() {
                         </div>
                       </TableCell>
                       <TableCell data-label="Status">
-                        <Badge className="ys-delivery-status-badge" data-status={ticket.deliveryStatus} variant={operationalStatusTone(ticket)}>
+                        <Badge className="ys-delivery-status-badge" data-status={ticket.deliveryStatus} data-tone={operationalStatusTone(ticket)} variant={operationalStatusTone(ticket)}>
                           {operationalStatusLabel(ticket)}
                         </Badge>
                       </TableCell>
@@ -620,7 +620,7 @@ export function DeliveriesPage() {
                 </Button>
               </DialogClose>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className="ys-delivery-status-badge" data-status={selected.deliveryStatus} variant={operationalStatusTone(selected)}>
+                <Badge className="ys-delivery-status-badge" data-status={selected.deliveryStatus} data-tone={operationalStatusTone(selected)} variant={operationalStatusTone(selected)}>
                   {operationalStatusLabel(selected)}
                 </Badge>
                 <Badge className="dark:border-slate-500 dark:bg-slate-700/60 dark:text-slate-100">

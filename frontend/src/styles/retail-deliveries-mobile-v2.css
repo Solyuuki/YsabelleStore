@@ -7,11 +7,11 @@
 .ys-delivery-filter-fields { display: contents; }
 .ys-delivery-filter-toggle, .ys-delivery-filter-reset, .ys-delivery-filter-field > span, .ys-delivery-search-submit-icon { display: none; }
 .ys-delivery-status-badge { max-width: 100%; white-space: normal; line-height: 1.35; overflow-wrap: anywhere; }
-.ys-delivery-status-badge:is([data-status="ORDER_PLACED"],[data-status="PREPARING"]) {
+.ys-delivery-status-badge[data-tone="default"]:is([data-status="ORDER_PLACED"],[data-status="PREPARING"]) {
   border-color: #a2b4cd !important; background-color: #e8edf7 !important; color: #263850 !important;
 }
-:root.dark .app-shell-ambient .ys-delivery-status-badge:is([data-status="ORDER_PLACED"],[data-status="PREPARING"]),
-:root.dark [role="dialog"].ys-delivery-ticket-dialog .ys-delivery-status-badge:is([data-status="ORDER_PLACED"],[data-status="PREPARING"]) {
+:root.dark .app-shell-ambient .ys-delivery-status-badge[data-tone="default"]:is([data-status="ORDER_PLACED"],[data-status="PREPARING"]),
+:root.dark [role="dialog"].ys-delivery-ticket-dialog .ys-delivery-status-badge[data-tone="default"]:is([data-status="ORDER_PLACED"],[data-status="PREPARING"]) {
   border-color: #849cbe !important; background-color: #344763 !important; color: #f5f8ff !important;
 }
 :root.dark .app-shell-ambient .ys-delivery-filter-fields select,

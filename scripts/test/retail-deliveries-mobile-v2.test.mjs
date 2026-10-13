@@ -38,6 +38,8 @@ test("ticket details expose full mobile scroll, a close button and full delivery
 test("Order placed and Preparing have legible badges in both themes", () => {
   assert.match(page, /data-status=\{ticket\.deliveryStatus\}/);
   assert.match(page, /data-status=\{selected\.deliveryStatus\}/);
+  assert.match(page, /data-tone=\{operationalStatusTone\(ticket\)\}/);
+  assert.match(page, /data-tone=\{operationalStatusTone\(selected\)\}/);
   assert.match(css, /background-color: #344763 !important;/);
   assert.match(css, /color: #f5f8ff !important;/);
 });
