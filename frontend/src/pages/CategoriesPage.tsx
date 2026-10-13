@@ -428,7 +428,7 @@ export function CategoriesPage() {
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <Table>
+                  <Table className="retail-mobile-data-table">
                     <TableHeader>
                       <TableRow className="bg-slate-50/80">
                         <TableHead className="min-w-64">Category</TableHead>
@@ -442,7 +442,7 @@ export function CategoriesPage() {
                     <TableBody>
                       {categories.map((category) => (
                         <TableRow className="hover:bg-slate-50/70" key={category.id}>
-                          <TableCell>
+                          <TableCell data-label="Category">
                             <div className="min-w-0">
                               <p className="font-semibold text-slate-950">{category.name}</p>
                               <p className="mt-0.5 truncate text-xs text-slate-500">
@@ -455,12 +455,12 @@ export function CategoriesPage() {
                               ) : null}
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell data-label="Products">
                             <span className="font-semibold tabular-nums text-slate-800">
                               {category.productCount}
                             </span>
                           </TableCell>
-                          <TableCell>
+                          <TableCell data-label="Cover">
                             <div className="flex items-center gap-3">
                               <CategoryCoverThumbnail category={category} />
                               <StatusBadge variant={coverStatusVariant(category.coverStatus)}>
@@ -468,7 +468,7 @@ export function CategoriesPage() {
                               </StatusBadge>
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell data-label="Storefront">
                             <div className="flex flex-col items-start gap-1.5">
                               <StatusBadge
                                 variant={category.isStorefrontVisible ? "success" : "info"}
@@ -480,14 +480,14 @@ export function CategoriesPage() {
                               ) : null}
                             </div>
                           </TableCell>
-                          <TableCell className="text-slate-600">
+                          <TableCell data-label="Updated" className="text-slate-600">
                             {new Date(category.updatedAt).toLocaleDateString("en-PH", {
                               day: "2-digit",
                               month: "short",
                               year: "numeric"
                             })}
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell data-label="Action" className="text-right">
                             <Button
                               aria-label={`Edit ${category.name}`}
                               size="sm"
