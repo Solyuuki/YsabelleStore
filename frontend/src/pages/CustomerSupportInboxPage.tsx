@@ -738,6 +738,52 @@ function SupportConversation({
   const [replyComposerExpanded, setReplyComposerExpanded] = useState(false);
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
   const mobileThreadRef = useRef<HTMLDivElement>(null);
+  const mobileConversationRef = useRef<HTMLDivElement>(null);
+
+  // Mobile-preview iframes and tall email bubbles can pass wheel events to the
+  // outer workspace instead of the chat. Intercept only wheel movement inside
+  // the message viewport and forward it to the actual scroll container.
+  // A native non-passive capture listener is required: React wheel listeners
+  // can be passive and cannot reliably cancel outer-page scrolling.
+  useEffect(() => {
+    const conversation = mobileConversationRef.current;
+    const thread = mobileThreadRef.current;
+    if (!conversation || !thread) return;
+
+    const wheelMessages = (event: WheelEvent) => {
+      if (
+        !window.matchMedia("(max-width: 1024px)").matches ||
+        event.defaultPrevented ||
+        event.ctrlKey
+      ) {
+        return;
+      }
+
+      const bounds = thread.getBoundingClientRect();
+      if (
+        event.clientX < bounds.left ||
+        event.clientX > bounds.right ||
+        event.clientY < bounds.top ||
+        event.clientY > bounds.bottom
+      ) {
+        return;
+      }
+
+      const maxScroll = Math.max(0, thread.scrollHeight - thread.clientHeight);
+      if (maxScroll <= 1 || Math.abs(event.deltaY) < Math.abs(event.deltaX)) return;
+
+      const multiplier = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? thread.clientHeight : 1;
+      const scrollAmount = event.deltaY * multiplier;
+      if (Math.abs(scrollAmount) < 0.01) return;
+
+      event.preventDefault();
+      thread.scrollTop = Math.max(0, Math.min(maxScroll, thread.scrollTop + scrollAmount));
+    };
+
+    conversation.addEventListener("wheel", wheelMessages, { capture: true, passive: false });
+    return () => conversation.removeEventListener("wheel", wheelMessages, true);
+  }, []);
+
   useEffect(() => {
     if (!window.matchMedia("(max-width: 1024px)").matches) return;
     const thread = mobileThreadRef.current;
@@ -745,7 +791,7 @@ function SupportConversation({
   }, [detail.id, detail.messages.length]);
 
   return (
-    <div className="ys-support-conversation-layout flex h-full min-h-0 flex-col">
+    <div className="ys-support-conversation-layout flex h-full min-h-0 flex-col" ref={mobileConversationRef}>
       <div className="ys-support-mobile-chat-header">
         <button aria-label="Back to conversations" className="ys-support-mobile-chat-back" onClick={onBack} type="button">
           <ArrowLeft aria-hidden="true" className="h-5 w-5" />

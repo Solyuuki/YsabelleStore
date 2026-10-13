@@ -116,3 +116,28 @@ test("Long mobile Support conversations constrain messages to the middle grid ro
   assert.match(page, /role="region"/);
   assert.match(page, /tabIndex=\{0\}/);
 });
+
+test("Mobile wheel over any chat bubble scrolls the message viewport, not the outer page", () => {
+  assert.match(page, /ref=\{mobileConversationRef\}/);
+  assert.match(page, /const thread = mobileThreadRef\.current;/);
+  assert.match(page, /const wheelMessages = \(event: WheelEvent\) =>/);
+  assert.match(page, /thread\.getBoundingClientRect\(\)/);
+  assert.match(page, /event\.clientX < bounds\.left/);
+  assert.match(page, /event\.clientY > bounds\.bottom/);
+  assert.match(page, /thread\.scrollHeight - thread\.clientHeight/);
+  assert.match(page, /event\.deltaMode === 1 \? 16/);
+  assert.match(page, /event\.deltaMode === 2 \? thread\.clientHeight : 1/);
+  assert.match(page, /event\.preventDefault\(\);\s*thread\.scrollTop = Math\.max\(0, Math\.min\(maxScroll, thread\.scrollTop \+ scrollAmount\)\);/);
+  assert.match(page, /addEventListener\("wheel", wheelMessages, \{ capture: true, passive: false \}\)/);
+  assert.match(page, /removeEventListener\("wheel", wheelMessages, true\)/);
+  assert.match(page, /event\.ctrlKey/);
+  assert.match(page, /window\.matchMedia\("\(max-width: 1024px\)"\)\.matches/);
+});
+
+test("Fixed header and reply controls are excluded from wheel forwarding", () => {
+  assert.match(css, /grid-template-rows: auto auto minmax\(0, 1fr\) auto;/);
+  assert.match(css, /\.ys-support-thread\s*\{[^}]*overflow-y: auto;/);
+  assert.match(css, /\.ys-support-mobile-composer\s*\{[^}]*grid-row: 4;/);
+  assert.match(page, /event\.clientY < bounds\.top/);
+  assert.match(page, /event\.clientY > bounds\.bottom/);
+});
