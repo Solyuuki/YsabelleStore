@@ -34,10 +34,10 @@ test("Moderation popup scopes dark-mode text, placeholder and button styling", (
     assert.ok(dialog.includes(className), `Dialog missing ${className}`);
     assert.ok(css.includes(`.ys-moderation-${className.replace("ys-moderation-", "")}`), `Theme missing ${className}`);
   }
-  assert.match(css, /:root\\.dark \\[role="dialog"\\]\\.ys-moderation-dialog/);
-  assert.match(css, /\\.ys-moderation-reason-input::placeholder/);
-  assert.match(css, /\\.ys-moderation-cancel:hover:not\\(:disabled\\)/);
-  assert.match(css, /\\.ys-moderation-confirm:disabled/);
+  assert.ok(css.includes(':root.dark [role="dialog"].ys-moderation-dialog'));
+  assert.ok(css.includes('.ys-moderation-reason-input::placeholder'));
+  assert.ok(css.includes('.ys-moderation-cancel:hover:not(:disabled)'));
+  assert.ok(css.includes('.ys-moderation-confirm:disabled'));
 });
 
 test("Moderation dialog retains safe cancellation and reason validation", () => {
@@ -56,7 +56,7 @@ test("Dark moderation copy and button states have WCAG AA text contrast", () => 
     ["Textarea content", "#f3f6ff", "#121e32"],
     ["Placeholder", "#b8c8e1", "#121e32"],
     ["Cancel", "#eef3ff", "#31445f"],
-    ["Confirm", "#fff", "#4e43d1"],
+    ["Confirm", "#ffffff", "#4e43d1"],
     ["Disabled confirm", "#d4dcf4", "#3e4163"]
   ]) {
     assert.ok(
