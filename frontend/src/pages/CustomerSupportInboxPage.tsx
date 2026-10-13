@@ -1,6 +1,8 @@
 import {
   ArrowLeft,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Info,
   RotateCcw,
   Send,
@@ -131,6 +133,11 @@ export function CustomerSupportInboxPage() {
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [mobileConversationOpen, setMobileConversationOpen] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const statusChipsRef = useRef<HTMLDivElement>(null);
+  const [statusChipsScroll, setStatusChipsScroll] = useState({
+    canGoBack: false,
+    canGoForward: false
+  });
   const mobileConversationOpenRef = useRef(false);
   const [detail, setDetail] = useState<StaffSupportTicketDetail | null>(null);
   const [search, setSearch] = useState("");
@@ -152,6 +159,47 @@ export function CustomerSupportInboxPage() {
   useEffect(() => {
     mobileConversationOpenRef.current = mobileConversationOpen;
   }, [mobileConversationOpen]);
+  // The status strip is horizontally scrollable, so arrows must reflect the
+  // actual available width (including narrow embedded mobile-preview frames).
+  useEffect(() => {
+    const strip = statusChipsRef.current;
+    if (!strip) return;
+
+    const updateScrollControls = () => {
+      const limit = Math.max(0, strip.scrollWidth - strip.clientWidth);
+      const next = {
+        canGoBack: strip.scrollLeft > 1,
+        canGoForward: strip.scrollLeft < limit - 1
+      };
+      setStatusChipsScroll((current) =>
+        current.canGoBack === next.canGoBack && current.canGoForward === next.canGoForward
+          ? current
+          : next
+      );
+    };
+
+    updateScrollControls();
+    strip.addEventListener("scroll", updateScrollControls, { passive: true });
+    window.addEventListener("resize", updateScrollControls);
+
+    const observer =
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(updateScrollControls);
+    observer?.observe(strip);
+    return () => {
+      observer?.disconnect();
+      strip.removeEventListener("scroll", updateScrollControls);
+      window.removeEventListener("resize", updateScrollControls);
+    };
+  }, []);
+
+  function scrollStatusChips(direction: -1 | 1) {
+    const strip = statusChipsRef.current;
+    if (!strip) return;
+    strip.scrollBy({
+      left: direction * Math.max(130, strip.clientWidth * 0.8),
+      behavior: "smooth"
+    });
+  }
 
   useEffect(() => {
     void fetchSupportGmailStatus()
@@ -396,13 +444,43 @@ export function CustomerSupportInboxPage() {
                 value={search}
               />
             </div>
-            <div aria-label="Support status filters" className="ys-support-mobile-status-chips" role="group">
-              {(["ALL", ...STAFF_SUPPORT_STATUSES] as const).map((filter) => (
-                <button aria-pressed={statusFilter === filter} className="ys-support-status-chip" key={filter}
-                  onClick={() => { setStatusFilter(filter); resetToFirstPage(); }} type="button">
-                  {filter === "ALL" ? "All" : STATUS_LABELS[filter]}
+            <div className="ys-support-mobile-status-toolbar">
+              <div
+                aria-label="Support status filters, scroll horizontally for more choices"
+                className="ys-support-mobile-status-chips"
+                ref={statusChipsRef}
+                role="group"
+              >
+                {(["ALL", ...STAFF_SUPPORT_STATUSES] as const).map((filter) => (
+                  <button
+                    aria-pressed={statusFilter === filter}
+                    className="ys-support-status-chip"
+                    key={filter}
+                    onClick={() => { setStatusFilter(filter); resetToFirstPage(); }}
+                    type="button"
+                  >
+                    {filter === "ALL" ? "All" : STATUS_LABELS[filter]}
+                  </button>
+                ))}
+              </div>
+              <div aria-label="More status choices" className="ys-support-status-scroll-buttons" role="group">
+                <button
+                  aria-label="Previous status choices"
+                  disabled={!statusChipsScroll.canGoBack}
+                  onClick={() => scrollStatusChips(-1)}
+                  type="button"
+                >
+                  <ChevronLeft aria-hidden="true" className="h-4 w-4" />
                 </button>
-              ))}
+                <button
+                  aria-label="Next status choices"
+                  disabled={!statusChipsScroll.canGoForward}
+                  onClick={() => scrollStatusChips(1)}
+                  type="button"
+                >
+                  <ChevronRight aria-hidden="true" className="h-4 w-4" />
+                </button>
+              </div>
             </div>
             <button aria-controls="ys-support-extra-filters" aria-expanded={mobileFiltersOpen}
               className="ys-support-mobile-filter-toggle" onClick={() => setMobileFiltersOpen((value) => !value)} type="button">
@@ -550,10 +628,11 @@ function FilterSelect({
   value: string;
 }) {
   return (
-    <label className="grid gap-1 text-xs font-medium text-slate-500">
+    <label className="ys-support-filter-field grid gap-1 text-xs font-medium text-slate-500">
       <span>{label}</span>
       <select
-        className="ys-retail-select-chevron h-10 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+        aria-label={label}
+        className="ys-support-filter-select ys-retail-select-chevron h-10 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
         onChange={(event) => onChange(event.target.value)}
         value={value}
       >

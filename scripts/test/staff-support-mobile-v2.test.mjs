@@ -55,3 +55,31 @@ test("Switching tickets never briefly renders another ticket's messages or statu
   assert.match(page, /detail && detail.id !== selectedTicketId/);
   assert.match(page, /detail && detail.id === selectedTicketId/);
 });
+
+
+test("status pills keep full labels and expose two-way horizontal navigation at narrow widths", () => {
+  assert.match(page, /ys-support-mobile-status-toolbar/);
+  assert.match(page, /ref=\{statusChipsRef\}/);
+  assert.match(page, /scrollStatusChips\(-1\)/);
+  assert.match(page, /scrollStatusChips\(1\)/);
+  assert.match(page, /aria-label="Previous status choices"/);
+  assert.match(page, /aria-label="Next status choices"/);
+  assert.match(page, /setStatusFilter\(filter\)/);
+  assert.match(page, /resetToFirstPage\(\)/);
+  assert.match(css, /min-width: max-content;/);
+  assert.match(css, /white-space: nowrap;/);
+  assert.match(css, /scroll-snap-type: x proximity;/);
+  assert.match(css, /touch-action: pan-x;/);
+});
+
+test("support More filters stacks complete select values based on actual panel width", () => {
+  assert.match(css, /container: support-filters \/ inline-size;/);
+  assert.match(css, /@container support-filters \(max-width: 430px\)/);
+  assert.match(css, /grid-template-columns: minmax\(0, 1fr\);/);
+  assert.match(page, /className="ys-support-filter-field grid/);
+  assert.match(page, /className="ys-support-filter-select ys-retail-select-chevron/);
+  assert.match(page, /aria-label=\{label\}/);
+  assert.match(css, /\.ys-support-filter-select\s*\{/);
+  assert.match(css, /min-height: 44px;/);
+  assert.match(css, /:root.dark .retail-workspace \[data-retail-module="customer-support"\] .ys-support-filter-select option/);
+});

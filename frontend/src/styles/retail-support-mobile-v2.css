@@ -232,3 +232,125 @@
   .retail-workspace [data-retail-module="customer-support"] .ys-support-mobile-chat-avatar { width: 30px; height: 30px; }
   .retail-workspace [data-retail-module="customer-support"] .ys-support-mobile-ticket-meta { grid-template-columns: minmax(0,1fr); }
 }
+
+/* Sprint 12 Support filter usability: panel-width-aware layout rather than
+   checking only device viewport (which ignores the embedded preview frame). */
+@media (max-width: 1024px) {
+  .retail-workspace [data-retail-module="customer-support"] .ys-support-list-filters {
+    container: support-filters / inline-size;
+    min-width: 0;
+  }
+
+  .retail-workspace [data-retail-module="customer-support"] .ys-support-mobile-status-toolbar {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    width: 100%;
+    gap: 0.35rem;
+  }
+  .retail-workspace [data-retail-module="customer-support"] .ys-support-mobile-status-chips {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+    align-items: center;
+    gap: 0.45rem;
+    padding-block: 0.15rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
+    scroll-snap-type: x proximity;
+  }
+  .retail-workspace [data-retail-module="customer-support"] .ys-support-status-chip {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    min-width: max-content;
+    width: max-content;
+    min-height: 40px;
+    padding: 0.48rem 0.8rem;
+    line-height: 1.25;
+    font-size: 0.78rem;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: nowrap;
+    scroll-snap-align: start;
+  }
+  .retail-workspace [data-retail-module="customer-support"] .ys-support-status-scroll-buttons {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  .retail-workspace [data-retail-module="customer-support"] .ys-support-status-scroll-buttons button {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 40px;
+    flex: none;
+    border: 1px solid #b9c7dc;
+    border-radius: 0.5rem;
+    background: #edf1f9;
+    color: #354c72;
+    cursor: pointer;
+  }
+  .retail-workspace [data-retail-module="customer-support"] .ys-support-status-scroll-buttons button:disabled {
+    cursor: default;
+    opacity: 0.35;
+  }
+  .retail-workspace [data-retail-module="customer-support"] .ys-support-status-scroll-buttons button:focus-visible,
+  .retail-workspace [data-retail-module="customer-support"] .ys-support-status-chip:focus-visible {
+    outline: 2px solid #a598ff;
+    outline-offset: 2px;
+  }
+  .retail-workspace [data-retail-module="customer-support"] .ys-support-filter-row {
+    min-width: 0;
+  }
+  .retail-workspace [data-retail-module="customer-support"] .ys-support-filter-field,
+  .retail-workspace [data-retail-module="customer-support"] .ys-support-filter-select {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .retail-workspace [data-retail-module="customer-support"] .ys-support-filter-select {
+    min-height: 44px;
+    height: 44px;
+    font-size: 0.875rem;
+    line-height: 1.25;
+    padding-left: 0.75rem;
+    padding-right: 2.75rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  :root.dark .retail-workspace [data-retail-module="customer-support"] .ys-support-status-scroll-buttons button {
+    color: #ebf1ff;
+    background: #2b3e5a;
+    border-color: #617694;
+  }
+  :root.dark .retail-workspace [data-retail-module="customer-support"] .ys-support-filter-select {
+    color-scheme: dark;
+    background-color: #293b55;
+    color: #f1f5ff;
+    border-color: #68809d;
+  }
+  :root.dark .retail-workspace [data-retail-module="customer-support"] .ys-support-filter-select option {
+    color: #f3f6ff;
+    background-color: #22344f;
+  }
+  @container support-filters (max-width: 430px) {
+    .ys-support-filter-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.65rem;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .retail-workspace [data-retail-module="customer-support"] .ys-support-mobile-status-chips {
+    scroll-behavior: auto;
+  }
+}
