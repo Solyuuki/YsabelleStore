@@ -63,6 +63,17 @@ const currencyFormatter = new Intl.NumberFormat("en-PH", {
 });
 
 const PRODUCT_RESULTS_PAGE_SIZE = 10;
+const MOBILE_PRODUCT_RESULTS_PAGE_SIZE = 5;
+
+function getProductResultsPageSize() {
+  if (typeof window === "undefined") return PRODUCT_RESULTS_PAGE_SIZE;
+
+  return window.matchMedia(
+    "(max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px)"
+  ).matches
+    ? MOBILE_PRODUCT_RESULTS_PAGE_SIZE
+    : PRODUCT_RESULTS_PAGE_SIZE;
+}
 const MIN_SEARCH_LOADING_MS = 200;
 
 const initialSearchState: SearchState = {
@@ -177,7 +188,7 @@ export function PosPage() {
           ? { label: "Found", variant: "success" as const }
           : searchState.status === "no-match"
             ? { label: "No match", variant: "warning" as const }
-            : { label: "USB scanner ready", variant: "info" as const };
+            : { label: "USB ready", variant: "info" as const };
 
   const cartBadge = isCheckingOut
     ? { label: "Processing", variant: "info" as const }
@@ -288,7 +299,7 @@ export function PosPage() {
     try {
       const response = await searchPosProducts(trimmedQuery, {
         page: requestPage,
-        pageSize: PRODUCT_RESULTS_PAGE_SIZE
+        pageSize: getProductResultsPageSize()
       });
       const remainingMs = Math.max(
         0,
@@ -382,6 +393,7 @@ export function PosPage() {
   function openCashPayment() {
     if (cartLines.length === 0 || isCheckingOut) return;
     setCheckoutError(null);
+    setMobileCartOpen(false);
     setIsCashDialogOpen(true);
   }
 
@@ -411,6 +423,7 @@ export function PosPage() {
       setReceiptPrintError(null);
       setReceiptPrintStatus("idle");
       setIsCashDialogOpen(false);
+      setMobileCartOpen(false);
       commitCartLines([]);
       setSearchState(initialSearchState);
       clearScannerInput();
@@ -517,7 +530,8 @@ export function PosPage() {
                     ref={scannerInputRef}
                     aria-label="Scan barcode or search product"
                     className="pos-scanner-input w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
-                    placeholder="Scan barcode or search name / SKU / price"
+                    aria-describedby="retail-pos-search-hint"
+                    placeholder="Barcode / product"
                     value={searchInput}
                     onChange={(event) => setSearchInput(event.target.value)}
                     onKeyDown={(event) => {
@@ -535,14 +549,6 @@ export function PosPage() {
                     }}
                   />
                 </label>
-                <Button className="retail-pos-search-submit" disabled={searchState.isLoading} type="submit" variant="secondary">
-                  {searchState.isLoading ? (
-                    <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
-                  ) : (
-                    <Search className="h-4 w-4" aria-hidden="true" />
-                  )}
-                  Search
-                </Button>
                 <button
                   aria-label="Scan product barcode using phone camera"
                   className="retail-pos-camera-launch"
@@ -552,7 +558,18 @@ export function PosPage() {
                   <Camera aria-hidden="true" size={20} />
                   <span>Camera scan</span>
                 </button>
+                <Button className="retail-pos-search-submit" disabled={searchState.isLoading} type="submit" variant="secondary">
+                  {searchState.isLoading ? (
+                    <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <Search className="h-4 w-4" aria-hidden="true" />
+                  )}
+                  Search
+                </Button>
               </form>
+              <p className="retail-pos-mobile-search-hint" id="retail-pos-search-hint">
+                Search by product, SKU, price or barcode. Use the camera button to scan.
+              </p>
               {searchState.error ? (
                 <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                   {searchState.error}
@@ -641,6 +658,7 @@ export function PosPage() {
                               </td>
                               <td data-label="Action" className="px-4 py-3 text-right">
                                 <Button
+                                  aria-label={`Add ${product.name} to the current sale`}
                                   disabled={isOutOfStock}
                                   size="sm"
                                   type="button"
@@ -653,7 +671,7 @@ export function PosPage() {
                                   }
                                 >
                                   <Plus className="h-4 w-4" aria-hidden="true" />
-                                  Add
+                                  <span className="retail-pos-add-label">Add</span>
                                 </Button>
                               </td>
                             </tr>
@@ -695,6 +713,7 @@ export function PosPage() {
           />
         ) : null}
         <Card
+          aria-label="Current sale cart"
           className="retail-pos-cart border-slate-200/80 bg-white/95 shadow-sm xl:sticky xl:top-4 xl:flex xl:h-[calc(100vh-11rem)] xl:min-h-[560px] xl:flex-col"
           data-mobile-open={mobileCartOpen}
         >

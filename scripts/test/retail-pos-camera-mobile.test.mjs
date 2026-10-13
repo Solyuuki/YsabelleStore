@@ -94,3 +94,31 @@ test("phone search and product cards are compact, usable and theme-aware", () =>
   assert.match(css, /\.pos-camera-scanner\s*\{[^}]*background: #19283e;/);
   assert.match(css, /\.pos-camera-scanner__status\s*\{[^}]*color: #d8e5f8;/);
 });
+
+test("compact mPOS search remains usable at narrow phone widths", () => {
+  assert.match(pos, /placeholder="Barcode \\/ product"/);
+  assert.match(pos, /aria-describedby="retail-pos-search-hint"/);
+  assert.match(pos, /aria-label="Scan product barcode using phone camera"/);
+  assert.match(pos, /aria-label={`Add \$\{product.name\} to the current sale`}/);
+  assert.match(css, /\.retail-pos-mobile-search-hint\s*\{\s*display: none;/);
+  assert.match(css, /grid-template-columns: minmax\(0, 1fr\) 46px;/);
+  assert.match(css, /grid-row: 2 \/ span 2;/);
+  assert.match(css, /\.retail-pos-add-label\s*\{\s*display: none;/);
+});
+
+test("mobile product search pages the backend at five rows without changing desktop page size", () => {
+  assert.match(pos, /const PRODUCT_RESULTS_PAGE_SIZE = 10;/);
+  assert.match(pos, /const MOBILE_PRODUCT_RESULTS_PAGE_SIZE = 5;/);
+  assert.match(pos, /pageSize: getProductResultsPageSize\(\)/);
+  assert.match(pos, /pageSize={searchState.meta.pageSize}/);
+  assert.match(pos, /setProductResultsPage\(nextPage\)/);
+  assert.match(pos, /handleSearch\(\{ page: nextPage \}\)/);
+  assert.match(pos, /className="retail-mobile-data-table w-full min-w-\[760px\]/);
+});
+
+test("mobile cart reuses sale checkout and clears its bottom sheet before cash flow", () => {
+  assert.match(pos, /setMobileCartOpen\(false\);\s*setIsCashDialogOpen\(true\);/);
+  assert.match(pos, /data-mobile-open={mobileCartOpen}/);
+  assert.match(pos, /aria-expanded={mobileCartOpen}/);
+  assert.match(css, /height: min\(85dvh, 750px\);/);
+});

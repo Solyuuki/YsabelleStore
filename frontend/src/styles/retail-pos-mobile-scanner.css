@@ -351,3 +351,166 @@
     gap: 0.25rem;
   }
 }
+
+/* Sprint 12 mPOS v2: compact search and single-source product rows.
+   Scoped to phone-size workspaces; the desktop table and scanner stay intact. */
+.retail-pos-mobile-search-hint { display: none; }
+@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+  .retail-workspace [data-retail-module="pos"] .retail-pos-search-card .retail-pos-search-form {
+    grid-template-columns: minmax(0, 1fr) 46px;
+    gap: 0.45rem;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-search-form .pos-scanner-field {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    height: 46px;
+    gap: 0.5rem;
+    padding-inline: 0.65rem;
+  }
+  .retail-workspace [data-retail-module="pos"] .pos-scanner-field > svg {
+    width: 18px;
+    height: 18px;
+    flex: none;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-camera-launch {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 46px;
+    min-height: 46px;
+    padding: 0;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-camera-launch span {
+    display: none;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-search-submit {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    min-height: 44px;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-mobile-search-hint {
+    display: block;
+    margin-top: 0.45rem;
+    color: #64748b;
+    font-size: 0.72rem;
+    line-height: 1.45;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .retail-mobile-data-table tbody {
+    gap: 0;
+    padding: 0;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .retail-mobile-data-table tbody > tr {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.15rem 0.5rem;
+    align-items: center;
+    padding: 0.65rem 0.5rem;
+    border: 0;
+    border-bottom: 1px solid #d7dfec;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .retail-mobile-data-table tbody > tr:last-child {
+    border-bottom: 0;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .retail-mobile-data-table tbody > tr > td {
+    min-width: 0;
+    gap: 0;
+    padding: 0.05rem 0.2rem;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .retail-mobile-data-table tbody > tr > td::before {
+    display: none;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .retail-mobile-data-table tbody > tr > td[data-label="Product"] {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .retail-mobile-data-table tbody > tr > td[data-label="Product"] p:first-child {
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .retail-mobile-data-table tbody > tr > td[data-label="Product"] p:last-child {
+    font-size: 0.66rem;
+    line-height: 1.3;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .retail-mobile-data-table tbody > tr > td[data-label="Unit price"] {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+    text-align: right !important;
+    white-space: nowrap !important;
+    font-size: 0.83rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .retail-mobile-data-table tbody > tr > td[data-label="Barcode / SKU"] {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: center;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .retail-mobile-data-table tbody > tr > td[data-label="Barcode / SKU"] p {
+    font-size: 0.65rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .retail-mobile-data-table tbody > tr > td[data-label="Stock"] {
+    grid-column: 1;
+    grid-row: 3;
+    align-self: center;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .retail-mobile-data-table tbody > tr > td[data-label="Stock"] > span {
+    width: fit-content;
+    max-width: 100%;
+    font-size: 0.65rem;
+    line-height: 1.25;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .retail-mobile-data-table tbody > tr > td[data-label="Action"] {
+    grid-column: 2;
+    grid-row: 2 / span 2;
+    align-self: center;
+    padding: 0;
+    border: none;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .retail-mobile-data-table tbody > tr > td[data-label="Action"] button {
+    display: inline-flex;
+    min-width: 44px;
+    width: 44px;
+    min-height: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-add-label {
+    display: none;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-cart__toggle {
+    min-height: 56px;
+    padding-block: 0.45rem;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-cart[data-mobile-open="true"] {
+    height: min(85dvh, 750px);
+    max-height: min(85dvh, 750px);
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-cart[data-mobile-open="true"] > :last-child {
+    padding: 0.65rem 0.75rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-cart[data-mobile-open="true"] div[data-product-id] {
+    padding: 0.65rem 0.7rem;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-cart[data-mobile-open="true"] div[data-product-id] .mt-4 {
+    margin-top: 0.45rem;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-cart[data-mobile-open="true"] div[data-product-id] .mt-3 {
+    margin-top: 0.4rem;
+  }
+  :root.dark .retail-workspace [data-retail-module="pos"] .retail-pos-mobile-search-hint {
+    color: #b9c9e4;
+  }
+  :root.dark .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .retail-mobile-data-table tbody > tr {
+    border-bottom-color: #465b7a;
+    background: transparent;
+  }
+}
