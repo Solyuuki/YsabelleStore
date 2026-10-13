@@ -109,3 +109,21 @@ test("remaining analytics and administration preserve functional screen content"
   assert.match(source.css, /max-height: calc\(100dvh - 1rem\) !important;/);
   assert.match(source.css, /font-size: 16px;/);
 });
+
+
+test("inventory mobile filtering stays functional and avoids vertical filter overload", () => {
+  assert.match(source.inventory, /const \[mobileFiltersOpen, setMobileFiltersOpen\] = useState\(false\)/);
+  assert.match(source.inventory, /className="retail-inventory-filter-toggle"/);
+  assert.match(source.inventory, /aria-expanded=\{mobileFiltersOpen\}/);
+  assert.match(source.inventory, /setMobileFiltersOpen\(\(open\) => !open\)/);
+  assert.match(source.inventory, /data-mobile-filters-open=\{mobileFiltersOpen\}/);
+  assert.match(source.css, /\.retail-inventory-toolbar\[data-mobile-filters-open="false"\] \.ys-inventory-filter/);
+  assert.match(source.css, /@media \(min-width: 768px\) and \(min-height: 501px\)/);
+  assert.match(source.css, /\.retail-inventory-filter-toggle\s*\{\s*display: none;/);
+});
+
+test("POS cart escapes desktop entrance animation positioning on mobile", () => {
+  assert.match(source.css, /\[data-retail-module="pos"\] \.auth-panel-enter\s*\{\s*animation: none;\s*transform: none;/);
+  assert.match(source.pos, /window\.addEventListener\("keydown", handleEscape\)/);
+  assert.match(source.pos, /if \(event\.key === "Escape"\) setMobileCartOpen\(false\)/);
+});
