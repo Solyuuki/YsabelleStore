@@ -71,3 +71,35 @@ test("Compact status and import source controls have accessible names and accura
   assert.match(pkg,/ys-products-v2-local-label/);
   assert.match(css,/\.ys-products-v2-local-label::after \{ content: "Local file";/);
 });
+
+
+test("approved product image uses a single compact quality row and upload control", () => {
+  const component = read("frontend/src/components/catalog/ProductImageUploadPanel.tsx");
+  assert.match(component, /className="ys-product-image-quality-card/);
+  assert.match(component, /data-needs-action=\{candidate\.qualityStatus !== "APPROVED"\}/);
+  assert.match(component, /className="ys-product-image-quality-heading/);
+  assert.match(component, /<QualityIndicator status=\{candidate\.qualityStatus\} \/>/);
+  assert.match(component, /className="ys-product-image-quality-actions/);
+  assert.match(component, /aria-label="Upload another product image"/);
+  assert.match(component, /ys-product-image-replace-mobile">Replace/);
+  assert.match(component, /ys-product-image-updated inline-flex/);
+  assert.match(component, /\{selectedFile && !candidate \? \(/);
+  assert.match(component, /onClick=\{openPicker\}/);
+  assert.match(css, /\.ys-product-image-quality-card\[data-needs-action="false"\] \.ys-product-image-approved-description/);
+  assert.match(css, /\.ys-product-image-previews\s*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
+});
+test("image quality errors and all approval/discard actions remain intact", () => {
+  const component = read("frontend/src/components/catalog/ProductImageUploadPanel.tsx");
+  assert.match(component, /ys-product-image-diagnostics/);
+  assert.match(component, /diagnostics\.map\(\(diagnostic, index\) =>/);
+  assert.match(component, /handleDiscard\(\)/);
+  assert.match(component, /handleApprove\(\)/);
+  assert.match(component, /canApprove && phase !== "approved"/);
+});
+test("Products search never paints a separate dark input rectangle", () => {
+  assert.match(css, /\.ys-products-v2-search > input,/);
+  assert.match(css, /background: transparent !important;/);
+  assert.match(css, /background-color: transparent !important;/);
+  assert.match(css, /box-shadow: none !important;/);
+  assert.match(css, /\.ys-products-v2-search:focus-within/);
+});

@@ -258,3 +258,148 @@
   .retail-workspace .ys-products-v2-page .ys-products-v2-product-bottom { gap: .25rem; }
   .retail-workspace .ys-products-v2-page .ys-products-v2-product-price { font-size: .78rem; }
 }
+
+
+/* Product photo quality: compact information without hiding diagnostic errors,
+   upload-state controls, or the full desktop product detail experience. */
+.ys-product-image-replace-mobile { display: none; }
+
+@media (max-width: 1024px) {
+  .ys-product-image-panel {
+    min-width: 0;
+    padding: 0.7rem;
+    border-radius: 0.75rem;
+  }
+  .ys-product-image-panel > * + * {
+    margin-top: 0.65rem;
+  }
+  .ys-product-image-panel > div:first-child {
+    gap: 0.45rem;
+  }
+  .ys-product-image-panel > div:first-child p:first-child {
+    line-height: 1.35;
+  }
+  .ys-product-image-panel > div:first-child p:last-child {
+    line-height: 1.35;
+  }
+  .ys-product-image-previews {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+  .ys-product-image-preview {
+    min-width: 0;
+    border-radius: 0.6rem;
+  }
+  .ys-product-image-preview .ys-product-image-preview-caption {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.65rem;
+  }
+  .ys-product-image-preview .ys-product-preview-canvas {
+    aspect-ratio: auto;
+    height: clamp(78px, 23vw, 126px);
+    min-width: 0;
+    padding: 0.4rem;
+  }
+  .ys-product-image-quality-card {
+    display: grid;
+    gap: 0.6rem;
+    min-width: 0;
+    padding: 0.65rem;
+    border-radius: 0.65rem;
+  }
+  .ys-product-image-quality-card > * + * { margin-top: 0; }
+  .ys-product-image-quality-heading {
+    align-items: center;
+    flex-wrap: nowrap;
+    min-width: 0;
+    gap: 0.45rem;
+  }
+  .ys-product-image-quality-title {
+    min-width: 0;
+    font-size: 0.68rem;
+    line-height: 1.25;
+  }
+  .ys-product-image-quality-heading > span {
+    flex: none;
+    padding: 0.25rem 0.55rem;
+    font-size: 0.69rem;
+    line-height: 1.25;
+  }
+  .ys-product-image-quality-card[data-needs-action="false"] .ys-product-image-approved-description {
+    display: none;
+  }
+  .ys-product-image-quality-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.45rem;
+    padding-top: 0;
+  }
+  .ys-product-image-quality-actions > button {
+    min-height: 40px;
+    padding: 0.4rem 0.65rem;
+    gap: 0.35rem;
+    font-size: 0.73rem;
+    line-height: 1.25;
+  }
+  .ys-product-image-replace-desktop { display: none; }
+  .ys-product-image-replace-mobile { display: inline; }
+  .ys-product-image-quality-actions .ys-product-image-updated {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    max-width: 100%;
+    min-height: 36px;
+    padding: 0.25rem 0.45rem;
+    font-size: 0.7rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+  .ys-product-image-diagnostics {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0;
+    font-size: 0.73rem;
+    line-height: 1.4;
+  }
+  .ys-product-image-diagnostics > li { min-width: 0; }
+  :root.dark .ys-product-image-quality-heading > span {
+    background: #203f3a;
+    color: #b9f0d5;
+  }
+  :root.dark .ys-product-image-panel[data-quality-status="REJECTED"] .ys-product-image-quality-heading > span {
+    background: #4c2b38;
+    color: #ffd0d6;
+  }
+  :root.dark .ys-product-image-panel[data-quality-status="NEEDS_REVIEW"] .ys-product-image-quality-heading > span {
+    background: #4b3d28;
+    color: #ffe0a1;
+  }
+  :root.dark .ys-product-image-updated {
+    border: 1px solid #467f71;
+    background: #1d403b !important;
+    color: #c7f4df !important;
+  }
+}
+/* One unified search surface: a stronger global dark input background was
+   painting a dark rectangle inside the outlined mobile search control. */
+@media (max-width: 1024px) {
+  .app-shell-ambient .retail-workspace .ys-products-v2-page .ys-products-v2-search > input,
+  :root.dark .app-shell-ambient .retail-workspace .ys-products-v2-page .ys-products-v2-search > input {
+    min-width: 0;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: 0 !important;
+    border-radius: 0;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .app-shell-ambient .retail-workspace .ys-products-v2-page .ys-products-v2-search:focus-within {
+    outline: 2px solid #9286eb;
+    outline-offset: 1px;
+  }
+}
