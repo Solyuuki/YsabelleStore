@@ -577,3 +577,39 @@
     display: none;
   }
 }
+
+/* Sprint 12 — mobile retail scrollbar tracks:
+   Keep the actual scroll containers and touch/keyboard scrolling operational,
+   but reclaim the thick native gutter on small embedded phone viewports.
+   Portaled navigation and dialogs are outside .retail-workspace. */
+@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+  :is(
+    .retail-workspace > main[data-retail-module],
+    .retail-workspace > main[data-retail-module] *,
+    .retail-mobile-nav__drawer[role="dialog"],
+    .retail-mobile-nav__drawer[role="dialog"] *,
+    :root[data-appearance-scope="retail"] [role="dialog"],
+    :root[data-appearance-scope="retail"] [role="dialog"] *,
+    :root[data-appearance-scope="retail"] [data-radix-popper-content-wrapper],
+    :root[data-appearance-scope="retail"] [data-radix-popper-content-wrapper] *
+  ) {
+    scrollbar-width: none !important;
+    scrollbar-gutter: auto !important;
+    -ms-overflow-style: none;
+  }
+
+  :is(
+    .retail-workspace > main[data-retail-module],
+    .retail-workspace > main[data-retail-module] *,
+    .retail-mobile-nav__drawer[role="dialog"],
+    .retail-mobile-nav__drawer[role="dialog"] *,
+    :root[data-appearance-scope="retail"] [role="dialog"],
+    :root[data-appearance-scope="retail"] [role="dialog"] *,
+    :root[data-appearance-scope="retail"] [data-radix-popper-content-wrapper],
+    :root[data-appearance-scope="retail"] [data-radix-popper-content-wrapper] *
+  )::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+}

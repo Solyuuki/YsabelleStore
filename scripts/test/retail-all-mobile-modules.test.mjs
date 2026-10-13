@@ -127,3 +127,33 @@ test("POS cart escapes desktop entrance animation positioning on mobile", () => 
   assert.match(source.pos, /window\.addEventListener\("keydown", handleEscape\)/);
   assert.match(source.pos, /if \(event\.key === "Escape"\) setMobileCartOpen\(false\)/);
 });
+
+
+test("all mobile retail scroll areas reclaim scrollbar tracks but remain scrollable", () => {
+  const layout = source.layout;
+  const navCss = read("frontend/src/styles/retail-mobile-navigation.css");
+  const scrollbarCss = source.css.slice(source.css.indexOf("/* Sprint 12 — mobile retail scrollbar tracks:"));
+
+  assert.ok(scrollbarCss.startsWith("/* Sprint 12 — mobile retail scrollbar tracks:"));
+  assert.match(scrollbarCss, /@media \(max-width: 767px\), \(max-height: 500px\) and \(orientation: landscape\) and \(max-width: 1024px\)/);
+  assert.match(scrollbarCss, /\.retail-workspace > main\[data-retail-module\]/);
+  assert.match(scrollbarCss, /\.retail-workspace > main\[data-retail-module\] \*/);
+  assert.match(scrollbarCss, /\.retail-mobile-nav__drawer\[role="dialog"\] \*/);
+  assert.match(scrollbarCss, /:root\[data-appearance-scope="retail"\] \[role="dialog"\] \*/);
+  assert.match(scrollbarCss, /\[data-radix-popper-content-wrapper\] \*/);
+  assert.match(scrollbarCss, /scrollbar-width: none !important;/);
+  assert.match(scrollbarCss, /scrollbar-gutter: auto !important;/);
+  assert.match(scrollbarCss, /::-webkit-scrollbar\s*\{\s*display: none !important;\s*width: 0 !important;\s*height: 0 !important;/);
+  assert.doesNotMatch(scrollbarCss, /overflow(-[xy])?:\s*(?:hidden|clip)/);
+  assert.match(layout, /flex-1 overflow-auto/);
+  assert.match(source.css, /\.retail-workspace > main\[data-retail-module\]\s*\{[^}]*overflow-y: auto;/);
+  assert.match(navCss, /\.retail-mobile-nav__links\s*\{[^}]*overflow-y: auto;/);
+  assert.match(source.css, /:root\[data-appearance-scope="retail"\] \[role="dialog"\]:not\(\.retail-mobile-nav__drawer\)[\s\S]*?overflow-y: auto;/);
+});
+
+test("scrollbar hiding is not applied to desktop or storefront", () => {
+  const scrollbarCss = source.css.slice(source.css.indexOf("/* Sprint 12 — mobile retail scrollbar tracks:"));
+  assert.match(scrollbarCss, /^\/\*[\s\S]*?@media \(max-width: 767px\)/);
+  assert.doesNotMatch(scrollbarCss, /:root\s*,|(^|\n)\s*(?:html|body)\s*[{,:]/m);
+  assert.doesNotMatch(scrollbarCss, /customer-|storefront-|retail-desktop-sidebar/);
+});
