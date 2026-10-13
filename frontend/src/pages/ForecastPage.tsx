@@ -882,6 +882,8 @@ function MonthlyForecastCard({
   selectedSummary: ForecastProductSummary | null;
 }) {
   const [windowMonths, setWindowMonths] = useState(FORECAST_DETAIL_DEFAULT_WINDOW_MONTHS);
+  const [mobileSelectedMonth, setMobileSelectedMonth] = useState(0);
+  const [showAllMobileMonths, setShowAllMobileMonths] = useState(false);
   const [windowStart, setWindowStart] = useState(0);
   const totalForecastMonths = forecastRows.length;
   const windowSizes = useMemo(
@@ -902,6 +904,9 @@ function MonthlyForecastCard({
     effectiveWindowStart + effectiveWindowMonths
   );
   const chartData = useMemo(() => buildChartData(visibleForecastRows), [visibleForecastRows]);
+  const mobileForecastRows = visibleForecastRows.slice(0, 4);
+  const mobileChartData = buildChartData(mobileForecastRows);
+  const mobileMonthPoint = mobileForecastRows[Math.min(mobileSelectedMonth, Math.max(0, mobileForecastRows.length - 1))] ?? null;
   const currentForecast = forecastRows[0] ?? null;
   const forecastHorizonTotal = product
     ? forecastRows.reduce((sum, point) => sum + point.predictedQuantity, 0)
@@ -917,7 +922,14 @@ function MonthlyForecastCard({
   useEffect(() => {
     setWindowMonths(FORECAST_DETAIL_DEFAULT_WINDOW_MONTHS);
     setWindowStart(0);
+    setMobileSelectedMonth(0);
+    setShowAllMobileMonths(false);
   }, [product?.productId]);
+
+  useEffect(() => {
+    setMobileSelectedMonth(0);
+    setShowAllMobileMonths(false);
+  }, [windowMonths, windowStart]);
 
   const detailTitle = product?.productName ?? selectedSummary?.productName ?? "Forecast details";
   const detailSubtitle = product
@@ -932,8 +944,8 @@ function MonthlyForecastCard({
   );
 
   return (
-    <Card className="flex h-full min-h-0 flex-col">
-      <CardHeader className="shrink-0">
+    <Card className="ys-forecast-v2-detail-card flex h-full min-h-0 flex-col">
+      <CardHeader className="ys-forecast-v2-detail-heading shrink-0">
         <div className="flex items-start justify-between gap-4">
           <div>
             <CardTitle>{detailTitle}</CardTitle>
@@ -943,7 +955,7 @@ function MonthlyForecastCard({
       </CardHeader>
 
       <CardContent
-        className="flex min-h-0 flex-1 flex-col gap-4 pt-0"
+        className="ys-forecast-v2-detail-content flex min-h-0 flex-1 flex-col gap-4 pt-0"
         aria-busy={initialLoading || loadingDetail}
       >
         {initialLoading ? (
@@ -1022,7 +1034,7 @@ function MonthlyForecastCard({
           />
         ) : (
           <>
-            <div className="grid gap-3 md:grid-cols-3">
+            <div className="ys-forecast-v2-summary-metrics grid gap-3 md:grid-cols-3">
               <Metric
                 label="Current Month Forecast"
                 value={formatNumber(currentForecast.predictedQuantity, 1)}
@@ -1040,7 +1052,7 @@ function MonthlyForecastCard({
             </div>
 
             {totalForecastMonths > FORECAST_DETAIL_DEFAULT_WINDOW_MONTHS ? (
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+              <div className="ys-forecast-v2-range flex flex-wrap items-center justify-between gap-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
                 <div>
                   <p className="text-xs font-semibold text-slate-700">Forecast range</p>
                   <p className="mt-0.5 text-xs text-slate-500">
@@ -1113,7 +1125,7 @@ function MonthlyForecastCard({
               </div>
             ) : null}
 
-            <div className="ys-forecast-chart min-h-[20rem] flex-1">
+            <div className="ys-forecast-v2-desktop-chart ys-forecast-chart min-h-[20rem] flex-1">
               <ResponsiveContainer height="100%" width="100%">
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -1199,7 +1211,7 @@ function Metric({
   valueClassName?: string;
 }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
+    <div className="ys-forecast-v2-metric rounded-md border border-slate-200 bg-slate-50 p-3">
       <p className="text-xs uppercase text-slate-500">{label}</p>
       <p className={`mt-1 text-sm font-semibold ${valueClassName ?? "text-slate-950"}`}>{value}</p>
       {supportingText ? <p className="mt-1 text-xs text-slate-500">{supportingText}</p> : null}
