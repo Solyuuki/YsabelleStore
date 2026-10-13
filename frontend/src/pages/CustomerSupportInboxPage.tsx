@@ -123,6 +123,7 @@ export function CustomerSupportInboxPage() {
   const [tickets, setTickets] = useState<StaffSupportTicketSummary[]>([]);
   const [meta, setMeta] = useState<StorefrontPagination>(EMPTY_META);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [mobileConversationOpen, setMobileConversationOpen] = useState(false);
   const [detail, setDetail] = useState<StaffSupportTicketDetail | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StaffSupportStatus | "ALL">("ALL");
@@ -354,7 +355,7 @@ export function CustomerSupportInboxPage() {
         </div>
       ) : null}
 
-      <section className="ys-support-inbox grid h-[clamp(740px,calc(100dvh-13.5rem),880px)] min-h-[680px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:grid-cols-[390px_minmax(0,1fr)]">
+      <section className="ys-support-inbox grid h-[clamp(740px,calc(100dvh-13.5rem),880px)] min-h-[680px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:grid-cols-[390px_minmax(0,1fr)]" data-mobile-conversation={mobileConversationOpen}>
         <aside className="flex min-h-0 flex-col border-b border-slate-200 xl:border-b-0 xl:border-r">
           <div className="space-y-3 border-b border-slate-200 p-4">
             <div className="relative">
@@ -423,7 +424,10 @@ export function CustomerSupportInboxPage() {
                   <TicketListItem
                     active={ticket.id === selectedTicketId}
                     key={ticket.id}
-                    onClick={() => setSelectedTicketId(ticket.id)}
+                    onClick={() => {
+                      setSelectedTicketId(ticket.id);
+                      setMobileConversationOpen(true);
+                    }}
                     ticket={ticket}
                   />
                 ))}
@@ -453,7 +457,14 @@ export function CustomerSupportInboxPage() {
           </div>
         </aside>
 
-        <div className="min-h-0 min-w-0">
+        <div className="ys-support-inbox__conversation min-h-0 min-w-0">
+          <button
+            className="ys-support-inbox__mobile-back"
+            onClick={() => setMobileConversationOpen(false)}
+            type="button"
+          >
+            Back to tickets
+          </button>
           {!selectedTicketId ? (
             <EmptyConversation />
           ) : detailLoading && !detail ? (
