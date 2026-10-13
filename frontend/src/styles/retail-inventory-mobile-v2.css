@@ -782,27 +782,27 @@
 
 
 /* Content-width guard for small-device presets. A nominal 360px phone can
-   provide significantly less horizontal space inside the retail shell and
-   Inventory card. Stack search and Filters when that usable width is tight. */
+   offer less usable width after app-shell and card padding. Scope to the
+   Inventory card's content box instead of relying on viewport width alone. */
 .retail-inventory-list-card > div {
   container: inventory-panel / inline-size;
 }
 
 @media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
   @container inventory-panel (max-width: 345px) {
-    .retail-inventory-toolbar {
+    .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar {
       grid-template-columns: minmax(0, 1fr);
       gap: 0.5rem;
     }
 
-    .retail-inventory-toolbar > .ys-inventory-search {
+    .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar > .ys-inventory-search {
       grid-column: 1;
       grid-row: 1;
       width: 100%;
       min-width: 0;
     }
 
-    .retail-inventory-toolbar > .retail-inventory-filter-toggle {
+    .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar > .retail-inventory-filter-toggle {
       grid-column: 1;
       grid-row: 2;
       justify-self: stretch;
@@ -812,16 +812,22 @@
       gap: 0.5rem;
     }
 
-    .retail-inventory-toolbar > .retail-inventory-filter-toggle > span:not(.retail-inventory-filter-count),
-    .retail-inventory-toolbar > .retail-inventory-filter-toggle .retail-inventory-filter-toggle-chevron {
-      display: inline;
+    .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar > .retail-inventory-filter-toggle > span:not(.retail-inventory-filter-count),
+    .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar > .retail-inventory-filter-toggle .retail-inventory-filter-toggle-chevron {
+      display: inline-flex;
     }
 
-    .retail-inventory-toolbar > .retail-inventory-filter-toggle > span:not(.retail-inventory-filter-count) {
+    .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar > .retail-inventory-filter-toggle > span:not(.retail-inventory-filter-count) {
       margin-right: auto;
     }
 
-    .retail-inventory-toolbar > .retail-inventory-filter-panel {
+    .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar > .retail-inventory-filter-toggle .retail-inventory-filter-count {
+      position: static;
+      margin-left: 0;
+      margin-right: 0.15rem;
+    }
+
+    .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar > .retail-inventory-filter-panel {
       grid-column: 1;
       grid-row: 3;
     }
