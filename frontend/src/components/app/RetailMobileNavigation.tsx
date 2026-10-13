@@ -34,7 +34,7 @@ const navigationGroups = [
   },
   {
     title: "Owner tools",
-    paths: ["/forecast", "/historical-sales", "/reports", "/users", "/settings"]
+    paths: ["/forecast", "/reports", "/users", "/settings"]
   }
 ] as const satisfies readonly { title: string; paths: readonly AppRoutePath[] }[];
 

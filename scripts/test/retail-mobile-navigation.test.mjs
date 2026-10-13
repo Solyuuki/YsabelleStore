@@ -39,11 +39,13 @@ test("phone links use the same role-authorized routes as the desktop app", () =>
   for (const pathname of [
     "/dashboard", "/pos", "/inventory", "/deliveries", "/sales",
     "/customer-support", "/products", "/categories", "/receiving",
-    "/forecast", "/historical-sales", "/reports", "/users", "/settings"
+    "/forecast", "/reports", "/users", "/settings"
   ]) {
     assert.ok(nav.includes(`"${pathname}"`), `Missing mobile link: ${pathname}`);
     assert.ok(routes.includes(`path: "${pathname}"`), `Missing route registry entry: ${pathname}`);
   }
+  assert.ok(!nav.includes('"/historical-sales"'), "Historical Sales is not part of the mobile menu");
+  assert.ok(routes.includes('path: "/historical-sales"'), "Historical sales route stays available");
   assert.match(nav, /item !== undefined && item\.allowedRoles\.includes\(role\)/);
   assert.match(nav, /aria-current=\{activePath === path \? "page" : undefined\}/);
   assert.match(nav, /onClick=\{\(\) => navigateAndDismiss\(path\)\}/);
