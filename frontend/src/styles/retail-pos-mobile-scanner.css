@@ -303,6 +303,24 @@
   .retail-workspace [data-retail-module="pos"] .retail-pos-results-card [class*="card-content"] > div.space-y-3 {
     gap: 0.55rem;
   }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .min-h-56 {
+    min-height: 112px;
+    padding: 0.85rem 0.7rem;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .min-h-56 > span {
+    width: 30px;
+    height: 30px;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .min-h-56 > h2 {
+    margin-top: 0.5rem;
+    font-size: 0.89rem;
+  }
+  .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .min-h-56 > p {
+    max-width: 28ch;
+    margin-top: 0.4rem;
+    font-size: 0.71rem;
+    line-height: 1.45;
+  }
   .retail-workspace [data-retail-module="pos"] .retail-pos-results-card .overflow-x-auto {
     border: 0;
     overflow-x: hidden;
