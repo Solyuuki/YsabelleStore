@@ -3,11 +3,11 @@
   display: none;
 }
 
-.products-page-no-actions > section > .w-full > :first-child {
+.products-page-no-actions .ys-products-v2-page > section > .w-full > :first-child {
   display: none;
 }
 
-.products-page-no-actions > section > .w-full > :nth-child(2) {
+.products-page-no-actions .ys-products-v2-page > section > .w-full > :nth-child(2) {
   padding-top: 1rem;
 }
 

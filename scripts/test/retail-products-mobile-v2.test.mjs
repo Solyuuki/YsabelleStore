@@ -54,3 +54,11 @@ test("Small-phone and tablet layouts and desktop dark mode retain readable surfa
   assert.match(css,/:root.dark .retail-workspace .ys-products-v2-page .ys-products-v2-desktop-filters option/);
   assert.match(css,/:root.dark .retail-workspace .ys-products-v2-page .ys-products-v2-option/);
 });
+
+test("Desktop catalog override selectors still target actual Products v2 section", () => {
+  const overrides=read("frontend/src/pages/products-page-overrides.css");
+  assert.match(overrides, /\.products-page-no-actions \.ys-products-v2-page > section > \.w-full > :first-child/);
+  assert.match(overrides, /\.products-page-no-actions \.ys-products-v2-page > section > \.w-full > :nth-child\(2\)/);
+  assert.match(css, /\.ys-products-v2-page > header > div:first-child > p\s*\{\s*display: none;/);
+  assert.match(css, /\.ys-products-v2-import-heading button\s*\{[^}]*position: absolute;/);
+});
