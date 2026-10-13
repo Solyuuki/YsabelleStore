@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { ReceiptText } from "lucide-react";
+import { Printer, ReceiptText, X } from "lucide-react";
+
+import { SalesMobileReceiptDetails } from "@/components/sales/SalesMobileReceiptDetails";
 
 import { RetailReceiptDialog } from "@/components/receipt/RetailReceiptDialog";
 import { AppPagination } from "@/components/shared/AppPagination";
@@ -9,11 +11,21 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 import { listRecentSales } from "@/services/posService";
 import { requestReceiptPrint } from "@/services/receiptPrint";
 import type { PosSale } from "@/types/pos";
 import { buildRetailReceiptDataFromSale } from "@/utils/receipt";
 import { waitForMinimumDuration } from "@/utils/timing";
+import "@/styles/retail-sales-mobile-v2.css";
 
 const currencyFormatter = new Intl.NumberFormat("en-PH", {
   currency: "PHP",
@@ -22,7 +34,9 @@ const currencyFormatter = new Intl.NumberFormat("en-PH", {
   style: "currency"
 });
 
-const SALES_PAGE_SIZE = 10;
+const SALES_DEFAULT_PAGE_SIZE = 10;
+const SALES_PAGE_SIZE_OPTIONS = [5, 10, 20] as const;
+const SALES_MOBILE_VIEWPORT = "(max-width: 1024px)";
 
 export function SalesPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -30,6 +44,8 @@ export function SalesPage() {
   const [sales, setSales] = useState<PosSale[]>([]);
   const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
   const [salesPage, setSalesPage] = useState(1);
+  const [salesPageSize, setSalesPageSize] = useState(SALES_DEFAULT_PAGE_SIZE);
+  const [isMobileReceiptOpen, setIsMobileReceiptOpen] = useState(false);
   const [receiptSale, setReceiptSale] = useState<PosSale | null>(null);
   const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
   const [isPrintingReceipt, setIsPrintingReceipt] = useState(false);
@@ -90,10 +106,10 @@ export function SalesPage() {
     [sales, selectedSaleId]
   );
 
-  const totalSalesPages = Math.max(1, Math.ceil(sales.length / SALES_PAGE_SIZE));
+  const totalSalesPages = Math.max(1, Math.ceil(sales.length / salesPageSize));
   const currentSalesPage = Math.min(salesPage, totalSalesPages);
-  const salesPageStartIndex = sales.length === 0 ? 0 : (currentSalesPage - 1) * SALES_PAGE_SIZE;
-  const salesPageEndIndex = Math.min(salesPageStartIndex + SALES_PAGE_SIZE, sales.length);
+  const salesPageStartIndex = sales.length === 0 ? 0 : (currentSalesPage - 1) * salesPageSize;
+  const salesPageEndIndex = Math.min(salesPageStartIndex + salesPageSize, sales.length);
   const paginatedSales = useMemo(
     () => sales.slice(salesPageStartIndex, salesPageEndIndex),
     [sales, salesPageEndIndex, salesPageStartIndex]
@@ -111,6 +127,20 @@ export function SalesPage() {
       setSelectedSaleId(paginatedSales[0]?.id ?? null);
     }
   }, [paginatedSales, sales.length, selectedSaleId]);
+
+  function selectSale(sale: PosSale) {
+    setSelectedSaleId(sale.id);
+    if (typeof window !== "undefined" && window.matchMedia(SALES_MOBILE_VIEWPORT).matches) {
+      setIsMobileReceiptOpen(true);
+    }
+  }
+
+  function openPrintReceipt(sale: PosSale) {
+    setIsMobileReceiptOpen(false);
+    setReceiptSale(sale);
+    setReceiptPrintError(null);
+    setIsReceiptDialogOpen(true);
+  }
 
   async function handlePrintReceipt() {
     if (!receiptSale || isPrintingReceipt) {
@@ -140,9 +170,9 @@ export function SalesPage() {
         description="Recent persisted sales and receipt totals from the live database."
       />
 
-      <section className="grid gap-4 xl:grid-cols-[1fr_420px] xl:items-start">
-        <Card className="border-slate-200/80 bg-white/95 shadow-sm">
-          <CardHeader>
+      <section className="ys-sales-workspace grid gap-4 xl:grid-cols-[1fr_420px] xl:items-start">
+        <Card className="ys-sales-list-card border-slate-200/80 bg-white/95 shadow-sm">
+          <CardHeader className="ys-sales-list-header">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <CardTitle>Recent sales</CardTitle>
@@ -159,7 +189,7 @@ export function SalesPage() {
               </StatusBadge>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="ys-sales-list-content">
             {isLoading ? (
               <LoadingState
                 badge="Loading"
@@ -178,8 +208,8 @@ export function SalesPage() {
               />
             ) : (
               <div className="space-y-3">
-                <div className="overflow-hidden rounded-md border border-slate-200">
-                  <table className="retail-mobile-data-table w-full table-fixed border-collapse text-left text-sm">
+                <div className="ys-sales-table-wrap overflow-hidden rounded-md border border-slate-200">
+                  <table className="ys-sales-list-table retail-mobile-data-table w-full table-fixed border-collapse text-left text-sm">
                     <thead className="bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500">
                       <tr>
                         <th className="px-4 py-3 font-medium">Receipt</th>
@@ -194,26 +224,36 @@ export function SalesPage() {
 
                         return (
                           <tr
-                            className={`cursor-pointer border-t border-slate-200 transition-colors ${
+                            aria-label={`View receipt ${sale.saleNumber}, ${currencyFormatter.format(Number(sale.totalAmount))}`}
+                            aria-selected={isSelected}
+                            className={`ys-sales-transaction-row cursor-pointer border-t border-slate-200 transition-colors ${
                               isSelected ? "bg-emerald-50" : "hover:bg-slate-50"
                             }`}
                             key={sale.id}
-                            onClick={() => setSelectedSaleId(sale.id)}
+                            onClick={() => selectSale(sale)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                selectSale(sale);
+                              }
+                            }}
+                            role="button"
+                            tabIndex={0}
                           >
-                            <td data-label="Receipt" className="px-4 py-3">
+                            <td data-label="Receipt" className="ys-sales-transaction-id px-4 py-3">
                               <p className="font-medium text-slate-950">{sale.saleNumber}</p>
                               <p className="text-xs text-slate-500">
                                 {sale.cashierName ?? "Unassigned cashier"}
                               </p>
                             </td>
-                            <td data-label="Date" className="px-4 py-3 text-slate-600">
+                            <td data-label="Date" className="ys-sales-transaction-date px-4 py-3 text-slate-600">
                               {new Intl.DateTimeFormat("en-PH", {
                                 dateStyle: "medium",
                                 timeStyle: "short"
                               }).format(new Date(sale.saleDate))}
                             </td>
-                            <td data-label="Items" className="px-4 py-3 text-slate-600">{sale.itemCount}</td>
-                            <td data-label="Total" className="px-4 py-3 font-semibold text-slate-950">
+                            <td data-label="Items" className="ys-sales-transaction-items px-4 py-3 text-slate-600">{sale.itemCount}</td>
+                            <td data-label="Total" className="ys-sales-transaction-total px-4 py-3 font-semibold text-slate-950">
                               {currencyFormatter.format(Number(sale.totalAmount))}
                             </td>
                           </tr>
@@ -224,10 +264,17 @@ export function SalesPage() {
                 </div>
 
                 <AppPagination
+                  className="ys-sales-pagination"
                   itemLabel="sales"
+                  mobileCompact
                   onPageChange={setSalesPage}
+                  onPageSizeChange={(nextSize) => {
+                    setSalesPageSize(nextSize);
+                    setSalesPage(1);
+                  }}
                   page={currentSalesPage}
-                  pageSize={SALES_PAGE_SIZE}
+                  pageSize={salesPageSize}
+                  pageSizeOptions={SALES_PAGE_SIZE_OPTIONS}
                   totalItems={sales.length}
                 />
               </div>
@@ -235,7 +282,7 @@ export function SalesPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200/80 bg-white/95 shadow-sm xl:sticky xl:top-4 xl:flex xl:max-h-[calc(100vh-2rem)] xl:flex-col">
+        <Card className="ys-sales-desktop-details border-slate-200/80 bg-white/95 shadow-sm xl:sticky xl:top-4 xl:flex xl:max-h-[calc(100vh-2rem)] xl:flex-col">
           <CardHeader className="xl:shrink-0">
             <div className="flex items-center justify-between gap-4">
               <CardTitle>Receipt details</CardTitle>
@@ -245,13 +292,7 @@ export function SalesPage() {
                 type="button"
                 variant="secondary"
                 onClick={() => {
-                  if (!selectedSale) {
-                    return;
-                  }
-
-                  setReceiptSale(selectedSale);
-                  setReceiptPrintError(null);
-                  setIsReceiptDialogOpen(true);
+                  if (selectedSale) openPrintReceipt(selectedSale);
                 }}
               >
                 Print receipt
@@ -339,7 +380,50 @@ export function SalesPage() {
         </Card>
       </section>
 
+      <Dialog open={isMobileReceiptOpen} onOpenChange={setIsMobileReceiptOpen}>
+        <DialogContent
+          aria-describedby="ys-sales-mobile-receipt-description"
+          className="ys-sales-mobile-sheet flex max-h-[calc(100dvh-16px)] w-[calc(100vw-16px)] max-w-[720px] flex-col gap-0 overflow-hidden p-0"
+        >
+          <DialogHeader className="ys-sales-mobile-sheet-header">
+            <div className="flex min-w-0 items-center justify-between gap-3">
+              <DialogTitle>Receipt details</DialogTitle>
+              <DialogClose asChild>
+                <Button aria-label="Close receipt details" className="ys-sales-mobile-sheet-x" size="icon" type="button" variant="secondary">
+                  <X aria-hidden="true" className="h-4 w-4" />
+                </Button>
+              </DialogClose>
+            </div>
+            <DialogDescription className="sr-only" id="ys-sales-mobile-receipt-description">
+              View purchased items, receipt totals and print a completed sale.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="ys-sales-mobile-sheet-scroll">
+            {selectedSale ? <SalesMobileReceiptDetails sale={selectedSale} /> : null}
+          </div>
+          <DialogFooter className="ys-sales-mobile-sheet-footer">
+            <DialogClose asChild>
+              <Button className="ys-sales-mobile-close" type="button" variant="secondary">
+                Close
+              </Button>
+            </DialogClose>
+            <Button
+              className="ys-sales-mobile-print"
+              disabled={!selectedSale}
+              onClick={() => {
+                if (selectedSale) openPrintReceipt(selectedSale);
+              }}
+              type="button"
+            >
+              <Printer aria-hidden="true" className="h-4 w-4" />
+              Print receipt
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <RetailReceiptDialog
+        className="ys-sales-print-dialog"
         error={receiptPrintError}
         isPrinting={isPrintingReceipt}
         open={isReceiptDialogOpen}

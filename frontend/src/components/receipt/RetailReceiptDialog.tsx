@@ -12,8 +12,10 @@ import {
 } from "@/components/ui/dialog";
 import { RetailReceipt } from "@/components/receipt/RetailReceipt";
 import type { RetailReceiptData } from "@/types/receipt";
+import { cn } from "@/lib/utils";
 
 type RetailReceiptDialogProps = {
+  className?: string;
   error?: string | null;
   isPrinting?: boolean;
   onOpenChange: (open: boolean) => void;
@@ -24,6 +26,7 @@ type RetailReceiptDialogProps = {
 };
 
 export function RetailReceiptDialog({
+  className,
   error,
   isPrinting = false,
   onOpenChange,
@@ -35,7 +38,7 @@ export function RetailReceiptDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[820px] flex-col overflow-hidden p-0"
+        className={cn("flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[820px] flex-col overflow-hidden p-0", className)}
         aria-describedby="retail-receipt-dialog-description"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5">
@@ -54,9 +57,9 @@ export function RetailReceiptDialog({
           {receipt ? <RetailReceipt className="shadow-none" compact receipt={receipt} /> : null}
         </div>
 
-        <DialogFooter className="border-t border-slate-200 px-6 py-5">
+        <DialogFooter className="ys-sales-print-footer border-t border-slate-200 px-6 py-5">
           <DialogClose asChild>
-            <Button disabled={isPrinting} type="button" variant="secondary">
+            <Button className="ys-sales-print-close" disabled={isPrinting} type="button" variant="secondary">
               Close
             </Button>
           </DialogClose>
