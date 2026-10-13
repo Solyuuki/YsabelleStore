@@ -193,3 +193,21 @@ background:#2b3c59;border-color:#627897;color:#ebf2ff}
 :root.dark .retail-workspace [data-retail-module="reports"] .ys-report-v2-month-picker button[aria-pressed="true"]{
 background:#5144d5;border-color:#a199fa;color:#fff}
 }
+
+.ys-report-v2-short-title{display:none}
+@media(max-width:767px){
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-short-title{display:inline}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-full-title,
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-intro{display:none}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-forecast-metrics{
+grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-forecast-metrics > div{padding:6px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-forecast-metrics p:first-child{font-size:9px;line-height:1.3;overflow-wrap:anywhere}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-forecast-metrics p:nth-child(2){font-size:14px}
+.retail-workspace [data-retail-module="reports"] .ys-reports-v2 :is(.ys-report-v2-recommendations,.ys-report-v2-planner,.ys-report-v2-insights) span.type-caption{
+max-width:100%;padding:2px 5px;gap:4px;font-size:9px;line-height:1.35}
+.retail-workspace [data-retail-module="reports"] .ys-reports-v2 span.type-caption > svg{width:12px;height:12px;flex-shrink:0}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-recommendations .ys-restock-recommendation > div:first-child{gap:6px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-recommendations .ys-restock-recommendation > div:first-child > span.type-caption{
+min-width:0;flex-shrink:0}
+}

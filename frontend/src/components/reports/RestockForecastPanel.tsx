@@ -360,7 +360,10 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <CardTitle>{reportMonthLabel} inventory recommendation report</CardTitle>
+              <CardTitle>
+                <span className="ys-report-v2-full-title">{reportMonthLabel} inventory recommendation report</span>
+                <span className="ys-report-v2-short-title">{reportMonthLabel} inventory plan</span>
+              </CardTitle>
               <Badge variant={summary.actionCount > 0 ? "warning" : "success"}>
                 {summary.actionCount > 0
                   ? `${summary.actionCount.toLocaleString()} need action`
@@ -368,7 +371,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
               </Badge>
               <Badge variant="info">Live month</Badge>
             </div>
-            <p className="mt-1 text-xs leading-5 text-slate-500">
+            <p className="ys-report-v2-intro mt-1 text-xs leading-5 text-slate-500">
               Complete current-month view across all products. The report updates as sales, stock,
               incoming supply, expiry exposure, and forecast guidance change.
             </p>
@@ -735,6 +738,7 @@ function RecommendationCard({
   selected: RestockPlanningCandidate;
 }) {
   const [expandedMobileDetails, setExpandedMobileDetails] = useState(false);
+  useEffect(() => setExpandedMobileDetails(false), [selected.product.id]);
   const tone = needsOrder ? "amber" : hasProcessedOrder ? "indigo" : "emerald";
   const classes = {
     amber: {
