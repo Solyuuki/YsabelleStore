@@ -14,6 +14,7 @@ import {
   PencilLine,
   Plus,
   Search,
+  SlidersHorizontal,
   Tag,
   X
 } from "lucide-react";
@@ -69,8 +70,18 @@ import {
 } from "@/services/catalogApi";
 import { waitForMinimumDuration } from "@/utils/timing";
 import { InventoryImportDialog } from "@/components/inventory/InventoryImportDialog";
+import "@/styles/retail-inventory-mobile-v2.css";
 
 const DEFAULT_PAGE_SIZE = 20;
+const MOBILE_INVENTORY_PAGE_SIZE = 10;
+const MOBILE_INVENTORY_VIEWPORT =
+  "(max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px)";
+
+function preferredInventoryPageSize() {
+  return typeof window !== "undefined" && window.matchMedia(MOBILE_INVENTORY_VIEWPORT).matches
+    ? MOBILE_INVENTORY_PAGE_SIZE
+    : DEFAULT_PAGE_SIZE;
+}
 const SEARCH_DEBOUNCE_MS = 350;
 const INVENTORY_INITIAL_MINIMUM_MS = 500;
 const INVENTORY_UPDATE_MINIMUM_MS = 400;
@@ -307,7 +318,7 @@ export function InventoryPage() {
   const [sortBy, setSortBy] = useState<InventorySortBy>("updatedAt");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [pageSize, setPageSize] = useState(preferredInventoryPageSize);
   const [loadingReason, setLoadingReason] = useState<LoadingReason>("initial");
   const [error, setError] = useState<string | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
@@ -342,6 +353,21 @@ export function InventoryPage() {
   const isLoading = loadingReason !== null;
   const initialLoading = loadingReason === "initial" && rows.length === 0;
   const hasRows = rows.length > 0;
+  const activeFilterCount =
+    Number(stockStatus !== "ALL") +
+    Number(categoryId !== "ALL") +
+    Number(productStatus !== "ALL") +
+    Number(sortBy !== "updatedAt" || sortOrder !== "desc");
+
+  useEffect(() => {
+    const viewport = window.matchMedia(MOBILE_INVENTORY_VIEWPORT);
+    const onViewportChange = () => {
+      setPageSize(viewport.matches ? MOBILE_INVENTORY_PAGE_SIZE : DEFAULT_PAGE_SIZE);
+      setPage(1);
+    };
+    viewport.addEventListener("change", onViewportChange);
+    return () => viewport.removeEventListener("change", onViewportChange);
+  }, []);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -550,7 +576,7 @@ export function InventoryPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="retail-inventory-page space-y-6">
       <PageHeader
         title="Inventory"
         description="Monitor stock levels, batches, expiry dates, and inventory movements."
@@ -567,7 +593,7 @@ export function InventoryPage() {
         }
       />
 
-      <Card>
+      <Card className="retail-inventory-list-card">
         <CardContent className="space-y-4 p-4 lg:p-5">
           <div className="retail-inventory-toolbar flex min-w-0 flex-wrap items-center gap-2" data-mobile-filters-open={mobileFiltersOpen}>
             <label className="ys-inventory-search relative flex h-10 min-w-[260px] flex-1 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3">
@@ -576,7 +602,7 @@ export function InventoryPage() {
                 aria-label="Search inventory"
                 aria-busy={loadingReason === "search"}
                 className="w-full bg-transparent text-sm outline-none"
-                placeholder="Search product name, SKU, barcode"
+                placeholder="Product, SKU or barcode"
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
               />
@@ -588,14 +614,27 @@ export function InventoryPage() {
               ) : null}
             </label>
             <button
+              aria-controls="retail-inventory-filter-panel"
               aria-expanded={mobileFiltersOpen}
               aria-label={mobileFiltersOpen ? "Hide inventory filters" : "Show inventory filters"}
               className="retail-inventory-filter-toggle"
               onClick={() => setMobileFiltersOpen((open) => !open)}
               type="button"
             >
-              {mobileFiltersOpen ? "Hide filters" : "Filters"}
+              <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+              <span>Filters</span>
+              {activeFilterCount > 0 ? (
+                <span className="retail-inventory-filter-count" aria-label={`${activeFilterCount} active filters`}>
+                  {activeFilterCount}
+                </span>
+              ) : null}
+              <ChevronDown className="retail-inventory-filter-toggle-chevron h-4 w-4" aria-hidden="true" />
             </button>
+            <div
+              className="retail-inventory-filter-panel"
+              data-open={mobileFiltersOpen}
+              id="retail-inventory-filter-panel"
+            >
             <FilterSelect
               icon={Filter}
               label="Stock level"
@@ -664,6 +703,23 @@ export function InventoryPage() {
               <option value="quantityOnHand:desc">Highest stock</option>
               <option value="reorderLevel:asc">Reorder level</option>
             </FilterSelect>
+            {activeFilterCount > 0 ? (
+              <button
+                className="retail-inventory-filter-reset"
+                onClick={() => {
+                  setStockStatus("ALL");
+                  setCategoryId("ALL");
+                  setProductStatus("ALL");
+                  setSortBy("updatedAt");
+                  setSortOrder("desc");
+                  setPage(1);
+                }}
+                type="button"
+              >
+                Reset filters
+              </button>
+            ) : null}
+            </div>
           </div>
 
           {error ? (
@@ -700,6 +756,7 @@ export function InventoryPage() {
             />
           ) : null}
 
+          <p className="retail-inventory-mobile-hint">Tap a product to see its SKU, batches, and stock actions.</p>
           <div aria-busy={isLoading} className="relative">
             {initialLoading ? (
               <InventoryTableSkeleton rowCount={pageSize} />
@@ -848,8 +905,8 @@ function InventoryTable({
   rows: InventoryRecord[];
 }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="retail-mobile-data-table w-full min-w-[980px] table-fixed border-collapse text-left text-sm">
+    <div className="retail-inventory-table-wrap overflow-x-auto">
+      <table className="retail-inventory-data-table retail-mobile-data-table w-full min-w-[980px] table-fixed border-collapse text-left text-sm">
         <thead className="bg-slate-100 text-slate-700">
           <tr>
             <th className="w-[29%] px-3 py-2.5">Product</th>
@@ -865,7 +922,7 @@ function InventoryTable({
           {rows.map((row) => (
             <tr
               aria-label={`View inventory for ${row.productName}`}
-              className="cursor-pointer border-t border-slate-200 bg-white transition-colors hover:bg-emerald-50/40 focus-visible:bg-emerald-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500"
+              className="retail-inventory-product-row cursor-pointer border-t border-slate-200 bg-white transition-colors hover:bg-emerald-50/40 focus-visible:bg-emerald-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500"
               key={row.inventoryId}
               tabIndex={0}
               onClick={() => onOpenDetails(row.productId)}
@@ -990,7 +1047,7 @@ function InventoryDetailsDialog({
     >
       <DialogContent
         aria-describedby="inventory-details-description"
-        className="ys-inventory-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[860px] flex-col gap-0 p-0"
+        className="ys-inventory-modal ys-inventory-details-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[860px] flex-col gap-0 p-0"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
           <DialogClose asChild>
@@ -1019,7 +1076,7 @@ function InventoryDetailsDialog({
             </Alert>
           ) : inventory ? (
             <div className="space-y-5">
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="retail-inventory-details-metrics grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <InventoryMetric label="On hand" value={String(inventory.currentQuantity)} />
                 <InventoryMetric label="Reorder at" value={String(inventory.reorderLevel)} />
                 <InventoryMetric label="Target" value={String(inventory.targetStockLevel)} />
@@ -1079,7 +1136,7 @@ function InventoryDetailsDialog({
           ) : null}
         </div>
         <DialogFooter className="border-t border-slate-200 bg-white/95">
-          <div className="flex w-full flex-wrap items-center justify-between gap-2">
+          <div className="retail-inventory-details-actions flex w-full flex-wrap items-center justify-between gap-2">
             <Button
               type="button"
               variant="secondary"
@@ -1090,7 +1147,7 @@ function InventoryDetailsDialog({
               Stock activity
             </Button>
             {isOwner ? (
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="retail-inventory-owner-actions flex flex-wrap items-center gap-2">
                 <Button
                   type="button"
                   variant="secondary"
@@ -2008,8 +2065,8 @@ function StockActivityDialog({
             />
           ) : (
             <div className={loading ? "opacity-60" : ""}>
-              <div className="max-h-[430px] overflow-auto rounded-lg border border-slate-200">
-                <Table className="min-w-[820px]">
+              <div className="retail-inventory-activity-scroll max-h-[430px] overflow-auto rounded-lg border border-slate-200">
+                <Table className="retail-inventory-activity-table min-w-[820px]">
                   <TableHeader className="sticky top-0 z-10 bg-slate-100">
                     <TableRow>
                       <TableHead className="w-[17%]">Date & time</TableHead>
@@ -2028,7 +2085,7 @@ function StockActivityDialog({
 
                       return (
                         <TableRow key={item.id}>
-                          <TableCell className="align-middle">
+                          <TableCell data-label="Date" className="align-middle">
                             <div className="font-medium text-slate-900">
                               {date.toLocaleDateString()}
                             </div>
@@ -2036,7 +2093,7 @@ function StockActivityDialog({
                               {date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
                             </div>
                           </TableCell>
-                          <TableCell className="align-middle">
+                          <TableCell data-label="Activity" className="align-middle">
                             <div className="font-medium text-slate-900">
                               {formatMovementAction(item.type)}
                             </div>
@@ -2044,7 +2101,7 @@ function StockActivityDialog({
                               <div className="mt-0.5 text-xs text-slate-500">{source}</div>
                             ) : null}
                           </TableCell>
-                          <TableCell className="align-middle text-center">
+                          <TableCell data-label="Change" className="align-middle text-center">
                             <span
                               className={`inline-flex min-w-12 justify-center rounded-full px-2 py-1 text-sm font-semibold tabular-nums ${
                                 reduction
@@ -2055,14 +2112,14 @@ function StockActivityDialog({
                               {formatMovementChange(item)}
                             </span>
                           </TableCell>
-                          <TableCell className="align-middle text-center font-medium tabular-nums text-slate-800">
+                          <TableCell data-label="Stock" className="align-middle text-center font-medium tabular-nums text-slate-800">
                             {item.quantityBefore} <span className="text-slate-400">→</span>{" "}
                             {item.quantityAfter}
                           </TableCell>
-                          <TableCell className="align-middle text-sm text-slate-600">
+                          <TableCell data-label="Reason" className="align-middle text-sm text-slate-600">
                             {formatMovementReason(item)}
                           </TableCell>
-                          <TableCell className="align-middle text-sm text-slate-600">
+                          <TableCell data-label="By" className="align-middle text-sm text-slate-600">
                             {item.performedBy?.name ?? "System"}
                           </TableCell>
                         </TableRow>
