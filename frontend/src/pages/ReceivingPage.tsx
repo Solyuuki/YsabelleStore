@@ -657,7 +657,7 @@ export function ReceivingPage() {
 
         {visibleOrders.length > 0 ? (
           <div className="overflow-x-auto">
-            <Table aria-label={`${view} delivery tickets`} className="min-w-[900px]">
+            <Table aria-label={`${view} delivery tickets`} className="retail-mobile-data-table min-w-[900px]">
               <TableHeader className="bg-slate-50/80">
                 <TableRow className="hover:bg-transparent">
                   <TableHead className="min-w-[280px] px-5">Ticket</TableHead>
@@ -925,22 +925,22 @@ function ReceivingQueueRow({
       role="button"
       tabIndex={0}
     >
-      <TableCell className="min-w-[280px] px-5 py-3.5">
+      <TableCell data-label="Ticket" className="min-w-[280px] px-5 py-3.5">
         <span className="block truncate text-sm font-semibold text-slate-950">
           {order.orderNumber}
         </span>
       </TableCell>
-      <TableCell className="min-w-[160px] py-3.5">
+      <TableCell data-label="Status" className="min-w-[160px] py-3.5">
         <Badge variant={statusVariant(order.status)}>{statusLabel(order.status)}</Badge>
       </TableCell>
-      <TableCell className="w-[110px] py-3.5 text-right font-medium tabular-nums text-slate-700">
+      <TableCell data-label="Products" className="w-[110px] py-3.5 text-right font-medium tabular-nums text-slate-700">
         {totals.products.toLocaleString()}
       </TableCell>
-      <TableCell className="w-[110px] py-3.5 text-right tabular-nums text-slate-600">
+      <TableCell data-label="Expected" className="w-[110px] py-3.5 text-right tabular-nums text-slate-600">
         {totals.units.toLocaleString()}
       </TableCell>
-      <TableCell className="min-w-[150px] py-3.5 text-slate-600">{approvedDate}</TableCell>
-      <TableCell className="min-w-[170px] py-3.5 pr-5 text-right">
+      <TableCell data-label="Approved" className="min-w-[150px] py-3.5 text-slate-600">{approvedDate}</TableCell>
+      <TableCell data-label="Remaining" className="min-w-[170px] py-3.5 pr-5 text-right">
         <p className="text-sm font-semibold tabular-nums text-slate-950">{quantityLabel}</p>
         {quantityDetail ? (
           <p className="mt-0.5 text-[11px] text-slate-500">{quantityDetail}</p>
