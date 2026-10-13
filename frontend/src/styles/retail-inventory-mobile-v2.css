@@ -565,7 +565,7 @@
     font-size: .75rem;
     padding: .4rem .65rem;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"]:is(.ys-stock-receive-modal,.ys-stock-adjust-modal) > footer {
+  :root[data-appearance-scope="retail"] [role="dialog"]:is(.ys-stock-receive-modal,.ys-stock-adjust-modal) .ys-stock-dialog-footer {
     display: grid;
     grid-template-columns: repeat(2,minmax(0,1fr));
     flex: none;
@@ -573,7 +573,7 @@
     gap: .5rem;
     padding: .7rem 1rem calc(.7rem + env(safe-area-inset-bottom,0px));
   }
-  :root[data-appearance-scope="retail"] [role="dialog"]:is(.ys-stock-receive-modal,.ys-stock-adjust-modal) > footer button {
+  :root[data-appearance-scope="retail"] [role="dialog"]:is(.ys-stock-receive-modal,.ys-stock-adjust-modal) .ys-stock-dialog-footer button {
     min-width: 0;
     width: 100%;
     min-height: 44px;
