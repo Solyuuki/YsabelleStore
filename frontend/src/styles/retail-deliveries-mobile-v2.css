@@ -33,7 +33,7 @@
   .retail-workspace [data-retail-module="deliveries"] .ys-delivery-list-header { padding: .75rem .7rem .35rem; gap: .25rem; }
   .retail-workspace [data-retail-module="deliveries"] .ys-delivery-list-content { padding: .5rem .6rem .7rem; min-width: 0; gap: .65rem; }
   .retail-workspace [data-retail-module="deliveries"] .ys-delivery-view-tabs { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .3rem; }
-  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-view-tabs > button { min-width: 0; min-height: 44px; justify-content: center; gap: .1rem; font-size: .69rem; white-space: nowrap; padding-inline: .25rem; }
+  .retail-workspace [data-retail-module="deliveries"] .ys-delivery-view-tabs > button { min-width: 0; min-height: 44px; justify-content: center; flex-wrap: wrap; gap: .1rem; font-size: .69rem; white-space: normal; padding-inline: .25rem; }
   .retail-workspace [data-retail-module="deliveries"] .ys-delivery-view-tabs > button span { margin-left: .15rem; padding-inline: .3rem; font-size: .65rem; }
   .retail-workspace [data-retail-module="deliveries"] .ys-delivery-toolbar { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: .4rem; align-items: start; }
   .retail-workspace [data-retail-module="deliveries"] .ys-delivery-search-form { min-width: 0; gap: .35rem; grid-column: 1; }

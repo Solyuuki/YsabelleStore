@@ -15,7 +15,7 @@ test("delivery tickets keep single-source server pagination with compact mobile 
 });
 
 test("mobile delivery filtering and search preserve backend semantics", () => {
-  assert.match(page, /placeholder="Ticket or customer"/);
+  assert.match(page, /placeholder="Find ticket"/);
   assert.match(page, /aria-controls="ys-delivery-filter-fields"/);
   assert.match(page, /data-open=\{mobileFiltersOpen\}/);
   assert.match(page, /setMobileFiltersOpen\(\(open\) => !open\)/);
