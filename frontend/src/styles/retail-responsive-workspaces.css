@@ -107,6 +107,7 @@
 
   .retail-workspace .retail-mobile-data-table tbody > tr > :is(td, th):first-child,
   .retail-workspace .retail-mobile-data-table tbody > tr > :is(td, th)[colspan],
+  .retail-workspace .retail-mobile-data-table tbody > tr > [data-label="Actions"],
   .retail-workspace .retail-mobile-data-table tbody > tr > [data-label="Action"] {
     grid-column: 1 / -1;
   }
@@ -132,7 +133,8 @@
     border-top: 1px solid #d9e0f0;
   }
 
-  .retail-workspace .retail-mobile-data-table tbody > tr > [data-label="Action"] button {
+  .retail-workspace .retail-mobile-data-table tbody > tr > :is([data-label="Action"], [data-label="Actions"]) button {
+    min-width: 44px;
     min-height: 44px;
     max-width: 100%;
   }
@@ -185,6 +187,25 @@
   .retail-workspace [data-retail-module="inventory"] .retail-mobile-data-table tbody > tr[tabindex] {
     cursor: pointer;
     min-height: 44px;
+  }
+
+  /* Keep full product and stock editors usable at 320px, not clipped into
+     a miniature desktop-sized import or receiving dialog. */
+  .retail-workspace [data-retail-module] :is(.ys-product-toolbar-filter, .ys-inventory-search) {
+    min-width: 0;
+    flex-shrink: 1;
+  }
+
+  .retail-workspace [data-retail-module="dashboard"] :is(.ys-dashboard-monthly-batch, .ys-dashboard-panel-surface),
+  .retail-workspace [data-retail-module="reports"] :is(.recharts-responsive-container, .recharts-wrapper),
+  .retail-workspace [data-retail-module="forecast"] :is(.recharts-responsive-container, .recharts-wrapper) {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .retail-workspace [data-retail-module="dashboard"] .ys-dashboard-monthly-batch .grid {
+    min-width: 0;
   }
 
   /* No duplicate DOM tables; the same POS Add/Remove/Checkout functions run. */
@@ -459,6 +480,18 @@
   :root[data-appearance-scope="retail"] :is(.ys-inventory-modal, .ys-product-modal, .ys-category-modal, .ys-receiving-dialog, .ys-pos-cash-dialog) {
     min-width: 0;
     max-width: calc(100vw - 1rem) !important;
+  }
+
+  :root[data-appearance-scope="retail"] :is(.ys-inventory-modal, .ys-product-modal, .ys-category-modal, .ys-receiving-dialog) [class*="grid-cols-["] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :root[data-appearance-scope="retail"] .ys-receiving-dialog [class~="grid-cols-3"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :root[data-appearance-scope="retail"] :is(.ys-inventory-modal, .ys-product-modal, .ys-category-modal, .ys-receiving-dialog) :is(.overflow-x-auto, .overflow-auto) {
+    max-width: 100%;
   }
 
   :root[data-appearance-scope="retail"] [role="dialog"] :is(input, select, textarea) {
