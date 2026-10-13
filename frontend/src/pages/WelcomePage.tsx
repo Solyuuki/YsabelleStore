@@ -564,6 +564,7 @@ export function WelcomePage({
 
                   {totalRememberedAccountPages > 1 ? (
                     <AppPagination
+                      className="ys-retail-known-accounts-pagination"
                       itemLabel="accounts"
                       onPageChange={setRememberedAccountsPage}
                       page={currentRememberedAccountsPage}
