@@ -321,7 +321,8 @@ function serializeStorefrontOrder(order: StorefrontOrderRecord) {
       id: event.id,
       status: event.status,
       actorType: event.actorType,
-      note: event.note,
+      // Staff event notes can contain internal operational details and are never customer-facing.
+      note: event.actorType === CustomerDeliveryActorType.STAFF ? null : event.note,
       createdAt: event.createdAt
     })),
     canCustomerConfirmReceipt:
