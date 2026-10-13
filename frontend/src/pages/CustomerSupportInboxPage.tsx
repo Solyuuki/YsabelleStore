@@ -136,7 +136,8 @@ export function CustomerSupportInboxPage() {
   const statusChipsRef = useRef<HTMLDivElement>(null);
   const [statusChipsScroll, setStatusChipsScroll] = useState({
     canGoBack: false,
-    canGoForward: false
+    canGoForward: false,
+    hasOverflow: false
   });
   const mobileConversationOpenRef = useRef(false);
   const [detail, setDetail] = useState<StaffSupportTicketDetail | null>(null);
@@ -169,10 +170,13 @@ export function CustomerSupportInboxPage() {
       const limit = Math.max(0, strip.scrollWidth - strip.clientWidth);
       const next = {
         canGoBack: strip.scrollLeft > 1,
-        canGoForward: strip.scrollLeft < limit - 1
+        canGoForward: strip.scrollLeft < limit - 1,
+        hasOverflow: limit > 1
       };
       setStatusChipsScroll((current) =>
-        current.canGoBack === next.canGoBack && current.canGoForward === next.canGoForward
+        current.canGoBack === next.canGoBack &&
+        current.canGoForward === next.canGoForward &&
+        current.hasOverflow === next.hasOverflow
           ? current
           : next
       );
@@ -463,7 +467,13 @@ export function CustomerSupportInboxPage() {
                   </button>
                 ))}
               </div>
-              <div aria-label="More status choices" className="ys-support-status-scroll-buttons" role="group">
+              <div
+                aria-label="More status choices"
+                className="ys-support-status-scroll-buttons"
+                data-scrollable={statusChipsScroll.hasOverflow}
+                role="group"
+              >
+                <span className="ys-support-scroll-hint">Swipe to see more</span>
                 <button
                   aria-label="Previous status choices"
                   disabled={!statusChipsScroll.canGoBack}

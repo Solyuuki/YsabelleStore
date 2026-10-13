@@ -62,6 +62,10 @@ test("status pills keep full labels and expose two-way horizontal navigation at 
   assert.match(page, /ref=\{statusChipsRef\}/);
   assert.match(page, /scrollStatusChips\(-1\)/);
   assert.match(page, /scrollStatusChips\(1\)/);
+  assert.match(page, /data-scrollable=\{statusChipsScroll.hasOverflow\}/);
+  assert.match(css, /\.ys-support-mobile-status-toolbar\s*\{[^}]*flex-direction: column;/);
+  assert.match(css, /\.ys-support-status-scroll-buttons\[data-scrollable="false"\]\s*\{\s*display: none;/);
+  assert.match(css, /\.ys-support-mobile-status-toolbar, \.ys-support-mobile-status-chips/);
   assert.match(page, /aria-label="Previous status choices"/);
   assert.match(page, /aria-label="Next status choices"/);
   assert.match(page, /setStatusFilter\(filter\)/);
