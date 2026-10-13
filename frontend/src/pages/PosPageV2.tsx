@@ -113,6 +113,15 @@ export function PosPage() {
   }, [cartLines]);
 
   useEffect(() => {
+    if (!mobileCartOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileCartOpen(false);
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [mobileCartOpen]);
+
+  useEffect(() => {
     const rafId = window.requestAnimationFrame(() => {
       scannerInputRef.current?.focus({ preventScroll: true });
     });
