@@ -300,6 +300,7 @@ export function InventoryPage() {
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [stockStatus, setStockStatus] = useState<StockStatusFilter>("ALL");
   const [productStatus, setProductStatus] = useState<ProductStatusFilter>("ALL");
   const [categoryId, setCategoryId] = useState("ALL");
@@ -568,7 +569,7 @@ export function InventoryPage() {
 
       <Card>
         <CardContent className="space-y-4 p-4 lg:p-5">
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <div className="retail-inventory-toolbar flex min-w-0 flex-wrap items-center gap-2" data-mobile-filters-open={mobileFiltersOpen}>
             <label className="ys-inventory-search relative flex h-10 min-w-[260px] flex-1 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3">
               <Search className="h-4 w-4 text-slate-500" aria-hidden="true" />
               <input
@@ -586,6 +587,15 @@ export function InventoryPage() {
                 />
               ) : null}
             </label>
+            <button
+              aria-expanded={mobileFiltersOpen}
+              aria-label={mobileFiltersOpen ? "Hide inventory filters" : "Show inventory filters"}
+              className="retail-inventory-filter-toggle"
+              onClick={() => setMobileFiltersOpen((open) => !open)}
+              type="button"
+            >
+              {mobileFiltersOpen ? "Hide filters" : "Filters"}
+            </button>
             <FilterSelect
               icon={Filter}
               label="Stock level"
