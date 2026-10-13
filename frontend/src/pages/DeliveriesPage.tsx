@@ -450,7 +450,7 @@ export function DeliveriesPage() {
           ) : null}
 
           <div className="overflow-x-auto rounded-xl border border-slate-200">
-            <Table>
+            <Table className="retail-mobile-data-table">
               <TableHeader className="bg-slate-50/80">
                 <TableRow>
                   <TableHead>Ticket / Order</TableHead>
@@ -485,13 +485,13 @@ export function DeliveriesPage() {
                       className="hover:bg-slate-50/70 dark:hover:bg-slate-700/50"
                       key={ticket.id}
                     >
-                      <TableCell>
+                      <TableCell data-label="Ticket / Order">
                         <div className="grid gap-0.5">
                           <strong className="text-slate-950">{ticket.deliveryTicketNumber}</strong>
                           <span className="text-xs text-slate-500">{ticket.orderNumber}</span>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell data-label="Customer">
                         <div className="grid gap-0.5">
                           <strong className="font-medium text-slate-900">
                             {ticket.customerName}
@@ -499,24 +499,24 @@ export function DeliveriesPage() {
                           <span className="text-xs text-slate-500">{ticket.customerPhone}</span>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell data-label="Payment">
                         <div className="grid gap-1">
                           <span>{paymentLabel(ticket.paymentMethod)}</span>
                           <span className="text-xs text-slate-500">{ticket.paymentStatus}</span>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell data-label="Status">
                         <Badge variant={operationalStatusTone(ticket)}>
                           {operationalStatusLabel(ticket)}
                         </Badge>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap text-xs text-slate-500 dark:text-slate-300">
+                      <TableCell data-label="Updated" className="whitespace-nowrap text-xs text-slate-500 dark:text-slate-300">
                         {dateTimeFormatter.format(new Date(ticket.updatedAt))}
                       </TableCell>
-                      <TableCell className="text-right font-semibold text-slate-950 dark:text-slate-100">
+                      <TableCell data-label="Total" className="text-right font-semibold text-slate-950 dark:text-slate-100">
                         {currencyFormatter.format(Number(ticket.totalAmount))}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell data-label="Action" className="text-right">
                         <Button
                           disabled={Boolean(openingId)}
                           onClick={() => void openTicket(ticket.id)}
