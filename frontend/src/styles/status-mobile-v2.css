@@ -153,7 +153,7 @@
     right: max(0.65rem, env(safe-area-inset-right, 0px));
     left: max(0.65rem, env(safe-area-inset-left, 0px));
     width: auto;
-    max-width: min(100% - 1.3rem, 25rem);
+    max-width: min(calc(100% - 1.3rem), 25rem);
     max-height: min(45dvh, 21rem);
     margin-inline: auto;
     overflow-x: hidden;
