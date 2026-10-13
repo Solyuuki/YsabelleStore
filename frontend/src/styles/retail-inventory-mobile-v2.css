@@ -5,30 +5,103 @@
 .retail-inventory-filter-toggle,
 .retail-inventory-mobile-hint { display: none; }
 
-/* Native <option> menus are OS-drawn in Chromium/Windows. Supply both the
-   control color scheme and explicit option colors to prevent white-on-white. */
-:root.dark .app-shell-ambient .ys-inventory-filter > select {
-  color-scheme: dark !important;
+/* Inventory filter listboxes are rendered in the app, avoiding OS-native
+   white popup styling under Windows and mobile dark mode. */
+.ys-inventory-filter[data-open="true"] { z-index: 60; }
+.ys-inventory-filter-caption { display: none; }
+.ys-inventory-filter-trigger {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.4rem 0.75rem;
+  color: #334155;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 0.5rem;
+  cursor: pointer;
 }
-:root.dark .app-shell-ambient .ys-inventory-filter select :is(option, optgroup),
-:root.dark [role="dialog"].ys-inventory-modal select :is(option, optgroup) {
-  color: #f1f5ff !important;
-  background-color: #20314d !important;
+.ys-inventory-filter-trigger:focus-visible {
+  outline: 2px solid #7768db;
+  outline-offset: 2px;
 }
-:root.dark [role="dialog"].ys-inventory-modal select {
-  color-scheme: dark !important;
+.ys-inventory-filter-selection {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 650;
 }
-:root:not(.dark) .app-shell-ambient .ys-inventory-filter select :is(option, optgroup),
-:root:not(.dark) [role="dialog"].ys-inventory-modal select :is(option, optgroup) {
-  color: #14233a !important;
-  background-color: #ffffff !important;
+.ys-inventory-filter-menu {
+  position: absolute;
+  z-index: 80;
+  inset-inline: 0;
+  top: calc(100% + 0.35rem);
+  max-height: min(17rem, 50dvh);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 0.3rem;
+  border: 1px solid #bdc9dc;
+  border-radius: 0.7rem;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgb(16 29 52 / 22%);
 }
-:root:not(.dark) .app-shell-ambient .ys-inventory-filter > select,
-:root:not(.dark) [role="dialog"].ys-inventory-modal select {
-  color-scheme: light !important;
+.ys-inventory-filter[data-side="top"] .ys-inventory-filter-menu {
+  top: auto;
+  bottom: calc(100% + 0.35rem);
+}
+.ys-inventory-filter-option {
+  display: flex;
+  width: 100%;
+  min-height: 40px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.45rem;
+  color: #253451;
+  text-align: left;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.ys-inventory-filter-option:hover,
+.ys-inventory-filter-option:focus-visible {
+  outline: none;
+  background: #e8edfa;
+  color: #252c6e;
+}
+.ys-inventory-filter-option[aria-selected="true"] {
+  background: #e9e6ff;
+  color: #4535a0;
+  font-weight: 750;
+}
+:root.dark .app-shell-ambient .ys-inventory-filter-trigger {
+  color: #f0f5ff;
+}
+:root.dark .app-shell-ambient .ys-inventory-filter-menu {
+  background: #1c2d47;
+  border-color: #647e9f;
+  box-shadow: 0 16px 30px rgb(0 7 20 / 48%);
+}
+:root.dark .app-shell-ambient .ys-inventory-filter-option {
+  color: #edf3ff;
+}
+:root.dark .app-shell-ambient .ys-inventory-filter-option:hover,
+:root.dark .app-shell-ambient .ys-inventory-filter-option:focus-visible {
+  background: #354969;
+  color: #ffffff;
+}
+:root.dark .app-shell-ambient .ys-inventory-filter-option[aria-selected="true"] {
+  background: #5042a2;
+  color: #ffffff;
 }
 
-/* Inventory only. Other operational modules continue using their own cards. */
+
 @media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
   .retail-workspace [data-retail-module="inventory"] .retail-inventory-page {
     min-width: 0;
@@ -65,6 +138,8 @@
     padding: 0.55rem 0.7rem;
     gap: 0.35rem;
     white-space: nowrap;
+    padding-inline: 0.65rem;
+    font-size: 0.78rem;
   }
   .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-count {
     display: inline-grid;
@@ -110,10 +185,29 @@
     padding-inline: 0.65rem;
     background: #fff;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-panel .ys-inventory-filter select {
-    width: 100%;
-    min-width: 0;
-    font-size: 0.84rem;
+  .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-panel .ys-inventory-filter {
+    height: auto;
+    min-height: 66px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: center;
+    gap: 0.2rem;
+    padding: 0.35rem 0.5rem;
+  }
+  .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-panel .ys-inventory-filter-caption {
+    display: block;
+    padding-inline: 0.25rem;
+    color: #5e6d86;
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+  .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-panel .ys-inventory-filter-trigger {
+    min-height: 38px;
+    padding-inline: 0.35rem;
+    font-size: 0.83rem;
+  }
+  :root.dark .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-panel .ys-inventory-filter-caption {
+    color: #c6d3e9;
   }
   .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-reset {
     display: inline-flex;
@@ -399,58 +493,55 @@
 }
 
 
-/* Windows native stock-level popup: dark selected control, high-contrast light popup. */
-:root.dark .app-shell-ambient .ys-inventory-filter > select { color-scheme: light !important; }
-:root.dark .app-shell-ambient .ys-inventory-filter select :is(option,optgroup) {
-  background-color: #ffffff !important;
-  color: #17243c !important;
-}
-
-/* These compact controls only appear on the Inventory mobile pagination. */
-.ys-inventory-mobile-page-label { display: none; }
+/* The Inventory pager uses the same mobile composition as Deliveries:
+   summary above, page-size selector on left, page actions on right. */
 @media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
   .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination {
     box-sizing: border-box;
     min-width: 0;
     width: 100%;
     max-width: 100%;
-    padding: .85rem;
-    gap: .65rem;
-    overflow: hidden;
+    padding: 0.75rem;
+    gap: 0.65rem;
   }
   .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination > div {
+    display: flex;
+    flex-wrap: nowrap;
     min-width: 0;
     width: 100%;
+    align-items: center;
     justify-content: space-between;
-    gap: .65rem;
+    gap: 0.5rem;
   }
-  .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination [aria-label="inventory records pagination"] {
-    width: auto;
+  .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination > div > label {
+    min-width: 0;
     flex: none;
   }
-  .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination [aria-label="inventory records pagination"] ul {
-    align-items: center;
+  .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination > div > label > span {
+    display: none;
+  }
+  .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination > div > label > select {
+    width: 4rem;
+    min-width: 0;
+    height: 40px;
+    padding-inline: 0.55rem;
+  }
+  .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination nav {
+    width: auto;
+    min-width: 0;
+    flex: none;
+    margin-left: auto;
+    justify-content: flex-end;
+  }
+  .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination nav > ul {
     flex-wrap: nowrap;
-    gap: .45rem;
+    gap: 0.25rem;
   }
-  .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination .ys-inventory-page-token { display: none; }
-  .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination .ys-inventory-mobile-page-label {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 6rem;
-    padding-inline: .25rem;
-    color: #475569;
-    font-size: .78rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
+  .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination nav button {
+    min-width: 36px;
+    min-height: 40px;
+    padding-inline: 0.4rem;
   }
-  .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination :is([aria-label="Previous page"], [aria-label="Next page"]) {
-    min-width: 44px;
-    min-height: 44px;
-  }
-  :root.dark .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination .ys-inventory-mobile-page-label { color: #d5e0f2; }
 }
 
 /* Stock editors: the generic [class*="grid-cols-["] dialog rule previously forced
@@ -583,33 +674,37 @@
   }
 }
 
-/* Import Guide: separate row for the Guide action; reserve space for Exit. */
+/* Import header: the ? and X share the same action row without overlap. */
 @media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
   :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-import-modal .ys-inventory-import-header {
-    padding: .85rem 3.25rem .85rem 1rem;
+    padding: 0.8rem 0.85rem;
+    gap: 0.6rem;
   }
   :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-import-modal .ys-inventory-import-heading {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-start;
-    gap: .55rem;
+    justify-content: space-between;
+    gap: 0.65rem;
     min-width: 0;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-import-modal .ys-inventory-import-heading > button {
-    min-height: 40px;
-    padding-inline: .7rem;
+  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-import-modal .ys-inventory-import-header-actions {
+    display: flex;
     flex: none;
-  }
-  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-import-modal .ys-inventory-import-header > button {
-    top: .65rem;
-    right: .7rem;
-    min-width: 40px;
-    min-height: 40px;
+    align-items: center;
+    gap: 0.45rem;
   }
   :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-import-modal .ys-inventory-import-heading [role="heading"] {
     min-width: 0;
     overflow-wrap: anywhere;
-    font-size: 1rem;
     line-height: 1.3;
+    font-size: 0.95rem;
+  }
+  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-import-modal .ys-inventory-import-header-actions button {
+    min-width: 40px;
+    min-height: 40px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
   }
 }

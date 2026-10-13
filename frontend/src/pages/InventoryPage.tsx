@@ -1,5 +1,6 @@
 import {
   ArrowUpDown,
+  Check,
   Boxes,
   CalendarDays,
   ChevronDown,
@@ -18,7 +19,17 @@ import {
   Tag,
   X
 } from "lucide-react";
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import {
+  Children,
+  isValidElement,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+  type ReactNode
+} from "react";
 import type { LucideIcon } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
@@ -599,10 +610,10 @@ export function InventoryPage() {
             <label className="ys-inventory-search relative flex h-10 min-w-[260px] flex-1 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3">
               <Search className="h-4 w-4 text-slate-500" aria-hidden="true" />
               <input
-                aria-label="Search inventory"
+                aria-label="Search inventory by product name, SKU, or barcode"
                 aria-busy={loadingReason === "search"}
                 className="w-full bg-transparent text-sm outline-none"
-                placeholder="Product, SKU or barcode"
+                placeholder="Search products"
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
               />
@@ -778,7 +789,6 @@ export function InventoryPage() {
           {meta && meta.totalItems > 0 ? (
             <AppPagination
               className="ys-inventory-pagination"
-              mobileCompact
               isLoading={isLoading}
               itemLabel="inventory records"
               page={page}
@@ -876,26 +886,123 @@ function FilterSelect({
   onChange: (value: string) => void;
   value: string;
 }) {
+  // A real themed listbox rather than an OS-native popup, which ignores dark
+  // option colors in several Windows / mobile browser combinations.
+  const options = Children.toArray(children).flatMap((child) => {
+    if (!isValidElement<{ value?: string; children?: ReactNode }>(child)) return [];
+    return [{ value: String(child.props.value ?? ""), label: String(child.props.children ?? "") }];
+  });
+  const selectedIndex = Math.max(0, options.findIndex((option) => option.value === value));
+  const selectedLabel = options[selectedIndex]?.label ?? label;
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(selectedIndex);
+  const [openAbove, setOpenAbove] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const menuId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    return () => document.removeEventListener("pointerdown", closeOnOutsidePointer);
+  }, [open]);
+
+  useEffect(() => {
+    if (open) optionRefs.current[activeIndex]?.focus();
+  }, [activeIndex, open]);
+
+  function openMenu(index = selectedIndex) {
+    if (options.length === 0) return;
+    const rect = rootRef.current?.getBoundingClientRect();
+    if (rect) {
+      const below = window.innerHeight - rect.bottom;
+      setOpenAbove(below < 220 && rect.top > below);
+    }
+    setActiveIndex(Math.min(Math.max(index, 0), options.length - 1));
+    setOpen(true);
+  }
+
+  function choose(nextValue: string) {
+    onChange(nextValue);
+    setOpen(false);
+    triggerRef.current?.focus();
+  }
+
+  function onOptionKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveIndex((index + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length);
+    } else if (event.key === "Home" || event.key === "End") {
+      event.preventDefault();
+      setActiveIndex(event.key === "Home" ? 0 : options.length - 1);
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      setOpen(false);
+      triggerRef.current?.focus();
+    } else if (event.key === "Tab") {
+      setOpen(false);
+    } else if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      choose(options[index].value);
+    }
+  }
+
   return (
-    <label
-      className={`ys-inventory-filter relative flex h-10 shrink-0 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 pl-3 pr-4 text-sm text-slate-600 ${minWidthClassName ?? "w-auto"}`}
+    <div
+      className={`ys-inventory-filter relative flex h-10 shrink-0 items-center rounded-md border border-slate-200 bg-slate-50 text-sm text-slate-600 ${minWidthClassName ?? "w-auto"}`}
+      data-open={open}
+      data-side={openAbove ? "top" : "bottom"}
+      ref={rootRef}
     >
-      <span className="sr-only">{label}</span>
-      <Icon className="h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
-      <Select
-        aria-label={label}
-        className="h-auto w-full min-w-0 flex-1 border-0 bg-transparent px-0 py-0 shadow-none focus-visible:ring-0"
-        style={{ backgroundImage: "none" }}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
+      <span className="ys-inventory-filter-caption">{label}</span>
+      <button
+        aria-controls={open ? menuId : undefined}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        aria-label={`${label}: ${selectedLabel}`}
+        className="ys-inventory-filter-trigger"
+        onClick={() => (open ? setOpen(false) : openMenu())}
+        onKeyDown={(event) => {
+          if (!open && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+            event.preventDefault();
+            openMenu(event.key === "ArrowDown" ? selectedIndex : options.length - 1);
+          } else if (open && event.key === "Escape") {
+            event.preventDefault();
+            setOpen(false);
+          }
+        }}
+        ref={triggerRef}
+        type="button"
       >
-        {children}
-      </Select>
-      <ChevronDown
-        aria-hidden="true"
-        className="ys-inventory-filter-chevron pointer-events-none h-4 w-4 shrink-0 text-slate-500"
-      />
-    </label>
+        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+        <span className="ys-inventory-filter-selection">{selectedLabel}</span>
+        <ChevronDown aria-hidden="true" className="ys-inventory-filter-chevron h-4 w-4 shrink-0" />
+      </button>
+      {open ? (
+        <div aria-label={label} className="ys-inventory-filter-menu" id={menuId} role="listbox">
+          {options.map((option, index) => (
+            <button
+              aria-selected={option.value === value}
+              className="ys-inventory-filter-option"
+              key={option.value}
+              onClick={() => choose(option.value)}
+              onKeyDown={(event) => onOptionKeyDown(event, index)}
+              ref={(node) => { optionRefs.current[index] = node; }}
+              role="option"
+              tabIndex={index === activeIndex ? 0 : -1}
+              type="button"
+            >
+              <span>{option.label}</span>
+              {option.value === value ? <Check aria-hidden="true" className="h-4 w-4 shrink-0" /> : null}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
 

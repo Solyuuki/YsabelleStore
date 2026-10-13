@@ -17,13 +17,16 @@ test("inventory mobile filters collapse into an accessible dynamic panel", () =>
   assert.match(css, /\.retail-inventory-filter-panel\[data-open="false"\]/);
 });
 
-test("inventory native selects define actual option contrast in both appearances", () => {
-  assert.match(css, /:root\.dark \.app-shell-ambient \.ys-inventory-filter > select/);
-  assert.match(css, /color-scheme: dark !important;/);
-  assert.match(css, /background-color: #20314d !important;/);
-  assert.match(css, /color: #f1f5ff !important;/);
-  assert.match(css, /:root:not\(\.dark\)/);
-  assert.match(css, /color-scheme: light !important;/);
+test("inventory filter menus use accessible themed listboxes rather than native OS option popups", () => {
+  assert.match(inventory, /aria-haspopup="listbox"/);
+  assert.match(inventory, /role="listbox"/);
+  assert.match(inventory, /role="option"/);
+  assert.match(inventory, /aria-selected=\{option.value === value\}/);
+  assert.match(inventory, /document.addEventListener\("pointerdown", closeOnOutsidePointer\)/);
+  assert.match(inventory, /event.key === "Escape"/);
+  assert.match(inventory, /event.key === "ArrowDown"/);
+  assert.match(css, /:root.dark \.app-shell-ambient \.ys-inventory-filter-menu/);
+  assert.match(css, /background: #1c2d47;/);
 });
 
 test("mobile inventory cards remain compact while details still expose full stock information", () => {
@@ -56,14 +59,14 @@ test("stock activity becomes a readable six-field mobile timeline with no horizo
   assert.match(css, /max-height: none;/);
 });
 
-test("phone inventory pagination shows previous, concise page label and next", () => {
+test("Inventory mobile pagination matches Deliveries: selector left and numbered page actions right", () => {
   const pager = read("frontend/src/components/shared/AppPagination.tsx");
   assert.match(inventory, /className="ys-inventory-pagination"/);
-  assert.match(inventory, /mobileCompact/);
-  assert.match(pager, /mobileCompact\?: boolean;/);
-  assert.match(pager, /Page \{currentPage\} of \{resolvedTotalPages\}/);
-  assert.match(css, /\.ys-inventory-page-token \{ display: none; \}/);
-  assert.match(css, /\.ys-inventory-mobile-page-label/);
+  assert.doesNotMatch(inventory.slice(inventory.indexOf('className="ys-inventory-pagination"'), inventory.indexOf("itemLabel=\"inventory records\"")), /mobileCompact/);
+  assert.match(pager, /aria-label=\{`Page \$\{token\}`\}/);
+  assert.match(css, /\.ys-inventory-pagination > div > label > span\s*\{\s*display: none;/);
+  assert.match(css, /\.ys-inventory-pagination nav > ul/);
+  assert.match(css, /justify-content: space-between;/);
 });
 
 test("mobile stock receiving and adjustment remain horizontal and scrollable", () => {
@@ -81,10 +84,17 @@ test("mobile stock receiving and adjustment remain horizontal and scrollable", (
   assert.match(inventory, /Batch\/Lot number is required/);
 });
 
-test("import Guide keeps a separate line from the exit control on phones", () => {
+test("Import header places icon-only guide beside X without altering guide functionality", () => {
   const importing = read("frontend/src/components/inventory/InventoryImportDialog.tsx");
-  assert.match(importing, /ys-inventory-import-header/);
-  assert.match(importing, /ys-inventory-import-heading/);
+  assert.match(importing, /ys-inventory-import-header-actions/);
+  assert.match(importing, /aria-label="Toggle import guide"/);
+  assert.match(importing, /aria-pressed=\{showGuide\}/);
+  assert.match(importing, /<CircleHelp/);
   assert.match(importing, /setShowGuide\(\(current\) => !current\)/);
-  assert.match(css, /\.ys-inventory-import-heading \{\s*display: flex;\s*flex-direction: column;/);
+  assert.match(css, /\.ys-inventory-import-heading\s*\{\s*display: flex;\s*flex-direction: row;/);
+});
+
+test("Inventory mobile search hint remains fully visible with an accessible full search label", () => {
+  assert.match(inventory, /placeholder="Search products"/);
+  assert.match(inventory, /aria-label="Search inventory by product name, SKU, or barcode"/);
 });
