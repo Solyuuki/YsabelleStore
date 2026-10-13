@@ -61,6 +61,7 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
   const controlsRef = useRef<IScannerControls | null>(null);
   const trackRef = useRef<MediaStreamTrack | null>(null);
   const detectedRef = useRef(false);
+  const recentReadRef = useRef<{ code: string; at: number } | null>(null);
   const callbackRef = useRef(onDetected);
   const [status, setStatus] = useState<"starting" | "scanning" | "error">("starting");
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +76,7 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
     let cancelled = false;
     let localControls: IScannerControls | null = null;
     detectedRef.current = false;
+    recentReadRef.current = null;
 
     const start = async () => {
       setStatus("starting");
@@ -109,6 +111,12 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
           if (!result || cancelled || detectedRef.current) return;
           const barcode = result.getText().trim();
           if (!barcode || barcode.length > 128) return;
+          // Require the same decode twice in a short interval. This prevents a
+          // single blurry/partial frame from adding the wrong catalog item.
+          const now = window.performance.now();
+          const previous = recentReadRef.current;
+          recentReadRef.current = { code: barcode, at: now };
+          if (!previous || previous.code !== barcode || now - previous.at > 1500) return;
           detectedRef.current = true;
           controlsRef.current?.stop();
           localControls?.stop();
