@@ -839,7 +839,7 @@ function InventoryTable({
 }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[980px] table-fixed border-collapse text-left text-sm">
+      <table className="retail-mobile-data-table w-full min-w-[980px] table-fixed border-collapse text-left text-sm">
         <thead className="bg-slate-100 text-slate-700">
           <tr>
             <th className="w-[29%] px-3 py-2.5">Product</th>
@@ -866,20 +866,20 @@ function InventoryTable({
                 }
               }}
             >
-              <td className="px-3 py-3 align-middle">
+              <td data-label="Product" className="px-3 py-3 align-middle">
                 <div className="font-medium text-slate-950">{row.productName}</div>
                 <div className="mt-0.5 text-xs leading-5 text-slate-500">
                   {row.barcode ?? "No barcode"} · {row.category.name}
                 </div>
               </td>
-              <td className="px-3 py-3 align-middle break-words text-slate-700">{row.sku}</td>
-              <td className="px-3 py-3 align-middle text-center">
+              <td data-label="SKU" className="px-3 py-3 align-middle break-words text-slate-700">{row.sku}</td>
+              <td data-label="Stock" className="px-3 py-3 align-middle text-center">
                 <div className="tabular-nums text-base font-semibold text-slate-950">
                   {row.currentQuantity}
                 </div>
                 <div className="mt-0.5 text-xs text-slate-500">on hand</div>
               </td>
-              <td className="px-3 py-3 align-middle text-center">
+              <td data-label="Restock levels" className="px-3 py-3 align-middle text-center">
                 <div className="inline-flex items-center gap-2 whitespace-nowrap text-sm tabular-nums text-slate-700">
                   <span>
                     <span className="font-semibold text-slate-950">{row.reorderLevel}</span> reorder
@@ -891,13 +891,13 @@ function InventoryTable({
                   </span>
                 </div>
               </td>
-              <td className="px-3 py-3 align-middle text-slate-700">
+              <td data-label="Expiry" className="px-3 py-3 align-middle text-slate-700">
                 <ExpiryValue quantity={row.currentQuantity} value={row.nearestExpiry} />
               </td>
-              <td className="px-3 py-3 align-middle text-center tabular-nums text-slate-700">
+              <td data-label="Batches" className="px-3 py-3 align-middle text-center tabular-nums text-slate-700">
                 {row.batchCount === 0 ? "None" : row.batchCount}
               </td>
-              <td className="px-3 py-3 align-middle text-center">
+              <td data-label="Status" className="px-3 py-3 align-middle text-center">
                 <div className="inline-flex justify-center">
                   <StockStatusBadge status={row.stockStatus} />
                 </div>
