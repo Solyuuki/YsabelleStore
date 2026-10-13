@@ -726,3 +726,56 @@
     padding: 0;
   }
 }
+
+/* Sprint 12: the filter label previously consumed space needed by the
+   "Search products" hint on 320–430px screens. Keep a one-row toolbar and
+   preserve the complete text rather than truncating the placeholder again. */
+@media (max-width: 479px) {
+  .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar {
+    grid-template-columns: minmax(0, 1fr) 44px;
+    column-gap: 0.5rem;
+  }
+
+  .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar .ys-inventory-search {
+    grid-column: 1;
+    min-width: 0;
+    width: 100%;
+    padding-inline: 0.65rem;
+  }
+
+  .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar .ys-inventory-search > svg {
+    flex: none;
+  }
+
+  .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar .ys-inventory-search > input {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar .retail-inventory-filter-toggle {
+    position: relative;
+    grid-column: 2;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    flex: none;
+    gap: 0;
+  }
+
+  .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar .retail-inventory-filter-toggle > span:not(.retail-inventory-filter-count),
+  .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar .retail-inventory-filter-toggle-chevron {
+    display: none;
+  }
+
+  .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar .retail-inventory-filter-count {
+    position: absolute;
+    top: -0.3rem;
+    right: -0.3rem;
+    min-width: 1.1rem;
+    height: 1.1rem;
+    margin: 0;
+  }
+}

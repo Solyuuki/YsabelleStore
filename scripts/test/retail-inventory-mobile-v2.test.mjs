@@ -99,3 +99,13 @@ test("Inventory mobile search hint remains fully visible with an accessible full
   assert.match(inventory, /placeholder="Search products"/);
   assert.match(inventory, /aria-label="Search inventory by product name, SKU, or barcode"/);
 });
+
+test("narrow Inventory toolbar reserves readable search width by using an accessible icon-only filter", () => {
+  assert.match(inventory, /placeholder="Search products"/);
+  assert.match(inventory, /aria-label=\{mobileFiltersOpen \? "Hide inventory filters" : "Show inventory filters"\}/);
+  assert.match(css, /@media \(max-width: 479px\)/);
+  assert.match(css, /grid-template-columns: minmax\(0, 1fr\) 44px;/);
+  assert.match(css, /\.retail-inventory-filter-toggle > span:not\(\.retail-inventory-filter-count\)/);
+  assert.match(css, /\.retail-inventory-filter-toggle-chevron\s*\{\s*display: none;/);
+  assert.match(css, /\.retail-inventory-filter-count\s*\{\s*position: absolute;/);
+});
