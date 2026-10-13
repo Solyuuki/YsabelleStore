@@ -427,7 +427,7 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
               Monthly inventory recommendation
             </p>
             <CardTitle className="mt-1">{reportMonth} report</CardTitle>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="ys-dashboard-recommendation-description mt-1 text-xs text-slate-500">
               Live monthly summary of forecast demand, stock coverage, incoming supply, and expiry
               exposure. Product-level detail stays in Reports.
             </p>
