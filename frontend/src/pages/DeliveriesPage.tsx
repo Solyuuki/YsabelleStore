@@ -423,10 +423,10 @@ export function DeliveriesPage() {
                   className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
                 />
                 <Input
-                  aria-label="Search delivery tickets"
+                  aria-label="Search by ticket, order, customer, or phone"
                   className="pl-9"
                   onChange={(event) => setSearchInput(event.target.value)}
-                  placeholder="Ticket or customer"
+                  placeholder="Find ticket"
                   value={searchInput}
                 />
               </div>
