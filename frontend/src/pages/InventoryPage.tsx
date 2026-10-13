@@ -1519,7 +1519,7 @@ function StockInDialog({
             </Alert>
           ) : null}
         </form>
-        <DialogFooter className="border-t border-slate-200 bg-white/95">
+        <DialogFooter className="ys-stock-dialog-footer border-t border-slate-200 bg-white/95">
           <Button disabled={pending} type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
@@ -1792,7 +1792,7 @@ function StockAdjustmentDialog({
 
           {error ? <p className="text-sm font-medium text-red-700">{error}</p> : null}
         </form>
-        <DialogFooter className="border-t border-slate-200 bg-white/95">
+        <DialogFooter className="ys-stock-dialog-footer border-t border-slate-200 bg-white/95">
           <Button disabled={pending} type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
