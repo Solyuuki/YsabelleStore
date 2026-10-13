@@ -554,8 +554,8 @@ export function CategoriesPage() {
                   />
                 </div>
               ) : (
-                
-                <div aria-label="Category catalog" className="ys-category-v2-mobile-list">
+                <>
+                  <div aria-label="Category catalog" className="ys-category-v2-mobile-list">
                   {categories.map((category) => (
                     <article className="ys-category-v2-category-card" key={category.id}>
                       <div className="ys-category-v2-card-main">
@@ -683,6 +683,7 @@ export function CategoriesPage() {
                     </TableBody>
                   </Table>
                 </div>
+                </>
               )}
 
               {hasLoaded && loading && categories.length > 0 ? (
