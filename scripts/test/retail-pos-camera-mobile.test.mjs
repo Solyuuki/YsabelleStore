@@ -58,6 +58,8 @@ test("barcode decoding works across browsers and closes camera tracks on exit", 
   assert.match(scanner, /trackRef\.current\?\.stop\(\)/);
   assert.match(scanner, /getTracks\(\)\.forEach\(\(track\) => track\.stop\(\)\)/);
   assert.match(scanner, /detectedRef\.current = true;/);
+  assert.match(scanner, /recentReadRef\.current = \{ code: barcode, at: now \};/);
+  assert.match(scanner, /previous\.code !== barcode \|\| now - previous\.at > 1500/);
 });
 
 test("camera permission states, touch controls and iOS safeguards are accessible", () => {
