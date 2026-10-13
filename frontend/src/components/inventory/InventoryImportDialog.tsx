@@ -640,7 +640,7 @@ export function InventoryImportDialog({
         onEscapeKeyDown={(event) => isBusy && event.preventDefault()}
         onInteractOutside={(event) => isBusy && event.preventDefault()}
       >
-        <DialogHeader className="relative border-b border-slate-200 px-6 py-6 pr-14">
+        <DialogHeader className="ys-inventory-import-header relative border-b border-slate-200 px-6 py-6 pr-14">
           <DialogClose asChild>
             <Button
               aria-label="Close bulk delivery import"
@@ -654,7 +654,7 @@ export function InventoryImportDialog({
             </Button>
           </DialogClose>
           <div className="space-y-2">
-            <div className="flex items-center gap-3">
+            <div className="ys-inventory-import-heading flex items-center gap-3">
               <DialogTitle>Import inventory delivery</DialogTitle>
               <Button
                 className="h-7 rounded-full px-2.5 text-xs"
