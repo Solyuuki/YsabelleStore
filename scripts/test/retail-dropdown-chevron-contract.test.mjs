@@ -53,11 +53,19 @@ test("affected retail native selects use an opt-in, theme-aware chevron", () => 
   }
 });
 
-test("inventory physical chevron remains single, with a safe right-edge gutter", () => {
+test("inventory custom filter retains a single chevron, safe gutter, and accessible themed options", () => {
   const inventory = read("frontend/src/pages/InventoryPage.tsx");
-  assert.match(inventory, /style=\{\{ backgroundImage: "none" \}\}/);
-  assert.match(inventory, /ys-inventory-filter-chevron/);
-  assert.match(inventory, /pl-3 pr-4 text-sm/);
+  const styles = read("frontend/src/styles/retail-inventory-mobile-v2.css");
+
+  assert.match(inventory, /className="ys-inventory-filter-trigger"/);
+  assert.match(inventory, /ys-inventory-filter-chevron h-4 w-4 shrink-0/);
+  assert.match(inventory, /aria-haspopup="listbox"/);
+  assert.match(inventory, /aria-expanded=\{open\}/);
+  assert.match(inventory, /role="listbox"/);
+  assert.match(inventory, /aria-selected=\{option.value === value\}/);
+  assert.match(styles, /\.ys-inventory-filter-trigger\s*\{[^}]*gap: 0\.65rem;/);
+  assert.match(styles, /:root.dark \.app-shell-ambient \.ys-inventory-filter-menu/);
+  assert.match(styles, /background: #1c2d47;/);
   assert.doesNotMatch(inventory, /ys-retail-select-chevron/);
 });
 
