@@ -20,7 +20,7 @@ test("All eight full-screen HTTP / reliability states share one scalable portal"
   assert.match(screen,/createPortal\(screen, document\.body\)/);
   assert.equal((screen.match(/className="status-screen__content /g)||[]).length,3);
   for(const state of ["401","403","404","503","DATABASE","OFFLINE","SERVICE","TIMEOUT"]) {
-    assert.match(art,new RegExp(state+":"+(state.match(/^\d+$/)?".*Illustration":".*Illustration")));
+    assert.match(art,new RegExp('(?:\\")?'+state+'(?:\\")?:\\s*\\w+Illustration'));
   }
   assert.match(auth,/statusLabel="401"/);
   assert.match(reliability,/statusLabel: "OFFLINE"/);
