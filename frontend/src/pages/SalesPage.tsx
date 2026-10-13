@@ -179,7 +179,7 @@ export function SalesPage() {
             ) : (
               <div className="space-y-3">
                 <div className="overflow-hidden rounded-md border border-slate-200">
-                  <table className="w-full table-fixed border-collapse text-left text-sm">
+                  <table className="retail-mobile-data-table w-full table-fixed border-collapse text-left text-sm">
                     <thead className="bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500">
                       <tr>
                         <th className="px-4 py-3 font-medium">Receipt</th>
@@ -200,20 +200,20 @@ export function SalesPage() {
                             key={sale.id}
                             onClick={() => setSelectedSaleId(sale.id)}
                           >
-                            <td className="px-4 py-3">
+                            <td data-label="Receipt" className="px-4 py-3">
                               <p className="font-medium text-slate-950">{sale.saleNumber}</p>
                               <p className="text-xs text-slate-500">
                                 {sale.cashierName ?? "Unassigned cashier"}
                               </p>
                             </td>
-                            <td className="px-4 py-3 text-slate-600">
+                            <td data-label="Date" className="px-4 py-3 text-slate-600">
                               {new Intl.DateTimeFormat("en-PH", {
                                 dateStyle: "medium",
                                 timeStyle: "short"
                               }).format(new Date(sale.saleDate))}
                             </td>
-                            <td className="px-4 py-3 text-slate-600">{sale.itemCount}</td>
-                            <td className="px-4 py-3 font-semibold text-slate-950">
+                            <td data-label="Items" className="px-4 py-3 text-slate-600">{sale.itemCount}</td>
+                            <td data-label="Total" className="px-4 py-3 font-semibold text-slate-950">
                               {currencyFormatter.format(Number(sale.totalAmount))}
                             </td>
                           </tr>
