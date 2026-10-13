@@ -36,6 +36,9 @@ export type DeliveryTicket = DeliveryTicketSummary & {
   deliveryStatusLabel: string;
   courierProvider: string | null;
   courierReference: string | null;
+  riderName: string | null;
+  riderPhone: string | null;
+  customerDeliveryNote: string | null;
   deliveryNotes: string | null;
   dispatchedAt: string | null;
   deliveredAt: string | null;
@@ -83,5 +86,10 @@ export type DeliveryTransitionInput = {
     | "CANCELLED";
   courierProvider?: string;
   courierReference?: string;
+  riderName?: string;
+  riderPhone?: string;
+  customerDeliveryNote?: string;
   note?: string;
 };
+
+export type DeliveryHandoffDraftInput = Omit<DeliveryTransitionInput, "targetStatus">;

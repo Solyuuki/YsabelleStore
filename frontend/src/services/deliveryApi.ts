@@ -4,7 +4,8 @@ import type {
   DeliveryTicket,
   DeliveryTicketSummary,
   DeliveryTicketView,
-  DeliveryTransitionInput
+  DeliveryTransitionInput,
+  DeliveryHandoffDraftInput
 } from "@/types/delivery";
 import type { StorefrontDeliveryStatus, StorefrontPaymentMethod } from "@/types/storefront";
 
@@ -80,5 +81,14 @@ export async function confirmCodCollected(orderId: string, note?: string) {
     }
   );
   if (!response.success || !response.data) throw new Error(response.message);
+  return response.data;
+}
+
+export async function saveDeliveryHandoffDraft(orderId: string, input: DeliveryHandoffDraftInput) {
+  const response = await apiClient.request<DeliveryTicket, unknown>(
+    `/api/deliveries/${encodeURIComponent(orderId)}/handoff`,
+    { method: "PATCH", json: input }
+  );
+  if (!response.success || !response.data) throw new Error(response.message || "Dispatch details could not be saved.");
   return response.data;
 }

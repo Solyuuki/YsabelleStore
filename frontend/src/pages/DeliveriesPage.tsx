@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -46,6 +47,7 @@ import {
   confirmCodCollected,
   getDeliveryTicket,
   listDeliveryTickets,
+  saveDeliveryHandoffDraft,
   updateDeliveryStatus
 } from "@/services/deliveryApi";
 import type {
@@ -204,6 +206,10 @@ export function DeliveriesPage() {
   const [courierProvider, setCourierProvider] = useState("");
   const [customCourierProvider, setCustomCourierProvider] = useState("");
   const [courierReference, setCourierReference] = useState("");
+  const [riderName, setRiderName] = useState("");
+  const [riderPhone, setRiderPhone] = useState("");
+  const [customerDeliveryNote, setCustomerDeliveryNote] = useState("");
+  const [handoffMessage, setHandoffMessage] = useState("");
   const [staffNote, setStaffNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -261,6 +267,9 @@ export function DeliveriesPage() {
     }
 
     setCourierReference(selected.courierReference ?? "");
+    setRiderName(selected.riderName ?? "");
+    setRiderPhone(selected.riderPhone ?? "");
+    setCustomerDeliveryNote(selected.customerDeliveryNote ?? "");
     setStaffNote(selected.deliveryNotes ?? "");
   }, [selected]);
 
@@ -277,9 +286,12 @@ export function DeliveriesPage() {
   const activeFilterCount = Number(status !== "all") + Number(paymentMethod !== "all");
   const resolvedCourierProvider =
     courierProvider === "Other" ? customCourierProvider.trim() : courierProvider.trim();
+  const riderPhoneValid = /^(?:09\d{9}|\+639\d{9})$/.test(riderPhone.replace(/[\s()-]/g, ""));
+  const handoffInput = { courierProvider: resolvedCourierProvider, courierReference, riderName, riderPhone, customerDeliveryNote, note: staffNote };
 
   async function openTicket(ticketId: string) {
     if (openingId) return;
+    setHandoffMessage("");
     setOpeningId(ticketId);
     setError("");
     try {
@@ -294,6 +306,22 @@ export function DeliveriesPage() {
   function applySearch() {
     setPage(1);
     setSearch(searchInput.trim());
+  }
+
+  async function saveHandoff() {
+    if (!selected || submitting) return;
+    setSubmitting(true);
+    setError("");
+    setHandoffMessage("");
+    try {
+      const updated = await saveDeliveryHandoffDraft(selected.id, handoffInput);
+      setSelected(updated);
+      setHandoffMessage("Dispatch draft saved. Contact details appear to customers after dispatch.");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Could not save dispatch details.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function runTransition(
@@ -312,6 +340,7 @@ export function DeliveriesPage() {
         targetStatus,
         courierProvider: resolvedCourierProvider || undefined,
         courierReference: courierReference.trim() || undefined,
+        ...(targetStatus === "OUT_FOR_DELIVERY" ? { riderName, riderPhone, customerDeliveryNote } : {}),
         note: staffNote.trim() || undefined
       });
       setSelected(updated);
@@ -772,11 +801,11 @@ export function DeliveriesPage() {
                 </div>
               </section>
 
-              {!["DELIVERED", "CANCELLED"].includes(selected.deliveryStatus) ? (
+              {["ORDER_PLACED", "PREPARING", "READY_FOR_DELIVERY", "DELIVERY_FAILED"].includes(selected.deliveryStatus) ? (
                 <section className="grid gap-4 rounded-xl border border-indigo-200 bg-indigo-50/40 p-4 dark:border-indigo-400/30 dark:bg-indigo-950/30">
                   <div>
                     <h3 className="text-sm font-semibold text-slate-950 dark:text-slate-100">
-                      Delivery operations
+                      Dispatch handoff
                     </h3>
                     <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-300">
                       Courier booking stays manual. Record enough information for an auditable
@@ -815,19 +844,40 @@ export function DeliveriesPage() {
                     </div>
 
                     <label className="grid content-start gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
-                      Rider / booking reference
+                      Booking reference (optional)
                       <Input
                         maxLength={120}
                         onChange={(event) => setCourierReference(event.target.value)}
-                        placeholder="Phone, ID or plate"
+                        placeholder="Booking ID / plate / rider code"
                         value={courierReference}
                       />
                       <span className="ys-delivery-rider-helper text-xs font-normal leading-5 text-slate-500 dark:text-slate-300">
-                        Add the rider phone number or app booking ID when available so the handoff
-                        can be verified.
+                        Booking ID is separate from rider phone.
                       </span>
                     </label>
                   </div>
+                  <div className="ys-delivery-handoff-fields grid gap-3 sm:grid-cols-2">
+                    <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Rider name (optional)
+                      <Input maxLength={120} value={riderName} placeholder="e.g. Juan Dela Cruz"
+                        onChange={(event) => setRiderName(event.target.value)} />
+                    </label>
+                    <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Rider phone number (required to dispatch)
+                      <Input type="tel" inputMode="tel" autoComplete="tel" aria-required="true"
+                        maxLength={24} value={riderPhone} placeholder="0917 123 4567"
+                        onChange={(event) => setRiderPhone(event.target.value)} />
+                      {riderPhone.trim() && !riderPhoneValid ? (
+                        <span className="text-xs font-normal text-red-700 dark:text-red-300">Enter a valid Philippine mobile number.</span>
+                      ) : null}
+                    </label>
+                  </div>
+                  <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
+                    Customer delivery note (visible after dispatch)
+                    <Textarea rows={2} maxLength={500} value={customerDeliveryNote}
+                      onChange={(event) => setCustomerDeliveryNote(event.target.value)}
+                      placeholder="Information for the customer during delivery." />
+                  </label>
                   <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
                     Internal staff note
                     <Input
@@ -840,6 +890,18 @@ export function DeliveriesPage() {
                       This operational note is not shown to the customer.
                     </span>
                   </label>
+                  {handoffMessage ? <p className="text-xs text-emerald-700 dark:text-emerald-300" role="status">{handoffMessage}</p> : null}
+                </section>
+              ) : null}
+
+              {["OUT_FOR_DELIVERY", "DELIVERED"].includes(selected.deliveryStatus) ? (
+                <section className="ys-delivery-handoff-summary rounded-xl border border-indigo-200 bg-indigo-50/40 p-4 text-sm dark:border-indigo-400/30 dark:bg-indigo-950/30">
+                  <h3 className="font-semibold text-slate-950 dark:text-slate-100">Rider handoff details</h3>
+                  <p className="mt-2 text-slate-700 dark:text-slate-200">{selected.courierProvider || "Courier"} · {selected.riderName || "Rider"}</p>
+                  {selected.riderPhone ? <a className="ys-delivery-handoff-phone" href={`tel:${selected.riderPhone}`}>{selected.riderPhone}</a> : null}
+                  {selected.courierReference ? <p className="text-xs dark:text-slate-200">Booking: {selected.courierReference}</p> : null}
+                  {selected.customerDeliveryNote ? <p className="text-xs dark:text-slate-200">Customer note: {selected.customerDeliveryNote}</p> : null}
+                  {selected.deliveryNotes ? <p className="text-xs dark:text-slate-200">Staff-only note: {selected.deliveryNotes}</p> : null}
                 </section>
               ) : null}
 
@@ -882,9 +944,14 @@ export function DeliveriesPage() {
                   Mark ready
                 </Button>
               ) : null}
+              {["ORDER_PLACED", "PREPARING", "READY_FOR_DELIVERY", "DELIVERY_FAILED"].includes(selected.deliveryStatus) ? (
+                <Button disabled={submitting} onClick={() => void saveHandoff()} type="button" variant="secondary">
+                  Save dispatch draft
+                </Button>
+              ) : null}
               {selected.deliveryStatus === "READY_FOR_DELIVERY" ? (
                 <Button
-                  disabled={submitting || !resolvedCourierProvider}
+                  disabled={submitting || !resolvedCourierProvider || !riderPhoneValid}
                   onClick={() => void runTransition("OUT_FOR_DELIVERY")}
                   type="button"
                 >
