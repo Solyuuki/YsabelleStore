@@ -1,4 +1,6 @@
 import {
+  ChevronDown,
+  ChevronUp,
   LoaderCircle,
   Minus,
   PackageSearch,
@@ -80,6 +82,7 @@ export function PosPage() {
   const [searchState, setSearchState] = useState<SearchState>(initialSearchState);
   const [searchInput, setSearchInput] = useState("");
   const [cartLines, setCartLines] = useState<CartLine[]>([]);
+  const [mobileCartOpen, setMobileCartOpen] = useState(false);
   const [productResultsPage, setProductResultsPage] = useState(1);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
@@ -467,7 +470,7 @@ export function PosPage() {
         description="Retail selling workspace for scanner input, product lookup, live cart review, and cash checkout."
       />
 
-      <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+      <section className="retail-pos-layout grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
         <div className="min-w-0 space-y-4">
           <Card className="border-slate-200/80 bg-white/95 shadow-sm">
             <CardHeader>
@@ -559,7 +562,7 @@ export function PosPage() {
               ) : searchState.products.length > 0 ? (
                 <div className="space-y-3">
                   <div className="overflow-x-auto rounded-md border border-slate-200">
-                    <table className="w-full min-w-[760px] table-fixed border-collapse text-left text-sm">
+                    <table className="retail-mobile-data-table w-full min-w-[760px] table-fixed border-collapse text-left text-sm">
                       <thead className="bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500">
                         <tr>
                           <th className="px-4 py-3 font-medium">Barcode / SKU</th>
@@ -581,17 +584,17 @@ export function PosPage() {
                               }`}
                               key={product.id}
                             >
-                              <td className="px-4 py-3">
+                              <td data-label="Barcode / SKU" className="px-4 py-3">
                                 <p className="font-medium text-slate-900">
                                   {product.barcode ?? product.sku}
                                 </p>
                                 <p className="text-xs text-slate-500">{product.sku}</p>
                               </td>
-                              <td className="px-4 py-3">
+                              <td data-label="Product" className="px-4 py-3">
                                 <p className="font-medium text-slate-900">{product.name}</p>
                                 <p className="text-xs text-slate-500">{product.categoryName}</p>
                               </td>
-                              <td className="px-4 py-3">
+                              <td data-label="Stock" className="px-4 py-3">
                                 <StatusBadge
                                   variant={
                                     isOutOfStock
@@ -606,10 +609,10 @@ export function PosPage() {
                                     : `${product.availableStock} in stock`}
                                 </StatusBadge>
                               </td>
-                              <td className="px-4 py-3 font-medium text-slate-900">
+                              <td data-label="Unit price" className="px-4 py-3 font-medium text-slate-900">
                                 {currencyFormatter.format(Number(product.sellingPrice))}
                               </td>
-                              <td className="px-4 py-3 text-right">
+                              <td data-label="Action" className="px-4 py-3 text-right">
                                 <Button
                                   disabled={isOutOfStock}
                                   size="sm"
@@ -656,7 +659,35 @@ export function PosPage() {
           </Card>
         </div>
 
-        <Card className="border-slate-200/80 bg-white/95 shadow-sm xl:sticky xl:top-4 xl:flex xl:h-[calc(100vh-11rem)] xl:min-h-[560px] xl:flex-col">
+        {mobileCartOpen ? (
+          <button
+            aria-label="Close current sale"
+            className="retail-pos-cart__backdrop"
+            onClick={() => setMobileCartOpen(false)}
+            type="button"
+          />
+        ) : null}
+        <Card
+          className="retail-pos-cart border-slate-200/80 bg-white/95 shadow-sm xl:sticky xl:top-4 xl:flex xl:h-[calc(100vh-11rem)] xl:min-h-[560px] xl:flex-col"
+          data-mobile-open={mobileCartOpen}
+        >
+          <button
+            aria-controls="retail-pos-cart-content"
+            aria-expanded={mobileCartOpen}
+            className="retail-pos-cart__toggle"
+            onClick={() => setMobileCartOpen((open) => !open)}
+            type="button"
+          >
+            <span className="retail-pos-cart__toggle-copy">
+              <strong>Current sale · {cartSummary.itemCount} items</strong>
+              <span>{currencyFormatter.format(cartSummary.total)}</span>
+            </span>
+            {mobileCartOpen ? (
+              <ChevronDown aria-hidden="true" size={21} />
+            ) : (
+              <ChevronUp aria-hidden="true" size={21} />
+            )}
+          </button>
           <CardHeader className="shrink-0">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
@@ -671,7 +702,7 @@ export function PosPage() {
             </div>
           </CardHeader>
 
-          <CardContent className="flex min-h-0 flex-1 flex-col">
+          <CardContent className="flex min-h-0 flex-1 flex-col" id="retail-pos-cart-content">
             {receiptSale ? (
               <div className="mb-3 shrink-0 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
                 <div className="flex items-start gap-2">
