@@ -74,6 +74,7 @@ function getProductResultsPageSize() {
     ? MOBILE_PRODUCT_RESULTS_PAGE_SIZE
     : PRODUCT_RESULTS_PAGE_SIZE;
 }
+
 const MIN_SEARCH_LOADING_MS = 200;
 
 const initialSearchState: SearchState = {
@@ -98,7 +99,6 @@ export function PosPage() {
   const [cartLines, setCartLines] = useState<CartLine[]>([]);
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
   const [cameraScannerOpen, setCameraScannerOpen] = useState(false);
-  const [productResultsPage, setProductResultsPage] = useState(1);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [isCashDialogOpen, setIsCashDialogOpen] = useState(false);
@@ -157,10 +157,6 @@ export function PosPage() {
     window.addEventListener("focus", handleWindowFocus);
     return () => window.removeEventListener("focus", handleWindowFocus);
   }, [isCashDialogOpen, isReceiptDialogOpen, cameraScannerOpen]);
-
-  useEffect(() => {
-    setProductResultsPage(1);
-  }, [searchState.query]);
 
   useEffect(() => {
     if (!lastTouchedProductId) return;
@@ -271,7 +267,7 @@ export function PosPage() {
 
   async function handleSearch(options: { autoAddExactMatch?: boolean; page?: number; queryOverride?: string } = {}) {
     const trimmedQuery = (options.queryOverride ?? searchInput).trim();
-    const requestPage = options.page ?? productResultsPage;
+    const requestPage = options.page ?? 1;
     const startedAt = window.performance.now();
 
     setCheckoutError(null);
@@ -684,8 +680,7 @@ export function PosPage() {
                   <AppPagination
                     itemLabel="products"
                     onPageChange={(nextPage) => {
-                      setProductResultsPage(nextPage);
-                      void handleSearch({ page: nextPage });
+                      void handleSearch({ page: nextPage, queryOverride: searchState.query });
                     }}
                     page={searchState.meta.page}
                     pageSize={searchState.meta.pageSize}

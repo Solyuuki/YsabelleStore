@@ -96,7 +96,7 @@ test("phone search and product cards are compact, usable and theme-aware", () =>
 });
 
 test("compact mPOS search remains usable at narrow phone widths", () => {
-  assert.match(pos, /placeholder="Barcode \\/ product"/);
+  assert.ok(pos.includes('placeholder="Barcode / product"'));
   assert.match(pos, /aria-describedby="retail-pos-search-hint"/);
   assert.match(pos, /aria-label="Scan product barcode using phone camera"/);
   assert.match(pos, /aria-label={`Add \$\{product.name\} to the current sale`}/);
@@ -111,8 +111,8 @@ test("mobile product search pages the backend at five rows without changing desk
   assert.match(pos, /const MOBILE_PRODUCT_RESULTS_PAGE_SIZE = 5;/);
   assert.match(pos, /pageSize: getProductResultsPageSize\(\)/);
   assert.match(pos, /pageSize={searchState.meta.pageSize}/);
-  assert.match(pos, /setProductResultsPage\(nextPage\)/);
-  assert.match(pos, /handleSearch\(\{ page: nextPage \}\)/);
+  assert.match(pos, /const requestPage = options.page \?\? 1;/);
+  assert.match(pos, /handleSearch\(\{ page: nextPage, queryOverride: searchState.query \}\)/);
   assert.match(pos, /className="retail-mobile-data-table w-full min-w-\[760px\]/);
 });
 
@@ -121,4 +121,10 @@ test("mobile cart reuses sale checkout and clears its bottom sheet before cash f
   assert.match(pos, /data-mobile-open={mobileCartOpen}/);
   assert.match(pos, /aria-expanded={mobileCartOpen}/);
   assert.match(css, /height: min\(85dvh, 750px\);/);
+});
+
+test("pagination retains the latest search even when automatic barcode scan clears the input", () => {
+  assert.match(pos, /void handleSearch\(\{ page: nextPage, queryOverride: searchState.query \}\)/);
+  assert.match(pos, /const requestPage = options.page \?\? 1;/);
+  assert.match(pos, /clearScannerInput\(\);/);
 });
