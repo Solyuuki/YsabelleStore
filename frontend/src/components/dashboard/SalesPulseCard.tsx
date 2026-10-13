@@ -66,12 +66,24 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
   const [view, setView] = useState<"calendar" | "performance">("calendar");
   const [mobileWindowStart, setMobileWindowStart] = useState(0);
   const [mobileMonthExpanded, setMobileMonthExpanded] = useState(false);
+  const [compactChartAxis, setCompactChartAxis] = useState(false);
   const [calendar, setCalendar] = useState<DashboardSalesCalendar | null>(null);
   const [detail, setDetail] = useState<DashboardSalesDayDetail | null>(null);
   const [, setLoadingCalendar] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const lastSummaryGeneratedAt = useRef(summary.generatedAt);
+
+  useEffect(() => {
+    // Restore desktop hourly labels when the device exits a phone viewport.
+    const query = window.matchMedia(
+      "(max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px)"
+    );
+    const update = () => setCompactChartAxis(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
 
   async function loadCalendar(activeMonth = month) {
     setLoadingCalendar(true);
@@ -635,10 +647,10 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                         <XAxis
                           axisLine={false}
                           dataKey="label"
-                          interval="preserveStartEnd"
+                          interval={compactChartAxis ? "preserveStartEnd" : 1}
                           minTickGap={12}
-                          tick={{ fill: "#94a3b8", fontSize: 10 }}
-                          tickFormatter={(label) => formatHourAxisTick(String(label))}
+                          tick={{ fill: "#94a3b8", fontSize: compactChartAxis ? 10 : 11 }}
+                          tickFormatter={compactChartAxis ? (label) => formatHourAxisTick(String(label)) : undefined}
                           tickLine={false}
                         />
                         <Tooltip
@@ -743,7 +755,7 @@ function SummaryTile({ helper, label, value }: { helper?: string; label: string;
   return (
     <div className="ys-sales-summary-tile rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-3">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="ys-sales-summary-tile__value mt-1 text-lg font-semibold tracking-tight text-slate-950">{value}</p>
+      <p className="ys-sales-summary-tile__value mt-1 truncate text-lg font-semibold tracking-tight text-slate-950">{value}</p>
       {helper ? <p className="mt-1 text-[11px] text-slate-500">{helper}</p> : null}
     </div>
   );
