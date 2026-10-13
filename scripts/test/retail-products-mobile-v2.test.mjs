@@ -103,3 +103,12 @@ test("Products search never paints a separate dark input rectangle", () => {
   assert.match(css, /box-shadow: none !important;/);
   assert.match(css, /\.ys-products-v2-search:focus-within/);
 });
+
+test("approved photo hides redundant mobile upload guidance without removing upload controls", () => {
+  const component = read("frontend/src/components/catalog/ProductImageUploadPanel.tsx");
+  assert.match(component, /className="ys-product-image-guidance/);
+  assert.match(component, /ys-product-image-updated inline-flex[^"]*" role="status"/);
+  assert.match(css, /\.ys-product-image-panel\[data-quality-status="APPROVED"\] \.ys-product-image-guidance\s*\{\s*display: none;/);
+  assert.match(component, /Upload a normal product photo/);
+  assert.match(component, /onClick=\{openPicker\}/);
+});

@@ -354,7 +354,7 @@ export function ProductImageUploadPanel({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-slate-950">Product image</p>
-          <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-600">
+          <p className="ys-product-image-guidance mt-1 max-w-2xl text-xs leading-5 text-slate-600">
             Upload a normal product photo. CIQE automatically optimizes and re-checks the processed
             result, then only allows an approved optimized image to be published.
           </p>
@@ -518,7 +518,7 @@ export function ProductImageUploadPanel({
               </Button>
             ) : null}
             {phase === "approved" ? (
-              <span className="ys-product-image-updated inline-flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
+              <span className="ys-product-image-updated inline-flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800" role="status">
                 <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                 Storefront image updated
               </span>

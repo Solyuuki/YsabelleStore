@@ -282,6 +282,9 @@
   .ys-product-image-panel > div:first-child p:last-child {
     line-height: 1.35;
   }
+  .ys-product-image-panel[data-quality-status="APPROVED"] .ys-product-image-guidance {
+    display: none;
+  }
   .ys-product-image-previews {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.45rem;
