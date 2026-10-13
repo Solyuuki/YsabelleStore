@@ -1,4 +1,4 @@
-import { AlertTriangle, ChevronLeft, ChevronRight, LoaderCircle, Search } from "lucide-react";
+import { AlertTriangle, Check, ChevronDown, ChevronLeft, ChevronRight, LoaderCircle, Search, SlidersHorizontal } from "lucide-react";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import {
   CartesianGrid,
@@ -12,6 +12,7 @@ import {
 } from "recharts";
 
 import { EmptyState } from "@/components/shared/EmptyState";
+import "@/styles/retail-forecast-mobile-v2.css";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -106,6 +107,9 @@ function formatForecastTimestamp(value: string | null | undefined) {
 export function ForecastPage() {
   const [forecastData, setForecastData] = useState<PaginatedForecastProductsResponse | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
+  const mobileListRef = useRef<HTMLElement | null>(null);
+  const mobileDetailsRef = useRef<HTMLElement | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<ProductForecastDetail | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -424,8 +428,18 @@ export function ForecastPage() {
     listLoading || blockingCollectionError || forecastData?.status === "EMPTY";
   const refreshInProgress = forecastData?.isRefreshing === true;
 
+  function openMobileForecast(productId: string) {
+    setSelectedProductId(productId);
+    setMobileDetailOpen(true);
+  }
+
+  useEffect(() => {
+    if (!mobileDetailOpen || !window.matchMedia("(max-width: 699px)").matches) return;
+    mobileDetailsRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
+  }, [mobileDetailOpen, selectedProductId]);
+
   return (
-    <>
+    <div className="ys-forecast-v2" data-mobile-detail={mobileDetailOpen}>
       <PageHeader
         eyebrow="Owner forecast"
         title="Demand Forecast"
@@ -487,7 +501,8 @@ export function ForecastPage() {
         </div>
       ) : null}
 
-      <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr] xl:items-stretch">
+      <section className="ys-forecast-v2-workspace grid gap-4 xl:grid-cols-[0.9fr_1.1fr] xl:items-stretch">
+        <section className="ys-forecast-v2-list" ref={mobileListRef}>
         <ForecastedProductsCard
           categories={categories}
           generatedAt={forecastData?.generatedAt ?? null}
@@ -505,12 +520,20 @@ export function ForecastPage() {
           collectionError={effectiveCollectionError}
           listControlsDisabled={listControlsDisabled}
           onCategoryChange={setSelectedCategory}
-          onProductSelect={setSelectedProductId}
+          onProductSelect={openMobileForecast}
           onProductsPageChange={setProductsPage}
+          onProductsPageSizeChange={(size) => { setProductsPageSize(size); setProductsPage(1); }}
           onSearchChange={setSearchQuery}
           onSortChange={setSortBy}
         />
-
+        </section>
+        <section className="ys-forecast-v2-detail" ref={mobileDetailsRef}>
+          <button className="ys-forecast-v2-back" onClick={() => {
+            setMobileDetailOpen(false);
+            window.requestAnimationFrame(() => mobileListRef.current?.scrollIntoView({ block: "start", behavior: "auto" }));
+          }} type="button">
+            <ChevronLeft aria-hidden="true" className="h-4 w-4" /> Back to products
+          </button>
         <MonthlyForecastCard
           collectionError={effectiveCollectionError}
           detailError={detailError}
@@ -529,8 +552,9 @@ export function ForecastPage() {
           forecastRows={forecastRows}
           product={selectedProduct}
         />
+        </section>
       </section>
-    </>
+    </div>
   );
 }
 
@@ -545,6 +569,7 @@ function ForecastedProductsCard({
   onCategoryChange,
   onProductSelect,
   onProductsPageChange,
+  onProductsPageSizeChange,
   onSearchChange,
   onSortChange,
   pagination,
@@ -566,6 +591,7 @@ function ForecastedProductsCard({
   onCategoryChange: (category: string) => void;
   onProductSelect: (productId: string) => void;
   onProductsPageChange: (page: number) => void;
+  onProductsPageSizeChange: (pageSize: number) => void;
   onSearchChange: (searchQuery: string) => void;
   onSortChange: (sortBy: ForecastSortOption) => void;
   pagination: PaginatedForecastProductsResponse | null;
@@ -577,6 +603,7 @@ function ForecastedProductsCard({
   hasForecastData: boolean;
   listControlsDisabled: boolean;
 }) {
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const generatedLabel = formatForecastTimestamp(generatedAt);
   const subtitle = loading
     ? "Retrieving the latest verified demand forecast."
@@ -589,8 +616,8 @@ function ForecastedProductsCard({
           : "Loading forecast data.";
 
   return (
-    <Card className="flex h-full min-h-0 flex-col">
-      <CardHeader className="shrink-0">
+    <Card className="ys-forecast-v2-list-card flex h-full min-h-0 flex-col">
+      <CardHeader className="ys-forecast-v2-list-heading shrink-0">
         <div className="flex items-start justify-between gap-4">
           <div>
             <CardTitle>Forecasted Products</CardTitle>
@@ -601,21 +628,21 @@ function ForecastedProductsCard({
           </div>
         </div>
 
-        <div className="mt-4 grid gap-3">
-          <label className="relative block" aria-label="Search forecasted products">
+        <div className="ys-forecast-v2-search-container mt-4 grid gap-3">
+          <label className="ys-forecast-v2-search relative block" aria-label="Search forecasted products">
             <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" />
             <input
               aria-label="Search product by name or product ID"
               className="h-10 w-full rounded-md border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-950 outline-none placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
               disabled={listControlsDisabled}
               onChange={(event) => onSearchChange(event.target.value)}
-              placeholder="Search product by name or product ID..."
+              placeholder="Search product"
               value={searchQuery}
             />
           </label>
         </div>
 
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
+        <div className="ys-forecast-v2-desktop-filters mt-3 grid gap-3 md:grid-cols-2">
           <select
             className="ys-retail-select-chevron h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
             disabled={listControlsDisabled}
