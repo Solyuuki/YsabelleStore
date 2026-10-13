@@ -4,6 +4,19 @@
 .ys-receiving-v2-mobile-list,
 .ys-receiving-v2-mobile-items { display: none; }
 .ys-receiving-v2-pagination .ys-inventory-mobile-page-label { display: none; }
+/* The shared Select defaults to a light native popup. Both availability
+   badges and pagination options must retain contrast in dark desktop/mobile. */
+:root.dark .retail-workspace .ys-receiving-v2-pagination select {
+  color-scheme: dark !important;
+  background-color: #273953 !important;
+  border-color: #667d9d !important;
+  color: #f2f5ff !important;
+}
+:root.dark .retail-workspace .ys-receiving-v2-pagination select option {
+  background-color: #233651;
+  color: #f3f6ff;
+}
+
 
 /* Use a readable status palette on both desktop and mobile. */
 .ys-receiving-v2 .ys-receiving-v2-status-badge,
