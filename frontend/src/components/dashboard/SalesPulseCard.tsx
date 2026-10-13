@@ -328,26 +328,37 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                 <div className="ys-sales-mobile-week" aria-label="Sales date navigator">
                   <div className="ys-sales-mobile-week__header">
                     <strong>{formatMonthLabel(month)}</strong>
-                    <button
-                      aria-controls="ys-sales-full-month"
-                      aria-expanded={mobileMonthExpanded}
-                      className="ys-sales-mobile-week__expand"
-                      onClick={() => setMobileMonthExpanded((expanded) => !expanded)}
-                      type="button"
-                    >
-                      {mobileMonthExpanded ? "Hide month" : "View month"}
-                    </button>
+                    <div className="ys-sales-mobile-week__actions">
+                      <button
+                        aria-label="Previous five sales dates"
+                        className="ys-sales-mobile-week__arrow"
+                        disabled={!calendar || mobileWindowStart === 0}
+                        onClick={() => moveMobileWindow(-5)}
+                        type="button"
+                      >
+                        <ChevronLeft aria-hidden="true" size={18} />
+                      </button>
+                      <button
+                        aria-label="Next five sales dates"
+                        className="ys-sales-mobile-week__arrow"
+                        disabled={!calendar || mobileWindowStart >= maxMobileWindowStart}
+                        onClick={() => moveMobileWindow(5)}
+                        type="button"
+                      >
+                        <ChevronRight aria-hidden="true" size={18} />
+                      </button>
+                      <button
+                        aria-controls="ys-sales-full-month"
+                        aria-expanded={mobileMonthExpanded}
+                        className="ys-sales-mobile-week__expand"
+                        onClick={() => setMobileMonthExpanded((expanded) => !expanded)}
+                        type="button"
+                      >
+                        {mobileMonthExpanded ? "Hide month" : "Month"}
+                      </button>
+                    </div>
                   </div>
                   <div className="ys-sales-mobile-week__days">
-                    <button
-                      aria-label="Previous five sales dates"
-                      className="ys-sales-mobile-week__arrow"
-                      disabled={!calendar || mobileWindowStart === 0}
-                      onClick={() => moveMobileWindow(-5)}
-                      type="button"
-                    >
-                      <ChevronLeft aria-hidden="true" size={18} />
-                    </button>
                     {mobileWindowDays.map((day) => (
                       <button
                         aria-label={`Show sales for ${day.date}`}
@@ -366,15 +377,6 @@ export function SalesPulseCard({ isOwner, summary }: SalesPulseCardProps) {
                         )}
                       </button>
                     ))}
-                    <button
-                      aria-label="Next five sales dates"
-                      className="ys-sales-mobile-week__arrow"
-                      disabled={!calendar || mobileWindowStart >= maxMobileWindowStart}
-                      onClick={() => moveMobileWindow(5)}
-                      type="button"
-                    >
-                      <ChevronRight aria-hidden="true" size={18} />
-                    </button>
                   </div>
                   {!calendar ? <p className="ys-sales-mobile-week__loading">Loading sales dates…</p> : null}
                 </div>
