@@ -582,7 +582,7 @@
    Keep the actual scroll containers and touch/keyboard scrolling operational,
    but reclaim the thick native gutter on small embedded phone viewports.
    Portaled navigation and dialogs are outside .retail-workspace. */
-@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+@media (max-width: 1024px) {
   :is(
     .retail-workspace > main[data-retail-module],
     .retail-workspace > main[data-retail-module] *,

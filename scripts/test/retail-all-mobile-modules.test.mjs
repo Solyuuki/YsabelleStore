@@ -135,7 +135,7 @@ test("all mobile retail scroll areas reclaim scrollbar tracks but remain scrolla
   const scrollbarCss = source.css.slice(source.css.indexOf("/* Sprint 12 — mobile retail scrollbar tracks:"));
 
   assert.ok(scrollbarCss.startsWith("/* Sprint 12 — mobile retail scrollbar tracks:"));
-  assert.match(scrollbarCss, /@media \(max-width: 767px\), \(max-height: 500px\) and \(orientation: landscape\) and \(max-width: 1024px\)/);
+  assert.match(scrollbarCss, /@media \(max-width: 1024px\)/);
   assert.match(scrollbarCss, /\.retail-workspace > main\[data-retail-module\]/);
   assert.match(scrollbarCss, /\.retail-workspace > main\[data-retail-module\] \*/);
   assert.match(scrollbarCss, /\.retail-mobile-nav__drawer\[role="dialog"\] \*/);
@@ -153,7 +153,7 @@ test("all mobile retail scroll areas reclaim scrollbar tracks but remain scrolla
 
 test("scrollbar hiding is not applied to desktop or storefront", () => {
   const scrollbarCss = source.css.slice(source.css.indexOf("/* Sprint 12 — mobile retail scrollbar tracks:"));
-  assert.match(scrollbarCss, /^\/\*[\s\S]*?@media \(max-width: 767px\)/);
+  assert.match(scrollbarCss, /^\/\*[\s\S]*?@media \(max-width: 1024px\)/);
   assert.doesNotMatch(scrollbarCss, /:root\s*,|(^|\n)\s*(?:html|body)\s*[{,:]/m);
   assert.doesNotMatch(scrollbarCss, /customer-|storefront-|retail-desktop-sidebar/);
 });
