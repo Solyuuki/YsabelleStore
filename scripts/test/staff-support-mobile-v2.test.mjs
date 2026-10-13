@@ -11,7 +11,7 @@ test("Support mobile has compact tickets and a conversation-first layout", () =>
   assert.match(page, /ys-support-mobile-status-chips/);
   assert.match(page, /ys-support-ticket-avatar/);
   assert.match(page, /ys-support-mobile-chat-header/);
-  assert.match(page, /onBack=\{\(\) => setMobileConversationOpen\(false\)\}/);
+  assert.match(page, /onBack=\{\(\) => \{/);
   assert.match(page, /setMobileConversationOpen\(true\)/);
   assert.match(css, /@media \(max-width: 1024px\)/);
   assert.match(css, /\.ys-support-desktop-conversation-header,/);
@@ -29,6 +29,8 @@ test("Ticket details and status editor are collapsible but operational on mobile
   assert.match(page, /updateStaffSupportTicketStatus\(detail\.id, nextStatus\)/);
   assert.match(page, /nextStatus === "RESOLVED"/);
   assert.match(page, /STATUS_TRANSITIONS\[detail.status\]/);
+  assert.match(page, /mobileConversationOpenRef\.current \|\| result.items.some/);
+  assert.match(page, /onReopen=\{\(\) => void saveStatus\("OPEN"\)\}/);
 });
 test("Closed ticket reopen goes through same status API and outgoing reply uses existing Gmail safeguards", () => {
   assert.match(page, /onReopen=\{\(\) => void saveStatus\("OPEN"\)\}/);
