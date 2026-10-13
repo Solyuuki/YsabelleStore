@@ -57,6 +57,22 @@ export function RetailMobileNavigation({
     setAccountOpen(false);
   }, [activePath]);
 
+  // Dismiss a portaled sheet when the viewport becomes a tablet/desktop;
+  // CSS alone would hide its trigger but leave the overlay on screen.
+  useEffect(() => {
+    const mobileViewport = window.matchMedia(
+      "(max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px)"
+    );
+    const dismissIfDesktop = () => {
+      if (!mobileViewport.matches) {
+        setDrawerOpen(false);
+        setAccountOpen(false);
+      }
+    };
+    mobileViewport.addEventListener("change", dismissIfDesktop);
+    return () => mobileViewport.removeEventListener("change", dismissIfDesktop);
+  }, []);
+
   useEffect(() => {
     if (!accountOpen) return;
 
@@ -152,7 +168,7 @@ export function RetailMobileNavigation({
                   .map((path) => appRoutes.find((item) => item.path === path))
                   .filter(
                     (item): item is (typeof appRoutes)[number] =>
-                      Boolean(item) && item!.allowedRoles.includes(role)
+                      item !== undefined && item.allowedRoles.includes(role)
                   );
                 if (!items.length) return null;
 
