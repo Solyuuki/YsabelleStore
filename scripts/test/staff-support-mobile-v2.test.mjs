@@ -97,7 +97,7 @@ test("Support conversation occupies the actual app workspace rather than using a
   assert.match(responsive, /\.ys-support-inbox\s*\{[^}]*flex: 1 1 auto;\s*height: auto;\s*min-height: 0;/);
   assert.doesNotMatch(responsive, /height:\s*max\(350px,\s*calc\(100dvh - 160px\)\)/);
   assert.match(responsive, /\.ys-support-inbox__conversation\s*\{[^}]*flex: 1 1 auto;/);
-  assert.match(responsive, /\.ys-support-thread\s*\{[^}]*flex: 1 1 auto;\s*min-height: 0;\s*overflow-y: auto;/);
+  assert.match(responsive, /\.ys-support-thread\s*\{[^}]*grid-row: 3;[^}]*min-height: 0;[^}]*overflow-y: auto;/);
   assert.match(responsive, /\.ys-support-mobile-composer\s*\{[^}]*flex: none;/);
 
   const appLayout = read("frontend/src/layouts/AppLayout.tsx");
