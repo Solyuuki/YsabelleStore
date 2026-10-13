@@ -42,6 +42,22 @@ test("System intelligence mobile selector preserves all seven stages and actions
   assert.match(css, /\.about-experience \.system-preview__metrics\s*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
 });
 
+test("phone three-KPI groups fill their two-row grid without an empty fourth slot", () => {
+  const css = read("frontend/src/styles/about-mobile-intelligence.css");
+  const desktop = read("frontend/src/styles/customer.css");
+  const component = read("frontend/src/components/customer/discover/SystemIntelligenceScene.tsx");
+  const phone = css.split("@media (max-width: 700px) {")[1]?.split("@media (max-width: 359px)")[0];
+
+  assert.ok(phone, "Expected scoped phone styles");
+  assert.match(phone, /\.about-experience \.system-preview__metrics\s*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
+  assert.match(phone, /\.about-experience \.system-preview__metrics > \.system-preview__metric:first-child:nth-last-child\(3\)\s*\{\s*grid-column: 1 \/ -1;/);
+  assert.match(desktop, /\.system-preview__metrics\s*\{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/);
+  assert.match(component, /<Metric label="Today's sales" value="₱2,993\.00" note="Demo value" \/>/);
+  assert.match(component, /<Metric label="Transactions" value="3" \/>/);
+  assert.match(component, /<Metric label="Units sold" value="50" \/>/);
+  assert.doesNotMatch(phone, /overflow-x: auto/);
+});
+
 test("Forecast and Delivery show immediately on phones, retaining desktop scroll motion", () => {
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
   const delivery = read("frontend/src/components/customer/about/AboutStorefrontHandoff.tsx");
