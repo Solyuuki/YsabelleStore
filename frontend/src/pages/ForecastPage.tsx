@@ -311,11 +311,15 @@ export function ForecastPage() {
     setProductsPage(1);
   }, [deferredSearchQuery, selectedCategory, sortBy]);
 
+  // Sync only after a server response changes. Do not revert user-initiated
+  // pagination while the previous page's response is still displayed.
   useEffect(() => {
-    if (forecastData && forecastData.page !== productsPage) {
-      setProductsPage(forecastData.page);
+    if (forecastData) {
+      setProductsPage((current) =>
+        current === forecastData.page ? current : forecastData.page
+      );
     }
-  }, [forecastData, productsPage]);
+  }, [forecastData]);
 
   useEffect(() => {
     if (pageProducts.length === 0) {
@@ -1154,7 +1158,7 @@ function MonthlyForecastCard({
             </div>
 
             <div className="ys-forecast-v2-mobile-chart" aria-label="Forecast demand trend">
-              <div className="ys-forecast-v2-chart-heading"><strong>Demand forecast</strong><span>{totalForecastMonths} months</span></div>
+              <div className="ys-forecast-v2-chart-heading"><strong>Demand forecast</strong><span>{mobileForecastRows.length} of {totalForecastMonths} months</span></div>
               <div className="ys-forecast-v2-chart-canvas">
                 <ResponsiveContainer height="100%" width="100%">
                   <LineChart
@@ -1162,8 +1166,8 @@ function MonthlyForecastCard({
                     data={mobileChartData}
                     margin={{ top: 12, right: 10, left: -22, bottom: 2 }}
                     onClick={(state) => {
-                      const index = Number(state?.activeTooltipIndex);
-                      if (Number.isInteger(index) && index >= 0 && index < mobileChartData.length) {
+                      const index = state?.activeTooltipIndex;
+                      if (typeof index === "number" && Number.isInteger(index) && index >= 0 && index < mobileChartData.length) {
                         setMobileSelectedMonth(index);
                       }
                     }}

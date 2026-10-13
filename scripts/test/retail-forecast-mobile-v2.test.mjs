@@ -56,3 +56,12 @@ test("Monthly cards collapse at 3 but allow full real window, keeping desktop ta
   assert.match(page,/comparisonSalesEstimated \? " \(est\.\)" : ""/);
   assert.match(css,/\.ys-forecast-v2-summary-metrics\s*\{[\s\S]*?grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/);
 });
+
+test("Forecast paging responds to user clicks without reverting to stale API page", () => {
+  assert.match(page, /setProductsPage\(\(current\) =>\s*current === forecastData\.page \? current : forecastData\.page/);
+  assert.match(page, /\}, \[forecastData\]\);/);
+  assert.doesNotMatch(page, /forecastData\.page !== productsPage/);
+  assert.match(page, /onProductsPageSizeChange=\{\(size\) => \{ setProductsPageSize\(size\); setProductsPage\(1\); \}\}/);
+  assert.match(page, /const index = state\?\.activeTooltipIndex;/);
+  assert.match(page, /typeof index === "number" && Number\.isInteger\(index\)/);
+});
