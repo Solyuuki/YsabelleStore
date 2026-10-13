@@ -418,13 +418,9 @@ export function DeliveriesPage() {
               }}
             >
               <div className="relative min-w-0 flex-1">
-                <Search
-                  aria-hidden="true"
-                  className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-                />
                 <Input
                   aria-label="Search by ticket, order, customer, or phone"
-                  className="pl-9"
+                  className="px-3"
                   onChange={(event) => setSearchInput(event.target.value)}
                   placeholder="Find ticket"
                   value={searchInput}
@@ -823,10 +819,10 @@ export function DeliveriesPage() {
                       <Input
                         maxLength={120}
                         onChange={(event) => setCourierReference(event.target.value)}
-                        placeholder="e.g. rider mobile, booking ID, plate number"
+                        placeholder="Phone, ID or plate"
                         value={courierReference}
                       />
-                      <span className="text-xs font-normal leading-5 text-slate-500 dark:text-slate-300">
+                      <span className="ys-delivery-rider-helper text-xs font-normal leading-5 text-slate-500 dark:text-slate-300">
                         Add the rider phone number or app booking ID when available so the handoff
                         can be verified.
                       </span>
