@@ -338,6 +338,13 @@
     gap: 0.42rem;
   }
 
+  /* Exactly three KPIs: feature the first metric across both columns,
+     then show the remaining two side by side. No empty fourth grid slot.
+     :nth-last-child(3) targets only groups of three; other stages stay intact. */
+  .about-experience .system-preview__metrics > .system-preview__metric:first-child:nth-last-child(3) {
+    grid-column: 1 / -1;
+  }
+
   .about-experience .system-preview__metric {
     min-width: 0;
     padding: 0.55rem;
