@@ -2,6 +2,7 @@ import { LoaderCircle, RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { AppPagination } from "@/components/shared/AppPagination";
+import "@/styles/receiving-return-history-mobile.css";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -86,7 +87,7 @@ export function ReturnHistoryDialog({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="ys-report-modal max-h-[82vh] max-w-[920px] grid-rows-[auto_minmax(0,1fr)] gap-0">
+      <DialogContent className="ys-report-modal ys-receiving-return-history-dialog max-h-[82vh] max-w-[920px] grid-rows-[auto_minmax(0,1fr)] gap-0">
         <DialogHeader className="border-b border-slate-200 px-6 py-5">
           <div className="flex items-center gap-2">
             <RotateCcw aria-hidden="true" className="h-5 w-5 text-amber-600" />
@@ -97,7 +98,7 @@ export function ReturnHistoryDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="min-h-0 overflow-y-auto p-6">
+        <div className="ys-receiving-return-history-body min-h-0 overflow-y-auto p-6">
           {error ? (
             <Alert variant="destructive">
               <AlertTitle>Return history needs attention</AlertTitle>
@@ -163,7 +164,8 @@ export function ReturnHistoryDialog({
 
           {meta.totalItems > 0 ? (
             <AppPagination
-              className="mt-4"
+              className="ys-receiving-return-pagination mt-4"
+              mobileCompact
               isLoading={loading}
               itemLabel="return reports"
               onPageChange={setPage}
