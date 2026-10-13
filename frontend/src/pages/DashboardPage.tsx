@@ -30,6 +30,7 @@ import {
   type DashboardSummary
 } from "@/services/dashboardApi";
 import { getWorkstationPreferences } from "@/services/workstationPreferences";
+import "@/styles/retail-dashboard-mobile.css";
 
 const currencyFormatter = new Intl.NumberFormat("en-PH", {
   currency: "PHP",
