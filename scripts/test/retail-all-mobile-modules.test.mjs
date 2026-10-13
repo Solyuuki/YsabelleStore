@@ -139,6 +139,7 @@ test("all mobile retail scroll areas reclaim scrollbar tracks but remain scrolla
   assert.match(scrollbarCss, /\.retail-workspace > main\[data-retail-module\]/);
   assert.match(scrollbarCss, /\.retail-workspace > main\[data-retail-module\] \*/);
   assert.match(scrollbarCss, /\.retail-mobile-nav__drawer\[role="dialog"\] \*/);
+  assert.match(scrollbarCss, /\.app-shell-ambient > \.retail-desktop-sidebar \*/);
   assert.match(scrollbarCss, /:root\[data-appearance-scope="retail"\] \[role="dialog"\] \*/);
   assert.match(scrollbarCss, /\[data-radix-popper-content-wrapper\] \*/);
   assert.match(scrollbarCss, /scrollbar-width: none !important;/);
@@ -155,5 +156,5 @@ test("scrollbar hiding is not applied to desktop or storefront", () => {
   const scrollbarCss = source.css.slice(source.css.indexOf("/* Sprint 12 — mobile retail scrollbar tracks:"));
   assert.match(scrollbarCss, /^\/\*[\s\S]*?@media \(max-width: 1024px\)/);
   assert.doesNotMatch(scrollbarCss, /:root\s*,|(^|\n)\s*(?:html|body)\s*[{,:]/m);
-  assert.doesNotMatch(scrollbarCss, /customer-|storefront-|retail-desktop-sidebar/);
+  assert.doesNotMatch(scrollbarCss, /customer-|storefront-/);
 });

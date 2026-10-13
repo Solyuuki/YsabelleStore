@@ -586,6 +586,8 @@
   :is(
     .retail-workspace > main[data-retail-module],
     .retail-workspace > main[data-retail-module] *,
+    .app-shell-ambient > .retail-desktop-sidebar,
+    .app-shell-ambient > .retail-desktop-sidebar *,
     .retail-mobile-nav__drawer[role="dialog"],
     .retail-mobile-nav__drawer[role="dialog"] *,
     :root[data-appearance-scope="retail"] [role="dialog"],
@@ -601,6 +603,8 @@
   :is(
     .retail-workspace > main[data-retail-module],
     .retail-workspace > main[data-retail-module] *,
+    .app-shell-ambient > .retail-desktop-sidebar,
+    .app-shell-ambient > .retail-desktop-sidebar *,
     .retail-mobile-nav__drawer[role="dialog"],
     .retail-mobile-nav__drawer[role="dialog"] *,
     :root[data-appearance-scope="retail"] [role="dialog"],
