@@ -7,6 +7,12 @@
 .ys-forecast-v2-mobile-breakdown,
 .ys-forecast-v2-back { display: none; }
 
+/* Recharts' 100%-height container needs a definite parent height;
+   min-height alone does not establish one. Keep the desktop graph visible. */
+.ys-forecast-v2-desktop-chart > .ys-forecast-chart {
+  height: 20rem;
+}
+
 @media (max-width: 699px) {
   .retail-workspace .ys-forecast-v2,
   .retail-workspace .ys-forecast-v2-workspace,

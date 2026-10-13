@@ -65,3 +65,10 @@ test("Forecast paging responds to user clicks without reverting to stale API pag
   assert.match(page, /const index = state\?\.activeTooltipIndex;/);
   assert.match(page, /typeof index === "number" && Number\.isInteger\(index\)/);
 });
+
+test("Desktop chart keeps a measurable Recharts canvas and existing theme contract", () => {
+  assert.match(page, /className="ys-forecast-chart min-h-\\[20rem\\] flex-1"/);
+  assert.match(css, /\\.ys-forecast-v2-desktop-chart > \\.ys-forecast-chart \\{\\s*height: 20rem;/);
+  assert.match(page, /<ResponsiveContainer height="100%" width="100%">/);
+  assert.match(css, /\\.ys-forecast-v2-desktop-chart,\\s*\\.retail-workspace \\.ys-forecast-v2 \\.ys-forecast-v2-desktop-monthly \\{ display: none; \\}/);
+});
