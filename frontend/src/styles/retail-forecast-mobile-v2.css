@@ -305,3 +305,13 @@
   .retail-workspace .ys-forecast-v2 .ys-forecast-v2-metric { padding: 0.4rem; }
   .retail-workspace .ys-forecast-v2 .ys-forecast-v2-metric > p:nth-child(2) { font-size: 0.74rem; }
 }
+
+/* Preserve semantic positive/negative deltas in dark mode. */
+@media (max-width: 699px) {
+  :root.dark .retail-workspace .ys-forecast-v2 .ys-forecast-v2-product-metrics strong.text-emerald-700,
+  :root.dark .retail-workspace .ys-forecast-v2 .ys-forecast-v2-month-heading > span.text-emerald-700,
+  :root.dark .retail-workspace .ys-forecast-v2 .ys-forecast-v2-selected-title > span.text-emerald-700 { color: #a9ecd3; }
+  :root.dark .retail-workspace .ys-forecast-v2 .ys-forecast-v2-product-metrics strong.text-red-700,
+  :root.dark .retail-workspace .ys-forecast-v2 .ys-forecast-v2-month-heading > span.text-red-700,
+  :root.dark .retail-workspace .ys-forecast-v2 .ys-forecast-v2-selected-title > span.text-red-700 { color: #ffc2ca; }
+}

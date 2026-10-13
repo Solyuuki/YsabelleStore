@@ -40,7 +40,8 @@ test("Mobile chart uses real points, never hover popup and provides touch+keyboa
   assert.match(page,/const mobileForecastRows = visibleForecastRows\.slice\(0, 4\);/);
   assert.match(page,/const mobileChartData = buildChartData\(mobileForecastRows\);/);
   assert.match(page,/<Tooltip active=\{false\} \/>/);
-  assert.match(page,/onClick=\{\(_, index\) => setMobileSelectedMonth\(index\)\}/);
+  assert.match(page,/state\?\.activeTooltipIndex/);
+  assert.match(page,/setMobileSelectedMonth\(index\)/);
   assert.match(page,/aria-pressed=\{index === mobileSelectedMonth\}/);
   assert.match(page,/aria-live="polite"/);
   assert.match(page,/mobileMonthPoint\.comparisonSalesEstimated/);

@@ -1125,7 +1125,8 @@ function MonthlyForecastCard({
               </div>
             ) : null}
 
-            <div className="ys-forecast-v2-desktop-chart ys-forecast-chart min-h-[20rem] flex-1">
+            <div className="ys-forecast-v2-desktop-chart">
+            <div className="ys-forecast-chart min-h-[20rem] flex-1">
               <ResponsiveContainer height="100%" width="100%">
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -1150,7 +1151,7 @@ function MonthlyForecastCard({
                 </LineChart>
               </ResponsiveContainer>
             </div>
-
+            </div>
 
             <div className="ys-forecast-v2-mobile-chart" aria-label="Forecast demand trend">
               <div className="ys-forecast-v2-chart-heading"><strong>Demand forecast</strong><span>{totalForecastMonths} months</span></div>
@@ -1178,7 +1179,6 @@ function MonthlyForecastCard({
                       dot={{ r: 4, fill: "#8883ff" }}
                       activeDot={{ r: 5 }}
                       isAnimationActive={false}
-                      onClick={(_, index) => setMobileSelectedMonth(index)}
                     />
                     <Line
                       connectNulls={false}
@@ -1187,7 +1187,6 @@ function MonthlyForecastCard({
                       strokeWidth={2}
                       dot={{ r: 3, fill: "#34c6a0" }}
                       isAnimationActive={false}
-                      onClick={(_, index) => setMobileSelectedMonth(index)}
                     />
                   </LineChart>
                 </ResponsiveContainer>
