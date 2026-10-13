@@ -94,7 +94,7 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
       try {
         // ZXing decodes EAN, UPC, Code 128, and other retail 1D barcodes on
         // both Android and iOS, including browsers without BarcodeDetector.
-        const reader = new BrowserMultiFormatReader(HINTS, 180);
+        const reader = new BrowserMultiFormatReader(HINTS, { delayBetweenScanAttempts: 180, delayBetweenScanSuccess: 220 });
         const constraints: MediaStreamConstraints = {
           audio: false,
           video: {
@@ -133,7 +133,7 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
               max: capabilities.zoom.max,
               step: capabilities.zoom.step || 0.5
             });
-            setZoom(track.getSettings().zoom ?? capabilities.zoom.min);
+            setZoom((track.getSettings() as MediaTrackSettings & { zoom?: number }).zoom ?? capabilities.zoom.min);
           }
           if (capabilities?.focusMode?.includes("continuous")) {
             void track.applyConstraints({
