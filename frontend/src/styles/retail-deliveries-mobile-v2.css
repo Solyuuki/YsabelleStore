@@ -1,4 +1,9 @@
 /* Sprint 12 Deliveries: phone density and status contrast. */
+.ys-delivery-ticket-header { position: relative; padding-right: 3.5rem; }
+.ys-delivery-ticket-close {
+  position: absolute; top: .85rem; right: 1rem; z-index: 3;
+  min-width: 40px; min-height: 40px;
+}
 .ys-delivery-filter-fields { display: contents; }
 .ys-delivery-filter-toggle, .ys-delivery-filter-reset, .ys-delivery-filter-field > span, .ys-delivery-search-submit-icon { display: none; }
 .ys-delivery-status-badge { max-width: 100%; white-space: normal; line-height: 1.35; overflow-wrap: anywhere; }
