@@ -61,6 +61,7 @@
   }
 
   .app-shell-ambient .retail-mobile-nav__icon-button:focus-visible,
+  .app-shell-ambient .retail-mobile-nav__account-action:focus-visible,
   .retail-mobile-nav__drawer button:focus-visible {
     outline: 3px solid #998cff;
     outline-offset: 2px;
