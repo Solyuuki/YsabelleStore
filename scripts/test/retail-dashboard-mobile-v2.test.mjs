@@ -33,9 +33,9 @@ test("Sales Pulse on phones retains four genuine metrics with legible non-trunca
   }
   assert.match(pulse, /ys-sales-summary-grid grid gap-3 sm:grid-cols-2/);
   assert.match(pulse, /ys-sales-summary-tile__value/);
-  assert.doesNotMatch(pulse, /mt-1 truncate text-lg font-semibold/);
+  assert.match(pulse, /ys-sales-summary-tile__value mt-1 truncate text-lg/);
   assert.match(mobile, /\.ys-sales-summary-grid\s*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
-  assert.match(mobile, /\.ys-sales-summary-tile__value\s*\{[^}]*overflow-wrap: anywhere;/);
+  assert.match(mobile, /\.ys-sales-summary-tile__value\s*\{[^}]*white-space: normal;[^}]*overflow-wrap: anywhere;/);
   assert.match(mobile, /\.ys-sales-view-tab\s*\{[^}]*min-height: 44px;/);
   assert.match(pulse, /fetchDashboardSalesCalendar\(activeMonth\)/);
   assert.match(pulse, /fetchDashboardSalesDay\(selectedDate\)/);
@@ -68,9 +68,10 @@ test("Performance day chart stays informative when activity is zero or phone lab
   assert.match(pulse, /chartData\.every\(\(bucket\) => bucket\.amount === 0\)/);
   assert.match(pulse, /No completed sales in these two-hour windows\./);
   assert.match(pulse, /data-mobile-empty=\{noHourlyActivity\}/);
-  assert.match(pulse, /interval="preserveStartEnd"/);
+  assert.match(pulse, /interval=\{compactChartAxis \? "preserveStartEnd" : 1\}/);
   assert.match(pulse, /minTickGap=\{12\}/);
-  assert.match(pulse, /tickFormatter=\{\(label\) => formatHourAxisTick\(String\(label\)\)\}/);
+  assert.match(pulse, /window\.matchMedia\(/);
+  assert.match(pulse, /tickFormatter=\{compactChartAxis \? \(label\) => formatHourAxisTick\(String\(label\)\) : undefined\}/);
   assert.match(mobile, /\.ys-sales-hourly-chart\s*\{[^}]*height: 150px;/);
   assert.match(mobile, /\.ys-sales-hourly-chart\[data-mobile-empty="true"\] \.ys-sales-hourly-chart__plot\s*\{\s*display: none;/);
   assert.match(pulse, /Daily POS history is not available for this date/);
