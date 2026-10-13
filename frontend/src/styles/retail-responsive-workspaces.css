@@ -163,6 +163,33 @@
     white-space: normal;
   }
 
+  .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-toggle {
+    display: inline-flex;
+    box-sizing: border-box;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.95rem;
+    border: 1px solid #a8a2e7;
+    border-radius: 0.75rem;
+    background: #efedff;
+    color: #5048a8;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar[data-mobile-filters-open="false"] .ys-inventory-filter {
+    display: none;
+  }
+
+  :root.dark .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-toggle {
+    border-color: #7870b8;
+    background: #343158;
+    color: #e2dcff;
+  }
+
   .retail-workspace [data-retail-module="inventory"] .ys-inventory-search {
     width: 100%;
     min-width: 0;
@@ -540,6 +567,10 @@
 /* In larger viewports the mobile cart affordance and support back action
    never appear; original POS cart and support split-pane remain intact. */
 @media (min-width: 768px) and (min-height: 501px) {
+  .retail-inventory-filter-toggle {
+    display: none;
+  }
+
   .retail-pos-cart__toggle,
   .retail-pos-cart__backdrop,
   .ys-support-inbox__mobile-back {
