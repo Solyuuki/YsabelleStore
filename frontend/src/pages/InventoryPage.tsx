@@ -777,6 +777,8 @@ export function InventoryPage() {
 
           {meta && meta.totalItems > 0 ? (
             <AppPagination
+              className="ys-inventory-pagination"
+              mobileCompact
               isLoading={isLoading}
               itemLabel="inventory records"
               page={page}
@@ -1291,7 +1293,7 @@ function StockInDialog({
     >
       <DialogContent
         aria-describedby="stock-in-description"
-        className="ys-inventory-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
+        className="ys-inventory-modal ys-stock-receive-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
           <DialogClose asChild>
@@ -1314,7 +1316,7 @@ function StockInDialog({
         </DialogHeader>
         <form
           id="stock-in-form"
-          className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5"
+          className="ys-stock-dialog-form min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5"
           onSubmit={(event) => void submit(event)}
         >
           <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3.5">
@@ -1342,7 +1344,7 @@ function StockInDialog({
                   Count the units that physically arrived.
                 </p>
               </div>
-              <div className="flex items-center gap-1.5" aria-label="Quick quantity additions">
+              <div className="ys-stock-quick-additions flex items-center gap-1.5" aria-label="Quick quantity additions">
                 {[5, 10, 25].map((amount) => (
                   <Button
                     key={amount}
@@ -1357,7 +1359,7 @@ function StockInDialog({
                 ))}
               </div>
             </div>
-            <div className="grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-2">
+            <div className="ys-stock-quantity-stepper grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-2">
               <Button
                 aria-label="Decrease received quantity"
                 disabled={pending || validQuantity <= 1}
@@ -1395,7 +1397,7 @@ function StockInDialog({
               </Button>
             </div>
 
-            <div className="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-center">
+            <div className="ys-stock-math ys-stock-receipt-math grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-center">
               <div>
                 <p className="text-xs font-medium text-slate-500">Current</p>
                 <p className="mt-1 text-lg font-semibold tabular-nums text-slate-950">
@@ -1423,7 +1425,7 @@ function StockInDialog({
             </div>
           </section>
 
-          <section className="space-y-4 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
+          <section className="ys-stock-batch-panel space-y-4 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
             <div className="flex items-center gap-2">
               <Tag className="h-4 w-4 text-slate-500" aria-hidden="true" />
               <div>
@@ -1612,7 +1614,7 @@ function StockAdjustmentDialog({
     >
       <DialogContent
         aria-describedby="stock-adjustment-description"
-        className="ys-inventory-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
+        className="ys-inventory-modal ys-stock-adjust-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
           <DialogClose asChild>
@@ -1635,7 +1637,7 @@ function StockAdjustmentDialog({
         </DialogHeader>
         <form
           id="stock-adjustment-form"
-          className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5"
+          className="ys-stock-dialog-form min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5"
           onSubmit={(event) => void submit(event)}
         >
           <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
@@ -1690,7 +1692,7 @@ function StockAdjustmentDialog({
 
           <div className="space-y-2">
             <Label htmlFor="adjustment-quantity">Quantity</Label>
-            <div className="grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-2">
+            <div className="ys-stock-quantity-stepper grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-2">
               <Button
                 aria-label="Decrease adjustment quantity"
                 disabled={pending || validQuantity <= 1}
@@ -1726,7 +1728,7 @@ function StockAdjustmentDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-center">
+          <div className="ys-stock-math ys-stock-adjust-math grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-center">
             <div>
               <p className="text-xs font-medium text-slate-500">Current</p>
               <p className="mt-1 text-xl font-semibold tabular-nums text-slate-950">
@@ -1746,7 +1748,7 @@ function StockAdjustmentDialog({
 
           <div className="space-y-2.5">
             <Label>Reason</Label>
-            <div className="flex flex-wrap gap-2">
+            <div className="ys-stock-reason-options flex flex-wrap gap-2">
               {adjustmentReasonOptions.map((option) => {
                 const selected = reasonPreset === option.value;
                 return (
