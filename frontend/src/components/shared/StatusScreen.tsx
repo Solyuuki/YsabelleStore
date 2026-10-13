@@ -97,7 +97,7 @@ export function StatusScreen({
   }, []);
 
   const actions = (
-    <div className="auth-footer-enter mt-7 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+    <div className="status-screen__actions auth-footer-enter mt-7 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
       {primaryAction ? (
         <Button
           className="status-screen__primary-action h-11 min-w-36 px-5"
@@ -130,6 +130,7 @@ export function StatusScreen({
       aria-modal={critical ? true : undefined}
       className="status-screen auth-page-enter fixed inset-0 z-[110] flex min-h-dvh flex-col overflow-y-auto bg-[#F7F9FF] text-[#101426]"
       data-status-screen
+      data-status-code={statusLabel}
       data-status-theme={statusTheme}
       data-status-variant={variant}
       ref={containerRef}
@@ -172,7 +173,7 @@ export function StatusScreen({
 
       {variant === "navigation" ? (
         <main className="status-screen-main relative z-10 flex flex-1 items-center justify-center px-5 sm:px-8">
-          <div className="auth-hero-enter w-full max-w-2xl text-center">
+          <div className="status-screen__content auth-hero-enter w-full max-w-2xl text-center">
             <StatusIllustration statusLabel={statusLabel} variant={variant} />
             <p
               aria-hidden="true"
@@ -205,7 +206,7 @@ export function StatusScreen({
 
       {variant === "auth" ? (
         <main className="status-screen-main relative z-10 flex flex-1 items-center justify-center px-5 sm:px-8">
-          <div className="auth-hero-enter w-full max-w-xl text-center">
+          <div className="status-screen__content auth-hero-enter w-full max-w-xl text-center">
             <StatusIllustration statusLabel={statusLabel} variant={variant} />
             <div className="status-screen__code-badge mt-4 inline-flex items-center rounded-full border border-indigo-100/80 bg-white/80 px-3.5 py-1.5 text-xs font-bold tracking-[0.14em] text-indigo-700 shadow-sm backdrop-blur-xl">
               {statusLabel}
@@ -235,7 +236,7 @@ export function StatusScreen({
 
       {variant === "system" ? (
         <main className="status-screen-main status-screen-main--system relative z-10 flex flex-1 items-center justify-center px-5 sm:px-8">
-          <div className="auth-hero-enter w-full max-w-xl text-center">
+          <div className="status-screen__content auth-hero-enter w-full max-w-xl text-center">
             <div className="status-screen__system-illustration">
               <StatusIllustration statusLabel={statusLabel} variant={variant} />
             </div>
