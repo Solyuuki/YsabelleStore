@@ -30,6 +30,7 @@ import { checkoutPosSale, searchPosProducts } from "@/services/posService";
 import type { PosProduct, PosSale } from "@/types/pos";
 import { buildRetailReceiptDataFromSale } from "@/utils/receipt";
 import { wait } from "@/utils/timing";
+import "@/styles/retail-pos-mobile-scanner.css";
 
 type CartLine = {
   product: PosProduct;
