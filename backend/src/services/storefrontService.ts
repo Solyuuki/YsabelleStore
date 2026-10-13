@@ -288,9 +288,17 @@ function serializeStorefrontOrder(order: StorefrontOrderRecord) {
     paymentMethod: order.paymentMethod,
     paymentStatus: order.paymentStatus,
     deliveryStatus: order.deliveryStatus,
-    courierProvider: order.courierProvider,
-    courierReference: order.courierReference,
-    deliveryNotes: order.deliveryNotes,
+    // Never return draft handoff data or internal staff notes to customer sessions.
+    courierProvider: ["OUT_FOR_DELIVERY", "DELIVERED"].includes(order.deliveryStatus)
+      ? order.courierProvider : null,
+    courierReference: ["OUT_FOR_DELIVERY", "DELIVERED"].includes(order.deliveryStatus)
+      ? order.courierReference : null,
+    riderName: ["OUT_FOR_DELIVERY", "DELIVERED"].includes(order.deliveryStatus)
+      ? order.riderName : null,
+    riderPhone: ["OUT_FOR_DELIVERY", "DELIVERED"].includes(order.deliveryStatus)
+      ? order.riderPhone : null,
+    customerDeliveryNote: ["OUT_FOR_DELIVERY", "DELIVERED"].includes(order.deliveryStatus)
+      ? order.customerDeliveryNote : null,
     dispatchedAt: order.dispatchedAt,
     deliveredAt: order.deliveredAt,
     customerConfirmedAt: order.customerConfirmedAt,

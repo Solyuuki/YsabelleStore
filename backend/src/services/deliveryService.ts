@@ -16,6 +16,7 @@ import { HttpError } from "../utils/httpError.js";
 import type {
   CodSettlementInput,
   DeliveryListQuery,
+  DeliveryHandoffDraftInput,
   DeliveryTransitionInput
 } from "../validators/delivery.validators.js";
 import {
@@ -133,6 +134,9 @@ export function serializeDeliveryOrder(order: DeliveryOrderRecord) {
     deliveryStatusLabel: deliveryStatusLabel(order.deliveryStatus),
     courierProvider: order.courierProvider,
     courierReference: order.courierReference,
+    riderName: order.riderName,
+    riderPhone: order.riderPhone,
+    customerDeliveryNote: order.customerDeliveryNote,
     deliveryNotes: order.deliveryNotes,
     dispatchedAt: order.dispatchedAt,
     deliveredAt: order.deliveredAt,
@@ -410,6 +414,41 @@ export async function getDeliveryTicket(orderId: string) {
   return serializeDeliveryOrder(await findDeliveryOrder(prisma, orderId));
 }
 
+/* Accept a local Philippine mobile number or +63 format, formatted or compact. */
+export function normalizeRiderPhone(value: string | null | undefined): string | null {
+  const normalized = (value ?? "").replace(/[\s()-]/g, "");
+  return /^(?:09\d{9}|\+639\d{9})$/.test(normalized) ? normalized : null;
+}
+
+export async function saveDeliveryHandoffDraft(orderId: string, input: DeliveryHandoffDraftInput) {
+  return prisma.$transaction(async (tx) => {
+    const order = await findDeliveryOrder(tx, orderId);
+    if (!["ORDER_PLACED", "PREPARING", "READY_FOR_DELIVERY", "DELIVERY_FAILED"].includes(order.deliveryStatus)) {
+      throw new HttpError(409, "Dispatch details can only be edited before the rider leaves.", {
+        code: "DELIVERY_HANDOFF_LOCKED"
+      });
+    }
+    const phone = input.riderPhone?.trim() ? normalizeRiderPhone(input.riderPhone) : null;
+    if (input.riderPhone?.trim() && !phone) {
+      throw new HttpError(400, "Enter a valid Philippine mobile number for the rider.", {
+        code: "INVALID_RIDER_PHONE"
+      });
+    }
+    await tx.customerOrder.update({
+      where: { id: order.id },
+      data: {
+        courierProvider: input.courierProvider?.trim() || null,
+        courierReference: input.courierReference?.trim() || null,
+        riderName: input.riderName?.trim() || null,
+        riderPhone: phone,
+        customerDeliveryNote: input.customerDeliveryNote?.trim() || null,
+        deliveryNotes: input.note?.trim() || null
+      }
+    });
+    return serializeDeliveryOrder(await findDeliveryOrder(tx, order.id));
+  });
+}
+
 export async function updateDeliveryStatus(
   orderId: string,
   actorUserId: string,
@@ -465,9 +504,16 @@ export async function updateDeliveryStatus(
       }
 
       const courierProvider = input.courierProvider?.trim() || order.courierProvider;
+      const riderPhoneInput = input.riderPhone?.trim() || order.riderPhone;
+      const riderPhone = normalizeRiderPhone(riderPhoneInput);
       if (target === CustomerDeliveryStatus.OUT_FOR_DELIVERY && !courierProvider) {
         throw new HttpError(400, "Choose the courier or delivery service before dispatch.", {
           code: "DELIVERY_COURIER_REQUIRED"
+        });
+      }
+      if (target === CustomerDeliveryStatus.OUT_FOR_DELIVERY && !riderPhone) {
+        throw new HttpError(400, "A valid rider phone number is required before dispatch.", {
+          code: "DELIVERY_RIDER_PHONE_REQUIRED"
         });
       }
 
@@ -479,6 +525,13 @@ export async function updateDeliveryStatus(
         data: {
           courierProvider: courierProvider ?? null,
           courierReference: input.courierReference?.trim() || order.courierReference,
+          ...(target === CustomerDeliveryStatus.OUT_FOR_DELIVERY
+            ? {
+                riderName: input.riderName?.trim() || order.riderName,
+                riderPhone,
+                customerDeliveryNote: input.customerDeliveryNote?.trim() || order.customerDeliveryNote
+              }
+            : {}),
           deliveryNotes: input.note?.trim() || order.deliveryNotes,
           deliveryStatus: target,
           dispatchedAt:
