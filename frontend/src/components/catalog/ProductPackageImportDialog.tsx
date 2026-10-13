@@ -268,6 +268,7 @@ export function ProductPackageImportDialog({
               <Button
                 aria-expanded={showGuide}
                 aria-controls="product-package-guide"
+                aria-label={showGuide ? "Hide product import guide" : "Show product import guide"}
                 className="h-7 gap-1.5 rounded-full px-2.5 text-xs"
                 disabled={isBusy}
                 onClick={() => setShowGuide((current) => !current)}
@@ -366,7 +367,7 @@ export function ProductPackageImportDialog({
 
             <div className="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
               <Button
-                className="justify-center"
+                className="ys-products-v2-source-tab justify-center"
                 disabled={isBusy}
                 onClick={() => {
                   setSource("LOCAL");
@@ -379,10 +380,10 @@ export function ProductPackageImportDialog({
                 variant={source === "LOCAL" ? "default" : "ghost"}
               >
                 <HardDrive className="h-4 w-4" aria-hidden="true" />
-                Local package
+                <span className="ys-products-v2-local-label">Local package</span>
               </Button>
               <Button
-                className="justify-center"
+                className="ys-products-v2-source-tab justify-center"
                 disabled={isBusy}
                 onClick={() => {
                   setSource("GOOGLE_DRIVE");

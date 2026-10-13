@@ -62,3 +62,12 @@ test("Desktop catalog override selectors still target actual Products v2 section
   assert.match(css, /\.ys-products-v2-page > header > div:first-child > p\s*\{\s*display: none;/);
   assert.match(css, /\.ys-products-v2-import-heading button\s*\{[^}]*position: absolute;/);
 });
+
+test("Compact status and import source controls have accessible names and accurate availability colors", () => {
+  assert.match(page,/data-available=\{product.status === "ACTIVE"\}/);
+  assert.match(css,/\.ys-products-v2-product-availability\[data-available="false"\]/);
+  assert.match(pkg,/aria-label=\{showGuide \? "Hide product import guide" : "Show product import guide"\}/);
+  assert.match(pkg,/ys-products-v2-source-tab/);
+  assert.match(pkg,/ys-products-v2-local-label/);
+  assert.match(css,/\.ys-products-v2-local-label::after \{ content: "Local file";/);
+});

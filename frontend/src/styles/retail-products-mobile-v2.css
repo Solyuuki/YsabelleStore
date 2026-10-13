@@ -112,6 +112,8 @@
   .retail-workspace .ys-products-v2-page .ys-products-v2-product-price {
     white-space: nowrap; color: #192d46; font-size: .83rem; font-weight: 800; font-variant-numeric: tabular-nums;
   }
+  .retail-workspace .ys-products-v2-page .ys-products-v2-product-availability[data-available="false"] { color: #87551c; }
+  :root.dark .retail-workspace .ys-products-v2-page .ys-products-v2-product-availability[data-available="false"] { color: #f1c78a; }
   .retail-workspace .ys-products-v2-page .ys-products-v2-availability-action {
     display: grid; flex: none; place-items: center; width: 38px; height: 38px;
     border: 1px solid #a6b6ce; border-radius: .55rem; background: #edf2fa; color: #2e425c;
@@ -221,6 +223,12 @@
     font-size: .75rem;
   }
   [role="dialog"].ys-product-package-modal .ys-products-v2-guide-text { display: none; }
+  [role="dialog"].ys-product-package-modal .ys-products-v2-source-tab {
+    min-width: 0; min-height: 44px; gap: .35rem; padding-inline: .4rem;
+    font-size: .73rem;
+  }
+  [role="dialog"].ys-product-package-modal .ys-products-v2-local-label { font-size: 0; }
+  [role="dialog"].ys-product-package-modal .ys-products-v2-local-label::after { content: "Local file"; font-size: .73rem; }
   [role="dialog"].ys-product-package-modal .ys-products-v2-import-description {
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     font-size: .76rem; line-height: 1.35; color: #566882;

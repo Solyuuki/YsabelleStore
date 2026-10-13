@@ -1173,7 +1173,7 @@ export function ProductsPage({
                               <ChevronRight className="ys-products-v2-product-chevron h-4 w-4" aria-hidden="true" />
                             </button>
                             <div className="ys-products-v2-product-bottom">
-                              <span className="ys-products-v2-product-availability">
+                              <span className="ys-products-v2-product-availability" data-available={product.status === "ACTIVE"}>
                                 <PackageCheck className="h-3.5 w-3.5" aria-hidden="true" />
                                 {getProductStatusLabel(product.status)}
                               </span>
