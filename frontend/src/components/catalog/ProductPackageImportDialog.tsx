@@ -249,11 +249,11 @@ export function ProductPackageImportDialog({
           triggerRef?.current?.focus();
         }}
       >
-        <DialogHeader className="relative border-b border-slate-200 px-6 py-6 pr-14">
+        <DialogHeader className="ys-products-v2-import-header relative border-b border-slate-200 px-6 py-6 pr-14">
           <DialogClose asChild>
             <Button
               aria-label="Close product package import"
-              className="absolute right-4 top-4"
+              className="ys-products-v2-import-close absolute right-4 top-4"
               disabled={isBusy}
               size="icon"
               type="button"
@@ -263,7 +263,7 @@ export function ProductPackageImportDialog({
             </Button>
           </DialogClose>
           <div className="space-y-2">
-            <div className="flex items-center gap-3">
+            <div className="ys-products-v2-import-heading flex items-center gap-3">
               <DialogTitle>Import products</DialogTitle>
               <Button
                 aria-expanded={showGuide}
@@ -280,10 +280,10 @@ export function ProductPackageImportDialog({
                 >
                   ?
                 </span>
-                Guide
+                <span className="ys-products-v2-guide-text">Guide</span>
               </Button>
             </div>
-            <DialogDescription id="product-package-import-description" className="max-w-prose">
+            <DialogDescription id="product-package-import-description" className="ys-products-v2-import-description max-w-prose">
               Import a product package from your computer or Google Drive. The system scans folders,
               validates catalog data, matches product images, and rejects blocking issues before
               import.
@@ -291,7 +291,7 @@ export function ProductPackageImportDialog({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        <div className="ys-products-v2-import-body flex-1 overflow-y-auto px-6 py-5">
           <div className="space-y-5">
             {showGuide ? (
               <section
@@ -410,7 +410,7 @@ export function ProductPackageImportDialog({
               <div
                 aria-label="Upload product package"
                 className={[
-                  "cursor-pointer rounded-2xl border border-dashed p-7 text-center transition-colors focus-visible:outline-none focus-visible:ring-2",
+                  "ys-products-v2-dropzone cursor-pointer rounded-2xl border border-dashed p-7 text-center transition-colors focus-visible:outline-none focus-visible:ring-2",
                   isDragging
                     ? "border-violet-600 bg-violet-100 ring-violet-200"
                     : "border-violet-300 bg-violet-50/70 hover:border-violet-400 hover:bg-violet-50 focus-visible:border-violet-500 focus-visible:ring-violet-200"
@@ -646,7 +646,7 @@ export function ProductPackageImportDialog({
           </div>
         </div>
 
-        <DialogFooter className="shrink-0 border-t border-slate-200 bg-slate-50/90 px-6 py-4 backdrop-blur">
+        <DialogFooter className="ys-products-v2-import-footer shrink-0 border-t border-slate-200 bg-slate-50/90 px-6 py-4 backdrop-blur">
           {phase === "success" ? (
             <Button onClick={close} type="button">
               Close

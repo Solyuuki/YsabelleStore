@@ -1,8 +1,13 @@
 import {
+  ArrowDownUp,
+  Check,
+  ChevronDown,
+  ChevronRight,
   Download,
   FileUp,
   Filter,
   LoaderCircle,
+  PackageCheck,
   PencilLine,
   Plus,
   Search,
@@ -21,6 +26,8 @@ import {
 } from "react";
 
 import { ProductImageUploadPanel } from "@/components/catalog/ProductImageUploadPanel";
+import type { CatalogSortOrder } from "@/components/catalog/ProductCatalogQoLEnhancements";
+import "@/styles/retail-products-mobile-v2.css";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -152,7 +159,13 @@ type ImportState = {
   error: string | null;
 };
 
-export function ProductsPage() {
+export function ProductsPage({
+  onSortOrderChange,
+  sortOrder
+}: {
+  onSortOrderChange: (value: CatalogSortOrder) => void;
+  sortOrder: CatalogSortOrder;
+}) {
   const [products, setProducts] = useState<ProductRecord[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -162,6 +175,8 @@ export function ProductsPage() {
     () => new Set()
   );
   const [searchInput, setSearchInput] = useState("");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [mobileSortOpen, setMobileSortOpen] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
   const [qualityFilter, setQualityFilter] = useState<"ALL" | ProductRecord["dataQualityStatus"]>(
@@ -893,39 +908,41 @@ export function ProductsPage() {
         triggerRef={importTriggerRef}
       />
 
+      <div className="ys-products-v2-page">
       <PageHeader
         eyebrow="Owner workspace"
         title="Products"
         description="Import products, verify catalog state, and keep current stock aligned with inventory and POS."
         actions={
-          <div className="flex flex-wrap items-center gap-2">
-            <Button onClick={() => setIsCreateDialogOpen(true)} type="button" variant="secondary">
+          <div className="ys-products-v2-actions flex flex-wrap items-center gap-2">
+            <Button className="ys-products-v2-add" onClick={() => setIsCreateDialogOpen(true)} type="button" variant="secondary">
               <Plus className="h-4 w-4" aria-hidden="true" />
-              Add Product
+              <span>Add Product</span>
             </Button>
             <Button
+              className="ys-products-v2-import"
               onClick={openImportDialog}
               ref={importTriggerRef}
               type="button"
               variant="default"
             >
               <FileUp className="h-4 w-4" aria-hidden="true" />
-              Import Products
+              <span>Import Products</span>
             </Button>
           </div>
         }
       />
 
       <section className="space-y-6">
-        <Card className="w-full">
-          <CardHeader>
+        <Card className="ys-products-v2-catalog-card w-full">
+          <CardHeader className="ys-products-v2-card-header">
             <div className="flex items-center justify-between gap-4">
               <CardTitle>Catalog overview</CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="px-4 pb-4 pt-2 lg:px-5">
+          <CardContent className="ys-products-v2-card-content px-4 pb-4 pt-2 lg:px-5">
             <div className="space-y-4">
-              <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_180px]">
+              <div className="ys-products-v2-desktop-filters grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_180px]">
                 <label className="ys-product-toolbar-filter relative flex h-11 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3">
                   <Search className="h-4 w-4 text-slate-500" aria-hidden="true" />
                   <input
@@ -993,6 +1010,118 @@ export function ProductsPage() {
                   ) : null}
                 </label>
               </div>
+              <div className="ys-products-v2-toolbar">
+                <label className="ys-products-v2-search">
+                  <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <input
+                    aria-label="Search products by name SKU or barcode"
+                    aria-busy={searchIsLoading}
+                    onChange={(event) => handleSearchChange(event.target.value)}
+                    placeholder="Search products"
+                    type="search"
+                    value={searchInput}
+                  />
+                  {searchIsLoading ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+                </label>
+                <div className="ys-products-v2-controls">
+                  <button
+                    aria-controls="ys-products-v2-mobile-filter-panel"
+                    aria-expanded={mobileFiltersOpen}
+                    className="ys-products-v2-trigger"
+                    onClick={() => { setMobileFiltersOpen((current) => !current); setMobileSortOpen(false); }}
+                    type="button"
+                  >
+                    <Filter className="h-4 w-4" aria-hidden="true" />
+                    <span>Filters</span>
+                    {(statusFilter !== "ALL" || qualityFilter !== "ALL") ? <span className="ys-products-v2-dot" aria-label="Filters active" /> : null}
+                  </button>
+                  <button
+                    aria-controls="ys-products-v2-mobile-sort-panel"
+                    aria-expanded={mobileSortOpen}
+                    className="ys-products-v2-trigger"
+                    onClick={() => { setMobileSortOpen((current) => !current); setMobileFiltersOpen(false); }}
+                    type="button"
+                  >
+                    <ArrowDownUp className="h-4 w-4" aria-hidden="true" />
+                    <span>Sort</span>
+                    <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                </div>
+                {mobileFiltersOpen ? (
+                  <div className="ys-products-v2-panel" id="ys-products-v2-mobile-filter-panel">
+                    <div className="ys-products-v2-panel-heading">
+                      <strong>Product filters</strong>
+                      <button onClick={() => setMobileFiltersOpen(false)} type="button" aria-label="Close product filters"><X className="h-4 w-4" /></button>
+                    </div>
+                    <fieldset>
+                      <legend>Availability</legend>
+                      {([
+                        ["ALL", "All statuses"],
+                        ["ACTIVE", "Available"],
+                        ["INACTIVE", "Unavailable"]
+                      ] as const).map(([value, label]) => (
+                        <button
+                          aria-pressed={statusFilter === value}
+                          className="ys-products-v2-option"
+                          key={value}
+                          onClick={() => handleStatusFilterChange(value)}
+                          type="button"
+                        >
+                          <span>{label}</span>
+                          {statusFilter === value ? <Check className="h-4 w-4" aria-hidden="true" /> : null}
+                        </button>
+                      ))}
+                    </fieldset>
+                    <fieldset>
+                      <legend>Catalog quality</legend>
+                      {([
+                        ["ALL", "All quality"],
+                        ["APPROVED", "Approved"],
+                        ["NEEDS_REVIEW", "Needs review"],
+                        ["REJECTED", "Rejected"]
+                      ] as const).map(([value, label]) => (
+                        <button
+                          aria-pressed={qualityFilter === value}
+                          className="ys-products-v2-option"
+                          key={value}
+                          onClick={() => handleQualityFilterChange(value)}
+                          type="button"
+                        >
+                          <span>{label}</span>
+                          {qualityFilter === value ? <Check className="h-4 w-4" aria-hidden="true" /> : null}
+                        </button>
+                      ))}
+                    </fieldset>
+                    <div className="ys-products-v2-panel-actions">
+                      <button className="ys-products-v2-reset" onClick={() => {
+                        handleStatusFilterChange("ALL");
+                        handleQualityFilterChange("ALL");
+                      }} type="button">Reset</button>
+                      <button className="ys-products-v2-apply" onClick={() => setMobileFiltersOpen(false)} type="button">Apply filters</button>
+                    </div>
+                  </div>
+                ) : null}
+                {mobileSortOpen ? (
+                  <div className="ys-products-v2-panel" id="ys-products-v2-mobile-sort-panel">
+                    <strong>Sort products</strong>
+                    {([
+                      ["desc", "Latest first"],
+                      ["asc", "Oldest first"]
+                    ] as const).map(([value, label]) => (
+                      <button
+                        aria-pressed={sortOrder === value}
+                        className="ys-products-v2-option"
+                        key={value}
+                        onClick={() => { onSortOrderChange(value); setMobileSortOpen(false); }}
+                        type="button"
+                      >
+                        <span>{label}</span>
+                        {sortOrder === value ? <Check className="h-4 w-4" aria-hidden="true" /> : null}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
               {catalogError ? (
                 <div
                   aria-live="polite"
@@ -1027,7 +1156,46 @@ export function ProductsPage() {
                   <CatalogTableSkeleton rowCount={pageSize} />
                 ) : hasCatalogRows ? (
                   <div className={showCatalogOverlay ? "pointer-events-none opacity-70" : ""}>
-                    <div className="overflow-hidden">
+                    <div className="ys-products-v2-mobile-list" aria-label="Product catalog">
+                      {products.map((product) => {
+                        const availabilityAction = getAvailabilityAction(product.status);
+                        const statusBusy = pendingAvailabilityProductIds.has(product.id);
+                        return (
+                          <article className="ys-products-v2-product-card" key={product.id}>
+                            <button
+                              aria-label={`View details for ${product.name}`}
+                              className="ys-products-v2-product-main"
+                              onClick={() => setSelectedProductId(product.id)}
+                              type="button"
+                            >
+                              <span className="ys-products-v2-product-name">{product.name}</span>
+                              <span className="ys-products-v2-product-sku">SKU · {product.sku}</span>
+                              <ChevronRight className="ys-products-v2-product-chevron h-4 w-4" aria-hidden="true" />
+                            </button>
+                            <div className="ys-products-v2-product-bottom">
+                              <span className="ys-products-v2-product-availability">
+                                <PackageCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                                {getProductStatusLabel(product.status)}
+                              </span>
+                              <strong className="ys-products-v2-product-price">{currencyFormatter.format(Number(product.sellingPrice))}</strong>
+                              {availabilityAction ? (
+                                <button
+                                  aria-label={`Set ${product.name} to ${availabilityAction.nextStatus === "ACTIVE" ? "available" : "unavailable"}`}
+                                  className="ys-products-v2-availability-action"
+                                  disabled={statusBusy}
+                                  onClick={() => void handleAvailabilityToggle(product)}
+                                  type="button"
+                                  title={availabilityAction.tooltip}
+                                >
+                                  {statusBusy ? <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" /> : <ArrowDownUp aria-hidden="true" className="h-4 w-4" />}
+                                </button>
+                              ) : null}
+                            </div>
+                          </article>
+                        );
+                      })}
+                    </div>
+                    <div className="ys-products-v2-desktop-table overflow-hidden">
                       <table className="retail-mobile-data-table w-full table-fixed border-collapse text-left text-sm">
                         <thead className="bg-slate-100 text-slate-700">
                           <tr>
@@ -1232,6 +1400,8 @@ export function ProductsPage() {
 
               {paginationMeta ? (
                 <AppPagination
+                  className="ys-products-v2-pagination"
+                  mobileCompact
                   isLoading={isCatalogLoading}
                   itemLabel="products"
                   onPageChange={handlePageChange}
@@ -1257,6 +1427,7 @@ export function ProductsPage() {
           product={selectedProduct}
         />
       </section>
+      </div>
     </>
   );
 }
