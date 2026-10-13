@@ -1371,6 +1371,57 @@ async function checkCompactSearch(page, viewport) {
   return issues;
 }
 
+async function checkRetailLoginMobile(page, viewport) {
+  // Non-mutating: verify staff login geometry without submitting credentials.
+  await page.locator(".ys-retail-login-card").waitFor({ state: "visible", timeout: 15000 });
+  const geometry = await page.evaluate(() => {
+    const bounds = (selector) => {
+      const element = document.querySelector(selector);
+      if (!element) return null;
+      const rect = element.getBoundingClientRect();
+      return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, width: rect.width };
+    };
+    const content = document.querySelector(".welcome-content");
+    const intro = document.querySelector(".ys-retail-welcome__mobile-intro");
+    const description = document.querySelector(".ys-retail-welcome__description");
+    return {
+      scrollWidth: document.documentElement.scrollWidth,
+      gridColumns: content ? getComputedStyle(content).gridTemplateColumns : "",
+      hero: bounds(".ys-retail-welcome__hero"),
+      card: bounds(".ys-retail-login-card"),
+      email: bounds('.ys-retail-login-card input[type="email"]'),
+      password: bounds('.ys-retail-login-card input[type="password"]'),
+      submit: bounds('.ys-retail-login-card button[type="submit"]'),
+      introVisible: !!intro && getComputedStyle(intro).display !== "none",
+      desktopDescriptionHidden: !description || getComputedStyle(description).display === "none"
+    };
+  });
+  const issues = [];
+  const inside = (rect) =>
+    rect && rect.width > 0 && rect.left >= -2 && rect.right <= viewport.width + 2;
+  if (geometry.scrollWidth > viewport.width + 2) {
+    issues.push(`Retail login horizontal overflow: ${geometry.scrollWidth}px`);
+  }
+  for (const field of ["hero", "card", "email", "password", "submit"]) {
+    if (!inside(geometry[field])) {
+      issues.push(`Retail login ${field} extends outside phone width`);
+    }
+  }
+  if (geometry.hero && geometry.card && geometry.card.top < geometry.hero.bottom - 2) {
+    issues.push("Retail sign-in form overlaps heading on phone");
+  }
+  if (!geometry.introVisible || !geometry.desktopDescriptionHidden) {
+    issues.push("Retail mobile intro does not replace long desktop information");
+  }
+
+  await page.screenshot({
+    path: join(OUTPUT_DIRECTORY, `${viewport.name}-retail-login.png`),
+    animations: "disabled",
+    fullPage: false
+  });
+  return issues;
+}
+
 async function checkSupportMobileLayout(page, viewport) {
   // Read-only, guest-mode browser QA: never submit a real support ticket.
   await page.locator(".customer-support-form select").waitFor({
@@ -1758,6 +1809,20 @@ async function run() {
           const status = issues.length ? "FAIL" : "PASS";
           const details = issues.join("; ") || "width and navigation checks passed";
           process.stdout.write(`${status} ${viewport.name} ${pageName}: ${details}\n`);
+        }
+        if (viewport.width <= 430 && viewport.height > viewport.width) {
+          const retailRoute = "/staff-login";
+          await page.goto(new URL(retailRoute, BASE_URL).href, {
+            waitUntil: "domcontentloaded",
+            timeout: 20000
+          });
+          const retailIssues = await checkRetailLoginMobile(page, viewport);
+          if (retailIssues.length) {
+            failures.push({ viewport: viewport.name, route: retailRoute, issues: retailIssues });
+          }
+          process.stdout.write(
+            `${retailIssues.length ? "FAIL" : "PASS"} ${viewport.name} Retail login: ${retailIssues.join("; ") || "phone layout fits"}\n`
+          );
         }
         if (viewport.width <= 430 && viewport.height > viewport.width) {
           const supportRoute = "/support";
