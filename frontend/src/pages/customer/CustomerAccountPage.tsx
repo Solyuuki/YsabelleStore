@@ -20,6 +20,7 @@ import {
 import { useEffect, useLayoutEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 
 import { ProductCard, formatCurrency } from "@/components/customer/ProductCard";
+import { OrderRiderInformation } from "@/components/customer/OrderRiderInformation";
 import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
@@ -995,16 +996,6 @@ export function CustomerAccountPage({
                           </div>
                         ) : null}
 
-                        {order.courierProvider ? (
-                          <div className="customer-account-delivery-courier">
-                            <Truck aria-hidden="true" size={17} />
-                            <span>
-                              <strong>{order.courierProvider}</strong>
-                              {order.courierReference ? ` · ${order.courierReference}` : ""}
-                            </span>
-                          </div>
-                        ) : null}
-
                         {isPaymongoAwaitingPayment(order) ? (
                           <div className="customer-account-payment-gate">
                             <CreditCard aria-hidden="true" size={20} />
@@ -1029,6 +1020,8 @@ export function CustomerAccountPage({
                         ) : (
                           <DeliveryProgress order={order} />
                         )}
+
+                        <OrderRiderInformation order={order} />
 
                         {order.canCustomerConfirmReceipt ? (
                           <div className="customer-account-confirm-delivery">
@@ -1088,6 +1081,7 @@ export function CustomerAccountPage({
                             </div>
                           </summary>
                           <div className="customer-account-history-card__details">
+                            {order.deliveryStatus === "DELIVERED" ? <OrderRiderInformation order={order} /> : null}
                             <div className="customer-account-history-card__payment">
                               <span>Payment</span>
                               <strong>

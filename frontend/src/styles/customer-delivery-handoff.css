@@ -1,0 +1,41 @@
+/* Sprint 12 rider tracking: comfortable desktop card, compact at 320px. */
+.customer-rider-handoff { min-width: 0; margin-top: 15px; padding: 15px; border: 1px solid #c6c2fb; border-radius: 14px; background: #f6f7ff; color: #27314c; }
+.customer-rider-handoff__header { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid #dcdcf2; }
+.customer-rider-handoff__header svg { color: #5144ce; flex: none; }
+.customer-rider-handoff__header > div { display: grid; gap: 3px; }
+.customer-rider-handoff__header strong { font-size: 15px; }
+.customer-rider-handoff__header span { font-size: 11px; color: #596782; }
+.customer-rider-handoff__grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-top: 12px; }
+.customer-rider-handoff__grid:has(> :only-child) { grid-template-columns: minmax(0,1fr); }
+.customer-rider-handoff__contact, .customer-rider-handoff__note { min-width: 0; }
+.customer-rider-handoff dl { display: grid; gap: 10px; margin: 0; }
+.customer-rider-handoff dt { font-size: 11px; color: #53617d; }
+.customer-rider-handoff dd { margin: 2px 0 0; font-size: 13px; font-weight: 750; color: #242f4c; overflow-wrap: anywhere; }
+.customer-rider-handoff__phone { user-select: text; }
+.customer-rider-handoff__note { background: #e9eeff; border: 1px solid #ccd4f1; padding: 12px; border-radius: 10px; }
+.customer-rider-handoff__note strong { font-size: 12px; }
+.customer-rider-handoff__note p { margin: 7px 0; font-size: 12px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.customer-rider-handoff__note small { color: #5b6782; }
+.customer-rider-handoff__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+.customer-rider-handoff__actions > :is(a,button) { min-height: 44px; padding: 10px 12px; display: inline-flex; justify-content: center; align-items: center; gap: 7px; border: 1px solid #8279d4; border-radius: 9px; background: #fff; color: #383e91; font-size: 12px; font-weight: 800; text-decoration: none; }
+.customer-rider-handoff__actions > a { color: white; background: #5246d8; border-color: #5246d8; }
+.customer-rider-handoff__feedback { font-size: 11px; color: #3b6470; margin-top: 8px; }
+@media (max-width: 699px) {
+  .customer-rider-handoff { padding: 12px; }
+  .customer-rider-handoff__grid { grid-template-columns: minmax(0,1fr); gap: 10px; }
+  .customer-rider-handoff__actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .customer-rider-handoff__actions > :is(a,button) { padding: 9px 5px; min-width: 0; }
+}
+:root.dark .customer-app .customer-rider-handoff { background: #22334e; border-color: #697ba3; color: #f0f4ff; }
+:root.dark .customer-app .customer-rider-handoff__header { border-color: #506688; }
+:root.dark .customer-app .customer-rider-handoff__header svg { color: #b9aeff; }
+:root.dark .customer-app .customer-rider-handoff__header span,
+:root.dark .customer-app .customer-rider-handoff dt,
+:root.dark .customer-app .customer-rider-handoff__note small { color: #c4d0e7; }
+:root.dark .customer-app .customer-rider-handoff dd,
+:root.dark .customer-app .customer-rider-handoff__note,
+:root.dark .customer-app .customer-rider-handoff__note p { color: #f0f4ff; }
+:root.dark .customer-app .customer-rider-handoff__note { background: #2a3e5a; border-color: #617594; }
+:root.dark .customer-app .customer-rider-handoff__actions > button { background: #344a68; color: #f2f5ff; border-color: #7288b0; }
+:root.dark .customer-app .customer-rider-handoff__actions > a { background: #5447d8; color: white; }
+:root.dark .customer-app .customer-rider-handoff__feedback { color: #bbebdc; }

@@ -167,3 +167,15 @@
     white-space: normal;
   }
 }
+
+/* Mobile dispatch handoff remains stacked, with reachable rider inputs. */
+.ys-delivery-handoff-phone { display: inline-flex; align-items: center; min-height: 40px; text-decoration: underline; color: #4940b7; font-weight: 800; }
+:root.dark .ys-delivery-handoff-phone { color: #cbc4ff; }
+@media (max-width: 767px) {
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-dialog .ys-delivery-handoff-fields {
+    grid-template-columns: minmax(0,1fr); gap: .65rem;
+  }
+  :root[data-appearance-scope="retail"] .ys-delivery-ticket-dialog .ys-delivery-ticket-body textarea {
+    width: 100%; max-width: 100%; min-width: 0; min-height: 80px; font-size: 16px;
+  }
+}
