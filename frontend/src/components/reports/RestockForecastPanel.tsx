@@ -440,14 +440,23 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                             </span>
                           </TableCell>
                           <TableCell>
-                            <Badge
-                              title={item.rationale}
-                              variant={monthlyRecommendationVariant(
-                                monthlyRecommendationAction(item)
-                              )}
-                            >
-                              {monthlyRecommendationLabel(monthlyRecommendationAction(item))}
-                            </Badge>
+                            <span className="ys-report-v2-full-action">
+                              <Badge
+                                title={item.rationale}
+                                variant={monthlyRecommendationVariant(
+                                  monthlyRecommendationAction(item)
+                                )}
+                              >
+                                {monthlyRecommendationLabel(monthlyRecommendationAction(item))}
+                              </Badge>
+                            </span>
+                            <span className="ys-report-v2-short-action" title={item.rationale}>
+                              {monthlyRecommendationAction(item) === "REDUCE_REPLENISHMENT"
+                                ? "Reduce"
+                                : monthlyRecommendationAction(item) === "EXPIRY_REVIEW"
+                                  ? "Expiry"
+                                  : monthlyRecommendationLabel(monthlyRecommendationAction(item))}
+                            </span>
                           </TableCell>
                           <TableCell className="text-right tabular-nums">
                             {formatNumber(item.sellableStock)}

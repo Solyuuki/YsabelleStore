@@ -108,7 +108,7 @@
 .ys-report-v2-modal-nav,.ys-report-v2-download-footer{display:none}
 @media(max-width:767px){
 :root[data-appearance-scope="retail"] [role="dialog"].ys-report-modal[data-report-download="true"],
-:root[data-appearance-scope="retail"] [role="dialog"].ys-restock-product-picker[data-report-picker="true"]{
+:root[data-appearance-scope="retail"] [role="dialog"].ys-restock-product-picker{
 display:flex;flex-direction:column;gap:0;width:calc(100vw - 1rem)!important;max-width:420px!important;
 height:min(94dvh,660px);max-height:calc(100dvh - 1rem)!important;
 min-width:0;padding:0;overflow:hidden!important}
@@ -136,8 +136,8 @@ border:1px solid #a6b8d2;border-radius:8px;background:#edf2fb;color:#3c4ca7;font
 :root[data-appearance-scope="retail"] .ys-report-v2-format-card > span > span:last-child{display:none}
 :root[data-appearance-scope="retail"] .ys-report-v2-download-footer{display:flex;flex:none;justify-content:flex-end;border-top:1px solid #a5b8d2;padding:9px 12px;background:#eef3fb}
 :root[data-appearance-scope="retail"] .ys-report-v2-download-footer button{min-height:42px;min-width:110px}
-:root[data-appearance-scope="retail"] [role="dialog"].ys-restock-product-picker[data-report-picker="true"]{height:min(92dvh,610px)}
-:root[data-appearance-scope="retail"] .ys-restock-product-picker[data-report-picker="true"] > div:first-child{flex:none;gap:3px;padding:12px}
+:root[data-appearance-scope="retail"] [role="dialog"].ys-restock-product-picker{height:min(92dvh,610px)}
+:root[data-appearance-scope="retail"] .ys-restock-product-picker > div:first-child{flex:none;gap:3px;padding:12px}
 :root[data-appearance-scope="retail"] .ys-report-v2-picker-body{flex:1 1 auto;min-height:0;min-width:0;overflow-y:auto;overscroll-behavior:contain;padding:9px 12px}
 :root[data-appearance-scope="retail"] .ys-report-v2-picker-body > div:first-child{gap:6px}
 :root[data-appearance-scope="retail"] .ys-report-v2-picker-body :is(input,button){min-height:40px}
@@ -153,4 +153,18 @@ display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;min-wid
 :root[data-appearance-scope="retail"] .ys-report-v2-download-body table :is(th,td){padding:7px;font-size:10px;overflow-wrap:anywhere}
 :root.dark[data-appearance-scope="retail"] :is(.ys-report-v2-download-footer,.ys-report-v2-picker-footer){background:#22334a;border-color:#647894}
 :root.dark[data-appearance-scope="retail"] :is(.ys-report-v2-modal-back,.ys-report-v2-modal-close){background:#2b3e59;border-color:#7286a5;color:#edeaff}
+}
+
+.ys-report-v2-short-action{display:none}
+@media(max-width:767px){
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-short-action{
+display:inline-flex;align-items:center;width:max-content;max-width:100%;min-height:25px;
+padding:3px 6px;border-radius:6px;border:1px solid #7774a4;
+background:#e9e8fa;color:#453a8f;font-size:10px;font-weight:800;white-space:nowrap}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-full-action{display:none}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-planner .rounded-lg.border-dashed{padding:16px 10px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-planner :is(.flex-wrap){gap:6px}
+.retail-workspace [data-retail-module="reports"] .ys-report-v2-planner :is(.px-6){padding-inline:10px}
+:root.dark .retail-workspace [data-retail-module="reports"] .ys-report-v2-short-action{
+background:#34355f;border-color:#8c83d2;color:#f1ecff}
 }

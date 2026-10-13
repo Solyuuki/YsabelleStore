@@ -1021,7 +1021,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
         }}
         open={catalogOpen}
       >
-        <DialogContent className="ys-restock-product-picker max-w-[820px]" data-report-picker="true">
+        <DialogContent className="ys-restock-product-picker max-w-[820px]">
           <DialogHeader>
             <DialogTitle>Add product</DialogTitle>
             <DialogDescription>
