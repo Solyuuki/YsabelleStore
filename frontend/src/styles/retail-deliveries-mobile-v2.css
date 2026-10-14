@@ -652,18 +652,7 @@
   }
 }
 
-/* Mobile dispatch handoff remains stacked, with reachable rider inputs. */
-.ys-delivery-handoff-phone {
-  display: inline-flex;
-  align-items: center;
-  min-height: 40px;
-  text-decoration: underline;
-  color: #4940b7;
-  font-weight: 800;
-}
-:root.dark .ys-delivery-handoff-phone {
-  color: #cbc4ff;
-}
+/* Mobile dispatch fields retain a single-column layout on phones. */
 @media (max-width: 767px) {
   :root[data-appearance-scope="retail"] .ys-delivery-ticket-dialog .ys-delivery-handoff-fields {
     grid-template-columns: minmax(0, 1fr);
@@ -679,4 +668,190 @@
     min-height: 80px;
     font-size: 16px;
   }
+}
+
+/* Premium handoff summary shared across all Owner and Staff screens. */
+.ys-delivery-handoff-summary {
+  display: grid;
+  min-width: 0;
+  gap: 13px;
+  padding: clamp(12px, 2.5vw, 18px);
+  border: 1px solid #cbd6e7;
+  border-radius: 14px;
+  background: #f6f8fd;
+  color: #24334d;
+}
+.ys-delivery-handoff-summary__heading,
+.ys-delivery-handoff-summary__identity,
+.ys-delivery-handoff-summary__contact,
+.ys-delivery-handoff-summary__note-title {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 10px;
+}
+.ys-delivery-handoff-summary__heading {
+  padding-bottom: 12px;
+  border-bottom: 1px solid #d8e1ef;
+}
+.ys-delivery-handoff-summary__icon,
+.ys-delivery-handoff-summary__avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  border-radius: 10px;
+  background: #e8e6ff;
+  color: #5045b3;
+}
+.ys-delivery-handoff-summary__icon { width: 38px; height: 38px; }
+.ys-delivery-handoff-summary__avatar { width: 44px; height: 44px; font-size: 18px; }
+.ys-delivery-handoff-summary__heading h3 { margin: 0; font-size: 14px; font-weight: 750; }
+.ys-delivery-handoff-summary__heading p {
+  margin: 2px 0 0;
+  color: #53647f;
+  font-size: 12px;
+}
+.ys-delivery-handoff-summary__rider,
+.ys-delivery-handoff-summary__contact > div,
+.ys-delivery-handoff-summary__reference {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+.ys-delivery-handoff-summary__rider strong,
+.ys-delivery-handoff-summary__contact strong,
+.ys-delivery-handoff-summary__reference strong {
+  color: #1d2c47;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.ys-delivery-handoff-summary__rider span,
+.ys-delivery-handoff-summary__contact > div > span,
+.ys-delivery-handoff-summary__reference span {
+  color: #53647f;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.ys-delivery-handoff-summary__contact {
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #dce4f1;
+  border-radius: 10px;
+  background: #ebf0f9;
+}
+.ys-delivery-handoff-summary__contact > div { flex: 1; }
+.ys-delivery-handoff-summary__contact strong { user-select: text; }
+.ys-delivery-handoff-summary__contact button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 74px;
+  min-height: 44px;
+  gap: 6px;
+  padding: 9px 12px;
+  border: 1px solid #a4b1ca;
+  border-radius: 9px;
+  background: #fff;
+  color: #344568;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.ys-delivery-handoff-summary__contact button:hover { background: #e2e8f7; }
+.ys-delivery-handoff-summary__contact button:focus-visible {
+  outline: 3px solid #7265e8;
+  outline-offset: 2px;
+}
+.ys-delivery-handoff-summary__feedback {
+  margin: 0;
+  color: #276754;
+  font-size: 12px;
+}
+.ys-delivery-handoff-summary__reference { margin: 0; }
+.ys-delivery-handoff-summary__note {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #dce4f1;
+  border-radius: 10px;
+  background: #ebf0f9;
+}
+.ys-delivery-handoff-summary__note--internal { background: #edf0f8; }
+.ys-delivery-handoff-summary__note-title { gap: 7px; color: #5045b3; }
+.ys-delivery-handoff-summary__note-title strong {
+  min-width: 0;
+  color: #273753;
+  font-size: 13px;
+}
+.ys-delivery-handoff-summary__note-title > span {
+  margin-left: auto;
+  color: #53647f;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.ys-delivery-handoff-summary__note p {
+  margin: 8px 0 0;
+  color: #293b58;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 430px) {
+  .ys-delivery-handoff-summary__contact { padding: 9px; }
+  .ys-delivery-handoff-summary__contact button { min-width: 66px; padding-inline: 9px; }
+  .ys-delivery-handoff-summary__note-title { flex-wrap: wrap; }
+}
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary {
+  border-color: #425574;
+  background: #22314b;
+  color: #f1f5fc;
+}
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__heading {
+  border-color: #40516d;
+}
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__icon,
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__avatar {
+  background: #37395f;
+  color: #beb5ff;
+}
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__heading h3,
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__rider strong,
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__contact strong,
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__reference strong,
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__note-title strong {
+  color: #f2f5fc;
+}
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__heading p,
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__rider span,
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__contact > div > span,
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__reference span,
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__note-title > span {
+  color: #b7c6dc;
+}
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__contact,
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__note {
+  background: #2a3b56;
+  border-color: #485d7e;
+}
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__note--internal {
+  background: #27344b;
+}
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__contact button {
+  background: #344764;
+  border-color: #637899;
+  color: #f1f5fc;
+}
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__contact button:hover {
+  background: #3b5170;
+}
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__note-title {
+  color: #beb5ff;
+}
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__note p {
+  color: #cedaeb;
+}
+:root.dark .ys-delivery-ticket-dialog .ys-delivery-handoff-summary__feedback {
+  color: #a8e7d4;
 }
