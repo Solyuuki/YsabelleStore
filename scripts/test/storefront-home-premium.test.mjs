@@ -240,7 +240,7 @@ assert.match(productCardSource, /ShoppingCart aria-hidden="true" size=\{17\} str
 assert.match(productCardSource, /customer-product-card__purchase-row/);
 assert.match(
   productCardSource,
-  /data-tooltip=\{isFavorite \? "Remove from favorites" : "Save to favorites"\}/
+  /data-tooltip=\{\s*isUpdatingFavorite\s*\?\s*"Updating favorites\.\.\."\s*:\s*isFavorite\s*\?\s*"Remove from favorites"\s*:\s*"Save to favorites"\s*\}/
 );
 assert.match(productCardSource, /customer-product-card__cart-button/);
 assert.match(productCardSource, /customer-product-badge__fire/);

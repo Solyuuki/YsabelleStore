@@ -1003,7 +1003,7 @@ test("checkout content uses wider readable form sections without changing naviga
     /\.customer-checkout-page\s*:is\(\.customer-profile-default-option,\s*\s*\.customer-address-save-option\)\s*\{[^}]*min-height:\s*44px;[^}]*border:\s*0;[^}]*background:\s*transparent;/
   );
   assert.match(
-    phone,
+    css,
     /:root\.dark\s*\.customer-app\s*\.customer-checkout-page\s*:is\(\.customer-profile-default-option,\s*\s*\.customer-address-save-option\)\s*\{[^}]*background:\s*transparent;/
   );
   assert.match(
