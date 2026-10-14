@@ -270,35 +270,21 @@ test("OAuth returns to the signed-in mobile preview, restores the viewport and c
   assert.equal(malicious.iframe.src, "/?preview=welcome");
 });
 
-test("small touch phones show portrait guidance while tablets support either orientation", () => {
+test("phones and tablets browse without a fullscreen orientation blocker", () => {
   const html = read("frontend/index.html");
   const css = read("frontend/src/styles/global.css");
   const qa = read("tools/mobile-qa/run.mjs");
 
-  assert.match(html, /id="phone-orientation-notice"/);
-  assert.match(html, /Rotate your phone upright to continue using Ysabelle Store/);
-  assert.match(html, /class="phone-orientation-notice"[^>]*role="status"/);
-  assert.match(css, /\.phone-orientation-notice\s*\{\s*display: none;/);
-  assert.match(
-    css,
-    /@media \(orientation: landscape\) and \(max-width: 1180px\) and \(max-height: 500px\) and \(pointer: coarse\)/
-  );
-  assert.match(
-    css,
-    /\.phone-orientation-notice\s*\{[^}]*position: fixed;[^}]*display: grid;[^}]*height: 100dvh;/
-  );
-  assert.match(css, /:root\.dark \.phone-orientation-notice\s*\{/);
-  assert.doesNotMatch(
-    css.split("/* Portrait-only phone browsing guard.")[1],
-    /screen\.orientation\.lock/
-  );
+  assert.doesNotMatch(html, /phone-orientation-notice|Rotate your phone upright/);
+  assert.doesNotMatch(css, /\.phone-orientation-notice/);
+  assert.doesNotMatch(qa, /portrait notice visible|screen\.orientation\.lock/);
 
   assert.match(qa, /\{ name: "phone-landscape", width: 640, height: 320 \}/);
   assert.match(qa, /\{ name: "tablet", width: 768, height: 1024 \}/);
   assert.match(qa, /\{ name: "tablet-landscape", width: 1024, height: 768 \}/);
-  assert.match(qa, /Landscape phone did not show full-screen portrait orientation notice/);
-  assert.match(qa, /Tablet orientation was incorrectly restricted/);
-  assert.match(qa, /Portrait phone or desktop was incorrectly blocked by orientation notice/);
+  assert.match(qa, /Deprecated phone orientation overlay is still present/);
+  assert.match(qa, /const result = await measurePage\(page, viewport\)/);
+  assert.match(qa, /Document overflow:/);
 });
 
 test("preview route selection restores from hash, highlights the active view and supports reselect", () => {

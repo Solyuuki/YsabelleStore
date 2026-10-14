@@ -1712,52 +1712,6 @@ async function run() {
           const url = new URL(route, BASE_URL);
           await page.goto(url.href, { waitUntil: "domcontentloaded", timeout: 20000 });
 
-          // Physical phones cannot always be OS-locked from a browser tab.
-          // On a small touch phone in landscape, verify the portrait-only
-          // notice instead of treating the cramped storefront as supported.
-          const orientationNotice = page.locator("#phone-orientation-notice");
-          if (viewport.name === "phone-landscape") {
-            const issues = [];
-            await orientationNotice.waitFor({ state: "visible", timeout: 10000 });
-            const notice = await orientationNotice.evaluate((element) => {
-              const rect = element.getBoundingClientRect();
-              const style = getComputedStyle(element);
-              return {
-                fixed: style.position === "fixed",
-                width: rect.width,
-                height: rect.height,
-                title: element.textContent ?? ""
-              };
-            });
-            if (
-              !notice.fixed ||
-              notice.width < viewport.width - 2 ||
-              notice.height < viewport.height - 2 ||
-              !notice.title.includes("Rotate your phone upright")
-            ) {
-              issues.push("Landscape phone did not show full-screen portrait orientation notice");
-            }
-            await page.screenshot({
-              path: join(OUTPUT_DIRECTORY, `${viewport.name}-${pageName}.png`),
-              animations: "disabled",
-              fullPage: false
-            });
-            if (issues.length) failures.push({ viewport: viewport.name, route, issues });
-            process.stdout.write(
-              `${issues.length ? "FAIL" : "PASS"} ${viewport.name} ${pageName}: ${issues.join("; ") || "portrait notice visible"}\n`
-            );
-            continue;
-          }
-          if (await orientationNotice.isVisible()) {
-            const message =
-              viewport.name === "tablet" || viewport.name === "tablet-landscape"
-                ? "Tablet orientation was incorrectly restricted"
-                : "Portrait phone or desktop was incorrectly blocked by orientation notice";
-            failures.push({ viewport: viewport.name, route, issues: [message] });
-            process.stderr.write(`FAIL ${viewport.name} ${pageName}: ${message}\n`);
-            continue;
-          }
-
           // StoreEntrance shares .customer-app but has no navbar. The layout
           // class is the stable marker for actual Home and Shop content.
           await page.locator(".customer-app.ys-material-canvas").waitFor({ timeout: 15000 });
@@ -1784,6 +1738,9 @@ async function run() {
 
           const result = await measurePage(page, viewport);
           const issues = [];
+          if (await page.locator("#phone-orientation-notice").count()) {
+            issues.push("Deprecated phone orientation overlay is still present");
+          }
           if (result.width !== viewport.width || result.height !== viewport.height) {
             issues.push("Unexpected viewport dimensions");
           }
