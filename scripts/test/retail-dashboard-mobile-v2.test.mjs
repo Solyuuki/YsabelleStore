@@ -101,7 +101,7 @@ test("Performance day chart stays informative when activity is zero or phone lab
   assert.match(pulse, /window\.matchMedia\(/);
   assert.match(
     pulse,
-    /tickFormatter=\{compactChartAxis\s*\?\s*\(label\)\s*=>\s*formatHourAxisTick\(String\(label\)\)\s*:\s*undefined\}/
+    /tickFormatter=\{\s*compactChartAxis\s*\?\s*\(label\)\s*=>\s*formatHourAxisTick\(String\(label\)\)\s*:\s*undefined\s*\}/
   );
   assert.match(mobile, /\.ys-sales-hourly-chart\s*\{[^}]*height:\s*150px;/);
   assert.match(

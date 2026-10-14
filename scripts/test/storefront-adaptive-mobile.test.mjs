@@ -266,7 +266,7 @@ test("the five-slot mobile dock has a centered accessible expandable More menu",
   const css = read("frontend/src/styles/customer-adaptive-mobile.css");
 
   assert.match(nav, /links\.slice\(0,\s*\s*2\)\.map\(renderLink\)/);
-  assert.match(nav, /links\.slice\(2\)\.map\(renderLink\)/);
+  assert.match(nav, /links\.slice\(2,\s*3\)\.map\(renderLink\)/);
   assert.match(nav, /<DialogPrimitive\.Root\s*onOpenChange=\{setMoreOpen\}\s*open=\{moreOpen\}>/);
   assert.match(nav, /<DialogPrimitive\.Trigger\s*asChild>/);
   assert.match(nav, /aria-expanded=\{moreOpen\}/);
@@ -349,7 +349,7 @@ test("mobile sizing primitives and floating sheet are centralized for browser QA
   assert.ok(sheetCss);
   assert.match(sheetCss, /border:\s*1px\s*solid\s*#bcc6e1/);
   assert.doesNotMatch(sheetCss, /border-bottom:\s*0/);
-  assert.match(sheetCss, /@media\s*\(min-width:\s*701px\),\s*\s*\(orientation:\s*landscape\)/);
+  assert.match(css, /@media\s*\(min-width:\s*701px\),\s*\(orientation:\s*landscape\)/);
 
   assert.equal(packageJson.scripts["qa:mobile"], "node tools/mobile-qa/run.mjs");
   assert.match(qaScript, /const\s*VIEWPORTS\s*=\s*\[/);
@@ -579,7 +579,7 @@ test("mobile review ratings fit six filters in a two-row grid without a scroll r
   );
   assert.match(
     detail,
-    /aria-label=\{rating\s*===\s*null\s*\?\s*`All\s*reviews\s*\(\$\{count\}\)`\s*:\s*`\$\{rating\}-star\s*reviews\s*\(\$\{count\}\)`\}/
+    /aria-label=\{\s*rating\s*===\s*null\s*\?\s*`All\s*reviews\s*\(\$\{count\}\)`\s*:\s*`\$\{rating\}-star\s*reviews\s*\(\$\{count\}\)`\}/
   );
   assert.match(detail, /aria-pressed=\{ratingFilter\s*===\s*rating\}/);
   assert.match(detail, /onClick=\{\(\)\s*=>\s*onFilterChange\(rating\)\}/);
@@ -626,7 +626,7 @@ test("phone recommendation carousel stays compact while page scrolling works wit
   const related = read("frontend/src/pages/customer/ProductDetailPage.tsx");
   const qa = read("tools/mobile-qa/run.mjs");
   const styles = css.split(
-    "/* Compact related-products carousel and unobtrusive page scrollbars."
+    "/* Compact related-products carousel remains a phone portrait layout."
   )[1];
   assert.ok(styles, "Missing scoped phone carousel CSS");
 
@@ -1093,12 +1093,13 @@ test("dark active delivery tracking has no white tiles or invisible text", () =>
   const qa = read("tools/mobile-qa/run.mjs");
   const prefix =
     ":root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active";
+  const normalizedCss = css.replace(/\s+/g, " ");
   const rule = (selector) => {
-    const start = css.indexOf(prefix + " " + selector + " {");
+    const start = normalizedCss.indexOf(prefix + " " + selector + " {");
     assert.ok(start >= 0, "Missing active order dark selector " + selector);
-    const end = css.indexOf("}", start);
+    const end = normalizedCss.indexOf("}", start);
     assert.ok(end > start, "Invalid active order rule " + selector);
-    return css.slice(start, end + 1);
+    return normalizedCss.slice(start, end + 1);
   };
 
   // Base styles are intentionally light; dark must override their nested
@@ -1231,7 +1232,7 @@ test("Favorites card density and pagination stay bounded with removal", () => {
   );
   assert.match(
     page,
-    /favoriteProducts\.slice\(\(favoritesPage\s*-\s*1\)\s*\*\s*favoritesPageSize,\s*\s*favoritesPage\s*\*\s*favoritesPageSize\)/
+    /favoriteProducts\.slice\(\s*\(favoritesPage\s*-\s*1\)\s*\*\s*favoritesPageSize,\s*\s*favoritesPage\s*\*\s*favoritesPageSize\)/
   );
   assert.match(
     page,

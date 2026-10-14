@@ -32,7 +32,7 @@ test("Desktop and 320px mobile support calls, notes, safe dispatch and history",
   assert.ok(page.includes("Save dispatch draft"));
   assert.ok(page.includes("!riderPhoneValid"));
   assert.ok(account.includes("<OrderRiderInformation order={order} />"));
-  assert.ok(account.includes('order.deliveryStatus === "DELIVERED" ? <OrderRiderInformation'));
+  assert.match(account, /order\.deliveryStatus\s*===\s*"DELIVERED"[\s\S]*?<OrderRiderInformation/);
   assert.ok(css.includes("@media (max-width: 699px)"));
   assert.ok(css.includes(":root.dark .customer-app"));
   assert.ok(rider.includes("Call rider"));

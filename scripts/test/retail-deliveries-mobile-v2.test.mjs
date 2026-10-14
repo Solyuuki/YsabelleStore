@@ -71,7 +71,7 @@ test("delivery pagination places compact page size at left and page controls at 
 });
 
 test("rider reference uses a concise placeholder and wraps its helper on narrow ticket screens", () => {
-  assert.match(page, /placeholder="Phone,\s*\s*ID\s*or\s*plate"/);
+  assert.match(page, /placeholder="Booking ID \/ plate \/ rider code"/);
   assert.match(page, /ys-delivery-rider-helper/);
   assert.match(css, /\.ys-delivery-rider-helper\s*\{/);
   assert.match(css, /overflow-wrap:\s*anywhere;/);

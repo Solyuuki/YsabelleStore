@@ -98,7 +98,7 @@ test("approved product image uses a single compact quality row and upload contro
   assert.match(component, /<QualityIndicator\s*status=\{candidate\.qualityStatus\}\s*\/>/);
   assert.match(component, /className="ys-product-image-quality-actions/);
   assert.match(component, /aria-label="Upload\s*another\s*product\s*image"/);
-  assert.match(component, /ys-product-image-replace-mobile">Replace/);
+  assert.match(component, /ys-product-image-replace-mobile"\s*>\s*Replace/);
   assert.match(component, /ys-product-image-updated\s*inline-flex/);
   assert.match(component, /\{selectedFile\s*&&\s*!candidate\s*\?\s*\(/);
   assert.match(component, /onClick=\{openPicker\}/);
