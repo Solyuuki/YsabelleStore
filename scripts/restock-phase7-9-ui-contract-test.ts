@@ -52,7 +52,7 @@ assert.match(forecastWatchlistBody, /tabIndex=\{0\}/);
 assert.match(forecastWatchlistBody, /aria-pressed=\{selectedRow\}/);
 assert.match(
   forecastWatchlistBody,
-  /onClick=\{\(\) => setSelectedProductId\(item\.product\.id\)\}/
+  /onClick=\{\(\) => openForecastProduct\(item\.product\.id\)\}/
 );
 assert.match(forecastWatchlistBody, /event\.key !== "Enter"/);
 assert.match(forecastWatchlistBody, /event\.key !== " "/);
