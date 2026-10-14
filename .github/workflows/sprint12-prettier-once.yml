@@ -1,0 +1,41 @@
+name: Sprint 12 one-time Prettier repair
+on:
+  push:
+    branches:
+      - sprint/v0.12/sprint-12
+    paths:
+      - .github/workflows/sprint12-prettier-once.yml
+permissions:
+  contents: write
+jobs:
+  format-current-branch:
+    if: github.repository == 'Solyuuki/YsabelleStore'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact triggering revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: true
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install pinned project dependencies
+        run: npm ci
+      - name: Format existing repository files with pinned Prettier
+        run: npm run format
+      - name: Verify formatting and diff hygiene
+        run: |
+          npm run format:check
+          git diff --check
+      - name: Commit format-only changes and remove temporary workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm .github/workflows/sprint12-prettier-once.yml
+          git add -u
+          git diff --cached --check
+          git commit -m "chore(format): normalize Sprint 12 Prettier styles"
+          git push origin HEAD:sprint/v0.12/sprint-12
