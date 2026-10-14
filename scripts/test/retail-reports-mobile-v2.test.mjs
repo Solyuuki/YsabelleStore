@@ -26,8 +26,14 @@ test("Forecast cards retain real selections and compact Deliveries-style pager",
   assert.match(forecast, /ys-report-v2-product-pager/);
   assert.match(forecast, /buildDemandChart\(selected\)/);
   assert.match(forecast, /ys-report-v2-chart-readout/);
-  assert.match(css, /\.ys-report-v2-product-pager\s+\.ys-inventory-page-token\s*\{\s*display:\s*none;/);
-  assert.match(css, /\.ys-report-v2-chart\s+\.recharts-tooltip-wrapper\s*\{\s*display:\s*none\s*!important;/);
+  assert.match(
+    css,
+    /\.ys-report-v2-product-pager\s+\.ys-inventory-page-token\s*\{\s*display:\s*none;/
+  );
+  assert.match(
+    css,
+    /\.ys-report-v2-chart\s+\.recharts-tooltip-wrapper\s*\{\s*display:\s*none\s*!important;/
+  );
 });
 test("Export and Add Product remain operable and escape their scroll regions", () => {
   assert.match(dialog, /Back\s*to\s*Reports/);
@@ -43,5 +49,8 @@ test("Export and Add Product remain operable and escape their scroll regions", (
   assert.match(planner, /ys-report-v2-picker-footer/);
   assert.match(planner, /addExistingProduct\(candidate\)/);
   assert.match(css, /\.ys-report-v2-picker-body\s*\{\s*flex:\s*1\s*1\s*auto;\s*min-height:\s*0/);
-  assert.match(css, /\.ys-report-v2-picker-footer\s+button\s*\{\s*width:\s*100%;\s*min-height:\s*42px/);
+  assert.match(
+    css,
+    /\.ys-report-v2-picker-footer\s+button\s*\{\s*width:\s*100%;\s*min-height:\s*42px/
+  );
 });

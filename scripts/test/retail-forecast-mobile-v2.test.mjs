@@ -88,7 +88,9 @@ test("Desktop chart keeps a measurable Recharts canvas and existing theme contra
   );
   assert.ok(page.includes('<ResponsiveContainer height="100%" width="100%">'));
   assert.ok(
-    /\.ys-forecast-v2-desktop-chart,\s*\.retail-workspace\s+\.ys-forecast-v2\s+\.ys-forecast-v2-desktop-monthly\s*\{\s*display:\s*none;/.test(css)
+    /\.ys-forecast-v2-desktop-chart,\s*\.retail-workspace\s+\.ys-forecast-v2\s+\.ys-forecast-v2-desktop-monthly\s*\{\s*display:\s*none;/.test(
+      css
+    )
   );
 });
 
@@ -99,7 +101,9 @@ test("Desktop chart keeps axis ticks within its border and explains absent compa
     )
   );
   assert.ok(
-    /<XAxis[\s\S]*?dataKey="month"[\s\S]*?minTickGap=\{24\}[\s\S]*?padding=\{\{ left: 40, right: 40 \}\}[\s\S]*?tickMargin=\{10\}/.test(page)
+    /<XAxis[\s\S]*?dataKey="month"[\s\S]*?minTickGap=\{24\}[\s\S]*?padding=\{\{ left: 40, right: 40 \}\}[\s\S]*?tickMargin=\{10\}/.test(
+      page
+    )
   );
   assert.ok(
     page.includes('<Legend height={36} verticalAlign="bottom" wrapperStyle={{ fontSize: 12 }} />')
