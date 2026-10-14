@@ -27,13 +27,14 @@ test("Customer response hides staff notes and draft contact before dispatch", ()
   assert.ok(!rider.includes("deliveryNotes"));
   assert.ok(rider.includes("navigator.clipboard.writeText"));
 });
-test("Desktop and 320px mobile support calls, notes, safe dispatch and history", () => {
+test("Desktop and 320px mobile support external-copy contact, notes, safe dispatch and history", () => {
   assert.ok(page.includes("Rider phone number (required to dispatch)"));
   assert.ok(page.includes("Save dispatch draft"));
   assert.ok(page.includes("!riderPhoneValid"));
   assert.ok(account.includes("<OrderRiderInformation order={order} />"));
   assert.match(account, /order\.deliveryStatus\s*===\s*"DELIVERED"[\s\S]*?<OrderRiderInformation/);
-  assert.ok(css.includes("@media (max-width: 699px)"));
+  assert.ok(css.includes("@media (max-width: 430px)"));
   assert.ok(css.includes(":root.dark .customer-app"));
-  assert.ok(rider.includes("Call rider"));
+  assert.doesNotMatch(rider, /tel:|Call rider/);
+  assert.match(rider, /className="customer-rider-handoff__copy"/);
 });

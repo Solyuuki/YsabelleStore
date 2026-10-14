@@ -77,8 +77,10 @@ test("rider reference uses a concise placeholder and wraps its helper on narrow 
   assert.match(css, /overflow-wrap:\s*anywhere;/);
 });
 
-test("staff note placeholder fits a narrow ticket without removing privacy guidance", () => {
-  assert.ok(page.includes('placeholder="Staff-only note"'));
+test("internal delivery note is Owner/Staff inclusive and preserves customer privacy", () => {
+  assert.ok(page.includes('placeholder="Internal note for Owner and Staff"'));
+  assert.ok(page.includes("Internal delivery note"));
+  assert.ok(page.includes("Owner &amp; Staff"));
   assert.ok(page.includes("This operational note is not shown to the customer."));
   assert.ok(page.includes("onChange={(event) => setStaffNote(event.target.value)}"));
 });
