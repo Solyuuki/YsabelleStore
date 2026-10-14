@@ -579,7 +579,7 @@ test("mobile review ratings fit six filters in a two-row grid without a scroll r
   );
   assert.match(
     detail,
-    /aria-label=\{\s*rating\s*===\s*null\s*\?\s*`All\s*reviews\s*\(\$\{count\}\)`\s*:\s*`\$\{rating\}-star\s*reviews\s*\(\$\{count\}\)`\}/
+    /aria-label=\{\s*rating\s*===\s*null\s*\?\s*`All\s*reviews\s*\(\$\{count\}\)`\s*:\s*`\$\{rating\}-star\s*reviews\s*\(\$\{count\}\)`\s*\}/
   );
   assert.match(detail, /aria-pressed=\{ratingFilter\s*===\s*rating\}/);
   assert.match(detail, /onClick=\{\(\)\s*=>\s*onFilterChange\(rating\)\}/);
