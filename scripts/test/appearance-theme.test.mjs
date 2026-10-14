@@ -197,7 +197,7 @@ test("staff sidebar has an icon-only persisted appearance toggle in expanded and
   assert.match(sidebar, /useAppearance\(\)/);
   assert.match(sidebar, /user\?\.role === "STAFF" \? \(/);
   assert.match(sidebar, /className="ys-staff-sidebar-theme-toggle/);
-  assert.match(sidebar, /aria-label=\{\`Switch to \$\{retailTheme === "dark" \? "light" : "dark"\} mode\`\}/);
+  assert.match(sidebar, /aria-label=\{`Switch to \$\{retailTheme === "dark" \? "light" : "dark"\} mode`\}/);
   assert.match(sidebar, /aria-pressed=\{retailTheme === "dark"\}/);
   assert.match(sidebar, /setRetailTheme\(retailTheme === "dark" \? "light" : "dark"\)/);
   assert.match(sidebar, /collapsed \? "justify-center" : "justify-between"/);

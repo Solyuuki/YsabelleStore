@@ -418,7 +418,7 @@ test("mobile review ratings fit six filters in a two-row grid without a scroll r
   const qa = read("tools/mobile-qa/run.mjs");
 
   assert.match(detail, /const reviewFilters = \[null, 5, 4, 3, 2, 1\] as const;/);
-  assert.match(detail, /aria-label=\{rating === null \? \`All reviews \(\$\{count\}\)\` : \`\$\{rating\}-star reviews \(\$\{count\}\)\`\}/);
+  assert.match(detail, /aria-label=\{rating === null \? `All reviews \(\$\{count\}\)` : `\$\{rating\}-star reviews \(\$\{count\}\)`\}/);
   assert.match(detail, /aria-pressed=\{ratingFilter === rating\}/);
   assert.match(detail, /onClick=\{\(\) => onFilterChange\(rating\)\}/);
   assert.match(detail, /customer-review-filter__label-full/);
@@ -787,7 +787,7 @@ test("mobile Account button opens five actions and removes the redundant rail", 
   for (const view of ["orders", "favorites", "profile", "security"]) {
     assert.ok(nav.includes('view: "' + view + '"'), "Missing account option " + view);
   }
-  assert.match(nav, /navigate\(\`\/account\?view=\$\{view\}\`\)/);
+  assert.match(nav, /navigate\(`\/account\?view=\$\{view\}`\)/);
   assert.match(nav, /await logout\(\)/);
   assert.match(nav, /createPortal\(/);
 

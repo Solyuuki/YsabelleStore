@@ -65,7 +65,7 @@ test("account actions remain accessible with confirmation and theme parity", () 
   assert.match(nav, /aria-controls="retail-mobile-account-actions"/);
   assert.match(nav, /role === "OWNER" \? \(/);
   assert.match(nav, /navigateAndDismiss\("\/settings"\)/);
-  assert.match(nav, /aria-label=\{\`Switch to \$\{retailTheme === "dark" \? "light" : "dark"\} mode\`\}/);
+  assert.match(nav, /aria-label=\{`Switch to \$\{retailTheme === "dark" \? "light" : "dark"\} mode`\}/);
   assert.match(nav, /setRetailTheme\(retailTheme === "dark" \? "light" : "dark"\)/);
   assert.match(nav, /document\.addEventListener\("pointerdown", handleOutsideClick, true\)/);
   assert.match(nav, /document\.addEventListener\("keydown", handleEscape\)/);

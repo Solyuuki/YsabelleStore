@@ -39,3 +39,5 @@ jobs:
           git diff --cached --check
           git commit -m "chore(format): normalize Sprint 12 Prettier styles"
           git push origin HEAD:sprint/v0.12/sprint-12
+
+# Retry following lint-safe regex normalization
