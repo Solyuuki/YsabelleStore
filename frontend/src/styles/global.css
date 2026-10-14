@@ -1375,10 +1375,8 @@ body {
     justify-items: center;
     gap: 0.75rem;
     overflow-y: auto;
-    padding: max(1.5rem, env(safe-area-inset-top))
-      max(1.5rem, env(safe-area-inset-right))
-      max(1.5rem, env(safe-area-inset-bottom))
-      max(1.5rem, env(safe-area-inset-left));
+    padding: max(1.5rem, env(safe-area-inset-top)) max(1.5rem, env(safe-area-inset-right))
+      max(1.5rem, env(safe-area-inset-bottom)) max(1.5rem, env(safe-area-inset-left));
     background: #f1f4ff;
     color: #182743;
     text-align: center;

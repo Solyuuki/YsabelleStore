@@ -284,7 +284,10 @@ test("phones show a portrait-only guard in landscape while tablets stay rotatabl
     css,
     /@media \(orientation: landscape\) and \(max-width: 1180px\) and \(max-height: 500px\) and \(pointer: coarse\)/
   );
-  assert.match(css, /\.phone-portrait-guard\s*\{[^}]*position: fixed;[^}]*display: grid;[^}]*height: 100dvh;/);
+  assert.match(
+    css,
+    /\.phone-portrait-guard\s*\{[^}]*position: fixed;[^}]*display: grid;[^}]*height: 100dvh;/
+  );
   assert.match(css, /:root\.dark \.phone-portrait-guard\s*\{/);
   assert.doesNotMatch(html + css, /screen\.orientation\.lock/);
 
