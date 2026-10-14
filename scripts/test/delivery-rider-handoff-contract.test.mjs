@@ -27,7 +27,7 @@ test("Customer response hides staff notes and draft contact before dispatch", ()
   assert.ok(!rider.includes("deliveryNotes"));
   assert.ok(rider.includes("navigator.clipboard.writeText"));
 });
-test("Desktop and 320px mobile support external-copy contact, notes, safe dispatch and history", () => {
+test("Mobile rider contact is copy-only and dispatch remains safe", () => {
   assert.ok(page.includes("Rider phone number (required to dispatch)"));
   assert.ok(page.includes("Save dispatch draft"));
   assert.ok(page.includes("!riderPhoneValid"));
