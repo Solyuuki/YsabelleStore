@@ -2,9 +2,11 @@ import {
   Banknote,
   Box,
   CheckCircle2,
+  Copy,
   ChevronDown,
   Clock3,
   CreditCard,
+  LockKeyhole,
   MapPin,
   MessageSquareText,
   PackageCheck,
@@ -211,6 +213,7 @@ export function DeliveriesPage() {
   const [riderPhone, setRiderPhone] = useState("");
   const [customerDeliveryNote, setCustomerDeliveryNote] = useState("");
   const [handoffMessage, setHandoffMessage] = useState("");
+  const [riderCopyFeedback, setRiderCopyFeedback] = useState("");
   const [staffNote, setStaffNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -300,6 +303,7 @@ export function DeliveriesPage() {
   async function openTicket(ticketId: string) {
     if (openingId) return;
     setHandoffMessage("");
+    setRiderCopyFeedback("");
     setOpeningId(ticketId);
     setError("");
     try {
@@ -314,6 +318,15 @@ export function DeliveriesPage() {
   function applySearch() {
     setPage(1);
     setSearch(searchInput.trim());
+  }
+
+  async function copyRiderNumber(number: string) {
+    try {
+      await navigator.clipboard.writeText(number);
+      setRiderCopyFeedback("Rider number copied.");
+    } catch {
+      setRiderCopyFeedback("Copy unavailable. Select the number to copy it manually.");
+    }
   }
 
   async function saveHandoff() {
@@ -960,11 +973,11 @@ export function DeliveriesPage() {
                     />
                   </label>
                   <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
-                    Internal staff note
+                    Internal delivery note
                     <Input
                       maxLength={255}
                       onChange={(event) => setStaffNote(event.target.value)}
-                      placeholder="Staff-only note"
+                      placeholder="Internal note for Owner and Staff"
                       value={staffNote}
                     />
                     <span className="text-xs font-normal leading-5 text-slate-500 dark:text-slate-300">
@@ -980,32 +993,74 @@ export function DeliveriesPage() {
               ) : null}
 
               {["OUT_FOR_DELIVERY", "DELIVERED"].includes(selected.deliveryStatus) ? (
-                <section className="ys-delivery-handoff-summary rounded-xl border border-indigo-200 bg-indigo-50/40 p-4 text-sm dark:border-indigo-400/30 dark:bg-indigo-950/30">
-                  <h3 className="font-semibold text-slate-950 dark:text-slate-100">
-                    Rider handoff details
-                  </h3>
-                  <p className="mt-2 text-slate-700 dark:text-slate-200">
-                    {selected.courierProvider || "Courier"} · {selected.riderName || "Rider"}
-                  </p>
+                <section aria-label="Rider handoff details" className="ys-delivery-handoff-summary">
+                  <div className="ys-delivery-handoff-summary__heading">
+                    <span aria-hidden="true" className="ys-delivery-handoff-summary__icon">
+                      <Truck size={18} />
+                    </span>
+                    <div>
+                      <h3>Rider handoff</h3>
+                      <p>Delivery coordination details</p>
+                    </div>
+                  </div>
+                  <div className="ys-delivery-handoff-summary__identity">
+                    <span aria-hidden="true" className="ys-delivery-handoff-summary__avatar">
+                      {(selected.riderName?.trim() || "Rider").charAt(0).toLocaleUpperCase()}
+                    </span>
+                    <div className="ys-delivery-handoff-summary__rider">
+                      <strong>{selected.riderName || "Delivery rider"}</strong>
+                      <span>{selected.courierProvider || "Courier"} · Delivery partner</span>
+                    </div>
+                  </div>
                   {selected.riderPhone ? (
-                    <a className="ys-delivery-handoff-phone" href={`tel:${selected.riderPhone}`}>
-                      {selected.riderPhone}
-                    </a>
+                    <div className="ys-delivery-handoff-summary__contact">
+                      <div>
+                        <span>Contact number</span>
+                        <strong>{selected.riderPhone}</strong>
+                      </div>
+                      <button
+                        aria-label="Copy rider contact number"
+                        onClick={() => void copyRiderNumber(selected.riderPhone ?? "")}
+                        type="button"
+                      >
+                        <Copy aria-hidden="true" size={16} />
+                        Copy
+                      </button>
+                    </div>
+                  ) : null}
+                  {riderCopyFeedback ? (
+                    <p
+                      aria-live="polite"
+                      className="ys-delivery-handoff-summary__feedback"
+                      role="status"
+                    >
+                      {riderCopyFeedback}
+                    </p>
                   ) : null}
                   {selected.courierReference ? (
-                    <p className="text-xs dark:text-slate-200">
-                      Booking: {selected.courierReference}
+                    <p className="ys-delivery-handoff-summary__reference">
+                      <span>Booking reference</span>
+                      <strong>{selected.courierReference}</strong>
                     </p>
                   ) : null}
                   {selected.customerDeliveryNote ? (
-                    <p className="text-xs dark:text-slate-200">
-                      Customer note: {selected.customerDeliveryNote}
-                    </p>
+                    <div className="ys-delivery-handoff-summary__note">
+                      <div className="ys-delivery-handoff-summary__note-title">
+                        <MessageSquareText aria-hidden="true" size={16} />
+                        <strong>Customer delivery note</strong>
+                      </div>
+                      <p>{selected.customerDeliveryNote}</p>
+                    </div>
                   ) : null}
                   {selected.deliveryNotes ? (
-                    <p className="text-xs dark:text-slate-200">
-                      Staff-only note: {selected.deliveryNotes}
-                    </p>
+                    <div className="ys-delivery-handoff-summary__note ys-delivery-handoff-summary__note--internal">
+                      <div className="ys-delivery-handoff-summary__note-title">
+                        <LockKeyhole aria-hidden="true" size={16} />
+                        <strong>Internal delivery note</strong>
+                        <span>Owner &amp; Staff</span>
+                      </div>
+                      <p>{selected.deliveryNotes}</p>
+                    </div>
                   ) : null}
                 </section>
               ) : null}
