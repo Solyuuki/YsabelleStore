@@ -11,11 +11,13 @@ test("Inventory toolbar filter chevrons have their own flex slot separate from l
     page.indexOf("function InventoryTable(")
   );
 
-  assert.match(toolbar, /<Select[\s\S]*?style=\{\{\s*backgroundImage:\s*"none"\s*\}\}/);
-  assert.match(toolbar, /className="h-auto\s*w-full\s*min-w-0\s*flex-1/);
-  assert.match(toolbar, /<ChevronDown[\s\S]*?pointer-events-none\s*h-4\s*w-4\s*shrink-0/);
-  assert.match(toolbar, /gap-3\s*rounded-md/);
-  assert.doesNotMatch(toolbar, /pr-7/);
+  assert.match(toolbar, /aria-haspopup="listbox"/);
+  assert.match(toolbar, /className="ys-inventory-filter-trigger"/);
+  assert.match(toolbar, /className="ys-inventory-filter-chevron h-4 w-4 shrink-0"/);
+  assert.match(toolbar, /onKeyDown=\{\(event\) =>/);
+  assert.match(toolbar, /role="option"/);
+  assert.match(toolbar, /onChange\(nextValue\)/);
+  assert.doesNotMatch(toolbar, /<select\b/);
   assert.match(page, /minWidthClassName="min-w-\[190px\]"/);
   assert.match(page, /minWidthClassName="min-w-\[198px\]"/);
   assert.match(page, /minWidthClassName="min-w-\[220px\]"/);

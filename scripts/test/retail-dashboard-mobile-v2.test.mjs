@@ -6,11 +6,9 @@ const read = (path) => readFileSync(new URL("../../" + path, import.meta.url), "
 const dashboard = read("frontend/src/pages/DashboardPage.tsx");
 const pulse = read("frontend/src/components/dashboard/SalesPulseCard.tsx");
 const css = read("frontend/src/styles/retail-dashboard-mobile.css");
-const mobile = css
-  .split(
-    "@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {"
-  )[1]
-  ?.split("@media (max-width: 359px) {")[0];
+const mobile = css.match(
+  /@media\s*\(max-width:\s*767px\),\s*\(max-height:\s*500px\)\s*and\s*\(orientation:\s*landscape\)\s*and\s*\(max-width:\s*1024px\)\s*\{([\s\S]*?)(?=@media\s*\(max-width:\s*359px\))/
+)?.[1];
 
 test("Dashboard v2 uses compact two-column KPIs without hiding real summary values", () => {
   assert.match(dashboard, /import\s*"@\/styles\/retail-dashboard-mobile\.css"/);

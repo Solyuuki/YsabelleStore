@@ -128,7 +128,7 @@ test("Google Quick Sign escapes the embedded phone preview before OAuth", () => 
   );
   assert.match(
     service,
-    /customerSocialAuthNavigationWindow\(window\)\.location\.assign\(url\.toString\(\)\)/
+    /authWindow\.location\.assign\(url\.toString\(\)\)/
   );
   assert.match(login, /startCustomerSocialAuth\(provider,\s*\s*quickSignReturnTo,\s*\s*"login"\)/);
   assert.match(register, /startCustomerSocialAuth\(provider,\s*\s*returnTo,\s*\s*"register"\)/);
@@ -383,7 +383,8 @@ test("preview route selection restores from hash, highlights the active view and
         return buttons;
       }
     },
-    window: fakeWindow
+    window: fakeWindow,
+    URLSearchParams
   });
 
   assert.equal(preview.src, "/dashboard");

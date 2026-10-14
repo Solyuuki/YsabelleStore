@@ -37,7 +37,7 @@ test("brand components use only verified approved circular Ysabelle logo sources
   for (const consumer of [header, footer, sidebar]) {
     assert.match(consumer, /YsabelleBrandMark/);
   }
-  assert.match(statusScreen, /BrandLogo/);
+  assert.match(statusScreen, /StatusIllustration/);
   assert.match(statusScreen, /variant\s*!==\s*"system"/);
   assert.match(statusScreen, /status-screen-main--system/);
   assert.doesNotMatch(statusScreen, /status-system-brand-mark/);
