@@ -28,7 +28,8 @@ assert.match(deliveries, /Booking reference \(optional\)/);
 assert.match(deliveries, /Booking ID is separate from rider phone\./);
 assert.match(deliveries, /Rider phone number \(required to dispatch\)/);
 assert.match(deliveries, /Customer delivery note/);
-assert.match(deliveries, /Internal staff note/);
+assert.match(deliveries, /Internal delivery note/);
+assert.match(deliveries, /Owner &amp; Staff/);
 assert.match(deliveries, /Payment received/);
 assert.match(deliveries, /<StaffDeliveryProgress ticket=\{selected\} \/>/);
 
