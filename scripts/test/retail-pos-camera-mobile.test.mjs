@@ -13,19 +13,19 @@ test("mobile POS exposes real camera Scan action without changing desktop scanne
   assert.match(pos, /<PosCameraScanner/);
   assert.match(pos, /open=\{cameraScannerOpen\}/);
   assert.match(pos, /onOpenChange=\{setCameraScannerOpen\}/);
-  assert.match(pos, /aria-label="Scan product barcode using phone camera"/);
+  assert.match(pos, /aria-label="Scan\s*product\s*barcode\s*using\s*phone\s*camera"/);
   assert.match(pos, /className="retail-pos-camera-launch"/);
   assert.match(pos, /setCameraScannerOpen\(true\)/);
-  assert.match(pos, /import "@\/styles\/retail-pos-mobile-scanner\.css"/);
-  assert.match(css, /\.retail-pos-camera-launch\s*\{\s*display: none;/);
+  assert.match(pos, /import\s*"@\/styles\/retail-pos-mobile-scanner\.css"/);
+  assert.match(css, /\.retail-pos-camera-launch\s*\{\s*display:\s*none;/);
   assert.match(
     css,
-    /@media \(max-width: 767px\), \(max-height: 500px\) and \(orientation: landscape\)/
+    /@media\s*\(max-width:\s*767px\),\s*\s*\(max-height:\s*500px\)\s*and\s*\(orientation:\s*landscape\)/
   );
-  assert.match(css, /\.retail-pos-camera-launch\s*\{[^}]*display: inline-flex;/);
+  assert.match(css, /\.retail-pos-camera-launch\s*\{[^}]*display:\s*inline-flex;/);
   assert.match(pos, /ref=\{scannerInputRef\}/);
-  assert.match(pos, /onKeyDown=\{\(event\) =>/);
-  assert.match(pos, /event\.key === "Enter"/);
+  assert.match(pos, /onKeyDown=\{\(event\)\s*=>/);
+  assert.match(pos, /event\.key\s*===\s*"Enter"/);
   assert.match(pos, /searchPosProducts\(/);
 });
 
@@ -92,16 +92,16 @@ test("camera permission states, touch controls and iOS safeguards are accessible
 test("phone search and product cards are compact, usable and theme-aware", () => {
   assert.match(
     css,
-    /\.retail-pos-search-form\s*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/
+    /\.retail-pos-search-form\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*\s*minmax\(0,\s*\s*1fr\)\);/
   );
-  assert.match(css, /\.pos-scanner-field\s*\{[^}]*grid-column: 1 \/ -1;/);
-  assert.match(css, /td\[data-label="Product"\]\s*\{[^}]*grid-column: 1 \/ -1;/);
-  assert.match(css, /td\[data-label="Stock"\]\s*\{[^}]*grid-row: 2;/);
-  assert.match(css, /td\[data-label="Unit price"\]\s*\{[^}]*grid-row: 2;/);
-  assert.match(css, /td\[data-label="Action"\]\s*\{[^}]*grid-row: 3;/);
-  assert.match(css, /td\[data-label="Action"\] button\s*\{[^}]*min-height: 44px;/);
-  assert.match(css, /\.pos-camera-scanner\s*\{[^}]*background: #19283e;/);
-  assert.match(css, /\.pos-camera-scanner__status\s*\{[^}]*color: #d8e5f8;/);
+  assert.match(css, /\.pos-scanner-field\s*\{[^}]*grid-column:\s*1\s*\/\s*-1;/);
+  assert.match(css, /td\[data-label="Product"\]\s*\{[^}]*grid-column:\s*1\s*\/\s*-1;/);
+  assert.match(css, /td\[data-label="Stock"\]\s*\{[^}]*grid-row:\s*2;/);
+  assert.match(css, /td\[data-label="Unit\s*price"\]\s*\{[^}]*grid-row:\s*2;/);
+  assert.match(css, /td\[data-label="Action"\]\s*\{[^}]*grid-row:\s*3;/);
+  assert.match(css, /td\[data-label="Action"\]\s*button\s*\{[^}]*min-height:\s*44px;/);
+  assert.match(css, /\.pos-camera-scanner\s*\{[^}]*background:\s*#19283e;/);
+  assert.match(css, /\.pos-camera-scanner__status\s*\{[^}]*color:\s*#d8e5f8;/);
 });
 
 test("compact mPOS search remains usable at narrow phone widths", () => {

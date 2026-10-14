@@ -44,7 +44,7 @@ test("Mobile ticket item cards show full product, sku, and distinct expected/rem
   assert.match(page, /remainingQuantity\(line\)\.toLocaleString\(\)/);
   assert.match(
     css,
-    /\.ys-receiving-v2-item-quantities\s*\{[^}]*grid-template-columns: repeat\(2,minmax\(0,1fr\)\);/
+    /\.ys-receiving-v2-item-quantities\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/
   );
 });
 test("Compact Receiving pagination retains server page and page-size controls", () => {
@@ -70,8 +70,8 @@ test("Receiving operational backend actions, validations, and modal scroll are r
   ])
     assert.ok(page.includes(fragment), fragment);
   assert.match(page, /ys-receiving-v2-dialog-body/);
-  assert.match(css, /grid-template-rows: auto minmax\(0,1fr\) auto;/);
-  assert.match(css, /overscroll-behavior-y: contain;/);
-  assert.match(css, /@media \(max-width: 359px\)/);
-  assert.match(css, /@media \(min-width: 700px\) and \(max-width: 1024px\)/);
+  assert.match(css, /grid-template-rows:\s*auto\s*minmax\(0,\s*1fr\)\s*auto;/);
+  assert.match(css, /overscroll-behavior-y:\s*contain;/);
+  assert.match(css, /@media\s*\(max-width:\s*359px\)/);
+  assert.match(css, /@media\s*\(min-width:\s*700px\)\s*and\s*\(max-width:\s*1024px\)/);
 });

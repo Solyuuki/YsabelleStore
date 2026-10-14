@@ -31,13 +31,16 @@ test("Mobile pager uses page size, server paging handlers and shared compact pag
   assert.match(page, /className="ys-forecast-v2-desktop-pagination"/);
   assert.match(page, /className="ys-forecast-v2-pager"/);
   assert.match(page, /mobileCompact/);
-  assert.match(page, /pageSizeOptions=\{\[7, 10, 20\]\}/);
+  assert.match(page, /pageSizeOptions=\{\[7,\s*\s*10,\s*\s*20\]\}/);
   assert.match(
     page,
-    /onProductsPageSizeChange=\{\(size\) => \{ setProductsPageSize\(size\); setProductsPage\(1\); \}\}/
+    /onProductsPageSizeChange=\{\(size\)\s*=>\s*\{\s*setProductsPageSize\(size\);\s*setProductsPage\(1\);\s*\}\}/
   );
   assert.match(page, /totalPages=\{pagination\.totalPages\}/);
-  assert.match(css, /\.ys-forecast-v2-pager \.ys-inventory-page-token \{ display: none; \}/);
+  assert.match(
+    css,
+    /\.ys-forecast-v2-pager\s*\.ys-inventory-page-token\s*\{\s*display:\s*none;\s*\}/
+  );
 });
 test("Mobile chart uses real points, never hover popup and provides touch+keyboard selected month", () => {
   assert.match(page, /const mobileForecastRows = visibleForecastRows\.slice\(0, 4\);/);
@@ -66,16 +69,16 @@ test("Monthly cards collapse at 3 but allow full real window, keeping desktop ta
 test("Forecast paging responds to user clicks without reverting to stale API page", () => {
   assert.match(
     page,
-    /setProductsPage\(\(current\) =>\s*current === forecastData\.page \? current : forecastData\.page/
+    /setProductsPage\(\(current\)\s*=>\s*current\s*===\s*forecastData\.page\s*\?\s*current\s*:\s*forecastData\.page/
   );
-  assert.match(page, /\}, \[forecastData\]\);/);
-  assert.doesNotMatch(page, /forecastData\.page !== productsPage/);
+  assert.match(page, /\},\s*\s*\[forecastData\]\);/);
+  assert.doesNotMatch(page, /forecastData\.page\s*!==\s*productsPage/);
   assert.match(
     page,
-    /onProductsPageSizeChange=\{\(size\) => \{ setProductsPageSize\(size\); setProductsPage\(1\); \}\}/
+    /onProductsPageSizeChange=\{\(size\)\s*=>\s*\{\s*setProductsPageSize\(size\);\s*setProductsPage\(1\);\s*\}\}/
   );
-  assert.match(page, /const index = state\?\.activeTooltipIndex;/);
-  assert.match(page, /typeof index === "number" && Number\.isInteger\(index\)/);
+  assert.match(page, /const\s*index\s*=\s*state\?\.activeTooltipIndex;/);
+  assert.match(page, /typeof\s*index\s*===\s*"number"\s*&&\s*Number\.isInteger\(index\)/);
 });
 
 test("Desktop chart keeps a measurable Recharts canvas and existing theme contract", () => {

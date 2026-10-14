@@ -75,20 +75,23 @@ test("phone three-KPI groups fill their two-row grid without an empty fourth slo
   assert.ok(phone, "Expected scoped phone styles");
   assert.match(
     phone,
-    /\.about-experience \.system-preview__metrics\s*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/
+    /\.about-experience\s*\.system-preview__metrics\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*\s*minmax\(0,\s*\s*1fr\)\);/
   );
   assert.match(
     phone,
-    /\.about-experience \.system-preview__metrics > \.system-preview__metric:first-child:nth-last-child\(3\)\s*\{\s*grid-column: 1 \/ -1;/
+    /\.about-experience\s*\.system-preview__metrics\s*>\s*\.system-preview__metric:first-child:nth-last-child\(3\)\s*\{\s*grid-column:\s*1\s*\/\s*-1;/
   );
   assert.match(
     desktop,
-    /\.system-preview__metrics\s*\{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/
+    /\.system-preview__metrics\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*\s*minmax\(0,\s*\s*1fr\)\);/
   );
-  assert.match(component, /<Metric label="Today's sales" value="₱2,993\.00" note="Demo value" \/>/);
-  assert.match(component, /<Metric label="Transactions" value="3" \/>/);
-  assert.match(component, /<Metric label="Units sold" value="50" \/>/);
-  assert.doesNotMatch(phone, /overflow-x: auto/);
+  assert.match(
+    component,
+    /<Metric\s*label="Today's\s*sales"\s*value="₱2,\s*993\.00"\s*note="Demo\s*value"\s*\/>/
+  );
+  assert.match(component, /<Metric\s*label="Transactions"\s*value="3"\s*\/>/);
+  assert.match(component, /<Metric\s*label="Units\s*sold"\s*value="50"\s*\/>/);
+  assert.doesNotMatch(phone, /overflow-x:\s*auto/);
 });
 
 test("Forecast and Delivery show immediately on phones, retaining desktop scroll motion", () => {

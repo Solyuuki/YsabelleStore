@@ -32,10 +32,10 @@ test("Return History paging still loads actual return reports with abort and pag
 
 test("Return History dark-mode page-size and navigation contrast, including select options", () => {
   assert.match(css, /:root\.dark\[data-appearance-scope="retail"\]/);
-  assert.match(css, /color-scheme: dark !important;/);
-  assert.match(css, /select option\s*\{\s*background: #20314a;\s*color: #f4f7ff;/);
-  assert.match(css, /\.ys-receiving-return-pagination > p,/);
-  assert.match(css, /\.ys-receiving-return-pagination nav button:disabled/);
+  assert.match(css, /color-scheme:\s*dark\s*!important;/);
+  assert.match(css, /select\s*option\s*\{\s*background:\s*#20314a;\s*color:\s*#f4f7ff;/);
+  assert.match(css, /\.ys-receiving-return-pagination\s*>\s*p,\s*/);
+  assert.match(css, /\.ys-receiving-return-pagination\s*nav\s*button:disabled/);
 });
 
 test("Incoming Deliveries cards, pagination and actions retain their existing paths", () => {

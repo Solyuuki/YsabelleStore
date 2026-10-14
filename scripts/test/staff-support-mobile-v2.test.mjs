@@ -11,14 +11,17 @@ test("Support mobile has compact tickets and a conversation-first layout", () =>
   assert.match(page, /ys-support-mobile-status-chips/);
   assert.match(page, /ys-support-ticket-avatar/);
   assert.match(page, /ys-support-mobile-chat-header/);
-  assert.match(page, /onBack=\{\(\) => \{/);
+  assert.match(page, /onBack=\{\(\)\s*=>\s*\{/);
   assert.match(page, /setMobileConversationOpen\(true\)/);
-  assert.match(css, /@media \(max-width: 1024px\)/);
-  assert.match(css, /\.ys-support-desktop-conversation-header,/);
-  assert.match(css, /\.ys-support-desktop-reply-form \{ display: none; \}/);
+  assert.match(css, /@media\s*\(max-width:\s*1024px\)/);
+  assert.match(css, /\.ys-support-desktop-conversation-header,\s*/);
+  assert.match(css, /\.ys-support-desktop-reply-form\s*\{\s*display:\s*none;\s*\}/);
 });
 test("Ticket details and status editor are collapsible but operational on mobile", () => {
-  assert.match(page, /const \[mobileDetailsOpen, setMobileDetailsOpen\] = useState\(false\)/);
+  assert.match(
+    page,
+    /const\s*\[mobileDetailsOpen,\s*\s*setMobileDetailsOpen\]\s*=\s*useState\(false\)/
+  );
   assert.match(page, /aria-expanded=\{mobileDetailsOpen\}/);
   assert.match(page, /ys-support-mobile-ticket-details/);
   for (const text of [
@@ -29,13 +32,13 @@ test("Ticket details and status editor are collapsible but operational on mobile
   ]) {
     assert.ok(page.includes(text), "missing ticket fact: " + text);
   }
-  assert.match(page, /statusOptions\.map\(\(status\) =>/);
+  assert.match(page, /statusOptions\.map\(\(status\)\s*=>/);
   assert.match(page, /onStatusSave/);
-  assert.match(page, /updateStaffSupportTicketStatus\(detail\.id, nextStatus\)/);
-  assert.match(page, /nextStatus === "RESOLVED"/);
+  assert.match(page, /updateStaffSupportTicketStatus\(detail\.id,\s*\s*nextStatus\)/);
+  assert.match(page, /nextStatus\s*===\s*"RESOLVED"/);
   assert.match(page, /STATUS_TRANSITIONS\[detail.status\]/);
-  assert.match(page, /mobileConversationOpenRef\.current \|\| result.items.some/);
-  assert.match(page, /onReopen=\{\(\) => void saveStatus\("OPEN"\)\}/);
+  assert.match(page, /mobileConversationOpenRef\.current\s*\|\|\s*result.items.some/);
+  assert.match(page, /onReopen=\{\(\)\s*=>\s*void\s*saveStatus\("OPEN"\)\}/);
 });
 test("Closed ticket reopen goes through same status API and outgoing reply uses existing Gmail safeguards", () => {
   assert.match(page, /onReopen=\{\(\) => void saveStatus\("OPEN"\)\}/);
@@ -49,14 +52,14 @@ test("Closed ticket reopen goes through same status API and outgoing reply uses 
 });
 test("Mobile conversation has dedicated scrolling and sticky readable compose controls", () => {
   assert.match(page, /ref=\{mobileThreadRef\}/);
-  assert.match(page, /thread.scrollTop = thread.scrollHeight/);
+  assert.match(page, /thread.scrollTop\s*=\s*thread.scrollHeight/);
   assert.match(css, /\.ys-support-mobile-composer\s*\{[^}]*safe-area-inset-bottom/);
   assert.match(css, /\.ys-support-mobile-ticket-details\[data-open="true"\]\s*\{/);
   assert.match(
     css,
-    /:root.dark .retail-workspace \[data-retail-module="customer-support"\] .ys-support-mobile-compose-row textarea/
+    /:root.dark\s*.retail-workspace\s*\[data-retail-module="customer-support"\]\s*.ys-support-mobile-compose-row\s*textarea/
   );
-  assert.match(css, /@media \(max-width: 359px\)/);
+  assert.match(css, /@media\s*\(max-width:\s*359px\)/);
 });
 
 test("Switching tickets never briefly renders another ticket's messages or status actions", () => {
@@ -70,34 +73,34 @@ test("status pills keep full labels and expose two-way horizontal navigation at 
   assert.match(page, /scrollStatusChips\(-1\)/);
   assert.match(page, /scrollStatusChips\(1\)/);
   assert.match(page, /data-scrollable=\{statusChipsScroll.hasOverflow\}/);
-  assert.match(css, /\.ys-support-mobile-status-toolbar\s*\{[^}]*flex-direction: column;/);
+  assert.match(css, /\.ys-support-mobile-status-toolbar\s*\{[^}]*flex-direction:\s*column;/);
   assert.match(
     css,
-    /\.ys-support-status-scroll-buttons\[data-scrollable="false"\]\s*\{\s*display: none;/
+    /\.ys-support-status-scroll-buttons\[data-scrollable="false"\]\s*\{\s*display:\s*none;/
   );
-  assert.match(css, /\.ys-support-mobile-status-toolbar, \.ys-support-mobile-status-chips/);
-  assert.match(page, /aria-label="Previous status choices"/);
-  assert.match(page, /aria-label="Next status choices"/);
+  assert.match(css, /\.ys-support-mobile-status-toolbar,\s*\s*\.ys-support-mobile-status-chips/);
+  assert.match(page, /aria-label="Previous\s*status\s*choices"/);
+  assert.match(page, /aria-label="Next\s*status\s*choices"/);
   assert.match(page, /setStatusFilter\(filter\)/);
   assert.match(page, /resetToFirstPage\(\)/);
-  assert.match(css, /min-width: max-content;/);
-  assert.match(css, /white-space: nowrap;/);
-  assert.match(css, /scroll-snap-type: x proximity;/);
-  assert.match(css, /touch-action: pan-x;/);
+  assert.match(css, /min-width:\s*max-content;/);
+  assert.match(css, /white-space:\s*nowrap;/);
+  assert.match(css, /scroll-snap-type:\s*x\s*proximity;/);
+  assert.match(css, /touch-action:\s*pan-x;/);
 });
 
 test("support More filters stacks complete select values based on actual panel width", () => {
-  assert.match(css, /container: support-filters \/ inline-size;/);
-  assert.match(css, /@container support-filters \(max-width: 430px\)/);
-  assert.match(css, /grid-template-columns: minmax\(0, 1fr\);/);
-  assert.match(page, /className="ys-support-filter-field grid/);
-  assert.match(page, /className="ys-support-filter-select ys-retail-select-chevron/);
+  assert.match(css, /container:\s*support-filters\s*\/\s*inline-size;/);
+  assert.match(css, /@container\s*support-filters\s*\(max-width:\s*430px\)/);
+  assert.match(css, /grid-template-columns:\s*minmax\(0,\s*\s*1fr\);/);
+  assert.match(page, /className="ys-support-filter-field\s*grid/);
+  assert.match(page, /className="ys-support-filter-select\s*ys-retail-select-chevron/);
   assert.match(page, /aria-label=\{label\}/);
   assert.match(css, /\.ys-support-filter-select\s*\{/);
-  assert.match(css, /min-height: 44px;/);
+  assert.match(css, /min-height:\s*44px;/);
   assert.match(
     css,
-    /:root.dark .retail-workspace \[data-retail-module="customer-support"\] .ys-support-filter-select option/
+    /:root.dark\s*.retail-workspace\s*\[data-retail-module="customer-support"\]\s*.ys-support-filter-select\s*option/
   );
 });
 

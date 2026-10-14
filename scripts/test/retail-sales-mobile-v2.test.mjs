@@ -59,11 +59,17 @@ test("Receipt item rows retain exact transaction line, batch, and total values",
   assert.match(css, /font-variant-numeric: tabular-nums;/);
 });
 test("Sales pagination keeps real page-size controls and compact mobile page number", () => {
-  assert.match(sales, /const SALES_PAGE_SIZE_OPTIONS = \[5, 10, 20\] as const;/);
+  assert.match(
+    sales,
+    /const\s*SALES_PAGE_SIZE_OPTIONS\s*=\s*\[5,\s*\s*10,\s*\s*20\]\s*as\s*const;/
+  );
   assert.match(sales, /setSalesPageSize\(nextSize\)/);
   assert.match(sales, /setSalesPage\(1\)/);
   assert.match(sales, /mobileCompact/);
-  assert.match(css, /\.ys-sales-pagination \.ys-inventory-page-token \{ display: none; \}/);
+  assert.match(
+    css,
+    /\.ys-sales-pagination\s*\.ys-inventory-page-token\s*\{\s*display:\s*none;\s*\}/
+  );
 });
 test("Print dialog Close button remains readable in dark mode and official paper unchanged", () => {
   assert.match(sales, /className="ys-sales-print-dialog"/);

@@ -20,27 +20,30 @@ test("Products mobile v2 uses a compact separate catalog presentation without re
   assert.match(css, /-webkit-line-clamp: 2;/);
 });
 test("Mobile custom filter and sort actions reuse real server-side behavior", () => {
-  assert.match(page, /onChange=\{\(event\) => handleSearchChange\(event.target.value\)\}/);
+  assert.match(page, /onChange=\{\(event\)\s*=>\s*handleSearchChange\(event.target.value\)\}/);
   assert.match(page, /handleStatusFilterChange\(value\)/);
   assert.match(page, /handleQualityFilterChange\(value\)/);
   assert.match(page, /onSortOrderChange\(value\)/);
   assert.match(
     wrapper,
-    /ProductsPageLegacy key=\{catalogRevision\} onSortOrderChange=\{handleSortOrderChange\} sortOrder=\{sortOrder\}/
+    /ProductsPageLegacy\s*key=\{catalogRevision\}\s*onSortOrderChange=\{handleSortOrderChange\}\s*sortOrder=\{sortOrder\}/
   );
-  assert.match(wrapper, /url.searchParams.set\("sortOrder", activeCatalogSortOrder\)/);
+  assert.match(wrapper, /url.searchParams.set\("sortOrder",\s*\s*activeCatalogSortOrder\)/);
   assert.match(page, /aria-expanded=\{mobileFiltersOpen\}/);
-  assert.match(page, /aria-pressed=\{statusFilter === value\}/);
-  assert.match(page, /aria-pressed=\{qualityFilter === value\}/);
-  assert.match(page, /aria-pressed=\{sortOrder === value\}/);
+  assert.match(page, /aria-pressed=\{statusFilter\s*===\s*value\}/);
+  assert.match(page, /aria-pressed=\{qualityFilter\s*===\s*value\}/);
+  assert.match(page, /aria-pressed=\{sortOrder\s*===\s*value\}/);
 });
 test("Deliveries-style mobile pager retains page change and page size handlers", () => {
   assert.match(page, /className="ys-products-v2-pagination"/);
   assert.match(page, /mobileCompact/);
   assert.match(page, /onPageChange=\{handlePageChange\}/);
   assert.match(page, /onPageSizeChange=\{handlePageSizeChange\}/);
-  assert.match(css, /\.ys-products-v2-pagination \.ys-inventory-page-token \{ display: none; \}/);
-  assert.match(css, /\.ys-products-v2-pagination \.ys-inventory-mobile-page-label/);
+  assert.match(
+    css,
+    /\.ys-products-v2-pagination\s*\.ys-inventory-page-token\s*\{\s*display:\s*none;\s*\}/
+  );
+  assert.match(css, /\.ys-products-v2-pagination\s*\.ys-inventory-mobile-page-label/);
 });
 test("Package import keeps scanner validation but provides compact dialog presentation", () => {
   assert.match(pkg, /ys-products-v2-import-heading/);
@@ -76,36 +79,36 @@ test("Desktop catalog override selectors still target actual Products v2 section
 });
 
 test("Compact status and import source controls have accessible names and accurate availability colors", () => {
-  assert.match(page, /data-available=\{product.status === "ACTIVE"\}/);
+  assert.match(page, /data-available=\{product.status\s*===\s*"ACTIVE"\}/);
   assert.match(css, /\.ys-products-v2-product-availability\[data-available="false"\]/);
   assert.match(
     pkg,
-    /aria-label=\{showGuide \? "Hide product import guide" : "Show product import guide"\}/
+    /aria-label=\{showGuide\s*\?\s*"Hide\s*product\s*import\s*guide"\s*:\s*"Show\s*product\s*import\s*guide"\}/
   );
   assert.match(pkg, /ys-products-v2-source-tab/);
   assert.match(pkg, /ys-products-v2-local-label/);
-  assert.match(css, /\.ys-products-v2-local-label::after \{ content: "Local file";/);
+  assert.match(css, /\.ys-products-v2-local-label::after\s*\{\s*content:\s*"Local\s*file";/);
 });
 
 test("approved product image uses a single compact quality row and upload control", () => {
   const component = read("frontend/src/components/catalog/ProductImageUploadPanel.tsx");
   assert.match(component, /className="ys-product-image-quality-card/);
-  assert.match(component, /data-needs-action=\{candidate\.qualityStatus !== "APPROVED"\}/);
+  assert.match(component, /data-needs-action=\{candidate\.qualityStatus\s*!==\s*"APPROVED"\}/);
   assert.match(component, /className="ys-product-image-quality-heading/);
-  assert.match(component, /<QualityIndicator status=\{candidate\.qualityStatus\} \/>/);
+  assert.match(component, /<QualityIndicator\s*status=\{candidate\.qualityStatus\}\s*\/>/);
   assert.match(component, /className="ys-product-image-quality-actions/);
-  assert.match(component, /aria-label="Upload another product image"/);
+  assert.match(component, /aria-label="Upload\s*another\s*product\s*image"/);
   assert.match(component, /ys-product-image-replace-mobile">Replace/);
-  assert.match(component, /ys-product-image-updated inline-flex/);
-  assert.match(component, /\{selectedFile && !candidate \? \(/);
+  assert.match(component, /ys-product-image-updated\s*inline-flex/);
+  assert.match(component, /\{selectedFile\s*&&\s*!candidate\s*\?\s*\(/);
   assert.match(component, /onClick=\{openPicker\}/);
   assert.match(
     css,
-    /\.ys-product-image-quality-card\[data-needs-action="false"\] \.ys-product-image-approved-description/
+    /\.ys-product-image-quality-card\[data-needs-action="false"\]\s*\.ys-product-image-approved-description/
   );
   assert.match(
     css,
-    /\.ys-product-image-previews\s*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/
+    /\.ys-product-image-previews\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*\s*minmax\(0,\s*\s*1fr\)\);/
   );
 });
 test("image quality errors and all approval/discard actions remain intact", () => {
@@ -127,12 +130,12 @@ test("Products search never paints a separate dark input rectangle", () => {
 test("approved photo hides redundant mobile upload guidance without removing upload controls", () => {
   const component = read("frontend/src/components/catalog/ProductImageUploadPanel.tsx");
   assert.match(component, /className="ys-product-image-guidance/);
-  assert.match(component, /ys-product-image-updated inline-flex[^"]*" role="status"/);
+  assert.match(component, /ys-product-image-updated\s*inline-flex[^"]*"\s*role="status"/);
   assert.match(
     css,
-    /\.ys-product-image-panel\[data-quality-status="APPROVED"\] \.ys-product-image-guidance\s*\{\s*display: none;/
+    /\.ys-product-image-panel\[data-quality-status="APPROVED"\]\s*\.ys-product-image-guidance\s*\{\s*display:\s*none;/
   );
-  assert.match(component, /Upload a normal product photo/);
+  assert.match(component, /Upload\s*a\s*normal\s*product\s*photo/);
   assert.match(component, /onClick=\{openPicker\}/);
 });
 

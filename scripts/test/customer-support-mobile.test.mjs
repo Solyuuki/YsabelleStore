@@ -75,31 +75,34 @@ test("supplemental help remains accessible, while the mobile FAQ and tips start 
   const page = read("frontend/src/pages/customer/CustomerSupportPage.tsx");
   const css = read("frontend/src/styles/customer-support-mobile.css");
 
-  assert.match(page, /const \[showSupportTips, setShowSupportTips\] = useState\(false\)/);
-  assert.match(page, /const \[showSupportFaq, setShowSupportFaq\] = useState\(false\)/);
+  assert.match(
+    page,
+    /const\s*\[showSupportTips,\s*\s*setShowSupportTips\]\s*=\s*useState\(false\)/
+  );
+  assert.match(page, /const\s*\[showSupportFaq,\s*\s*setShowSupportFaq\]\s*=\s*useState\(false\)/);
   assert.match(page, /aria-controls="customer-support-tips-panel"/);
   assert.match(page, /aria-expanded=\{showSupportTips\}/);
   assert.match(page, /aria-controls="customer-support-faq-list"/);
   assert.match(page, /aria-expanded=\{showSupportFaq\}/);
-  assert.match(page, /setShowSupportTips\(\(open\) => !open\)/);
-  assert.match(page, /setShowSupportFaq\(\(open\) => !open\)/);
-  assert.match(page, /FAQS\.map\(\(faq\) =>/);
-  assert.match(css, /\.customer-app \.customer-support-faq__list\s*\{\s*display: none;/);
+  assert.match(page, /setShowSupportTips\(\(open\)\s*=>\s*!open\)/);
+  assert.match(page, /setShowSupportFaq\(\(open\)\s*=>\s*!open\)/);
+  assert.match(page, /FAQS\.map\(\(faq\)\s*=>/);
+  assert.match(css, /\.customer-app\s*\.customer-support-faq__list\s*\{\s*display:\s*none;/);
   assert.match(
     css,
-    /\.customer-app \.customer-support-faq\[data-mobile-open="true"\] \.customer-support-faq__list\s*\{\s*display: grid;/
+    /\.customer-app\s*\.customer-support-faq\[data-mobile-open="true"\]\s*\.customer-support-faq__list\s*\{\s*display:\s*grid;/
   );
   assert.match(
     css,
-    /\.customer-app \.customer-support-sidebar\[data-mobile-open="true"\] \.customer-support-sidebar__content\s*\{\s*display: grid;/
+    /\.customer-app\s*\.customer-support-sidebar\[data-mobile-open="true"\]\s*\.customer-support-sidebar__content\s*\{\s*display:\s*grid;/
   );
   assert.match(
     css,
-    /\.customer-app \.customer-support-mobile-disclosure:focus-visible\s*\{[^}]*outline: 3px/
+    /\.customer-app\s*\.customer-support-mobile-disclosure:focus-visible\s*\{[^}]*outline:\s*3px/
   );
   assert.match(
     css,
-    /:root\.dark \.customer-app \.customer-support-mobile-disclosure\s*\{[^}]*color: #eef3ff;/
+    /:root\.dark\s*\.customer-app\s*\.customer-support-mobile-disclosure\s*\{[^}]*color:\s*#eef3ff;/
   );
 });
 

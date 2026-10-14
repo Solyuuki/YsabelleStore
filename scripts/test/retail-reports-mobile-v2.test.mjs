@@ -21,27 +21,27 @@ test("Reports Mobile v2 partitions real backend data into compact views", () => 
 test("Forecast cards retain real selections and compact Deliveries-style pager", () => {
   assert.match(forecast, /openForecastProduct\(item\.product\.id\)/);
   assert.match(forecast, /data-mobile-detail=\{mobileDetailOpen\}/);
-  assert.match(forecast, /Back to products/);
+  assert.match(forecast, /Back\s*to\s*products/);
   assert.match(forecast, /mobileCompact/);
   assert.match(forecast, /ys-report-v2-product-pager/);
   assert.match(forecast, /buildDemandChart\(selected\)/);
   assert.match(forecast, /ys-report-v2-chart-readout/);
-  assert.match(css, /\.ys-report-v2-product-pager \.ys-inventory-page-token\{display:none\}/);
-  assert.match(css, /\.ys-report-v2-chart \.recharts-tooltip-wrapper\{display:none!important\}/);
+  assert.match(css, /\.ys-report-v2-product-pager\s*\.ys-inventory-page-token\{display:none\}/);
+  assert.match(css, /\.ys-report-v2-chart\s*\.recharts-tooltip-wrapper\{display:none!important\}/);
 });
 test("Export and Add Product remain operable and escape their scroll regions", () => {
-  assert.match(dialog, /Back to Reports/);
-  assert.match(dialog, /Close download report/);
+  assert.match(dialog, /Back\s*to\s*Reports/);
+  assert.match(dialog, /Close\s*download\s*report/);
   assert.match(dialog, /ys-report-v2-download-footer/);
-  assert.match(dialog, /onClick=\{\(\) => void handlePdf\(\)\}/);
-  assert.match(dialog, /onClick=\{\(\) => void handlePrint\(\)\}/);
-  assert.match(dialog, /onClick=\{\(\) => void handleCsv\(\)\}/);
+  assert.match(dialog, /onClick=\{\(\)\s*=>\s*void\s*handlePdf\(\)\}/);
+  assert.match(dialog, /onClick=\{\(\)\s*=>\s*void\s*handlePrint\(\)\}/);
+  assert.match(dialog, /onClick=\{\(\)\s*=>\s*void\s*handleCsv\(\)\}/);
   assert.ok(
     planner.includes('<DialogContent className="ys-restock-product-picker max-w-[820px]">')
   );
   assert.match(planner, /ys-report-v2-picker-body/);
   assert.match(planner, /ys-report-v2-picker-footer/);
   assert.match(planner, /addExistingProduct\(candidate\)/);
-  assert.match(css, /\.ys-report-v2-picker-body\{flex:1 1 auto;min-height:0/);
-  assert.match(css, /\.ys-report-v2-picker-footer button\{width:100%;min-height:42px\}/);
+  assert.match(css, /\.ys-report-v2-picker-body\{flex:1\s*1\s*auto;min-height:0/);
+  assert.match(css, /\.ys-report-v2-picker-footer\s*button\{width:100%;min-height:42px\}/);
 });

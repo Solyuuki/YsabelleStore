@@ -84,27 +84,27 @@ test("mobile preview supports portrait-only phones, rotating tablets and live ro
   for (const width of ["320,640", "360,800", "390,844", "430,932", "768,1024"]) {
     assert.ok(page.includes(width), "Missing preview width: " + width);
   }
-  assert.match(page, /<iframe[^>]+title="YsabelleStore live mobile viewport"/);
+  assert.match(page, /<iframe[^>]+title="YsabelleStore\s*live\s*mobile\s*viewport"/);
   assert.match(page, /id="rotate"[^>]+disabled/);
   for (const phone of ["320,640", "360,800", "375,812", "390,844", "412,915", "430,932"]) {
     assert.ok(page.includes(`data-orientation="portrait" value="${phone}"`));
   }
-  assert.match(page, /data-orientation="both" value="768,1024"/);
+  assert.match(page, /data-orientation="both"\s*value="768,\s*1024"/);
   assert.match(page, /id="orientation-hint"/);
-  assert.match(page, /rotateButton\.disabled = !tablet/);
-  assert.match(page, /if \(!canRotate\(\)\) return;/);
-  assert.match(page, /if \(!tablet\) landscape = false;/);
-  assert.match(page, /data-view="welcome" data-route="\/\?preview=welcome"/);
-  assert.match(page, /data-view="pos" data-route="\/pos"/);
-  assert.match(page, /data-view="dashboard" data-route="\/dashboard"/);
-  assert.match(page, /data-view="storefront" data-route="\/shop"/);
+  assert.match(page, /rotateButton\.disabled\s*=\s*!tablet/);
+  assert.match(page, /if\s*\(!canRotate\(\)\)\s*return;/);
+  assert.match(page, /if\s*\(!tablet\)\s*landscape\s*=\s*false;/);
+  assert.match(page, /data-view="welcome"\s*data-route="\/\?preview=welcome"/);
+  assert.match(page, /data-view="pos"\s*data-route="\/pos"/);
+  assert.match(page, /data-view="dashboard"\s*data-route="\/dashboard"/);
+  assert.match(page, /data-view="storefront"\s*data-route="\/shop"/);
   assert.match(page, /<iframe[^>]+src="\/\?preview=welcome"/);
   assert.match(page, /window\.addEventListener\("hashchange"/);
   assert.match(page, /button\.setAttribute\("aria-pressed"/);
   const customerApp = read("frontend/src/app/CustomerApp.tsx");
-  assert.match(customerApp, /import\.meta\.env\.VITE_MOBILE_PREVIEW === "1"/);
-  assert.match(customerApp, /locationUrl\.searchParams\.get\("preview"\) === "welcome"/);
-  assert.match(page, /Layout preview only/);
+  assert.match(customerApp, /import\.meta\.env\.VITE_MOBILE_PREVIEW\s*===\s*"1"/);
+  assert.match(customerApp, /locationUrl\.searchParams\.get\("preview"\)\s*===\s*"welcome"/);
+  assert.match(page, /Layout\s*preview\s*only/);
   assert.doesNotMatch(page, /http:\/\/localhost:3001/);
 });
 
@@ -114,19 +114,25 @@ test("Google Quick Sign escapes the embedded phone preview before OAuth", () => 
   const login = read("frontend/src/pages/customer/CustomerLoginPage.tsx");
   const register = read("frontend/src/pages/customer/CustomerRegisterPage.tsx");
 
-  assert.match(service, /customerSocialAuthNavigationWindow\(currentWindow: Window\): Window/);
-  assert.match(service, /if \(currentWindow\.self === currentWindow\.top\) return currentWindow;/);
-  assert.match(service, /parent === currentWindow\.top/);
-  assert.match(service, /parent\.location\.origin === currentWindow\.location\.origin/);
-  assert.match(service, /parent\.location\.pathname === "\/mobile-preview\.html"/);
-  assert.match(service, /throw new Error\([\s\S]*?Open Ysabelle Store in a full browser tab/);
+  assert.match(service, /customerSocialAuthNavigationWindow\(currentWindow:\s*Window\):\s*Window/);
+  assert.match(
+    service,
+    /if\s*\(currentWindow\.self\s*===\s*currentWindow\.top\)\s*return\s*currentWindow;/
+  );
+  assert.match(service, /parent\s*===\s*currentWindow\.top/);
+  assert.match(service, /parent\.location\.origin\s*===\s*currentWindow\.location\.origin/);
+  assert.match(service, /parent\.location\.pathname\s*===\s*"\/mobile-preview\.html"/);
+  assert.match(
+    service,
+    /throw\s*new\s*Error\([\s\S]*?Open\s*Ysabelle\s*Store\s*in\s*a\s*full\s*browser\s*tab/
+  );
   assert.match(
     service,
     /customerSocialAuthNavigationWindow\(window\)\.location\.assign\(url\.toString\(\)\)/
   );
-  assert.match(login, /startCustomerSocialAuth\(provider, quickSignReturnTo, "login"\)/);
-  assert.match(register, /startCustomerSocialAuth\(provider, returnTo, "register"\)/);
-  assert.match(preview, /Google Quick Sign opens the full browser page/);
+  assert.match(login, /startCustomerSocialAuth\(provider,\s*\s*quickSignReturnTo,\s*\s*"login"\)/);
+  assert.match(register, /startCustomerSocialAuth\(provider,\s*\s*returnTo,\s*\s*"register"\)/);
+  assert.match(preview, /Google\s*Quick\s*Sign\s*opens\s*the\s*full\s*browser\s*page/);
 });
 
 test("OAuth returns to the signed-in mobile preview, restores the viewport and clears stale routing", () => {

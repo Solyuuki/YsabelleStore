@@ -7,11 +7,11 @@ const page = read("frontend/src/pages/DeliveriesPage.tsx");
 const css = read("frontend/src/styles/retail-deliveries-mobile-v2.css");
 
 test("delivery tickets keep single-source server pagination with compact mobile rows", () => {
-  assert.match(page, /ys-delivery-metrics grid/);
-  assert.match(page, /ys-delivery-ticket-table retail-mobile-data-table/);
-  assert.match(page, /tickets\.map\(\(ticket\) =>/);
+  assert.match(page, /ys-delivery-metrics\s*grid/);
+  assert.match(page, /ys-delivery-ticket-table\s*retail-mobile-data-table/);
+  assert.match(page, /tickets\.map\(\(ticket\)\s*=>/);
   assert.match(page, /openTicket\(ticket\.id\)/);
-  assert.match(css, /grid-template-columns: repeat\(2,minmax\(0,1fr\)\);/);
+  assert.match(css, /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/);
 });
 
 test("mobile delivery filtering and search preserve backend semantics", () => {
@@ -26,10 +26,10 @@ test("mobile delivery filtering and search preserve backend semantics", () => {
 });
 
 test("ticket details expose full mobile scroll, a close button and full delivery progress", () => {
-  assert.match(page, /ys-delivery-ticket-dialog max-h/);
-  assert.match(page, /aria-label="Close delivery ticket"/);
-  assert.match(page, /ys-delivery-progress-steps flex min-w-\[650px\]/);
-  assert.match(css, /ys-delivery-progress-steps \{ display: grid;/);
+  assert.match(page, /ys-delivery-ticket-dialog\s*max-h/);
+  assert.match(page, /aria-label="Close\s*delivery\s*ticket"/);
+  assert.match(page, /ys-delivery-progress-steps\s*flex\s*min-w-\[650px\]/);
+  assert.match(css, /ys-delivery-progress-steps\s*\{\s*display:\s*grid;/);
   assert.doesNotMatch(page, /<ScrollArea/);
   assert.match(page, /selected\.timeline\.map/);
   assert.match(page, /selected\.items\.map/);
@@ -58,8 +58,8 @@ test("delivery search displays only one visual search icon without changing subm
     page.indexOf('className="ys-delivery-filter-toggle')
   );
   assert.equal((searchSection.match(/<Search\b/g) ?? []).length, 1);
-  assert.match(searchSection, /type="submit" variant="secondary"/);
-  assert.match(searchSection, /onSubmit=\{\(event\) =>/);
+  assert.match(searchSection, /type="submit"\s*variant="secondary"/);
+  assert.match(searchSection, /onSubmit=\{\(event\)\s*=>/);
 });
 
 test("delivery pagination places compact page size at left and page controls at right on phones", () => {
@@ -71,10 +71,10 @@ test("delivery pagination places compact page size at left and page controls at 
 });
 
 test("rider reference uses a concise placeholder and wraps its helper on narrow ticket screens", () => {
-  assert.match(page, /placeholder="Phone, ID or plate"/);
+  assert.match(page, /placeholder="Phone,\s*\s*ID\s*or\s*plate"/);
   assert.match(page, /ys-delivery-rider-helper/);
   assert.match(css, /\.ys-delivery-rider-helper\s*\{/);
-  assert.match(css, /overflow-wrap: anywhere;/);
+  assert.match(css, /overflow-wrap:\s*anywhere;/);
 });
 
 test("staff note placeholder fits a narrow ticket without removing privacy guidance", () => {

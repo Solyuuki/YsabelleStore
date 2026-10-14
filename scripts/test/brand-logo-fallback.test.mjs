@@ -21,24 +21,24 @@ test("brand components use only verified approved circular Ysabelle logo sources
   for (const component of [brandLogo, customerMark]) {
     assert.match(
       component,
-      /import officialMark128Url from "@\/assets\/brand\/ysabelle-approved-mark-128\.png";/
+      /import\s*officialMark128Url\s*from\s*"@\/assets\/brand\/ysabelle-approved-mark-128\.png";/
     );
     assert.match(
       component,
-      /import officialMark180Url from "@\/assets\/brand\/ysabelle-approved-mark-180\.png";/
+      /import\s*officialMark180Url\s*from\s*"@\/assets\/brand\/ysabelle-approved-mark-180\.png";/
     );
     assert.match(component, /src=\{officialMark180Url\}/);
     assert.match(component, /srcSet=\{APPROVED_MARK_SOURCES\}/);
     assert.doesNotMatch(component, /ysabelle-store-mark-256\.png|ysabelle-logo-official\.webp/);
     assert.doesNotMatch(component, /<svg[\s>]|ysabelle-brand-mark__fallback/);
-    assert.doesNotMatch(component, /M18 21h28|#625bff|#008cff/);
+    assert.doesNotMatch(component, /M18\s*21h28|#625bff|#008cff/);
   }
 
   for (const consumer of [header, footer, sidebar]) {
     assert.match(consumer, /YsabelleBrandMark/);
   }
   assert.match(statusScreen, /BrandLogo/);
-  assert.match(statusScreen, /variant !== "system"/);
+  assert.match(statusScreen, /variant\s*!==\s*"system"/);
   assert.match(statusScreen, /status-screen-main--system/);
   assert.doesNotMatch(statusScreen, /status-system-brand-mark/);
 

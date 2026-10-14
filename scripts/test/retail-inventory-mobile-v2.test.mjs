@@ -63,11 +63,14 @@ test("Inventory pagination mirrors Deliveries: compact current-page button betwe
   const pager = read("frontend/src/components/shared/AppPagination.tsx");
   assert.match(inventory, /className="ys-inventory-pagination"/);
   assert.match(inventory, /mobileCompact/);
-  assert.match(pager, /aria-label=\{`Page \${currentPage} of \${resolvedTotalPages}`\}/);
-  assert.match(css, /\.ys-inventory-pagination > div > label > span\s*\{\s*display: none;/);
-  assert.match(css, /\.ys-inventory-page-token\s*\{\s*display: none;/);
-  assert.match(css, /\.ys-inventory-pagination \.ys-inventory-mobile-page-label/);
-  assert.match(css, /\.ys-inventory-pagination nav > ul/);
+  assert.match(pager, /aria-label=\{`Page\s*\${currentPage}\s*of\s*\${resolvedTotalPages}`\}/);
+  assert.match(
+    css,
+    /\.ys-inventory-pagination\s*>\s*div\s*>\s*label\s*>\s*span\s*\{\s*display:\s*none;/
+  );
+  assert.match(css, /\.ys-inventory-page-token\s*\{\s*display:\s*none;/);
+  assert.match(css, /\.ys-inventory-pagination\s*\.ys-inventory-mobile-page-label/);
+  assert.match(css, /\.ys-inventory-pagination\s*nav\s*>\s*ul/);
 });
 
 test("mobile stock receiving and adjustment remain horizontal and scrollable", () => {
@@ -77,12 +80,12 @@ test("mobile stock receiving and adjustment remain horizontal and scrollable", (
   assert.match(inventory, /ys-stock-adjust-math/);
   assert.equal((inventory.match(/ys-stock-quantity-stepper/g) || []).length, 2);
   assert.equal((inventory.match(/ys-stock-dialog-footer/g) || []).length, 2);
-  assert.match(css, /grid-template-columns: 44px minmax\(0,1fr\) 44px !important;/);
+  assert.match(css, /grid-template-columns:\s*44px\s*minmax\(0,\s*1fr\)\s*44px\s*!important;/);
   assert.match(css, /\.ys-stock-receipt-math/);
   assert.match(css, /\.ys-stock-adjust-math/);
-  assert.match(css, /overflow: hidden !important;/);
-  assert.match(inventory, /Removal quantity cannot exceed current stock/);
-  assert.match(inventory, /Batch\/Lot number is required/);
+  assert.match(css, /overflow:\s*hidden\s*!important;/);
+  assert.match(inventory, /Removal\s*quantity\s*cannot\s*exceed\s*current\s*stock/);
+  assert.match(inventory, /Batch\/Lot\s*number\s*is\s*required/);
 });
 
 test("Import header places icon-only guide beside X without altering guide functionality", () => {
@@ -101,39 +104,39 @@ test("Inventory mobile search hint remains fully visible with an accessible full
 });
 
 test("narrow Inventory toolbar reserves readable search width by using an accessible icon-only filter", () => {
-  assert.match(inventory, /placeholder="Search products"/);
+  assert.match(inventory, /placeholder="Search\s*products"/);
   assert.match(
     inventory,
-    /aria-label=\{mobileFiltersOpen \? "Hide inventory filters" : "Show inventory filters"\}/
+    /aria-label=\{mobileFiltersOpen\s*\?\s*"Hide\s*inventory\s*filters"\s*:\s*"Show\s*inventory\s*filters"\}/
   );
-  assert.match(css, /@media \(max-width: 479px\)/);
-  assert.match(css, /grid-template-columns: minmax\(0, 1fr\) 44px;/);
+  assert.match(css, /@media\s*\(max-width:\s*479px\)/);
+  assert.match(css, /grid-template-columns:\s*minmax\(0,\s*\s*1fr\)\s*44px;/);
   assert.match(
     css,
-    /\.retail-inventory-filter-toggle > span:not\(\.retail-inventory-filter-count\)/
+    /\.retail-inventory-filter-toggle\s*>\s*span:not\(\.retail-inventory-filter-count\)/
   );
-  assert.match(css, /\.retail-inventory-filter-toggle-chevron\s*\{\s*display: none;/);
-  assert.match(css, /\.retail-inventory-filter-count\s*\{\s*position: absolute;/);
+  assert.match(css, /\.retail-inventory-filter-toggle-chevron\s*\{\s*display:\s*none;/);
+  assert.match(css, /\.retail-inventory-filter-count\s*\{\s*position:\s*absolute;/);
 });
 
 test("Inventory toolbar stacks search above Filters when the usable content width is small", () => {
-  assert.match(css, /container: inventory-panel \/ inline-size;/);
-  assert.match(css, /@container inventory-panel \(max-width: 345px\)/);
+  assert.match(css, /container:\s*inventory-panel\s*\/\s*inline-size;/);
+  assert.match(css, /@container\s*inventory-panel\s*\(max-width:\s*345px\)/);
   assert.match(
     css,
-    /\.retail-inventory-toolbar > \.ys-inventory-search\s*\{\s*grid-column: 1;\s*grid-row: 1;/
+    /\.retail-inventory-toolbar\s*>\s*\.ys-inventory-search\s*\{\s*grid-column:\s*1;\s*grid-row:\s*1;/
   );
   assert.match(
     css,
-    /\.retail-inventory-toolbar > \.retail-inventory-filter-toggle\s*\{\s*grid-column: 1;\s*grid-row: 2;/
+    /\.retail-inventory-toolbar\s*>\s*\.retail-inventory-filter-toggle\s*\{\s*grid-column:\s*1;\s*grid-row:\s*2;/
   );
   assert.match(
     css,
-    /\.retail-inventory-toolbar > \.retail-inventory-filter-panel\s*\{\s*grid-column: 1;\s*grid-row: 3;/
+    /\.retail-inventory-toolbar\s*>\s*\.retail-inventory-filter-panel\s*\{\s*grid-column:\s*1;\s*grid-row:\s*3;/
   );
   assert.match(
     css,
-    /\.retail-inventory-filter-toggle > span:not\(\.retail-inventory-filter-count\)/
+    /\.retail-inventory-filter-toggle\s*>\s*span:not\(\.retail-inventory-filter-count\)/
   );
 });
 
@@ -143,19 +146,19 @@ test("Inventory mobile stock actions display history in a compact header and two
   assert.ok(start > 0 && end > start);
   const actions = inventory.slice(start, end);
   assert.match(actions, /ys-inventory-stock-actions-head/);
-  assert.match(actions, /Stock actions/);
-  assert.match(actions, /ys-inventory-history-mobile">View history/);
-  assert.match(actions, /ys-inventory-adjust-mobile">Adjust qty/);
+  assert.match(actions, /Stock\s*actions/);
+  assert.match(actions, /ys-inventory-history-mobile">View\s*history/);
+  assert.match(actions, /ys-inventory-adjust-mobile">Adjust\s*qty/);
   assert.match(actions, /ys-inventory-receive-action/);
   assert.match(actions, /onClick=\{onOpenMovements\}/);
   assert.match(actions, /onClick=\{onOpenAdjust\}/);
   assert.match(actions, /onClick=\{onOpenStockIn\}/);
-  assert.match(actions, /\{isOwner \? \(/);
-  assert.match(actions, /disabled=\{!inventory \|\| isLoading \|\| mutationPending\}/);
-  assert.match(css, /\.ys-inventory-stock-actions-head \{ display: contents; \}/);
-  assert.match(css, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
+  assert.match(actions, /\{isOwner\s*\?\s*\(/);
+  assert.match(actions, /disabled=\{!inventory\s*\|\|\s*isLoading\s*\|\|\s*mutationPending\}/);
+  assert.match(css, /\.ys-inventory-stock-actions-head\s*\{\s*display:\s*contents;\s*\}/);
+  assert.match(css, /grid-template-columns:\s*repeat\(2,\s*\s*minmax\(0,\s*\s*1fr\)\);/);
   assert.match(
     css,
-    /:root\.dark\[data-appearance-scope="retail"\] \.ys-inventory-details-modal \.ys-inventory-history-action/
+    /:root\.dark\[data-appearance-scope="retail"\]\s*\.ys-inventory-details-modal\s*\.ys-inventory-history-action/
   );
 });

@@ -12,31 +12,31 @@ test("retail sidebar translates to a phone hamburger without altering tablet/des
 
   assert.match(
     layout,
-    /import \{ RetailMobileNavigation \} from "@\/components\/app\/RetailMobileNavigation";/
+    /import\s*\{\s*RetailMobileNavigation\s*\}\s*from\s*"@\/components\/app\/RetailMobileNavigation";/
   );
-  assert.match(layout, /import "@\/styles\/retail-mobile-navigation\.css";/);
+  assert.match(layout, /import\s*"@\/styles\/retail-mobile-navigation\.css";/);
   assert.match(
     layout,
     /<AppSidebar[\s\S]*?<RetailMobileNavigation[\s\S]*?activePath=\{activePath\}[\s\S]*?onLogout=\{onLogout\}[\s\S]*?onNavigate=\{onNavigate\}/
   );
   assert.match(layout, /<main[\s\S]*?data-layout="app"/);
-  assert.match(sidebar, /retail-desktop-sidebar relative flex h-full/);
+  assert.match(sidebar, /retail-desktop-sidebar\s*relative\s*flex\s*h-full/);
 
   // Phone portrait and common rotated-phone dimensions use the drawer.
   assert.match(
     css,
-    /@media \(max-width: 767px\), \(max-height: 500px\) and \(orientation: landscape\) and \(max-width: 1024px\)/
+    /@media\s*\(max-width:\s*767px\),\s*\s*\(max-height:\s*500px\)\s*and\s*\(orientation:\s*landscape\)\s*and\s*\(max-width:\s*1024px\)/
   );
-  assert.match(css, /\.app-shell-ambient > \.retail-desktop-sidebar\s*\{\s*display: none;/);
-  assert.match(css, /\.app-shell-ambient \.retail-mobile-nav\s*\{[^}]*display: block;/);
-  assert.match(css, /\.app-shell-ambient \.retail-workspace > main\[data-layout="app"\]/);
+  assert.match(css, /\.app-shell-ambient\s*>\s*\.retail-desktop-sidebar\s*\{\s*display:\s*none;/);
+  assert.match(css, /\.app-shell-ambient\s*\.retail-mobile-nav\s*\{[^}]*display:\s*block;/);
+  assert.match(css, /\.app-shell-ambient\s*\.retail-workspace\s*>\s*main\[data-layout="app"\]/);
   assert.match(nav, /className="retail-mobile-nav__topbar"/);
   assert.match(nav, /<Sheet\s+open=\{drawerOpen\}/);
   assert.match(nav, /<SheetContent[\s\S]*?side="left"/);
-  assert.match(nav, /aria-label="Open retail navigation"/);
-  assert.match(nav, /aria-label="Close retail navigation"/);
-  assert.match(nav, /mobileViewport\.addEventListener\("change", dismissIfDesktop\)/);
-  assert.match(css, /\.retail-mobile-nav__drawer\[role="dialog"\]\s*\{[^}]*height: 100dvh;/);
+  assert.match(nav, /aria-label="Open\s*retail\s*navigation"/);
+  assert.match(nav, /aria-label="Close\s*retail\s*navigation"/);
+  assert.match(nav, /mobileViewport\.addEventListener\("change",\s*\s*dismissIfDesktop\)/);
+  assert.match(css, /\.retail-mobile-nav__drawer\[role="dialog"\]\s*\{[^}]*height:\s*100dvh;/);
 });
 
 test("phone links use the same role-authorized routes as the desktop app", () => {

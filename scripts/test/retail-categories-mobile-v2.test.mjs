@@ -10,13 +10,13 @@ test("category directory has separate compact mobile cards and original desktop 
   assert.match(page, /ys-category-v2-mobile-list/);
   assert.match(page, /ys-category-v2-desktop-table/);
   assert.match(page, /ys-category-v2-category-card/);
-  assert.match(page, /CategoryCoverThumbnail category=\{category\}/);
+  assert.match(page, /CategoryCoverThumbnail\s*category=\{category\}/);
   assert.match(page, /data-status=\{category.coverStatus\}/);
   assert.match(page, /setSelectedCategory\(category\)/);
   assert.match(page, /category.isStorefrontVisible/);
-  assert.match(css, /-webkit-line-clamp: 2;/);
-  assert.match(css, /\.ys-category-v2-cover-status\s*\{[^}]*white-space: nowrap;/);
-  assert.match(css, /\.ys-category-v2-thumb > :is\(div,img\)/);
+  assert.match(css, /-webkit-line-clamp:\s*2;/);
+  assert.match(css, /\.ys-category-v2-cover-status\s*\{[^}]*white-space:\s*nowrap;/);
+  assert.match(css, /\.ys-category-v2-thumb\s*>\s*:is\(div,\s*img\)/);
 });
 test("all category filter choices reuse existing URL-backed server query", () => {
   assert.match(page, /ys-category-v2-mobile-controls/);
@@ -41,25 +41,31 @@ test("all category filter choices reuse existing URL-backed server query", () =>
 test("deliveries style pager uses existing callbacks", () => {
   assert.match(page, /className="ys-category-v2-pagination"/);
   assert.match(page, /mobileCompact/);
-  assert.match(page, /onPageChange=\{\(page\) => applyQuery\(\{ page \}\)\}/);
-  assert.match(page, /onPageSizeChange=\{\(pageSize\) => applyQuery\(\{ page: 1, pageSize \}\)\}/);
-  assert.match(css, /\.ys-category-v2-pagination \.ys-inventory-page-token \{ display: none;/);
+  assert.match(page, /onPageChange=\{\(page\)\s*=>\s*applyQuery\(\{\s*page\s*\}\)\}/);
+  assert.match(
+    page,
+    /onPageSizeChange=\{\(pageSize\)\s*=>\s*applyQuery\(\{\s*page:\s*1,\s*\s*pageSize\s*\}\)\}/
+  );
   assert.match(
     css,
-    /\.ys-category-v2-pagination \.ys-inventory-mobile-page-label \{ display: inline-flex;/
+    /\.ys-category-v2-pagination\s*\.ys-inventory-page-token\s*\{\s*display:\s*none;/
+  );
+  assert.match(
+    css,
+    /\.ys-category-v2-pagination\s*\.ys-inventory-mobile-page-label\s*\{\s*display:\s*inline-flex;/
   );
 });
 test("live crop toggle wraps without overlap and preserves actual crop logic", () => {
   assert.match(page, /ys-category-v2-crop-toolbar/);
   assert.match(page, /ys-category-v2-preview-toggle/);
-  assert.match(page, /previewMode === "DESKTOP"/);
-  assert.match(page, /previewMode === "MOBILE"/);
+  assert.match(page, /previewMode\s*===\s*"DESKTOP"/);
+  assert.match(page, /previewMode\s*===\s*"MOBILE"/);
   assert.match(page, /calculateCategoryCoverCrop\(/);
   assert.match(page, /onCropStateChange/);
-  assert.match(css, /\.ys-category-v2-crop-toolbar\s*\{[^}]*flex-direction: column;/);
+  assert.match(css, /\.ys-category-v2-crop-toolbar\s*\{[^}]*flex-direction:\s*column;/);
   assert.match(
     css,
-    /\.ys-category-v2-preview-toggle \{ display: grid; grid-template-columns: repeat\(2,minmax\(0,1fr\)\);/
+    /\.ys-category-v2-preview-toggle\s*\{\s*display:\s*grid;\s*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/
   );
 });
 test("small phone, tablet, desktop, and dark-mode controls", () => {

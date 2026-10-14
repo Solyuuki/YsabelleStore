@@ -25,23 +25,26 @@ const source = {
 };
 
 test("retail mobile transforms are route-scoped without replacing the desktop layouts", () => {
-  assert.match(source.layout, /import "@\/styles\/retail-responsive-workspaces\.css"/);
-  assert.match(source.layout, /data-retail-module=\{activePath\.replace\(\/\^\\\/\/, ""\)\}/);
+  assert.match(source.layout, /import\s*"@\/styles\/retail-responsive-workspaces\.css"/);
+  assert.match(source.layout, /data-retail-module=\{activePath\.replace\(\/\^\\\/\/,\s*\s*""\)\}/);
   assert.match(
     source.css,
-    /@media \(max-width: 767px\), \(max-height: 500px\) and \(orientation: landscape\) and \(max-width: 1024px\)/
+    /@media\s*\(max-width:\s*767px\),\s*\s*\(max-height:\s*500px\)\s*and\s*\(orientation:\s*landscape\)\s*and\s*\(max-width:\s*1024px\)/
   );
   assert.match(
     source.css,
-    /\.retail-workspace \.retail-mobile-data-table tbody > tr\s*\{[^}]*display: grid;/
+    /\.retail-workspace\s*\.retail-mobile-data-table\s*tbody\s*>\s*tr\s*\{[^}]*display:\s*grid;/
   );
   assert.match(
     source.css,
-    /\.retail-workspace \.retail-mobile-data-table thead\s*\{\s*display: none;/
+    /\.retail-workspace\s*\.retail-mobile-data-table\s*thead\s*\{\s*display:\s*none;/
   );
-  assert.match(source.css, /content: attr\(data-label\)/);
-  assert.match(source.css, /:root\.dark \.retail-workspace \.retail-mobile-data-table tbody > tr/);
-  assert.doesNotMatch(source.css, /@media \(min-width: 1280px\)/);
+  assert.match(source.css, /content:\s*attr\(data-label\)/);
+  assert.match(
+    source.css,
+    /:root\.dark\s*\.retail-workspace\s*\.retail-mobile-data-table\s*tbody\s*>\s*tr/
+  );
+  assert.doesNotMatch(source.css, /@media\s*\(min-width:\s*1280px\)/);
 });
 
 test("all operational tables use compact labelled cards with their original actions", () => {
@@ -123,7 +126,7 @@ test("POS mobile sale panel keeps checkout, cart mutation and scanner handlers",
 test("Support mobile conversation has an operable ticket-list return", () => {
   assert.match(
     source.support,
-    /const \[mobileConversationOpen, setMobileConversationOpen\] = useState\(false\)/
+    /const\s*\[mobileConversationOpen,\s*\s*setMobileConversationOpen\]\s*=\s*useState\(false\)/
   );
   assert.match(source.support, /data-mobile-conversation=\{mobileConversationOpen\}/);
   assert.match(source.support, /setMobileConversationOpen\(true\)/);
@@ -134,7 +137,7 @@ test("Support mobile conversation has an operable ticket-list return", () => {
   assert.match(source.css, /data-mobile-conversation="true"/);
   assert.match(
     source.css,
-    /:root\.dark \.retail-workspace \[data-retail-module="customer-support"\] \.ys-support-inbox__mobile-back/
+    /:root\.dark\s*\.retail-workspace\s*\[data-retail-module="customer-support"\]\s*\.ys-support-inbox__mobile-back/
   );
 });
 
@@ -162,31 +165,31 @@ test("remaining analytics and administration preserve functional screen content"
   assert.match(source.forecast, /ResponsiveContainer/);
   assert.match(source.users, /CustomerAccountModerationList/);
   assert.match(source.settings, /ys-appearance-card/);
-  assert.match(source.css, /\.retail-workspace \[data-retail-module="dashboard"\]/);
-  assert.match(source.css, /\.retail-workspace \[data-retail-module="reports"\]/);
+  assert.match(source.css, /\.retail-workspace\s*\[data-retail-module="dashboard"\]/);
+  assert.match(source.css, /\.retail-workspace\s*\[data-retail-module="reports"\]/);
   assert.match(
     source.css,
-    /:root\[data-appearance-scope="retail"\] \[role="dialog"\]:not\(\.retail-mobile-nav__drawer\)/
+    /:root\[data-appearance-scope="retail"\]\s*\[role="dialog"\]:not\(\.retail-mobile-nav__drawer\)/
   );
-  assert.match(source.css, /max-height: calc\(100dvh - 1rem\) !important;/);
-  assert.match(source.css, /font-size: 16px;/);
+  assert.match(source.css, /max-height:\s*calc\(100dvh\s*-\s*1rem\)\s*!important;/);
+  assert.match(source.css, /font-size:\s*16px;/);
 });
 
 test("inventory mobile filtering stays functional and avoids vertical filter overload", () => {
   assert.match(
     source.inventory,
-    /const \[mobileFiltersOpen, setMobileFiltersOpen\] = useState\(false\)/
+    /const\s*\[mobileFiltersOpen,\s*\s*setMobileFiltersOpen\]\s*=\s*useState\(false\)/
   );
   assert.match(source.inventory, /className="retail-inventory-filter-toggle"/);
   assert.match(source.inventory, /aria-expanded=\{mobileFiltersOpen\}/);
-  assert.match(source.inventory, /setMobileFiltersOpen\(\(open\) => !open\)/);
+  assert.match(source.inventory, /setMobileFiltersOpen\(\(open\)\s*=>\s*!open\)/);
   assert.match(source.inventory, /data-mobile-filters-open=\{mobileFiltersOpen\}/);
   assert.match(
     source.css,
-    /\.retail-inventory-toolbar\[data-mobile-filters-open="false"\] \.ys-inventory-filter/
+    /\.retail-inventory-toolbar\[data-mobile-filters-open="false"\]\s*\.ys-inventory-filter/
   );
-  assert.match(source.css, /@media \(min-width: 768px\) and \(min-height: 501px\)/);
-  assert.match(source.css, /\.retail-inventory-filter-toggle\s*\{\s*display: none;/);
+  assert.match(source.css, /@media\s*\(min-width:\s*768px\)\s*and\s*\(min-height:\s*501px\)/);
+  assert.match(source.css, /\.retail-inventory-filter-toggle\s*\{\s*display:\s*none;/);
 });
 
 test("POS cart escapes desktop entrance animation positioning on mobile", () => {
