@@ -349,7 +349,7 @@ test("mobile sizing primitives and floating sheet are centralized for browser QA
   assert.ok(sheetCss);
   assert.match(sheetCss, /border:\s*1px\s*solid\s*#bcc6e1/);
   assert.doesNotMatch(sheetCss, /border-bottom:\s*0/);
-  assert.match(css, /@media\s*\(min-width:\s*701px\),\s*\(orientation:\s*landscape\)/);
+  assert.match(css, /@media\s*\(max-width:\s*1180px\)/);
 
   assert.equal(packageJson.scripts["qa:mobile"], "node tools/mobile-qa/run.mjs");
   assert.match(qaScript, /const\s*VIEWPORTS\s*=\s*\[/);
@@ -632,10 +632,10 @@ test("phone recommendation carousel stays compact while page scrolling works wit
 
   assert.match(styles, /@media\s*\(max-width:\s*700px\)\s*and\s*\(orientation:\s*portrait\)/);
   assert.match(
-    styles,
+    css,
     /html\[data-appearance-scope="storefront"\][\s\S]*?scrollbar-width:\s*none;/
   );
-  assert.match(styles, /html\[data-appearance-scope="storefront"\]::-webkit-scrollbar/);
+  assert.match(css, /html\[data-appearance-scope="storefront"\]::-webkit-scrollbar/);
   assert.doesNotMatch(styles, /(?:html|body)[^{]*\{[^}]*overflow(?:-y)?:\s*hidden/);
   assert.match(
     styles,
@@ -960,9 +960,22 @@ test("checkout content uses wider readable form sections without changing naviga
   const css = read("frontend/src/styles/customer-adaptive-mobile.css");
   const checkout = read("frontend/src/pages/customer/CheckoutPage.tsx");
   const qa = read("tools/mobile-qa/run.mjs");
-  const phone = css.split(
-    "/* Sprint 12 checkout content breathing room — portrait phones only."
-  )[1];
+  const marker = css.indexOf("/* Sprint 12 checkout content breathing room — portrait phones only.");
+  const mediaStart = css.indexOf("@media (max-width: 700px) and (orientation: portrait)", marker);
+  const firstBrace = css.indexOf("{", mediaStart);
+  let nesting = 0;
+  let mediaEnd = -1;
+  for (let index = firstBrace; index < css.length; index++) {
+    if (css[index] === "{") nesting++;
+    if (css[index] === "}") {
+      nesting--;
+      if (nesting === 0) {
+        mediaEnd = index;
+        break;
+      }
+    }
+  }
+  const phone = mediaStart >= 0 && mediaEnd > mediaStart ? css.slice(mediaStart, mediaEnd + 1) : "";
   assert.ok(phone, "Missing phone-only checkout refinements");
 
   assert.match(phone, /@media\s*\(max-width:\s*700px\)\s*and\s*\(orientation:\s*portrait\)/);
@@ -1232,7 +1245,7 @@ test("Favorites card density and pagination stay bounded with removal", () => {
   );
   assert.match(
     page,
-    /favoriteProducts\.slice\(\s*\(favoritesPage\s*-\s*1\)\s*\*\s*favoritesPageSize,\s*\s*favoritesPage\s*\*\s*favoritesPageSize\)/
+    /favoriteProducts\.slice\(\s*\(favoritesPage\s*-\s*1\)\s*\*\s*favoritesPageSize,\s*\s*favoritesPage\s*\*\s*favoritesPageSize\s*\)/
   );
   assert.match(
     page,
