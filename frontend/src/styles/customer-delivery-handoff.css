@@ -1,168 +1,156 @@
-/* Sprint 12 rider tracking: comfortable desktop card, compact at 320px. */
+/* Sprint 12 premium rider card: content-sized at every viewport. */
 .customer-rider-handoff {
   min-width: 0;
   margin-top: 15px;
-  padding: 15px;
-  border: 1px solid #c6c2fb;
+  padding: clamp(12px, 2.5vw, 18px);
+  border: 1px solid #cbd6e7;
   border-radius: 14px;
-  background: #f6f7ff;
-  color: #27314c;
+  background: #f6f8fd;
+  color: #24334d;
 }
-.customer-rider-handoff__header {
+.customer-rider-handoff__header,
+.customer-rider-handoff__identity,
+.customer-rider-handoff__contact,
+.customer-rider-handoff__note-title {
   display: flex;
   align-items: center;
+  min-width: 0;
   gap: 10px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #dcdcf2;
 }
-.customer-rider-handoff__header svg {
-  color: #5144ce;
-  flex: none;
+.customer-rider-handoff__header {
+  padding-bottom: 13px;
+  border-bottom: 1px solid #d8e1ef;
 }
-.customer-rider-handoff__header > div {
+.customer-rider-handoff__header-icon,
+.customer-rider-handoff__avatar {
   display: grid;
+  flex: none;
+  place-items: center;
+  border-radius: 10px;
+  background: #e8e6ff;
+  color: #5045b3;
+}
+.customer-rider-handoff__header-icon { width: 38px; height: 38px; }
+.customer-rider-handoff__avatar { width: 46px; height: 46px; font-size: 18px; font-weight: 750; }
+.customer-rider-handoff__heading,
+.customer-rider-handoff__identity-copy,
+.customer-rider-handoff__contact-copy,
+.customer-rider-handoff__reference {
+  display: grid;
+  min-width: 0;
   gap: 3px;
 }
-.customer-rider-handoff__header strong {
-  font-size: 15px;
+.customer-rider-handoff__heading { flex: 1; }
+.customer-rider-handoff__heading strong { font-size: 14px; }
+.customer-rider-handoff__heading > span,
+.customer-rider-handoff__identity-copy > span,
+.customer-rider-handoff__contact-copy > span,
+.customer-rider-handoff__reference > span {
+  color: #53647f;
+  font-size: 12px;
+  line-height: 1.4;
 }
-.customer-rider-handoff__header span {
+.customer-rider-handoff__status {
+  flex: none;
   font-size: 11px;
-  color: #596782;
+  font-weight: 750;
+  color: #267760;
+  white-space: nowrap;
 }
-.customer-rider-handoff__grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 12px;
+.customer-rider-handoff__identity { padding-block: 15px; gap: 12px; }
+.customer-rider-handoff__identity-copy strong,
+.customer-rider-handoff__phone,
+.customer-rider-handoff__reference strong {
+  overflow-wrap: anywhere;
+  color: #1d2c47;
+  font-size: 14px;
 }
-.customer-rider-handoff__grid:has(> :only-child) {
-  grid-template-columns: minmax(0, 1fr);
+.customer-rider-handoff__contact {
+  justify-content: space-between;
+  padding: 10px 12px;
+  border: 1px solid #dce4f1;
+  border-radius: 10px;
+  background: #ebf0f9;
 }
-.customer-rider-handoff__contact,
+.customer-rider-handoff__contact-copy { flex: 1; }
+.customer-rider-handoff__phone { user-select: text; }
+.customer-rider-handoff__copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: 74px;
+  min-height: 44px;
+  gap: 6px;
+  padding: 9px 12px;
+  border: 1px solid #a4b1ca;
+  border-radius: 9px;
+  background: #fff;
+  color: #344568;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.customer-rider-handoff__copy:hover { background: #e2e8f7; }
+.customer-rider-handoff__copy:focus-visible { outline: 3px solid #7265e8; outline-offset: 2px; }
+.customer-rider-handoff__feedback { margin-top: 8px; color: #276754; font-size: 12px; }
+.customer-rider-handoff__reference { margin: 12px 0 0; }
 .customer-rider-handoff__note {
   min-width: 0;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #d8e1ef;
 }
-.customer-rider-handoff dl {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-}
-.customer-rider-handoff dt {
-  font-size: 11px;
-  color: #53617d;
-}
-.customer-rider-handoff dd {
-  margin: 2px 0 0;
-  font-size: 13px;
-  font-weight: 750;
-  color: #242f4c;
-  overflow-wrap: anywhere;
-}
-.customer-rider-handoff__phone {
-  user-select: text;
-}
-.customer-rider-handoff__note {
-  background: #e9eeff;
-  border: 1px solid #ccd4f1;
-  padding: 12px;
-  border-radius: 10px;
-}
-.customer-rider-handoff__note strong {
-  font-size: 12px;
-}
+.customer-rider-handoff__note-title { gap: 8px; color: #5045b3; }
+.customer-rider-handoff__note-title strong { font-size: 13px; }
 .customer-rider-handoff__note p {
-  margin: 7px 0;
-  font-size: 12px;
+  margin: 9px 0 7px;
+  color: #293b58;
+  font-size: 13px;
   line-height: 1.6;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.customer-rider-handoff__note small {
-  color: #5b6782;
-}
-.customer-rider-handoff__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 13px;
-}
-.customer-rider-handoff__actions > :is(a, button) {
-  min-height: 44px;
-  padding: 10px 12px;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  gap: 7px;
-  border: 1px solid #8279d4;
-  border-radius: 9px;
-  background: #fff;
-  color: #383e91;
-  font-size: 12px;
-  font-weight: 800;
-  text-decoration: none;
-}
-.customer-rider-handoff__actions > a {
-  color: white;
-  background: #5246d8;
-  border-color: #5246d8;
-}
-.customer-rider-handoff__feedback {
-  font-size: 11px;
-  color: #3b6470;
-  margin-top: 8px;
-}
-@media (max-width: 699px) {
-  .customer-rider-handoff {
-    padding: 12px;
-  }
-  .customer-rider-handoff__grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
-  }
-  .customer-rider-handoff__actions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .customer-rider-handoff__actions > :is(a, button) {
-    padding: 9px 5px;
-    min-width: 0;
-  }
+.customer-rider-handoff__note small { color: #62718b; font-size: 11px; }
+@media (max-width: 430px) {
+  .customer-rider-handoff__header { gap: 8px; }
+  .customer-rider-handoff__status { font-size: 10px; }
+  .customer-rider-handoff__contact { padding: 9px; }
+  .customer-rider-handoff__copy { min-width: 66px; padding-inline: 9px; }
 }
 :root.dark .customer-app .customer-rider-handoff {
-  background: #22334e;
-  border-color: #697ba3;
-  color: #f0f4ff;
+  background: #22314b;
+  border-color: #425574;
+  color: #f1f5fc;
 }
-:root.dark .customer-app .customer-rider-handoff__header {
-  border-color: #506688;
+:root.dark .customer-app .customer-rider-handoff__header,
+:root.dark .customer-app .customer-rider-handoff__note { border-color: #40516d; }
+:root.dark .customer-app .customer-rider-handoff__header-icon,
+:root.dark .customer-app .customer-rider-handoff__avatar {
+  background: #37395f;
+  color: #beb5ff;
 }
-:root.dark .customer-app .customer-rider-handoff__header svg {
-  color: #b9aeff;
+:root.dark .customer-app .customer-rider-handoff__heading > span,
+:root.dark .customer-app .customer-rider-handoff__identity-copy > span,
+:root.dark .customer-app .customer-rider-handoff__contact-copy > span,
+:root.dark .customer-app .customer-rider-handoff__reference > span {
+  color: #b7c6dc;
 }
-:root.dark .customer-app .customer-rider-handoff__header span,
-:root.dark .customer-app .customer-rider-handoff dt,
-:root.dark .customer-app .customer-rider-handoff__note small {
-  color: #c4d0e7;
+:root.dark .customer-app .customer-rider-handoff__identity-copy strong,
+:root.dark .customer-app .customer-rider-handoff__phone,
+:root.dark .customer-app .customer-rider-handoff__reference strong { color: #f2f5fc; }
+:root.dark .customer-app .customer-rider-handoff__status { color: #91d9c1; }
+:root.dark .customer-app .customer-rider-handoff__contact {
+  background: #2a3b56;
+  border-color: #485d7e;
 }
-:root.dark .customer-app .customer-rider-handoff dd,
-:root.dark .customer-app .customer-rider-handoff__note,
-:root.dark .customer-app .customer-rider-handoff__note p {
-  color: #f0f4ff;
+:root.dark .customer-app .customer-rider-handoff__copy {
+  background: #344764;
+  border-color: #637899;
+  color: #f1f5fc;
 }
-:root.dark .customer-app .customer-rider-handoff__note {
-  background: #2a3e5a;
-  border-color: #617594;
-}
-:root.dark .customer-app .customer-rider-handoff__actions > button {
-  background: #344a68;
-  color: #f2f5ff;
-  border-color: #7288b0;
-}
-:root.dark .customer-app .customer-rider-handoff__actions > a {
-  background: #5447d8;
-  color: white;
-}
-:root.dark .customer-app .customer-rider-handoff__feedback {
-  color: #bbebdc;
-}
+:root.dark .customer-app .customer-rider-handoff__copy:hover { background: #3b5170; }
+:root.dark .customer-app .customer-rider-handoff__note-title { color: #beb5ff; }
+:root.dark .customer-app .customer-rider-handoff__note p { color: #cedaeb; }
+:root.dark .customer-app .customer-rider-handoff__note small { color: #b0c1db; }
+:root.dark .customer-app .customer-rider-handoff__feedback { color: #a8e7d4; }
