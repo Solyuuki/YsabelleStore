@@ -29,7 +29,7 @@ assert.match(pageSource, /Complete — With issues/);
 assert.match(pageSource, /Partial delivery/);
 assert.match(pageSource, /internalBatchReference/);
 assert.match(pageSource, /@\/components\/ui\/table/);
-assert.match(pageSource, /<Table aria-label=/);
+assert.match(pageSource, /<Table\s+aria-label=/);
 assert.match(pageSource, /role="button"/);
 assert.match(pageSource, /<StatCard/);
 assert.match(pageSource, /<Dialog/);
