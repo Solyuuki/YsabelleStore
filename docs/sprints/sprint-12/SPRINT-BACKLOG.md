@@ -23,3 +23,5 @@
 ## Sprint Activity Log
 
 - 2026-10-12 — Activated Sprint 12 guardrails and initialized MPOS planning documents from the approved `main` baseline.
+
+- 2026-10-14 — Implemented customer/Owner/Staff rider handoff redesign on isolated Sprint 12 task branch, including copy-only external number and responsive dark/light styling. CI and manual device QA are required before integration.
