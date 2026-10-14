@@ -13,6 +13,7 @@ const VIEWPORTS = [
   { name: "iphone", width: 390, height: 844 },
   { name: "large-phone", width: 430, height: 932 },
   { name: "phone-landscape", width: 640, height: 320 },
+  { name: "large-phone-landscape", width: 932, height: 430 },
   { name: "tablet", width: 768, height: 1024 },
   { name: "tablet-landscape", width: 1024, height: 768 },
   { name: "desktop", width: 1280, height: 800 }
@@ -1733,13 +1734,32 @@ async function run() {
             });
           }
           await page.evaluate(() => document.fonts.ready);
+          const phoneLandscape =
+            viewport.width > viewport.height && viewport.height <= 500 && viewport.width <= 1180;
+          const portraitGuardVisible = await page.locator("#phone-portrait-guard").isVisible();
+          if (phoneLandscape) {
+            const issues = portraitGuardVisible
+              ? []
+              : ["Phone landscape portrait-only guard is missing"];
+            await page.screenshot({
+              path: join(OUTPUT_DIRECTORY, `${viewport.name}-${pageName}.png`),
+              animations: "disabled",
+              fullPage: false
+            });
+            if (issues.length) failures.push({ viewport: viewport.name, route, issues });
+            process.stdout.write(
+              `${issues.length ? "FAIL" : "PASS"} ${viewport.name} ${pageName}: ${issues.join("; ") || "portrait-only guard visible"}\n`
+            );
+            continue;
+          }
+
           const dismiss = page.getByRole("button", { name: "Dismiss privacy notice" });
           if (await dismiss.isVisible().catch(() => false)) await dismiss.click();
 
           const result = await measurePage(page, viewport);
           const issues = [];
-          if (await page.locator("#phone-orientation-notice").count()) {
-            issues.push("Deprecated phone orientation overlay is still present");
+          if (portraitGuardVisible) {
+            issues.push("Portrait guard appears outside phone landscape");
           }
           if (result.width !== viewport.width || result.height !== viewport.height) {
             issues.push("Unexpected viewport dimensions");

@@ -73,10 +73,23 @@
       as="image"
       type="image/png"
     />
+    <!-- Hide before the stylesheet loads so the landscape guard never flashes on desktop. -->
+    <style>
+      .phone-portrait-guard {
+        display: none;
+      }
+    </style>
     <title>Ysabelle Store</title>
   </head>
   <body>
     <div id="root"></div>
+    <!-- Browser tabs cannot physically lock orientation. Block only narrow touch phones
+         in landscape; tablets and larger viewports keep both orientations. -->
+    <div class="phone-portrait-guard" id="phone-portrait-guard" role="status" aria-live="polite">
+      <span class="phone-portrait-guard__icon" aria-hidden="true">↻</span>
+      <strong>Portrait only</strong>
+      <p>Turn your phone upright to continue.</p>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -27,9 +27,9 @@ From the repository root, use `npm run dev:mob`.
 
 Phone landscape is disabled in the `mobile-preview.html` simulator for every phone preset and cannot be enabled by switching from a rotated tablet. Only explicit `data-orientation="both"` tablet presets enable the Rotate control. This is a **viewport QA policy**, not a browser permission or hardware lock.
 
-On direct Android/iOS browsers, orientation follows the device and the browser; ordinary browser tabs cannot reliably force an operating-system orientation lock. The former full-screen rotate-upright notice has been removed, so the Storefront is not blocked in phone landscape. The mobile preview deliberately keeps its portrait-only **phone presets** for focused QA, while allowing tablet rotation. That simulator policy does not restrict an actual phone.
+On direct Android/iOS browsers, hardware orientation follows the device: ordinary browser tabs cannot reliably force an operating-system portrait lock. The site enforces **portrait-only browsing** on small-to-large touch phones by covering landscape layouts (up to 1180px wide and 500px high) with a compact rotate-upright guard. It disappears immediately when the phone is turned upright. The guard is hidden before stylesheet loading, avoiding a desktop startup flash. Tablets, larger-screen devices and desktop pointer devices remain usable in portrait and landscape. A foldable or unusually sized device is classified by its CSS viewport and primary pointer, not its marketing name.
 
-`npm run test:mobile` checks the preview rotation policy and confirms that no fullscreen orientation overlay remains. `npm run qa:mobile` now checks real Storefront layout, navigation, and horizontal overflow at 640 × 320 phone landscape as well as portrait phones, tablets, and desktop. Real iOS/Android landscape browsing still requires visual QA; automatic device rotation does not guarantee that every component fits.
+`npm run test:mobile` checks both preview presets and the phone-only orientation rule. `npm run qa:mobile` checks the guard at 640 × 320 and 932 × 430 phone-landscape viewports, absence of the guard on portrait phones and tablets, plus the regular layout/overflow checks. Test on physical Android/iOS devices before staging: this is website-level orientation enforcement, not an OS hardware lock.
 
 ## Frontend Node test runner compatibility
 

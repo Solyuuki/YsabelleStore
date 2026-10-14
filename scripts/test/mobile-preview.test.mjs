@@ -270,19 +270,30 @@ test("OAuth returns to the signed-in mobile preview, restores the viewport and c
   assert.equal(malicious.iframe.src, "/?preview=welcome");
 });
 
-test("phones and tablets browse without a fullscreen orientation blocker", () => {
+test("phones show a portrait-only guard in landscape while tablets stay rotatable", () => {
   const html = read("frontend/index.html");
   const css = read("frontend/src/styles/global.css");
   const qa = read("tools/mobile-qa/run.mjs");
 
-  assert.doesNotMatch(html, /phone-orientation-notice|Rotate your phone upright/);
-  assert.doesNotMatch(css, /\.phone-orientation-notice/);
-  assert.doesNotMatch(qa, /portrait notice visible|screen\.orientation\.lock/);
+  assert.match(html, /class="phone-portrait-guard"/);
+  assert.match(html, /id="phone-portrait-guard"/);
+  assert.match(html, /Portrait only/);
+  assert.match(html, /Turn your phone upright to continue/);
+  assert.match(html, /\.phone-portrait-guard\s*\{\s*display: none;/);
+  assert.match(
+    css,
+    /@media \(orientation: landscape\) and \(max-width: 1180px\) and \(max-height: 500px\) and \(pointer: coarse\)/
+  );
+  assert.match(css, /\.phone-portrait-guard\s*\{[^}]*position: fixed;[^}]*display: grid;[^}]*height: 100dvh;/);
+  assert.match(css, /:root\.dark \.phone-portrait-guard\s*\{/);
+  assert.doesNotMatch(html + css, /screen\.orientation\.lock/);
 
   assert.match(qa, /\{ name: "phone-landscape", width: 640, height: 320 \}/);
+  assert.match(qa, /\{ name: "large-phone-landscape", width: 932, height: 430 \}/);
   assert.match(qa, /\{ name: "tablet", width: 768, height: 1024 \}/);
   assert.match(qa, /\{ name: "tablet-landscape", width: 1024, height: 768 \}/);
-  assert.match(qa, /Deprecated phone orientation overlay is still present/);
+  assert.match(qa, /Phone landscape portrait-only guard is missing/);
+  assert.match(qa, /Portrait guard appears outside phone landscape/);
   assert.match(qa, /const result = await measurePage\(page, viewport\)/);
   assert.match(qa, /Document overflow:/);
 });
