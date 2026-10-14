@@ -86,10 +86,8 @@ jobs:
       - name: Run full guardrail contracts and show concise failures
         shell: bash
         run: |
-          node --test scripts/test/*.test.mjs > /tmp/guardrails.log 2>&1 || {
-            grep -E '^not ok |^# tests |^# pass |^# fail ' /tmp/guardrails.log | tail -n 100
-            exit 1
-          }
+          node --test scripts/test/*.test.mjs > /tmp/guardrails.log 2>&1 || true
+          grep -E '^not ok |^# tests |^# pass |^# fail ' /tmp/guardrails.log | tail -n 100
           tail -n 9 /tmp/guardrails.log
           npm run lint
           npm run format:check
@@ -114,3 +112,10 @@ jobs:
             const commit=(await github.rest.git.createCommit({owner,repo,message:'test(ui): make source contracts formatting-independent',tree:nt.sha,parents:[baseSha]})).data;
             await github.rest.git.updateRef({owner,repo,ref:'heads/'+branch,sha:commit.sha,force:false});
             core.info('Updated '+files.length+' contract files in '+commit.sha);
+      - name: Report outstanding guardrail failures without masking results
+        shell: bash
+        run: |
+          if grep -q '^not ok ' /tmp/guardrails.log; then
+            echo 'Some independent source-contract tests still require manual correction.'
+            exit 1
+          fi
