@@ -126,10 +126,7 @@ test("Google Quick Sign escapes the embedded phone preview before OAuth", () => 
     service,
     /throw\s*new\s*Error\([\s\S]*?Open\s*Ysabelle\s*Store\s*in\s*a\s*full\s*browser\s*tab/
   );
-  assert.match(
-    service,
-    /authWindow\.location\.assign\(url\.toString\(\)\)/
-  );
+  assert.match(service, /authWindow\.location\.assign\(url\.toString\(\)\)/);
   assert.match(login, /startCustomerSocialAuth\(provider,\s*\s*quickSignReturnTo,\s*\s*"login"\)/);
   assert.match(register, /startCustomerSocialAuth\(provider,\s*\s*returnTo,\s*\s*"register"\)/);
   assert.match(preview, /Google\s*Quick\s*Sign\s*opens\s*the\s*full\s*browser\s*page/);
