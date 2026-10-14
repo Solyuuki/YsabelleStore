@@ -25,6 +25,20 @@ jobs:
           cache: npm
       - name: Install pinned project dependencies
         run: npm ci
+      - name: Reconcile existing Sprint 12 rider migration using canonical state preparation
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const path = 'database/prisma/schema.prisma';
+          const source = fs.readFileSync(path, 'utf8');
+          const target = '  riderName                String?';
+          const note = '  /// Sprint 12 migration 0015: rider handoff and customer-facing note fields.';
+          if (!source.includes(target)) throw new Error('Rider schema anchor not found; manual review required.');
+          if (source.includes(note)) throw new Error('Schema annotation already exists; manual review required.');
+          fs.writeFileSync(path, source.replace(target, note + '\n' + target));
+          NODE
+          git add database/prisma/schema.prisma
+          npm run state:prepare
       - name: Format existing repository files with pinned Prettier
         run: npm run format
       - name: Verify formatting and diff hygiene
