@@ -1,0 +1,82 @@
+name: Sprint 12 format-only repair
+on:
+  push:
+    branches:
+      - sprint/v0.12/sprint-12
+    paths:
+      - .github/workflows/sprint12-format-repair.yml
+permissions:
+  contents: write
+jobs:
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Normalize formatting
+        run: npm run format
+      - name: Ensure no database or canonical state modifications
+        shell: bash
+        run: |
+          if git diff --name-only | grep -E '^(database/|\.github/)'; then
+            echo "Database, canonical, or workflow file changed by formatter. Review required."
+            exit 1
+          fi
+          git diff --check
+      - name: Verify formatting, lint, types, and canonical integrity
+        run: |
+          npm run format:check
+          npm run lint
+          npm run typecheck
+          npm run migration:security
+          npm run state:security
+          npm run release:security
+          npm run changeset:security
+      - name: Commit verified format-only diff via GitHub Contents API
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('node:fs');
+            const { execFileSync } = require('node:child_process');
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const branch = 'sprint/v0.12/sprint-12';
+            const baseSha = context.sha;
+            const {data: ref} = await github.rest.git.getRef({owner, repo, ref: 'heads/' + branch});
+            if (ref.object.sha !== baseSha) throw new Error('Branch advanced; refuse stale write.');
+            const paths = execFileSync('git', ['diff', '--name-only', '-z'])
+              .toString('utf8').split('\0').filter(Boolean);
+            if (!paths.length) {
+              core.info('Already formatted; no changes to commit.');
+              return;
+            }
+            if (paths.some(p => p.startsWith('database/') || p.startsWith('.github/'))) {
+              throw new Error('Refusing database or workflow changes in formatter.');
+            }
+            core.info('Writing ' + paths.length + ' verified formatted files.');
+            const tree = [];
+            for (const path of paths) {
+              const content = fs.readFileSync(path).toString('base64');
+              const {data: blob} = await github.rest.git.createBlob({
+                owner, repo, content, encoding: 'base64'
+              });
+              tree.push({path, mode:'100644', type:'blob', sha:blob.sha});
+            }
+            const {data: base} = await github.rest.git.getCommit({owner, repo, commit_sha: baseSha});
+            const {data: newTree} = await github.rest.git.createTree({
+              owner, repo, base_tree: base.tree.sha, tree
+            });
+            const {data: commit} = await github.rest.git.createCommit({
+              owner, repo, message:'chore(format): normalize Sprint 12 source formatting',
+              tree: newTree.sha, parents:[baseSha]
+            });
+            await github.rest.git.updateRef({
+              owner, repo, ref:'heads/' + branch, sha:commit.sha, force:false
+            });
+            core.info('Committed format-only changes: ' + commit.sha);
