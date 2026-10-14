@@ -480,3 +480,37 @@ test("320px welcome keeps the two intended title lines centered without changing
   assert.match(css, /\.store-entrance h1\s*\{[^}]*text-wrap: balance;/);
   assert.match(entrance, /onClick=\{enterStore\}/);
 });
+
+test("rider handoff is copy-only, owner/staff restricted, and responsive", () => {
+  const customer = read("frontend/src/components/customer/OrderRiderInformation.tsx");
+  const customerCss = read("frontend/src/styles/customer-delivery-handoff.css");
+  const staff = read("frontend/src/pages/DeliveriesPage.tsx");
+  const staffCss = read("frontend/src/styles/retail-deliveries-mobile-v2.css");
+  const routes = read("backend/src/routes/delivery.routes.ts");
+  const storefront = read("backend/src/services/storefrontService.ts");
+  const serializer = storefront
+    .split("function serializeStorefrontOrder(order: StorefrontOrderRecord) {")[1]
+    ?.split("\n}\n")[0];
+
+  assert.match(customer, /className="customer-rider-handoff__identity"/);
+  assert.match(customer, /className="customer-rider-handoff__copy"/);
+  assert.match(customer, /navigator\.clipboard\.writeText\(order\.riderPhone\)/);
+  assert.match(customer, /Delivery instructions/);
+  assert.doesNotMatch(customer, /tel:|Call rider|deliveryNotes/);
+  assert.match(staff, /className="ys-delivery-handoff-summary"/);
+  assert.match(staff, /copyRiderNumber\(selected\.riderPhone \?\? ""\)/);
+  assert.match(staff, /Internal delivery note/);
+  assert.match(staff, /Owner &amp; Staff/);
+  assert.doesNotMatch(staff, /Staff-only note|Internal staff note|ys-delivery-handoff-phone/);
+  assert.ok(serializer, "Customer order serializer must be present");
+  assert.doesNotMatch(serializer, /deliveryNotes/, "Internal note cannot reach customers");
+  assert.match(routes, /requireRole\("OWNER", "STAFF"\)/);
+
+  for (const css of [customerCss, staffCss]) {
+    assert.match(css, /@media \(max-width: 430px\)/);
+    assert.match(css, /min-height: 44px/);
+    assert.match(css, /overflow-wrap: anywhere/);
+  }
+  assert.match(customerCss, /:root\.dark \.customer-app \.customer-rider-handoff/);
+  assert.match(staffCss, /:root\.dark \.ys-delivery-ticket-dialog \.ys-delivery-handoff-summary/);
+});

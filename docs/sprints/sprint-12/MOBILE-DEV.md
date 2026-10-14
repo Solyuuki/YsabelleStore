@@ -223,3 +223,9 @@ On a phone, verify `http://<PC-LAN-IP>:5174/api/ready`; it should reach the same
 - The desktop embedded iframe preview changes layout dimensions, but does not emulate iOS Safari, mobile keyboard behavior or touch hardware. Test critical flows on real phones.
 - Phone camera APIs generally require an HTTPS secure context; that is a separate setup after mobile appearance QA.
 - `dev:mob` does not change the production/storefront hosting architecture, installer database rules or any sales/inventory authority.
+
+## Premium rider handoff: customer and owner/staff
+
+Rider contact is external to the website: show the number as selectable text with one **Copy** action, never a `tel:`/Call rider link. Customer view keeps delivery status, rider name/service, optional booking reference and customer-visible instructions. Dispatched handoff shown to **Owner and Staff** uses the same compact, content-sized design with separate customer instructions and **Internal delivery note**. Backend `requireRole("OWNER", "STAFF")` controls delivery-ticket access, and the customer order serializer never exposes `deliveryNotes`. No order, inventory or payment processing has changed.
+
+CSS is fluid from 320px phone to tablet/desktop and includes dark/light surfaces, long-note wrapping and 44px copy buttons. Validate 320×640, 360×800, 375×812, 390×844, 412×915, 430×932, 768×1024 plus tablet landscape. `npm run test:mobile` includes privacy/copy/source contracts; complete live theme, clipboard and device QA before release certification.
