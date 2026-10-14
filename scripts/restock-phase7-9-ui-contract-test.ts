@@ -106,7 +106,7 @@ assert.match(receivingSource, /Damage \/ return reason/);
 assert.match(receivingSource, /setReturnReportOrder\(updated\)/);
 assert.match(receivingSource, /receiveRestockOrder/);
 assert.match(receivingSource, /@\/components\/ui\/table/);
-assert.match(receivingSource, /<Table aria-label=/);
+assert.match(receivingSource, /<Table\s+aria-label=/);
 assert.match(receivingSource, /role="button"/);
 assert.match(receivingSource, /<StatCard/);
 assert.match(receivingSource, /<Dialog/);
