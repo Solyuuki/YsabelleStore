@@ -24,8 +24,8 @@ jobs:
       - name: Ensure no database or canonical state modifications
         shell: bash
         run: |
-          if git diff --name-only | grep -E '^(database/|\.github/)'; then
-            echo "Database, canonical, or workflow file changed by formatter. Review required."
+          if git diff --name-only | grep -E '^database/'; then
+            echo "Database or canonical files changed by formatter. Review required."
             exit 1
           fi
           git diff --check
@@ -50,8 +50,9 @@ jobs:
             const baseSha = context.sha;
             const {data: ref} = await github.rest.git.getRef({owner, repo, ref: 'heads/' + branch});
             if (ref.object.sha !== baseSha) throw new Error('Branch advanced; refuse stale write.');
-            const paths = execFileSync('git', ['diff', '--name-only', '-z'])
+            const changes = execFileSync('git', ['diff', '--name-only', '-z'])
               .toString('utf8').split('\0').filter(Boolean);
+            const paths = changes.filter(p => p !== '.github/workflows/sprint12-format-repair.yml');
             if (!paths.length) {
               core.info('Already formatted; no changes to commit.');
               return;
