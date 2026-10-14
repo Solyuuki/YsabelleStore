@@ -89,6 +89,7 @@ export async function saveDeliveryHandoffDraft(orderId: string, input: DeliveryH
     `/api/deliveries/${encodeURIComponent(orderId)}/handoff`,
     { method: "PATCH", json: input }
   );
-  if (!response.success || !response.data) throw new Error(response.message || "Dispatch details could not be saved.");
+  if (!response.success || !response.data)
+    throw new Error(response.message || "Dispatch details could not be saved.");
   return response.data;
 }

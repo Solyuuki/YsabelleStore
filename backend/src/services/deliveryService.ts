@@ -423,7 +423,11 @@ export function normalizeRiderPhone(value: string | null | undefined): string | 
 export async function saveDeliveryHandoffDraft(orderId: string, input: DeliveryHandoffDraftInput) {
   return prisma.$transaction(async (tx) => {
     const order = await findDeliveryOrder(tx, orderId);
-    if (!["ORDER_PLACED", "PREPARING", "READY_FOR_DELIVERY", "DELIVERY_FAILED"].includes(order.deliveryStatus)) {
+    if (
+      !["ORDER_PLACED", "PREPARING", "READY_FOR_DELIVERY", "DELIVERY_FAILED"].includes(
+        order.deliveryStatus
+      )
+    ) {
       throw new HttpError(409, "Dispatch details can only be edited before the rider leaves.", {
         code: "DELIVERY_HANDOFF_LOCKED"
       });
@@ -529,7 +533,8 @@ export async function updateDeliveryStatus(
             ? {
                 riderName: input.riderName?.trim() || order.riderName,
                 riderPhone,
-                customerDeliveryNote: input.customerDeliveryNote?.trim() || order.customerDeliveryNote
+                customerDeliveryNote:
+                  input.customerDeliveryNote?.trim() || order.customerDeliveryNote
               }
             : {}),
           deliveryNotes: input.note?.trim() || order.deliveryNotes,

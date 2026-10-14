@@ -65,7 +65,11 @@ try {
         stdio: ["inherit", "inherit", "inherit", "ipc"],
         windowsHide: true
       });
-      await waitUntil(async () => (await probeStack()) === "backend-only", ownedStack, "Web/backend stack");
+      await waitUntil(
+        async () => (await probeStack()) === "backend-only",
+        ownedStack,
+        "Web/backend stack"
+      );
     } else if (state === "backend-only") {
       console.info("Reusing the healthy YsabelleStore backend and database.");
       console.info("Mobile frontend runs independently on port 5174; port 5173 is optional.");
@@ -102,14 +106,18 @@ try {
     console.info("No duplicate backend or development database was created.");
     console.info("Only use this preview on a trusted LAN. Do not port-forward 5174.");
     console.info("Phone camera scanning may require a trusted HTTPS origin.");
-    console.info("Ctrl+C stops the mobile preview" + (ownedStack ? " and the web stack it started." : "; the existing stack stays running."));
+    console.info(
+      "Ctrl+C stops the mobile preview" +
+        (ownedStack ? " and the web stack it started." : "; the existing stack stays running.")
+    );
     if (!noOpen) openBrowser(MOBILE_ORIGIN + PREVIEW_PATH);
 
     await new Promise((resolve) => {
       ownedPreview.once("exit", resolve);
       ownedStack?.once("exit", resolve);
     });
-    if (!stopping) throw new Error("A mobile-preview-owned development process exited unexpectedly.");
+    if (!stopping)
+      throw new Error("A mobile-preview-owned development process exited unexpectedly.");
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));
@@ -121,23 +129,27 @@ async function assertMobileFavoriteOriginAllowed() {
   // The unauthenticated DELETE is intentionally rejected with 401 when the
   // Origin is trusted. 403 means the browser preview cannot perform favorites.
   // No mutation occurs because this probe never carries a session cookie.
-  const response = await fetch(MOBILE_ORIGIN + "/api/customer-account/favorites/__mobile_origin_probe__", {
-    method: "DELETE",
-    headers: { Origin: MOBILE_ORIGIN },
-    signal: AbortSignal.timeout(5_000)
-  });
+  const response = await fetch(
+    MOBILE_ORIGIN + "/api/customer-account/favorites/__mobile_origin_probe__",
+    {
+      method: "DELETE",
+      headers: { Origin: MOBILE_ORIGIN },
+      signal: AbortSignal.timeout(5_000)
+    }
+  );
   if (response.status === 401) return;
 
   const body = await response.json().catch(() => null);
   if (response.status === 403 && body?.error?.code === "CUSTOMER_AUTH_ORIGIN_REJECTED") {
     throw new Error(
       "Mobile favorites are blocked by the existing backend's Origin allowlist. " +
-      "Restart the development backend to load the Sprint 12 mobile-preview origin fix, then retry."
+        "Restart the development backend to load the Sprint 12 mobile-preview origin fix, then retry."
     );
   }
   throw new Error(
-    "Mobile favorites origin preflight failed (HTTP " + response.status +
-    "). Check the backend auth/origin configuration before testing account actions."
+    "Mobile favorites origin preflight failed (HTTP " +
+      response.status +
+      "). Check the backend auth/origin configuration before testing account actions."
   );
 }
 
@@ -162,10 +174,7 @@ async function probeStack() {
       "service=" + String(payload?.data?.service ?? "unknown")
     );
   } catch (error) {
-    console.info(
-      "Backend HTTP check:",
-      error instanceof Error ? error.message : "not reachable"
-    );
+    console.info("Backend HTTP check:", error instanceof Error ? error.message : "not reachable");
   }
 
   // Only decide whether to start an owned stack after the HTTP probe fails.
@@ -176,8 +185,10 @@ async function probeStack() {
   if (!backendOccupied && !frontendOccupied) return "none";
 
   console.error(
-    "Backend:", backendOccupied ? "port occupied but not verified" : "not listening",
-    "| Web:", frontendOccupied ? "port 5173 in use" : "port 5173 free"
+    "Backend:",
+    backendOccupied ? "port occupied but not verified" : "not listening",
+    "| Web:",
+    frontendOccupied ? "port 5173 in use" : "port 5173 free"
   );
   return "partial";
 }
@@ -236,7 +247,8 @@ function printLinks() {
         ip.startsWith("10.") ||
         ip.startsWith("192.168.") ||
         /^172\.(1[6-9]|2\d|3[01])\./.test(ip)
-      ) ips.add(ip);
+      )
+        ips.add(ip);
     }
   }
   if (ips.size === 0) console.info("No private LAN IPv4 detected; check Wi-Fi.");

@@ -18,7 +18,10 @@ test("mobile POS exposes real camera Scan action without changing desktop scanne
   assert.match(pos, /setCameraScannerOpen\(true\)/);
   assert.match(pos, /import "@\/styles\/retail-pos-mobile-scanner\.css"/);
   assert.match(css, /\.retail-pos-camera-launch\s*\{\s*display: none;/);
-  assert.match(css, /@media \(max-width: 767px\), \(max-height: 500px\) and \(orientation: landscape\)/);
+  assert.match(
+    css,
+    /@media \(max-width: 767px\), \(max-height: 500px\) and \(orientation: landscape\)/
+  );
   assert.match(css, /\.retail-pos-camera-launch\s*\{[^}]*display: inline-flex;/);
   assert.match(pos, /ref=\{scannerInputRef\}/);
   assert.match(pos, /onKeyDown=\{\(event\) =>/);
@@ -29,7 +32,10 @@ test("mobile POS exposes real camera Scan action without changing desktop scanne
 test("camera scans use existing exact barcode lookup and stock-limited Add, never bypass checkout", () => {
   assert.match(pos, /onDetected=\{\(barcode\) => \{/);
   assert.match(pos, /setSearchInput\(barcode\)/);
-  assert.match(pos, /handleSearch\(\{ queryOverride: barcode, autoAddExactMatch: true, page: 1 \}\)/);
+  assert.match(
+    pos,
+    /handleSearch\(\{ queryOverride: barcode, autoAddExactMatch: true, page: 1 \}\)/
+  );
   assert.match(pos, /\(options\.queryOverride \?\? searchInput\)\.trim\(\)/);
   assert.match(pos, /resolveExactProductMatch\(trimmedQuery, response\.data\.products\)/);
   assert.match(pos, /product\.barcode\?\.toLowerCase\(\) === normalizedQuery/);
@@ -84,7 +90,10 @@ test("camera permission states, touch controls and iOS safeguards are accessible
 });
 
 test("phone search and product cards are compact, usable and theme-aware", () => {
-  assert.match(css, /\.retail-pos-search-form\s*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
+  assert.match(
+    css,
+    /\.retail-pos-search-form\s*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/
+  );
   assert.match(css, /\.pos-scanner-field\s*\{[^}]*grid-column: 1 \/ -1;/);
   assert.match(css, /td\[data-label="Product"\]\s*\{[^}]*grid-column: 1 \/ -1;/);
   assert.match(css, /td\[data-label="Stock"\]\s*\{[^}]*grid-row: 2;/);

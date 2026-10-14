@@ -17,7 +17,14 @@ import {
   ShieldCheck,
   UserRound
 } from "lucide-react";
-import { useEffect, useLayoutEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type FormEvent
+} from "react";
 
 import { ProductCard, formatCurrency } from "@/components/customer/ProductCard";
 import { OrderRiderInformation } from "@/components/customer/OrderRiderInformation";
@@ -393,7 +400,11 @@ export function CustomerAccountPage({
   );
   const favoritesTotalPages = Math.max(1, Math.ceil(favoriteProducts.length / favoritesPageSize));
   const paginatedFavoriteProducts = useMemo(
-    () => favoriteProducts.slice((favoritesPage - 1) * favoritesPageSize, favoritesPage * favoritesPageSize),
+    () =>
+      favoriteProducts.slice(
+        (favoritesPage - 1) * favoritesPageSize,
+        favoritesPage * favoritesPageSize
+      ),
     [favoriteProducts, favoritesPage]
   );
   const historyTotalPages = Math.max(1, Math.ceil(historicalOrders.length / historyPageSize));
@@ -1081,7 +1092,9 @@ export function CustomerAccountPage({
                             </div>
                           </summary>
                           <div className="customer-account-history-card__details">
-                            {order.deliveryStatus === "DELIVERED" ? <OrderRiderInformation order={order} /> : null}
+                            {order.deliveryStatus === "DELIVERED" ? (
+                              <OrderRiderInformation order={order} />
+                            ) : null}
                             <div className="customer-account-history-card__payment">
                               <span>Payment</span>
                               <strong>

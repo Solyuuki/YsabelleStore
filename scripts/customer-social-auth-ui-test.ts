@@ -192,7 +192,9 @@ assert.ok(
 );
 
 // Preview iframe is a visual QA shell, never a place to render Google's OAuth screen.
-const fullPage = { location: { origin: "http://localhost:5174", pathname: "/login" } } as unknown as Window;
+const fullPage = {
+  location: { origin: "http://localhost:5174", pathname: "/login" }
+} as unknown as Window;
 Object.assign(fullPage, { self: fullPage, top: fullPage, parent: fullPage });
 assert.equal(customerSocialAuthNavigationWindow(fullPage), fullPage);
 
@@ -220,7 +222,6 @@ assert.throws(
   () => customerSocialAuthNavigationWindow(nestedFrame),
   /Open Ysabelle Store in a full browser tab/
 );
-
 
 // Full-page Google auth must preserve the signed-in landing route and original
 // phone/tablet preset so the OAuth callback does not strand QA on desktop.

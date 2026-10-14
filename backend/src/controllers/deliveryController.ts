@@ -107,7 +107,11 @@ export const confirmCodCollectedController: RequestHandler = async (request, res
   }
 };
 
-export const saveDeliveryHandoffDraftController: RequestHandler = async (request, response, next) => {
+export const saveDeliveryHandoffDraftController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
   try {
     requireUser(request);
     const params = deliveryTicketParamsSchema.safeParse(request.params);

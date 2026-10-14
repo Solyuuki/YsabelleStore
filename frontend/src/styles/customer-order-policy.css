@@ -16,14 +16,20 @@
   padding: 0;
 }
 
-.customer-app .customer-checkout-page .customer-checkout-policy-group > .customer-order-summary__helper {
+.customer-app
+  .customer-checkout-page
+  .customer-checkout-policy-group
+  > .customer-order-summary__helper {
   min-width: 0;
   margin: 0 !important;
   padding: 0 !important;
   overflow-wrap: anywhere;
 }
 
-.customer-app .customer-checkout-page .customer-checkout-policy-group > .customer-order-policy__trigger {
+.customer-app
+  .customer-checkout-page
+  .customer-checkout-policy-group
+  > .customer-order-policy__trigger {
   display: inline-flex;
   width: fit-content;
   max-width: 100%;
@@ -369,4 +375,3 @@ body .customer-order-policy__dialog {
 :root.dark .customer-app .customer-order-agreement__checkbox {
   accent-color: #aaa0f3;
 }
-

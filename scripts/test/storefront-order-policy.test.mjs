@@ -14,8 +14,7 @@ test("cart policy badge is above the summary card and opens a centered modal", (
       cart.indexOf('<aside className="customer-order-summary">')
   );
   assert.ok(
-    cart.indexOf('<aside className="customer-order-summary">') <
-      cart.indexOf("Proceed to checkout")
+    cart.indexOf('<aside className="customer-order-summary">') < cart.indexOf("Proceed to checkout")
   );
   assert.match(policy, /<Dialog>/);
   assert.match(policy, /<DialogTrigger asChild>/);

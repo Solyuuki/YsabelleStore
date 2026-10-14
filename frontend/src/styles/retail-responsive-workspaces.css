@@ -4,7 +4,8 @@
    enterprise-only analytical tables keep contained scrolling rather than
    overflowing the document. Desktop/tablet structures are unchanged. */
 
-@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+@media (max-width: 767px),
+  (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
   .retail-workspace,
   .retail-workspace > main[data-retail-module],
   .retail-workspace > main[data-retail-module] > div,
@@ -23,7 +24,9 @@
 
   .retail-workspace > main[data-retail-module] .grid > *,
   .retail-workspace > main[data-retail-module] .flex > *,
-  .retail-workspace > main[data-retail-module] :is(.recharts-responsive-container, .recharts-wrapper) {
+  .retail-workspace
+    > main[data-retail-module]
+    :is(.recharts-responsive-container, .recharts-wrapper) {
     min-width: 0;
     max-width: 100%;
   }
@@ -48,7 +51,9 @@
     overscroll-behavior-inline: contain;
   }
 
-  .retail-workspace > main[data-retail-module] :is(.recharts-responsive-container, .recharts-wrapper, canvas) {
+  .retail-workspace
+    > main[data-retail-module]
+    :is(.recharts-responsive-container, .recharts-wrapper, canvas) {
     max-width: 100%;
   }
 
@@ -133,7 +138,12 @@
     border-top: 1px solid #d9e0f0;
   }
 
-  .retail-workspace .retail-mobile-data-table tbody > tr > :is([data-label="Action"], [data-label="Actions"]) button {
+  .retail-workspace
+    .retail-mobile-data-table
+    tbody
+    > tr
+    > :is([data-label="Action"], [data-label="Actions"])
+    button {
     min-width: 44px;
     min-height: 44px;
     max-width: 100%;
@@ -151,11 +161,22 @@
     text-overflow: clip;
   }
 
-  .retail-workspace [data-retail-module="products"] .retail-mobile-data-table tbody > tr > td:first-child {
+  .retail-workspace
+    [data-retail-module="products"]
+    .retail-mobile-data-table
+    tbody
+    > tr
+    > td:first-child {
     grid-column: 1 / -1;
   }
 
-  .retail-workspace [data-retail-module="products"] .retail-mobile-data-table tbody > tr > [data-label="Action"] > div {
+  .retail-workspace
+    [data-retail-module="products"]
+    .retail-mobile-data-table
+    tbody
+    > tr
+    > [data-label="Action"]
+    > div {
     display: flex;
     flex-wrap: wrap;
     width: 100%;
@@ -180,7 +201,10 @@
     cursor: pointer;
   }
 
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar[data-mobile-filters-open="false"] .ys-inventory-filter {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-toolbar[data-mobile-filters-open="false"]
+    .ys-inventory-filter {
     display: none;
   }
 
@@ -210,8 +234,16 @@
     width: 100%;
   }
 
-  .retail-workspace [data-retail-module="receiving"] .retail-mobile-data-table tbody > tr[role="button"],
-  .retail-workspace [data-retail-module="inventory"] .retail-mobile-data-table tbody > tr[tabindex] {
+  .retail-workspace
+    [data-retail-module="receiving"]
+    .retail-mobile-data-table
+    tbody
+    > tr[role="button"],
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-mobile-data-table
+    tbody
+    > tr[tabindex] {
     cursor: pointer;
     min-height: 44px;
   }
@@ -223,9 +255,15 @@
     flex-shrink: 1;
   }
 
-  .retail-workspace [data-retail-module="dashboard"] :is(.ys-dashboard-monthly-batch, .ys-dashboard-panel-surface),
-  .retail-workspace [data-retail-module="reports"] :is(.recharts-responsive-container, .recharts-wrapper),
-  .retail-workspace [data-retail-module="forecast"] :is(.recharts-responsive-container, .recharts-wrapper) {
+  .retail-workspace
+    [data-retail-module="dashboard"]
+    :is(.ys-dashboard-monthly-batch, .ys-dashboard-panel-surface),
+  .retail-workspace
+    [data-retail-module="reports"]
+    :is(.recharts-responsive-container, .recharts-wrapper),
+  .retail-workspace
+    [data-retail-module="forecast"]
+    :is(.recharts-responsive-container, .recharts-wrapper) {
     min-width: 0;
     width: 100%;
     max-width: 100%;
@@ -264,7 +302,13 @@
     min-height: 44px;
   }
 
-  .retail-workspace [data-retail-module="pos"] .retail-mobile-data-table tbody > tr > [data-label="Action"] button {
+  .retail-workspace
+    [data-retail-module="pos"]
+    .retail-mobile-data-table
+    tbody
+    > tr
+    > [data-label="Action"]
+    button {
     min-width: 100px;
   }
 
@@ -306,7 +350,8 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
-    padding: 0.65rem max(1rem, env(safe-area-inset-right, 0px)) 0.65rem max(1rem, env(safe-area-inset-left, 0px));
+    padding: 0.65rem max(1rem, env(safe-area-inset-right, 0px)) 0.65rem
+      max(1rem, env(safe-area-inset-left, 0px));
     border: 0;
     background: linear-gradient(110deg, #f2f3ff, #ede8fc);
     color: #293654;
@@ -330,7 +375,9 @@
     font-weight: 850;
   }
 
-  .retail-workspace .retail-pos-cart[data-mobile-open="false"] > :is([class*="card-header"], [class*="card-content"]) {
+  .retail-workspace
+    .retail-pos-cart[data-mobile-open="false"]
+    > :is([class*="card-header"], [class*="card-content"]) {
     display: none;
   }
 
@@ -377,12 +424,21 @@
     border-right: 0;
   }
 
-  .retail-workspace [data-retail-module="customer-support"] .ys-support-inbox[data-mobile-conversation="false"] .ys-support-inbox__conversation,
-  .retail-workspace [data-retail-module="customer-support"] .ys-support-inbox[data-mobile-conversation="true"] > aside {
+  .retail-workspace
+    [data-retail-module="customer-support"]
+    .ys-support-inbox[data-mobile-conversation="false"]
+    .ys-support-inbox__conversation,
+  .retail-workspace
+    [data-retail-module="customer-support"]
+    .ys-support-inbox[data-mobile-conversation="true"]
+    > aside {
     display: none;
   }
 
-  .retail-workspace [data-retail-module="customer-support"] .ys-support-inbox[data-mobile-conversation="true"] .ys-support-inbox__conversation {
+  .retail-workspace
+    [data-retail-module="customer-support"]
+    .ys-support-inbox[data-mobile-conversation="true"]
+    .ys-support-inbox__conversation {
     display: flex;
     min-height: 0;
     flex: 1 1 auto;
@@ -416,7 +472,11 @@
     padding: 0.85rem;
   }
 
-  .retail-workspace [data-retail-module="customer-support"] .ys-support-inbox__conversation header .min-w-\[250px\] {
+  .retail-workspace
+    [data-retail-module="customer-support"]
+    .ys-support-inbox__conversation
+    header
+    .min-w-\[250px\] {
     min-width: 0;
     width: 100%;
   }
@@ -431,7 +491,9 @@
 
   /* Dense dashboard, reporting and administration cards should keep their
      components, charts and real actions, but lose desktop-sized gutters. */
-  .retail-workspace [data-retail-module] :is(.ys-dashboard-panel-surface, .ys-kpi-card-surface, .ys-appearance-card) {
+  .retail-workspace
+    [data-retail-module]
+    :is(.ys-dashboard-panel-surface, .ys-kpi-card-surface, .ys-appearance-card) {
     min-width: 0;
     max-width: 100%;
   }
@@ -448,7 +510,9 @@
     max-width: 100%;
   }
 
-  .retail-workspace [data-retail-module] :is(.ys-product-toolbar-filter, .ys-retail-select-chevron) {
+  .retail-workspace
+    [data-retail-module]
+    :is(.ys-product-toolbar-filter, .ys-retail-select-chevron) {
     min-width: 0;
     max-width: 100%;
   }
@@ -491,7 +555,10 @@
     color: #d1c0ff;
   }
 
-  :root.dark .retail-workspace [data-retail-module="customer-support"] .ys-support-inbox__mobile-back {
+  :root.dark
+    .retail-workspace
+    [data-retail-module="customer-support"]
+    .ys-support-inbox__mobile-back {
     border-color: #50617b;
     background: #2c355a;
     color: #e1d9ff;
@@ -500,7 +567,8 @@
 
 /* Do not modify the existing shared Dialog implementation: its React portal
    serves storefront pages too. Scope sheets to authenticated retail routes. */
-@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+@media (max-width: 767px),
+  (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
   :root[data-appearance-scope="retail"] [role="dialog"]:not(.retail-mobile-nav__drawer) {
     box-sizing: border-box;
     width: calc(100vw - 1rem) !important;
@@ -512,12 +580,21 @@
     overscroll-behavior: contain;
   }
 
-  :root[data-appearance-scope="retail"] :is(.ys-inventory-modal, .ys-product-modal, .ys-category-modal, .ys-receiving-dialog, .ys-pos-cash-dialog) {
+  :root[data-appearance-scope="retail"]
+    :is(
+      .ys-inventory-modal,
+      .ys-product-modal,
+      .ys-category-modal,
+      .ys-receiving-dialog,
+      .ys-pos-cash-dialog
+    ) {
     min-width: 0;
     max-width: calc(100vw - 1rem) !important;
   }
 
-  :root[data-appearance-scope="retail"] :is(.ys-inventory-modal, .ys-product-modal, .ys-category-modal, .ys-receiving-dialog) [class*="grid-cols-["] {
+  :root[data-appearance-scope="retail"]
+    :is(.ys-inventory-modal, .ys-product-modal, .ys-category-modal, .ys-receiving-dialog)
+    [class*="grid-cols-["] {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -525,7 +602,9 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  :root[data-appearance-scope="retail"] :is(.ys-inventory-modal, .ys-product-modal, .ys-category-modal, .ys-receiving-dialog) :is(.overflow-x-auto, .overflow-auto) {
+  :root[data-appearance-scope="retail"]
+    :is(.ys-inventory-modal, .ys-product-modal, .ys-category-modal, .ys-receiving-dialog)
+    :is(.overflow-x-auto, .overflow-auto) {
     max-width: 100%;
   }
 
@@ -539,7 +618,9 @@
     min-width: 0;
   }
 
-  :root[data-appearance-scope="retail"] :is(.ys-inventory-modal, .ys-product-modal, .ys-category-modal, .ys-receiving-dialog) > :is(header, footer) {
+  :root[data-appearance-scope="retail"]
+    :is(.ys-inventory-modal, .ys-product-modal, .ys-category-modal, .ys-receiving-dialog)
+    > :is(header, footer) {
     flex: none;
   }
 }

@@ -237,12 +237,19 @@ export function HistoricalSalesPage() {
                           <p className="font-medium">{item.productName}</p>
                           <p className="text-xs text-slate-500">{item.productId}</p>
                         </TableCell>
-                        <TableCell data-label="Observations" className="text-right">{item.observationCount}</TableCell>
-                        <TableCell data-label="Missing months" className="text-right">{item.missingMonths.length}</TableCell>
+                        <TableCell data-label="Observations" className="text-right">
+                          {item.observationCount}
+                        </TableCell>
+                        <TableCell data-label="Missing months" className="text-right">
+                          {item.missingMonths.length}
+                        </TableCell>
                         <TableCell data-label="Status">
                           <EligibilityBadge status={item.status} />
                         </TableCell>
-                        <TableCell data-label="Assessment" className="max-w-md text-sm text-slate-600">
+                        <TableCell
+                          data-label="Assessment"
+                          className="max-w-md text-sm text-slate-600"
+                        >
                           {item.reason}
                         </TableCell>
                       </TableRow>
@@ -303,10 +310,18 @@ export function HistoricalSalesPage() {
                           <p>{formatDate(batch.createdAt)}</p>
                           <p className="text-xs text-slate-500">{batch.importedBy.name}</p>
                         </TableCell>
-                        <TableCell data-label="Mode" className="text-xs">{friendly(batch.importMode)}</TableCell>
-                        <TableCell data-label="Rows" className="text-right">{batch.totalRows}</TableCell>
-                        <TableCell data-label="Written" className="text-right">{batch.importedRows}</TableCell>
-                        <TableCell data-label="Skipped" className="text-right">{batch.skippedRows}</TableCell>
+                        <TableCell data-label="Mode" className="text-xs">
+                          {friendly(batch.importMode)}
+                        </TableCell>
+                        <TableCell data-label="Rows" className="text-right">
+                          {batch.totalRows}
+                        </TableCell>
+                        <TableCell data-label="Written" className="text-right">
+                          {batch.importedRows}
+                        </TableCell>
+                        <TableCell data-label="Skipped" className="text-right">
+                          {batch.skippedRows}
+                        </TableCell>
                         <TableCell data-label="Status">
                           <BatchBadge status={batch.status} />
                         </TableCell>

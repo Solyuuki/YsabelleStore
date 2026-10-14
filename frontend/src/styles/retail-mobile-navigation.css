@@ -4,7 +4,8 @@
   display: none;
 }
 
-@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+@media (max-width: 767px),
+  (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
   .app-shell-ambient > .retail-desktop-sidebar {
     display: none;
   }
@@ -24,10 +25,7 @@
     min-width: 0;
     align-items: center;
     gap: 0.65rem;
-    padding:
-      env(safe-area-inset-top, 0px)
-      max(0.75rem, env(safe-area-inset-right, 0px))
-      0
+    padding: env(safe-area-inset-top, 0px) max(0.75rem, env(safe-area-inset-right, 0px)) 0
       max(0.75rem, env(safe-area-inset-left, 0px));
     border-bottom: 1px solid #d2d7ed;
     background: rgb(247 249 255 / 96%);
@@ -51,7 +49,9 @@
     background: #eef1fc;
     color: #42516f;
     cursor: pointer;
-    transition: background 150ms ease, border-color 150ms ease;
+    transition:
+      background 150ms ease,
+      border-color 150ms ease;
   }
 
   .app-shell-ambient .retail-mobile-nav__icon-button:hover {
@@ -160,8 +160,7 @@
      scrolling. Phone-safe inner gutters must not force horizontal overflow. */
   .app-shell-ambient .retail-workspace > main[data-layout="app"] {
     padding: 0.85rem max(0.75rem, env(safe-area-inset-right, 0px))
-      calc(1rem + env(safe-area-inset-bottom, 0px))
-      max(0.75rem, env(safe-area-inset-left, 0px));
+      calc(1rem + env(safe-area-inset-bottom, 0px)) max(0.75rem, env(safe-area-inset-left, 0px));
   }
 
   :root.dark .app-shell-ambient .retail-mobile-nav__topbar {
@@ -217,7 +216,8 @@
 
 /* The Sheet is rendered in a Radix portal beneath <body>, so selectors here
    must not rely on .app-shell-ambient or the header for light/dark styling. */
-@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+@media (max-width: 767px),
+  (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
   .retail-mobile-nav__drawer[role="dialog"] {
     box-sizing: border-box;
     top: 0;

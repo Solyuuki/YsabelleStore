@@ -404,7 +404,6 @@ export function CategoriesPage() {
               </FilterSelect>
             </div>
 
-
             <div className="ys-category-v2-mobile-controls">
               <label className="ys-category-v2-search">
                 <Search aria-hidden="true" className="h-4 w-4 shrink-0" />
@@ -415,7 +414,9 @@ export function CategoriesPage() {
                   type="search"
                   value={searchInput}
                 />
-                {loading && query.search ? <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" /> : null}
+                {loading && query.search ? (
+                  <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
+                ) : null}
               </label>
               <button
                 aria-controls="ys-category-v2-filter-panel"
@@ -426,7 +427,9 @@ export function CategoriesPage() {
               >
                 <Filter aria-hidden="true" className="h-4 w-4" />
                 <span>Filters &amp; sort</span>
-                {hasFilters ? <span aria-label="Filters active" className="ys-category-v2-filter-dot" /> : null}
+                {hasFilters ? (
+                  <span aria-label="Filters active" className="ys-category-v2-filter-dot" />
+                ) : null}
                 <ChevronRight aria-hidden="true" className="h-4 w-4" />
               </button>
               {mobileFiltersOpen ? (
@@ -434,10 +437,16 @@ export function CategoriesPage() {
                   <h3>Category filters</h3>
                   <fieldset>
                     <legend>Cover image</legend>
-                    {([
-                      ["ALL", "All covers"], ["READY", "Ready"], ["MISSING", "Missing"],
-                      ["PROCESSING", "Processing"], ["NEEDS_REVIEW", "Needs review"], ["FAILED", "Failed"]
-                    ] as const).map(([value, label]) => (
+                    {(
+                      [
+                        ["ALL", "All covers"],
+                        ["READY", "Ready"],
+                        ["MISSING", "Missing"],
+                        ["PROCESSING", "Processing"],
+                        ["NEEDS_REVIEW", "Needs review"],
+                        ["FAILED", "Failed"]
+                      ] as const
+                    ).map(([value, label]) => (
                       <button
                         aria-pressed={query.coverStatus === value}
                         className="ys-category-v2-option"
@@ -446,15 +455,21 @@ export function CategoriesPage() {
                         type="button"
                       >
                         <span>{label}</span>
-                        {query.coverStatus === value ? <Check aria-hidden="true" className="h-4 w-4" /> : null}
+                        {query.coverStatus === value ? (
+                          <Check aria-hidden="true" className="h-4 w-4" />
+                        ) : null}
                       </button>
                     ))}
                   </fieldset>
                   <fieldset>
                     <legend>Storefront</legend>
-                    {([
-                      ["ALL", "All storefront"], ["VISIBLE", "Visible"], ["HIDDEN", "Hidden"]
-                    ] as const).map(([value, label]) => (
+                    {(
+                      [
+                        ["ALL", "All storefront"],
+                        ["VISIBLE", "Visible"],
+                        ["HIDDEN", "Hidden"]
+                      ] as const
+                    ).map(([value, label]) => (
                       <button
                         aria-pressed={query.visibility === value}
                         className="ys-category-v2-option"
@@ -463,15 +478,21 @@ export function CategoriesPage() {
                         type="button"
                       >
                         <span>{label}</span>
-                        {query.visibility === value ? <Check aria-hidden="true" className="h-4 w-4" /> : null}
+                        {query.visibility === value ? (
+                          <Check aria-hidden="true" className="h-4 w-4" />
+                        ) : null}
                       </button>
                     ))}
                   </fieldset>
                   <fieldset>
                     <legend>Status</legend>
-                    {([
-                      ["ALL", "All statuses"], ["ACTIVE", "Active"], ["INACTIVE", "Inactive"]
-                    ] as const).map(([value, label]) => (
+                    {(
+                      [
+                        ["ALL", "All statuses"],
+                        ["ACTIVE", "Active"],
+                        ["INACTIVE", "Inactive"]
+                      ] as const
+                    ).map(([value, label]) => (
                       <button
                         aria-pressed={query.status === value}
                         className="ys-category-v2-option"
@@ -480,44 +501,65 @@ export function CategoriesPage() {
                         type="button"
                       >
                         <span>{label}</span>
-                        {query.status === value ? <Check aria-hidden="true" className="h-4 w-4" /> : null}
+                        {query.status === value ? (
+                          <Check aria-hidden="true" className="h-4 w-4" />
+                        ) : null}
                       </button>
                     ))}
                   </fieldset>
                   <fieldset>
                     <legend>Sort by</legend>
-                    {([
-                      ["updatedAt:desc", "Recently updated"],
-                      ["name:asc", "Name A–Z"], ["name:desc", "Name Z–A"],
-                      ["productCount:desc", "Most products"], ["productCount:asc", "Fewest products"]
-                    ] as const).map(([value, label]) => (
+                    {(
+                      [
+                        ["updatedAt:desc", "Recently updated"],
+                        ["name:asc", "Name A–Z"],
+                        ["name:desc", "Name Z–A"],
+                        ["productCount:desc", "Most products"],
+                        ["productCount:asc", "Fewest products"]
+                      ] as const
+                    ).map(([value, label]) => (
                       <button
                         aria-pressed={sortOptionFromQuery(query) === value}
                         className="ys-category-v2-option"
                         key={value}
                         onClick={() => {
-                          const [sortBy, sortOrder] = value.split(":") as [CategorySortBy, CategorySortOrder];
+                          const [sortBy, sortOrder] = value.split(":") as [
+                            CategorySortBy,
+                            CategorySortOrder
+                          ];
                           applyQuery({ sortBy, sortOrder, page: 1 });
                         }}
                         type="button"
                       >
                         <span>{label}</span>
-                        {sortOptionFromQuery(query) === value ? <Check aria-hidden="true" className="h-4 w-4" /> : null}
+                        {sortOptionFromQuery(query) === value ? (
+                          <Check aria-hidden="true" className="h-4 w-4" />
+                        ) : null}
                       </button>
                     ))}
                   </fieldset>
                   <div className="ys-category-v2-filter-actions">
                     <button
                       className="ys-category-v2-reset"
-                      onClick={() => applyQuery({
-                        coverStatus: "ALL", visibility: "ALL", status: "ALL",
-                        sortBy: "updatedAt", sortOrder: "desc", page: 1
-                      })}
+                      onClick={() =>
+                        applyQuery({
+                          coverStatus: "ALL",
+                          visibility: "ALL",
+                          status: "ALL",
+                          sortBy: "updatedAt",
+                          sortOrder: "desc",
+                          page: 1
+                        })
+                      }
                       type="button"
                     >
                       Reset
                     </button>
-                    <button className="ys-category-v2-apply" onClick={() => setMobileFiltersOpen(false)} type="button">
+                    <button
+                      className="ys-category-v2-apply"
+                      onClick={() => setMobileFiltersOpen(false)}
+                      type="button"
+                    >
                       Apply filters
                     </button>
                   </div>
@@ -556,133 +598,143 @@ export function CategoriesPage() {
               ) : (
                 <>
                   <div aria-label="Category catalog" className="ys-category-v2-mobile-list">
-                  {categories.map((category) => (
-                    <article className="ys-category-v2-category-card" key={category.id}>
-                      <div className="ys-category-v2-card-main">
-                        <div className="ys-category-v2-thumb">
-                          <CategoryCoverThumbnail category={category} />
-                        </div>
-                        <div className="ys-category-v2-card-content">
-                          <h3>{category.name}</h3>
-                          <p className="ys-category-v2-slug">{category.slug}</p>
-                          <div className="ys-category-v2-card-chips">
-                            <span className="ys-category-v2-product-count">
-                              {category.productCount} {category.productCount === 1 ? "product" : "products"}
-                            </span>
-                            <span className="ys-category-v2-cover-status" data-status={category.coverStatus}>
-                              {coverStatusLabel(category.coverStatus)}
-                            </span>
+                    {categories.map((category) => (
+                      <article className="ys-category-v2-category-card" key={category.id}>
+                        <div className="ys-category-v2-card-main">
+                          <div className="ys-category-v2-thumb">
+                            <CategoryCoverThumbnail category={category} />
+                          </div>
+                          <div className="ys-category-v2-card-content">
+                            <h3>{category.name}</h3>
+                            <p className="ys-category-v2-slug">{category.slug}</p>
+                            <div className="ys-category-v2-card-chips">
+                              <span className="ys-category-v2-product-count">
+                                {category.productCount}{" "}
+                                {category.productCount === 1 ? "product" : "products"}
+                              </span>
+                              <span
+                                className="ys-category-v2-cover-status"
+                                data-status={category.coverStatus}
+                              >
+                                {coverStatusLabel(category.coverStatus)}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="ys-category-v2-card-bottom">
-                        <div className="ys-category-v2-card-meta">
-                          <span className="ys-category-v2-visibility">
-                            {category.isStorefrontVisible
-                              ? <Eye aria-hidden="true" className="h-3.5 w-3.5" />
-                              : <EyeOff aria-hidden="true" className="h-3.5 w-3.5" />}
-                            {category.isStorefrontVisible ? "Visible" : "Hidden"}
-                            {!category.isActive ? " · Inactive" : ""}
-                          </span>
-                          <time className="ys-category-v2-date" dateTime={category.updatedAt}>
-                            {new Date(category.updatedAt).toLocaleDateString("en-PH", {
-                              day: "2-digit", month: "short", year: "numeric"
-                            })}
-                          </time>
-                        </div>
-                        <Button
-                          aria-label={`Edit ${category.name}`}
-                          className="ys-category-v2-edit"
-                          onClick={() => setSelectedCategory(category)}
-                          size="sm"
-                          type="button"
-                          variant="secondary"
-                        >
-                          <PencilLine aria-hidden="true" className="h-4 w-4" />
-                          Edit
-                        </Button>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-
-                <div className="ys-category-v2-desktop-table overflow-x-auto">
-                  <Table className="retail-mobile-data-table">
-                    <TableHeader>
-                      <TableRow className="bg-slate-50/80">
-                        <TableHead className="min-w-64">Category</TableHead>
-                        <TableHead className="w-28">Products</TableHead>
-                        <TableHead className="min-w-52">Cover</TableHead>
-                        <TableHead className="min-w-36">Storefront</TableHead>
-                        <TableHead className="min-w-36">Updated</TableHead>
-                        <TableHead className="w-24 text-right">Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {categories.map((category) => (
-                        <TableRow className="hover:bg-slate-50/70" key={category.id}>
-                          <TableCell data-label="Category">
-                            <div className="min-w-0">
-                              <p className="font-semibold text-slate-950">{category.name}</p>
-                              <p className="mt-0.5 truncate text-xs text-slate-500">
-                                {category.slug}
-                              </p>
-                              {category.description ? (
-                                <p className="mt-1 max-w-md truncate text-xs text-slate-500">
-                                  {category.description}
-                                </p>
-                              ) : null}
-                            </div>
-                          </TableCell>
-                          <TableCell data-label="Products">
-                            <span className="font-semibold tabular-nums text-slate-800">
-                              {category.productCount}
+                        <div className="ys-category-v2-card-bottom">
+                          <div className="ys-category-v2-card-meta">
+                            <span className="ys-category-v2-visibility">
+                              {category.isStorefrontVisible ? (
+                                <Eye aria-hidden="true" className="h-3.5 w-3.5" />
+                              ) : (
+                                <EyeOff aria-hidden="true" className="h-3.5 w-3.5" />
+                              )}
+                              {category.isStorefrontVisible ? "Visible" : "Hidden"}
+                              {!category.isActive ? " · Inactive" : ""}
                             </span>
-                          </TableCell>
-                          <TableCell data-label="Cover">
-                            <div className="flex items-center gap-3">
-                              <CategoryCoverThumbnail category={category} />
-                              <StatusBadge variant={coverStatusVariant(category.coverStatus)}>
-                                {coverStatusLabel(category.coverStatus)}
-                              </StatusBadge>
-                            </div>
-                          </TableCell>
-                          <TableCell data-label="Storefront">
-                            <div className="flex flex-col items-start gap-1.5">
-                              <StatusBadge
-                                variant={category.isStorefrontVisible ? "success" : "info"}
-                              >
-                                {category.isStorefrontVisible ? "Visible" : "Hidden"}
-                              </StatusBadge>
-                              {!category.isActive ? (
-                                <span className="text-xs font-medium text-slate-500">Inactive</span>
-                              ) : null}
-                            </div>
-                          </TableCell>
-                          <TableCell data-label="Updated" className="text-slate-600">
-                            {new Date(category.updatedAt).toLocaleDateString("en-PH", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric"
-                            })}
-                          </TableCell>
-                          <TableCell data-label="Action" className="text-right">
-                            <Button
-                              aria-label={`Edit ${category.name}`}
-                              size="sm"
-                              type="button"
-                              variant="secondary"
-                              onClick={() => setSelectedCategory(category)}
-                            >
-                              <PencilLine className="h-4 w-4" aria-hidden="true" />
-                              Edit
-                            </Button>
-                          </TableCell>
+                            <time className="ys-category-v2-date" dateTime={category.updatedAt}>
+                              {new Date(category.updatedAt).toLocaleDateString("en-PH", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric"
+                              })}
+                            </time>
+                          </div>
+                          <Button
+                            aria-label={`Edit ${category.name}`}
+                            className="ys-category-v2-edit"
+                            onClick={() => setSelectedCategory(category)}
+                            size="sm"
+                            type="button"
+                            variant="secondary"
+                          >
+                            <PencilLine aria-hidden="true" className="h-4 w-4" />
+                            Edit
+                          </Button>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+
+                  <div className="ys-category-v2-desktop-table overflow-x-auto">
+                    <Table className="retail-mobile-data-table">
+                      <TableHeader>
+                        <TableRow className="bg-slate-50/80">
+                          <TableHead className="min-w-64">Category</TableHead>
+                          <TableHead className="w-28">Products</TableHead>
+                          <TableHead className="min-w-52">Cover</TableHead>
+                          <TableHead className="min-w-36">Storefront</TableHead>
+                          <TableHead className="min-w-36">Updated</TableHead>
+                          <TableHead className="w-24 text-right">Action</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                      </TableHeader>
+                      <TableBody>
+                        {categories.map((category) => (
+                          <TableRow className="hover:bg-slate-50/70" key={category.id}>
+                            <TableCell data-label="Category">
+                              <div className="min-w-0">
+                                <p className="font-semibold text-slate-950">{category.name}</p>
+                                <p className="mt-0.5 truncate text-xs text-slate-500">
+                                  {category.slug}
+                                </p>
+                                {category.description ? (
+                                  <p className="mt-1 max-w-md truncate text-xs text-slate-500">
+                                    {category.description}
+                                  </p>
+                                ) : null}
+                              </div>
+                            </TableCell>
+                            <TableCell data-label="Products">
+                              <span className="font-semibold tabular-nums text-slate-800">
+                                {category.productCount}
+                              </span>
+                            </TableCell>
+                            <TableCell data-label="Cover">
+                              <div className="flex items-center gap-3">
+                                <CategoryCoverThumbnail category={category} />
+                                <StatusBadge variant={coverStatusVariant(category.coverStatus)}>
+                                  {coverStatusLabel(category.coverStatus)}
+                                </StatusBadge>
+                              </div>
+                            </TableCell>
+                            <TableCell data-label="Storefront">
+                              <div className="flex flex-col items-start gap-1.5">
+                                <StatusBadge
+                                  variant={category.isStorefrontVisible ? "success" : "info"}
+                                >
+                                  {category.isStorefrontVisible ? "Visible" : "Hidden"}
+                                </StatusBadge>
+                                {!category.isActive ? (
+                                  <span className="text-xs font-medium text-slate-500">
+                                    Inactive
+                                  </span>
+                                ) : null}
+                              </div>
+                            </TableCell>
+                            <TableCell data-label="Updated" className="text-slate-600">
+                              {new Date(category.updatedAt).toLocaleDateString("en-PH", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric"
+                              })}
+                            </TableCell>
+                            <TableCell data-label="Action" className="text-right">
+                              <Button
+                                aria-label={`Edit ${category.name}`}
+                                size="sm"
+                                type="button"
+                                variant="secondary"
+                                onClick={() => setSelectedCategory(category)}
+                              >
+                                <PencilLine className="h-4 w-4" aria-hidden="true" />
+                                Edit
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </>
               )}
 
@@ -1350,7 +1402,13 @@ function CategoryCoverPreview({
         </div>
       </div>
 
-      <div className={previewMode === "MOBILE" ? "ys-category-v2-preview-frame mx-auto w-full max-w-[18rem]" : "ys-category-v2-preview-frame w-full"}>
+      <div
+        className={
+          previewMode === "MOBILE"
+            ? "ys-category-v2-preview-frame mx-auto w-full max-w-[18rem]"
+            : "ys-category-v2-preview-frame w-full"
+        }
+      >
         <div className="ys-category-preview-card overflow-hidden rounded-[1.15rem] border border-slate-200 bg-white shadow-sm">
           <div
             className={

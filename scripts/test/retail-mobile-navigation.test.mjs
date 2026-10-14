@@ -10,14 +10,23 @@ test("retail sidebar translates to a phone hamburger without altering tablet/des
   const css = read("frontend/src/styles/retail-mobile-navigation.css");
   const nav = read("frontend/src/components/app/RetailMobileNavigation.tsx");
 
-  assert.match(layout, /import \{ RetailMobileNavigation \} from "@\/components\/app\/RetailMobileNavigation";/);
+  assert.match(
+    layout,
+    /import \{ RetailMobileNavigation \} from "@\/components\/app\/RetailMobileNavigation";/
+  );
   assert.match(layout, /import "@\/styles\/retail-mobile-navigation\.css";/);
-  assert.match(layout, /<AppSidebar[\s\S]*?<RetailMobileNavigation[\s\S]*?activePath=\{activePath\}[\s\S]*?onLogout=\{onLogout\}[\s\S]*?onNavigate=\{onNavigate\}/);
+  assert.match(
+    layout,
+    /<AppSidebar[\s\S]*?<RetailMobileNavigation[\s\S]*?activePath=\{activePath\}[\s\S]*?onLogout=\{onLogout\}[\s\S]*?onNavigate=\{onNavigate\}/
+  );
   assert.match(layout, /<main[\s\S]*?data-layout="app"/);
   assert.match(sidebar, /retail-desktop-sidebar relative flex h-full/);
 
   // Phone portrait and common rotated-phone dimensions use the drawer.
-  assert.match(css, /@media \(max-width: 767px\), \(max-height: 500px\) and \(orientation: landscape\) and \(max-width: 1024px\)/);
+  assert.match(
+    css,
+    /@media \(max-width: 767px\), \(max-height: 500px\) and \(orientation: landscape\) and \(max-width: 1024px\)/
+  );
   assert.match(css, /\.app-shell-ambient > \.retail-desktop-sidebar\s*\{\s*display: none;/);
   assert.match(css, /\.app-shell-ambient \.retail-mobile-nav\s*\{[^}]*display: block;/);
   assert.match(css, /\.app-shell-ambient \.retail-workspace > main\[data-layout="app"\]/);
@@ -37,14 +46,27 @@ test("phone links use the same role-authorized routes as the desktop app", () =>
   const shell = read("frontend/src/app/AppShell.tsx");
 
   for (const pathname of [
-    "/dashboard", "/pos", "/inventory", "/deliveries", "/sales",
-    "/customer-support", "/products", "/categories", "/receiving",
-    "/forecast", "/reports", "/users", "/settings"
+    "/dashboard",
+    "/pos",
+    "/inventory",
+    "/deliveries",
+    "/sales",
+    "/customer-support",
+    "/products",
+    "/categories",
+    "/receiving",
+    "/forecast",
+    "/reports",
+    "/users",
+    "/settings"
   ]) {
     assert.ok(nav.includes(`"${pathname}"`), `Missing mobile link: ${pathname}`);
     assert.ok(routes.includes(`path: "${pathname}"`), `Missing route registry entry: ${pathname}`);
   }
-  assert.ok(!nav.includes('"/historical-sales"'), "Historical Sales is not part of the mobile menu");
+  assert.ok(
+    !nav.includes('"/historical-sales"'),
+    "Historical Sales is not part of the mobile menu"
+  );
   assert.ok(routes.includes('path: "/historical-sales"'), "Historical sales route stays available");
   assert.match(nav, /item !== undefined && item\.allowedRoles\.includes\(role\)/);
   assert.match(nav, /aria-current=\{activePath === path \? "page" : undefined\}/);
@@ -65,7 +87,10 @@ test("account actions remain accessible with confirmation and theme parity", () 
   assert.match(nav, /aria-controls="retail-mobile-account-actions"/);
   assert.match(nav, /role === "OWNER" \? \(/);
   assert.match(nav, /navigateAndDismiss\("\/settings"\)/);
-  assert.match(nav, /aria-label=\{`Switch to \$\{retailTheme === "dark" \? "light" : "dark"\} mode`\}/);
+  assert.match(
+    nav,
+    /aria-label=\{`Switch to \$\{retailTheme === "dark" \? "light" : "dark"\} mode`\}/
+  );
   assert.match(nav, /setRetailTheme\(retailTheme === "dark" \? "light" : "dark"\)/);
   assert.match(nav, /document\.addEventListener\("pointerdown", handleOutsideClick, true\)/);
   assert.match(nav, /document\.addEventListener\("keydown", handleEscape\)/);

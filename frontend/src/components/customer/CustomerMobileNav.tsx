@@ -131,9 +131,7 @@ export function CustomerMobileNav({
   const accountHref = status === "authenticated" ? "/account" : "/login";
   const activeAccountView =
     new URL(location, window.location.origin).searchParams.get("view") ?? "orders";
-  const accountActive = ["/account", "/login", "/register", "/account-recovery"].includes(
-    pathname
-  );
+  const accountActive = ["/account", "/login", "/register", "/account-recovery"].includes(pathname);
   const accountViews = [
     { view: "orders", label: "Orders", icon: History },
     { view: "favorites", label: "Favorites", icon: Heart },
@@ -188,9 +186,7 @@ export function CustomerMobileNav({
         <Icon aria-hidden="true" size={19} strokeWidth={2} />
         <span>{label}</span>
         {label === "Cart" && itemCount > 0 ? (
-          <span className="customer-mobile-dock__count">
-            {itemCount > 99 ? "99+" : itemCount}
-          </span>
+          <span className="customer-mobile-dock__count">{itemCount > 99 ? "99+" : itemCount}</span>
         ) : null}
       </CustomerLink>
     );

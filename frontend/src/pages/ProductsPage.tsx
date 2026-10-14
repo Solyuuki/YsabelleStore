@@ -88,7 +88,11 @@ export function ProductsPage() {
   return (
     <>
       <div className="products-page-no-actions ys-products-v2-shell contents">
-        <ProductsPageLegacy key={catalogRevision} onSortOrderChange={handleSortOrderChange} sortOrder={sortOrder} />
+        <ProductsPageLegacy
+          key={catalogRevision}
+          onSortOrderChange={handleSortOrderChange}
+          sortOrder={sortOrder}
+        />
       </div>
       <ProductCatalogQoLEnhancements
         onSortOrderChange={handleSortOrderChange}

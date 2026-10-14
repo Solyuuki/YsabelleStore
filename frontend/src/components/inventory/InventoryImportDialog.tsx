@@ -643,7 +643,9 @@ export function InventoryImportDialog({
       >
         <DialogHeader className="ys-inventory-import-header relative border-b border-slate-200 px-6 py-6">
           <div className="ys-inventory-import-heading flex items-start justify-between gap-3">
-            <DialogTitle className="min-w-0 flex-1 text-left">Import inventory delivery</DialogTitle>
+            <DialogTitle className="min-w-0 flex-1 text-left">
+              Import inventory delivery
+            </DialogTitle>
             <div className="ys-inventory-import-header-actions flex shrink-0 items-center gap-2">
               <Button
                 aria-label="Toggle import guide"
@@ -671,7 +673,10 @@ export function InventoryImportDialog({
               </DialogClose>
             </div>
           </div>
-          <DialogDescription id="inventory-bulk-delivery-description" className="max-w-3xl text-left">
+          <DialogDescription
+            id="inventory-bulk-delivery-description"
+            className="max-w-3xl text-left"
+          >
             Use Excel/CSV or a supplier PDF, optionally link the physical delivery to an existing
             Restock Order, review discrepancies, then complete one validated receipt.
           </DialogDescription>

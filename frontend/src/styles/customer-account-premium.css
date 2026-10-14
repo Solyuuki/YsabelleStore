@@ -1341,7 +1341,6 @@
   opacity: 0.52 !important;
 }
 
-
 /* Sprint 12: fit live delivery details inside narrow phones. The 620px
    desktop progress rail was scrollable but hid most status markers on mobile.
    Keep the complete five-stage timeline visible without horizontal scrolling. */
@@ -1406,13 +1405,18 @@
     overflow-wrap: anywhere;
   }
 
-  .customer-app #orders-panel :is(.customer-account-delivery-address, .customer-account-delivery-courier) {
+  .customer-app
+    #orders-panel
+    :is(.customer-account-delivery-address, .customer-account-delivery-courier) {
     min-width: 0;
     margin-inline: 0;
     overflow-wrap: anywhere;
   }
 
-  .customer-app #orders-panel :is(.customer-account-delivery-address, .customer-account-delivery-courier) > span {
+  .customer-app
+    #orders-panel
+    :is(.customer-account-delivery-address, .customer-account-delivery-courier)
+    > span {
     min-width: 0;
     flex: 1 1 auto;
   }

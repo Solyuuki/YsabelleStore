@@ -409,7 +409,6 @@ html:has(.customer-discover)::-webkit-scrollbar {
     linear-gradient(135deg, #07192f 0%, #111735 52%, #241644 100%);
 }
 
-
 /* About phone layout: the floating chapter rail covers important titles
    and descriptions at 320–700px. Use native vertical scrolling instead;
    GSAP scenes and scroll triggers remain unchanged, and tablet/desktop retain

@@ -443,8 +443,10 @@ export function ProductImageUploadPanel({
       ) : null}
 
       {candidate ? (
-        <div className="ys-product-image-quality-card space-y-3 rounded-xl border border-slate-200 bg-white p-4"
-          data-needs-action={candidate.qualityStatus !== "APPROVED"}>
+        <div
+          className="ys-product-image-quality-card space-y-3 rounded-xl border border-slate-200 bg-white p-4"
+          data-needs-action={candidate.qualityStatus !== "APPROVED"}
+        >
           <div className="ys-product-image-quality-heading flex flex-wrap items-center justify-between gap-3">
             <p className="ys-product-image-quality-title text-xs font-semibold uppercase tracking-wide text-slate-500">
               Image quality
@@ -488,7 +490,9 @@ export function ProductImageUploadPanel({
             >
               <RefreshCw className="h-4 w-4" aria-hidden="true" />
               <span className="ys-product-image-replace-desktop">Upload Another</span>
-              <span aria-hidden="true" className="ys-product-image-replace-mobile">Replace</span>
+              <span aria-hidden="true" className="ys-product-image-replace-mobile">
+                Replace
+              </span>
             </Button>
             {!candidate.approvedAt ? (
               <Button
@@ -518,7 +522,10 @@ export function ProductImageUploadPanel({
               </Button>
             ) : null}
             {phase === "approved" ? (
-              <span className="ys-product-image-updated inline-flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800" role="status">
+              <span
+                className="ys-product-image-updated inline-flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800"
+                role="status"
+              >
                 <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                 Storefront image updated
               </span>

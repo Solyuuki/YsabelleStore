@@ -138,9 +138,7 @@ export function RetailMobileNavigation({
             <div className="retail-mobile-nav__drawer-heading">
               <YsabelleBrandMark eager variant="mini" />
               <div className="retail-mobile-nav__drawer-heading-copy">
-                <SheetTitle className="retail-mobile-nav__drawer-title">
-                  YsabelleStore
-                </SheetTitle>
+                <SheetTitle className="retail-mobile-nav__drawer-title">YsabelleStore</SheetTitle>
                 <SheetDescription
                   className="retail-mobile-nav__drawer-description"
                   id="retail-mobile-drawer-description"
@@ -159,10 +157,7 @@ export function RetailMobileNavigation({
               </SheetClose>
             </div>
 
-            <nav
-              aria-label="Retail modules"
-              className="retail-mobile-nav__links"
-            >
+            <nav aria-label="Retail modules" className="retail-mobile-nav__links">
               {navigationGroups.map((group) => {
                 const items = group.paths
                   .map((path) => appRoutes.find((item) => item.path === path))

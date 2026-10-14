@@ -5,7 +5,8 @@ import test from "node:test";
 const read = (path) => readFileSync(new URL("../../" + path, import.meta.url), "utf8");
 const page = read("frontend/src/pages/UserManagementPage.tsx");
 const css = read("frontend/src/styles/theme-retail.css");
-const dialog = page.split("function ModerationDialog(")[1]?.split("function managementTabClass(")[0] ?? "";
+const dialog =
+  page.split("function ModerationDialog(")[1]?.split("function managementTabClass(")[0] ?? "";
 
 function luminance(hex) {
   const channels = (hex.match(/[0-9a-f]{2}/gi) ?? []).map((channel) => {
@@ -32,12 +33,15 @@ test("Moderation popup scopes dark-mode text, placeholder and button styling", (
     "ys-moderation-confirm"
   ]) {
     assert.ok(dialog.includes(className), `Dialog missing ${className}`);
-    assert.ok(css.includes(`.ys-moderation-${className.replace("ys-moderation-", "")}`), `Theme missing ${className}`);
+    assert.ok(
+      css.includes(`.ys-moderation-${className.replace("ys-moderation-", "")}`),
+      `Theme missing ${className}`
+    );
   }
   assert.ok(css.includes(':root.dark [role="dialog"].ys-moderation-dialog'));
-  assert.ok(css.includes('.ys-moderation-reason-input::placeholder'));
-  assert.ok(css.includes('.ys-moderation-cancel:hover:not(:disabled)'));
-  assert.ok(css.includes('.ys-moderation-confirm:disabled'));
+  assert.ok(css.includes(".ys-moderation-reason-input::placeholder"));
+  assert.ok(css.includes(".ys-moderation-cancel:hover:not(:disabled)"));
+  assert.ok(css.includes(".ys-moderation-confirm:disabled"));
 });
 
 test("Moderation dialog retains safe cancellation and reason validation", () => {
@@ -46,7 +50,7 @@ test("Moderation dialog retains safe cancellation and reason validation", () => 
   assert.ok(dialog.includes("disabled={saving || reason.trim().length < 3}"));
   assert.ok(dialog.includes("onClick={onSubmit}"));
   assert.ok(dialog.includes("onReasonChange(event.target.value)"));
-  assert.ok(dialog.includes('maxLength={500}'));
+  assert.ok(dialog.includes("maxLength={500}"));
 });
 
 test("Dark moderation copy and button states have WCAG AA text contrast", () => {

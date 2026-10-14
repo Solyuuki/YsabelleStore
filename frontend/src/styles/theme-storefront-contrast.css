@@ -274,13 +274,21 @@
 :root.dark .customer-app .customer-account-history-pagination p > span {
   color: #c9bdff;
 }
-:root.dark .customer-app .customer-account-history-pagination nav button:not([aria-current="page"]) {
+:root.dark
+  .customer-app
+  .customer-account-history-pagination
+  nav
+  button:not([aria-current="page"]) {
   border-color: #637596;
   background: #283a55;
   color: #eef3ff;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 5%);
 }
-:root.dark .customer-app .customer-account-history-pagination nav button:not(:disabled):not([aria-current="page"]):hover {
+:root.dark
+  .customer-app
+  .customer-account-history-pagination
+  nav
+  button:not(:disabled):not([aria-current="page"]):hover {
   border-color: #a299e5;
   background: #394a6b;
   color: #fff;
@@ -292,7 +300,11 @@
   box-shadow: 0 5px 14px rgb(15 14 40 / 28%);
   opacity: 1;
 }
-:root.dark .customer-app .customer-account-history-pagination nav button:disabled:not([aria-current="page"]) {
+:root.dark
+  .customer-app
+  .customer-account-history-pagination
+  nav
+  button:disabled:not([aria-current="page"]) {
   border-color: #53637d;
   background: #223047;
   color: #aebfd8;
@@ -1201,116 +1213,274 @@
    and dark text, which were invisible inside the dark active-order surface.
    Restrict every override to orders-panel active tracking cards: archived
    orders, light mode, payment state and status progression stay intact. */
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active {
   background: #223149;
   border-color: #64758f;
   color: #e6edf9;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-account-order-topline {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-order-topline {
   border-bottom-color: #536782;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-account-order-topline > div > span {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-order-topline
+  > div
+  > span {
   color: #c1cee2;
   font-size: 0.76rem;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-account-order-topline > div > strong {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-order-topline
+  > div
+  > strong {
   color: #f2f5ff;
   overflow-wrap: anywhere;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-account-order-topline > .customer-delivery-status {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-order-topline
+  > .customer-delivery-status {
   border-color: #897fde;
   background: #38365c;
   color: #eeeaff;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-delivery-status--delivered {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-status--delivered {
   border-color: #528b77;
   background: #1c4139;
   color: #d0f5e6;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active :is(.customer-delivery-status--delivery_failed, .customer-delivery-status--cancelled) {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  :is(.customer-delivery-status--delivery_failed, .customer-delivery-status--cancelled) {
   border-color: #aa6d80;
   background: #462d3e;
   color: #ffe0e9;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-delivery-status--awaiting-payment {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-status--awaiting-payment {
   border-color: #b99b65;
   background: #423627;
   color: #ffe3a8;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-account-delivery-overview > div {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-delivery-overview
+  > div {
   border-color: #586b86;
   background: #2b3b55;
   box-shadow: inset 0 1px 0 rgb(222 232 255 / 4%);
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-account-delivery-overview span {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-delivery-overview
+  span {
   color: #c6d3e7;
   font-size: 0.72rem;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-account-delivery-overview strong {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-delivery-overview
+  strong {
   color: #f3f6ff;
   font-size: 0.8rem;
   overflow-wrap: anywhere;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active :is(.customer-account-delivery-address, .customer-account-delivery-courier) {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  :is(.customer-account-delivery-address, .customer-account-delivery-courier) {
   color: #cfdaec;
   font-size: 0.79rem;
   overflow-wrap: anywhere;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active :is(.customer-account-delivery-address, .customer-account-delivery-courier) :is(svg, strong) {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  :is(.customer-account-delivery-address, .customer-account-delivery-courier)
+  :is(svg, strong) {
   color: #c3b9ff;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-delivery-progress {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-progress {
   border-top-color: #586b86;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-delivery-stepper__connector {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper__connector {
   background: #7989a4;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-delivery-stepper__connector.is-complete {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper__connector.is-complete {
   background: linear-gradient(90deg, #7770ff, #afa4ff);
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-delivery-stepper__marker {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper__marker {
   border-color: #8999b4;
   background: #30415c;
   color: #f2f6ff;
   box-shadow: none;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-delivery-stepper li.is-complete .customer-delivery-stepper__marker {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper
+  li.is-complete
+  .customer-delivery-stepper__marker {
   border-color: #8179ff;
   background: linear-gradient(135deg, #168cff, #625bff 58%, #9656e8);
   color: #fff;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-delivery-stepper__copy strong {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper__copy
+  strong {
   color: #e1eafa;
   font-size: 0.78rem;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-delivery-stepper__copy small {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper__copy
+  small {
   color: #c2d0e5;
   font-size: 0.72rem;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-delivery-stepper li.is-complete .customer-delivery-stepper__copy strong {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper
+  li.is-complete
+  .customer-delivery-stepper__copy
+  strong {
   color: #e9edff;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-delivery-stepper li.is-current .customer-delivery-stepper__copy strong {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper
+  li.is-current
+  .customer-delivery-stepper__copy
+  strong {
   color: #cbbcff;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-delivery-stepper li.is-current .customer-delivery-stepper__copy small {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper
+  li.is-current
+  .customer-delivery-stepper__copy
+  small {
   color: #d5e1f6;
 }
 /* The confirmation/payment-gated states also live inside the active card. */
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-account-confirm-delivery {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-confirm-delivery {
   border-color: #8279ce;
   background: #303955;
   color: #eff1ff;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-account-confirm-delivery p {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-confirm-delivery
+  p {
   color: #c8d6ec;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-account-payment-gate {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-payment-gate {
   border-color: #ac8954;
   background: #3a342d;
   color: #ffe5bb;
 }
-:root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active .customer-account-payment-gate :is(strong, p, svg) {
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-payment-gate
+  :is(strong, p, svg) {
   color: #ffe5bb;
 }
 
@@ -2315,10 +2485,7 @@
   border-color: #a6b5d5;
 }
 
-:root.dark
-  .customer-app
-  .customer-checkout-page
-  .customer-payment-option:has(input:disabled) {
+:root.dark .customer-app .customer-checkout-page .customer-payment-option:has(input:disabled) {
   cursor: not-allowed;
   opacity: 1;
 }

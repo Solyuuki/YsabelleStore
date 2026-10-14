@@ -131,12 +131,7 @@
 /* Homepage and catalog: quiet midnight blue behind approved product photography. */
 :root.dark
   .customer-app
-  :is(
-    .customer-home,
-    .customer-shop-page,
-    .customer-account-page-v2,
-    .customer-cart-page
-  ) {
+  :is(.customer-home, .customer-shop-page, .customer-account-page-v2, .customer-cart-page) {
   background:
     url("/textures/ys-dark-midnight-velvet.svg") center / cover no-repeat,
     #101827;

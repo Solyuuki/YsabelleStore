@@ -89,7 +89,11 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
                       <p>
                         {formatCurrency(product.sellingPrice)} per {formatUnit(product.unit)}
                       </p>
-                      <button aria-label={`Remove ${product.name} from cart`} onClick={() => removeItem(product.id)} type="button">
+                      <button
+                        aria-label={`Remove ${product.name} from cart`}
+                        onClick={() => removeItem(product.id)}
+                        type="button"
+                      >
                         <Trash2 aria-hidden="true" size={15} /> Remove
                       </button>
                     </div>

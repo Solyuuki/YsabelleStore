@@ -43,12 +43,14 @@ test("checkout dark background reuses the approved Cart galaxy, not the stretche
   const qa = read("tools/mobile-qa/run.mjs");
 
   // The old broad dark-mode rule assigned a cover-scaled bitmap to Checkout.
-  const oldBackground = base.split("/* Homepage and catalog: quiet midnight blue")[1]
+  const oldBackground = base
+    .split("/* Homepage and catalog: quiet midnight blue")[1]
     ?.split("/* Text inherits the semantic theme tokens")[0];
   assert.ok(oldBackground, "Could not locate the old storefront background group");
   assert.doesNotMatch(oldBackground, /\.customer-checkout-page/);
 
-  const newBackground = contrast.split("/* Checkout dark canvas: reuse the approved Storefront/Cart galaxy")[1]
+  const newBackground = contrast
+    .split("/* Checkout dark canvas: reuse the approved Storefront/Cart galaxy")[1]
     ?.split("/* Checkout dark-mode completion: saved preferences")[0];
   assert.ok(newBackground, "Missing Checkout galaxy background override");
   assert.match(newBackground, /:root\.dark \.customer-app \.customer-checkout-page\s*\{/);
@@ -57,7 +59,10 @@ test("checkout dark background reuses the approved Cart galaxy, not the stretche
   assert.match(newBackground, /background-size: auto !important;/);
   assert.match(newBackground, /background-repeat: no-repeat !important;/);
   assert.doesNotMatch(newBackground, /ys-dark-midnight-velvet|\/ cover/);
-  assert.match(cart, /:root\.dark \.customer-app \.customer-cart-page\s*\{[^}]*background-color: #101827 !important;[\s\S]*?var\(--storefront-galaxy-background\) !important;/);
+  assert.match(
+    cart,
+    /:root\.dark \.customer-app \.customer-cart-page\s*\{[^}]*background-color: #101827 !important;[\s\S]*?var\(--storefront-galaxy-background\) !important;/
+  );
 
   // Do not change payment options, selected-state surfaces, or route markup.
   assert.match(checkout, /className="customer-page customer-checkout-page"/);

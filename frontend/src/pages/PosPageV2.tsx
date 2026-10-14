@@ -265,7 +265,9 @@ export function PosPage() {
     return true;
   }
 
-  async function handleSearch(options: { autoAddExactMatch?: boolean; page?: number; queryOverride?: string } = {}) {
+  async function handleSearch(
+    options: { autoAddExactMatch?: boolean; page?: number; queryOverride?: string } = {}
+  ) {
     const trimmedQuery = (options.queryOverride ?? searchInput).trim();
     const requestPage = options.page ?? 1;
     const startedAt = window.performance.now();
@@ -554,7 +556,12 @@ export function PosPage() {
                   <Camera aria-hidden="true" size={20} />
                   <span>Camera scan</span>
                 </button>
-                <Button className="retail-pos-search-submit" disabled={searchState.isLoading} type="submit" variant="secondary">
+                <Button
+                  className="retail-pos-search-submit"
+                  disabled={searchState.isLoading}
+                  type="submit"
+                  variant="secondary"
+                >
                   {searchState.isLoading ? (
                     <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
                   ) : (
@@ -649,7 +656,10 @@ export function PosPage() {
                                     : `${product.availableStock} in stock`}
                                 </StatusBadge>
                               </td>
-                              <td data-label="Unit price" className="px-4 py-3 font-medium text-slate-900">
+                              <td
+                                data-label="Unit price"
+                                className="px-4 py-3 font-medium text-slate-900"
+                              >
                                 {currencyFormatter.format(Number(product.sellingPrice))}
                               </td>
                               <td data-label="Action" className="px-4 py-3 text-right">

@@ -830,9 +830,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                   type="checkbox"
                 />
                 <span className="customer-order-agreement__text">
-                  I understand that submitting this order creates a reservation. I cannot cancel
-                  it directly from My Account after submission. Any cancellation request must be
-                  made through the store and is subject to the order, delivery and payment status.
+                  I understand that submitting this order creates a reservation. I cannot cancel it
+                  directly from My Account after submission. Any cancellation request must be made
+                  through the store and is subject to the order, delivery and payment status.
                 </span>
               </label>
             ) : null}

@@ -70,7 +70,8 @@ const currencyFormatter = new Intl.NumberFormat("en-PH", {
 
 const DELIVERY_DESKTOP_PAGE_SIZE = 20;
 const DELIVERY_MOBILE_PAGE_SIZE = 10;
-const DELIVERY_MOBILE_QUERY = "(max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px)";
+const DELIVERY_MOBILE_QUERY =
+  "(max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px)";
 
 function defaultDeliveryPageSize() {
   return typeof window !== "undefined" && window.matchMedia(DELIVERY_MOBILE_QUERY).matches
@@ -287,7 +288,14 @@ export function DeliveriesPage() {
   const resolvedCourierProvider =
     courierProvider === "Other" ? customCourierProvider.trim() : courierProvider.trim();
   const riderPhoneValid = /^(?:09\d{9}|\+639\d{9})$/.test(riderPhone.replace(/[\s()-]/g, ""));
-  const handoffInput = { courierProvider: resolvedCourierProvider, courierReference, riderName, riderPhone, customerDeliveryNote, note: staffNote };
+  const handoffInput = {
+    courierProvider: resolvedCourierProvider,
+    courierReference,
+    riderName,
+    riderPhone,
+    customerDeliveryNote,
+    note: staffNote
+  };
 
   async function openTicket(ticketId: string) {
     if (openingId) return;
@@ -316,7 +324,9 @@ export function DeliveriesPage() {
     try {
       const updated = await saveDeliveryHandoffDraft(selected.id, handoffInput);
       setSelected(updated);
-      setHandoffMessage("Dispatch draft saved. Contact details appear to customers after dispatch.");
+      setHandoffMessage(
+        "Dispatch draft saved. Contact details appear to customers after dispatch."
+      );
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Could not save dispatch details.");
     } finally {
@@ -340,7 +350,9 @@ export function DeliveriesPage() {
         targetStatus,
         courierProvider: resolvedCourierProvider || undefined,
         courierReference: courierReference.trim() || undefined,
-        ...(targetStatus === "OUT_FOR_DELIVERY" ? { riderName, riderPhone, customerDeliveryNote } : {}),
+        ...(targetStatus === "OUT_FOR_DELIVERY"
+          ? { riderName, riderPhone, customerDeliveryNote }
+          : {}),
         note: staffNote.trim() || undefined
       });
       setSelected(updated);
@@ -409,7 +421,11 @@ export function DeliveriesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="ys-delivery-list-content space-y-4">
-          <div aria-label="Delivery ticket views" className="ys-delivery-view-tabs flex flex-wrap gap-2" role="group">
+          <div
+            aria-label="Delivery ticket views"
+            className="ys-delivery-view-tabs flex flex-wrap gap-2"
+            role="group"
+          >
             {(["active", "history", "all"] as const).map((nextView) => (
               <Button
                 aria-pressed={view === nextView}
@@ -455,7 +471,12 @@ export function DeliveriesPage() {
                   value={searchInput}
                 />
               </div>
-              <Button aria-label="Search delivery tickets" className="ys-delivery-search-submit" type="submit" variant="secondary">
+              <Button
+                aria-label="Search delivery tickets"
+                className="ys-delivery-search-submit"
+                type="submit"
+                variant="secondary"
+              >
                 <Search className="ys-delivery-search-submit-icon h-4 w-4" aria-hidden="true" />
                 <span>Search</span>
               </Button>
@@ -470,51 +491,63 @@ export function DeliveriesPage() {
             >
               <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
               <span>Filters</span>
-              {activeFilterCount > 0 ? <span className="ys-delivery-filter-count">{activeFilterCount}</span> : null}
+              {activeFilterCount > 0 ? (
+                <span className="ys-delivery-filter-count">{activeFilterCount}</span>
+              ) : null}
               <ChevronDown className="ys-delivery-filter-chevron h-4 w-4" aria-hidden="true" />
             </button>
-            <div className="ys-delivery-filter-fields" id="ys-delivery-filter-fields" data-open={mobileFiltersOpen}>
+            <div
+              className="ys-delivery-filter-fields"
+              id="ys-delivery-filter-fields"
+              data-open={mobileFiltersOpen}
+            >
               <label className="ys-delivery-filter-field">
                 <span>Delivery status</span>
                 <Select
-              aria-label="Delivery status"
-              onChange={(event) => {
-                setPage(1);
-                setStatus(event.target.value as StorefrontDeliveryStatus | "all");
-              }}
-              value={status}
-            >
-              <option value="all">All delivery statuses</option>
-              <option value="ORDER_PLACED">Order placed</option>
-              <option value="PREPARING">Preparing</option>
-              <option value="READY_FOR_DELIVERY">Ready for delivery</option>
-              <option value="OUT_FOR_DELIVERY">On the way</option>
-              <option value="DELIVERED">Delivered</option>
-              <option value="DELIVERY_FAILED">Delivery failed</option>
-              <option value="CANCELLED">Cancelled</option>
+                  aria-label="Delivery status"
+                  onChange={(event) => {
+                    setPage(1);
+                    setStatus(event.target.value as StorefrontDeliveryStatus | "all");
+                  }}
+                  value={status}
+                >
+                  <option value="all">All delivery statuses</option>
+                  <option value="ORDER_PLACED">Order placed</option>
+                  <option value="PREPARING">Preparing</option>
+                  <option value="READY_FOR_DELIVERY">Ready for delivery</option>
+                  <option value="OUT_FOR_DELIVERY">On the way</option>
+                  <option value="DELIVERED">Delivered</option>
+                  <option value="DELIVERY_FAILED">Delivery failed</option>
+                  <option value="CANCELLED">Cancelled</option>
                 </Select>
               </label>
               <label className="ys-delivery-filter-field">
                 <span>Payment method</span>
                 <Select
-              aria-label="Payment method"
-              onChange={(event) => {
-                setPage(1);
-                setPaymentMethod(event.target.value as StorefrontPaymentMethod | "all");
-              }}
-              value={paymentMethod}
-            >
-              <option value="all">All payment methods</option>
-              <option value="CASH_ON_DELIVERY">Cash on Delivery</option>
-              <option value="PAYMONGO">PayMongo</option>
+                  aria-label="Payment method"
+                  onChange={(event) => {
+                    setPage(1);
+                    setPaymentMethod(event.target.value as StorefrontPaymentMethod | "all");
+                  }}
+                  value={paymentMethod}
+                >
+                  <option value="all">All payment methods</option>
+                  <option value="CASH_ON_DELIVERY">Cash on Delivery</option>
+                  <option value="PAYMONGO">PayMongo</option>
                 </Select>
               </label>
               {activeFilterCount > 0 ? (
-                <button className="ys-delivery-filter-reset" type="button" onClick={() => {
-                  setStatus("all");
-                  setPaymentMethod("all");
-                  setPage(1);
-                }}>Reset filters</button>
+                <button
+                  className="ys-delivery-filter-reset"
+                  type="button"
+                  onClick={() => {
+                    setStatus("all");
+                    setPaymentMethod("all");
+                    setPage(1);
+                  }}
+                >
+                  Reset filters
+                </button>
               ) : null}
             </div>
           </div>
@@ -585,14 +618,25 @@ export function DeliveriesPage() {
                         </div>
                       </TableCell>
                       <TableCell data-label="Status">
-                        <Badge className="ys-delivery-status-badge" data-status={ticket.deliveryStatus} data-tone={operationalStatusTone(ticket)} variant={operationalStatusTone(ticket)}>
+                        <Badge
+                          className="ys-delivery-status-badge"
+                          data-status={ticket.deliveryStatus}
+                          data-tone={operationalStatusTone(ticket)}
+                          variant={operationalStatusTone(ticket)}
+                        >
                           {operationalStatusLabel(ticket)}
                         </Badge>
                       </TableCell>
-                      <TableCell data-label="Updated" className="whitespace-nowrap text-xs text-slate-500 dark:text-slate-300">
+                      <TableCell
+                        data-label="Updated"
+                        className="whitespace-nowrap text-xs text-slate-500 dark:text-slate-300"
+                      >
                         {dateTimeFormatter.format(new Date(ticket.updatedAt))}
                       </TableCell>
-                      <TableCell data-label="Total" className="text-right font-semibold text-slate-950 dark:text-slate-100">
+                      <TableCell
+                        data-label="Total"
+                        className="text-right font-semibold text-slate-950 dark:text-slate-100"
+                      >
                         {currencyFormatter.format(Number(ticket.totalAmount))}
                       </TableCell>
                       <TableCell data-label="Action" className="text-right">
@@ -640,12 +684,24 @@ export function DeliveriesPage() {
           <DialogContent className="ys-delivery-ticket-dialog max-h-[90vh] max-w-[900px] overflow-y-auto dark:text-slate-100">
             <DialogHeader className="ys-delivery-ticket-header">
               <DialogClose asChild>
-                <Button aria-label="Close delivery ticket" className="ys-delivery-ticket-close" disabled={submitting} size="icon" type="button" variant="ghost">
+                <Button
+                  aria-label="Close delivery ticket"
+                  className="ys-delivery-ticket-close"
+                  disabled={submitting}
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                >
                   <X className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </DialogClose>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className="ys-delivery-status-badge" data-status={selected.deliveryStatus} data-tone={operationalStatusTone(selected)} variant={operationalStatusTone(selected)}>
+                <Badge
+                  className="ys-delivery-status-badge"
+                  data-status={selected.deliveryStatus}
+                  data-tone={operationalStatusTone(selected)}
+                  variant={operationalStatusTone(selected)}
+                >
                   {operationalStatusLabel(selected)}
                 </Badge>
                 <Badge className="dark:border-slate-500 dark:bg-slate-700/60 dark:text-slate-100">
@@ -753,7 +809,10 @@ export function DeliveriesPage() {
                 <p className="mb-3 text-xs text-slate-500 dark:text-slate-300">
                   Recorded delivery updates, cancellation notes and payment confirmations.
                 </p>
-                <div className="ys-delivery-timeline overflow-y-auto" style={{ maxHeight: Math.min(224, Math.max(66, selected.timeline.length * 72)) }}>
+                <div
+                  className="ys-delivery-timeline overflow-y-auto"
+                  style={{ maxHeight: Math.min(224, Math.max(66, selected.timeline.length * 72)) }}
+                >
                   <ol className="space-y-3 pr-3">
                     {selected.timeline.map((event) => (
                       <li
@@ -782,7 +841,10 @@ export function DeliveriesPage() {
                 <h3 className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">
                   Order items
                 </h3>
-                <div className="ys-delivery-order-items overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-800/40" style={{ maxHeight: Math.min(300, Math.max(92, selected.items.length * 46)) }}>
+                <div
+                  className="ys-delivery-order-items overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-800/40"
+                  style={{ maxHeight: Math.min(300, Math.max(92, selected.items.length * 46)) }}
+                >
                   <div className="divide-y divide-slate-100 dark:divide-slate-600">
                     {selected.items.map((item) => (
                       <div
@@ -801,7 +863,9 @@ export function DeliveriesPage() {
                 </div>
               </section>
 
-              {["ORDER_PLACED", "PREPARING", "READY_FOR_DELIVERY", "DELIVERY_FAILED"].includes(selected.deliveryStatus) ? (
+              {["ORDER_PLACED", "PREPARING", "READY_FOR_DELIVERY", "DELIVERY_FAILED"].includes(
+                selected.deliveryStatus
+              ) ? (
                 <section className="grid gap-4 rounded-xl border border-indigo-200 bg-indigo-50/40 p-4 dark:border-indigo-400/30 dark:bg-indigo-950/30">
                   <div>
                     <h3 className="text-sm font-semibold text-slate-950 dark:text-slate-100">
@@ -859,24 +923,41 @@ export function DeliveriesPage() {
                   <div className="ys-delivery-handoff-fields grid gap-3 sm:grid-cols-2">
                     <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
                       Rider name (optional)
-                      <Input maxLength={120} value={riderName} placeholder="e.g. Juan Dela Cruz"
-                        onChange={(event) => setRiderName(event.target.value)} />
+                      <Input
+                        maxLength={120}
+                        value={riderName}
+                        placeholder="e.g. Juan Dela Cruz"
+                        onChange={(event) => setRiderName(event.target.value)}
+                      />
                     </label>
                     <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
                       Rider phone number (required to dispatch)
-                      <Input type="tel" inputMode="tel" autoComplete="tel" aria-required="true"
-                        maxLength={24} value={riderPhone} placeholder="0917 123 4567"
-                        onChange={(event) => setRiderPhone(event.target.value)} />
+                      <Input
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        aria-required="true"
+                        maxLength={24}
+                        value={riderPhone}
+                        placeholder="0917 123 4567"
+                        onChange={(event) => setRiderPhone(event.target.value)}
+                      />
                       {riderPhone.trim() && !riderPhoneValid ? (
-                        <span className="text-xs font-normal text-red-700 dark:text-red-300">Enter a valid Philippine mobile number.</span>
+                        <span className="text-xs font-normal text-red-700 dark:text-red-300">
+                          Enter a valid Philippine mobile number.
+                        </span>
                       ) : null}
                     </label>
                   </div>
                   <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
                     Customer delivery note (visible after dispatch)
-                    <Textarea rows={2} maxLength={500} value={customerDeliveryNote}
+                    <Textarea
+                      rows={2}
+                      maxLength={500}
+                      value={customerDeliveryNote}
                       onChange={(event) => setCustomerDeliveryNote(event.target.value)}
-                      placeholder="Information for the customer during delivery." />
+                      placeholder="Information for the customer during delivery."
+                    />
                   </label>
                   <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
                     Internal staff note
@@ -890,18 +971,42 @@ export function DeliveriesPage() {
                       This operational note is not shown to the customer.
                     </span>
                   </label>
-                  {handoffMessage ? <p className="text-xs text-emerald-700 dark:text-emerald-300" role="status">{handoffMessage}</p> : null}
+                  {handoffMessage ? (
+                    <p className="text-xs text-emerald-700 dark:text-emerald-300" role="status">
+                      {handoffMessage}
+                    </p>
+                  ) : null}
                 </section>
               ) : null}
 
               {["OUT_FOR_DELIVERY", "DELIVERED"].includes(selected.deliveryStatus) ? (
                 <section className="ys-delivery-handoff-summary rounded-xl border border-indigo-200 bg-indigo-50/40 p-4 text-sm dark:border-indigo-400/30 dark:bg-indigo-950/30">
-                  <h3 className="font-semibold text-slate-950 dark:text-slate-100">Rider handoff details</h3>
-                  <p className="mt-2 text-slate-700 dark:text-slate-200">{selected.courierProvider || "Courier"} · {selected.riderName || "Rider"}</p>
-                  {selected.riderPhone ? <a className="ys-delivery-handoff-phone" href={`tel:${selected.riderPhone}`}>{selected.riderPhone}</a> : null}
-                  {selected.courierReference ? <p className="text-xs dark:text-slate-200">Booking: {selected.courierReference}</p> : null}
-                  {selected.customerDeliveryNote ? <p className="text-xs dark:text-slate-200">Customer note: {selected.customerDeliveryNote}</p> : null}
-                  {selected.deliveryNotes ? <p className="text-xs dark:text-slate-200">Staff-only note: {selected.deliveryNotes}</p> : null}
+                  <h3 className="font-semibold text-slate-950 dark:text-slate-100">
+                    Rider handoff details
+                  </h3>
+                  <p className="mt-2 text-slate-700 dark:text-slate-200">
+                    {selected.courierProvider || "Courier"} · {selected.riderName || "Rider"}
+                  </p>
+                  {selected.riderPhone ? (
+                    <a className="ys-delivery-handoff-phone" href={`tel:${selected.riderPhone}`}>
+                      {selected.riderPhone}
+                    </a>
+                  ) : null}
+                  {selected.courierReference ? (
+                    <p className="text-xs dark:text-slate-200">
+                      Booking: {selected.courierReference}
+                    </p>
+                  ) : null}
+                  {selected.customerDeliveryNote ? (
+                    <p className="text-xs dark:text-slate-200">
+                      Customer note: {selected.customerDeliveryNote}
+                    </p>
+                  ) : null}
+                  {selected.deliveryNotes ? (
+                    <p className="text-xs dark:text-slate-200">
+                      Staff-only note: {selected.deliveryNotes}
+                    </p>
+                  ) : null}
                 </section>
               ) : null}
 
@@ -944,8 +1049,15 @@ export function DeliveriesPage() {
                   Mark ready
                 </Button>
               ) : null}
-              {["ORDER_PLACED", "PREPARING", "READY_FOR_DELIVERY", "DELIVERY_FAILED"].includes(selected.deliveryStatus) ? (
-                <Button disabled={submitting} onClick={() => void saveHandoff()} type="button" variant="secondary">
+              {["ORDER_PLACED", "PREPARING", "READY_FOR_DELIVERY", "DELIVERY_FAILED"].includes(
+                selected.deliveryStatus
+              ) ? (
+                <Button
+                  disabled={submitting}
+                  onClick={() => void saveHandoff()}
+                  type="button"
+                  variant="secondary"
+                >
                   Save dispatch draft
                 </Button>
               ) : null}
@@ -1093,8 +1205,12 @@ function TicketFact({
       </span>
       <div className="min-w-0">
         <p className="text-xs text-slate-500 dark:text-slate-300">{label}</p>
-        <p className="ys-delivery-fact-value truncate text-sm font-semibold text-slate-950 dark:text-slate-50">{value}</p>
-        <p className="ys-delivery-fact-detail truncate text-xs text-slate-500 dark:text-slate-300">{detail}</p>
+        <p className="ys-delivery-fact-value truncate text-sm font-semibold text-slate-950 dark:text-slate-50">
+          {value}
+        </p>
+        <p className="ys-delivery-fact-detail truncate text-xs text-slate-500 dark:text-slate-300">
+          {detail}
+        </p>
       </div>
     </div>
   );

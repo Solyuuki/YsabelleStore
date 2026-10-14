@@ -389,10 +389,7 @@
     height: 100svh;
     min-height: 0;
     gap: clamp(0.4rem, 1.8svh, 0.75rem);
-    padding-block: max(0.5rem, env(safe-area-inset-top)) max(
-        0.5rem,
-        env(safe-area-inset-bottom)
-      );
+    padding-block: max(0.5rem, env(safe-area-inset-top)) max(0.5rem, env(safe-area-inset-bottom));
   }
 
   .store-entrance__brand-mark {

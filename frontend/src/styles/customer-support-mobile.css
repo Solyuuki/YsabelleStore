@@ -37,7 +37,10 @@
   color: #8170e7;
 }
 
-:root.dark .customer-app .customer-support-select-wrap:focus-within .customer-support-select-chevron {
+:root.dark
+  .customer-app
+  .customer-support-select-wrap:focus-within
+  .customer-support-select-chevron {
   color: #c7b9ff;
 }
 
@@ -255,7 +258,9 @@
     gap: 0.5rem;
     padding-top: 0.65rem;
   }
-  .customer-app .customer-support-sidebar[data-mobile-open="true"] .customer-support-sidebar__content {
+  .customer-app
+    .customer-support-sidebar[data-mobile-open="true"]
+    .customer-support-sidebar__content {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
   }

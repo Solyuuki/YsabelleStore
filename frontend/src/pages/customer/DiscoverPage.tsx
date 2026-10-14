@@ -844,10 +844,13 @@ export function DiscoverPage({
               if (!mobile) {
                 const forecastKicker = location.querySelector<HTMLElement>(".story-kicker");
                 const forecastHeadline = Array.from(
-                  location.querySelectorAll<HTMLElement>(".story-forecast__header .story-mask__line")
+                  location.querySelectorAll<HTMLElement>(
+                    ".story-forecast__header .story-mask__line"
+                  )
                 );
                 const forecastLead = location.querySelector<HTMLElement>(".story-forecast__lead");
-                const forecastVisual = location.querySelector<HTMLElement>(".story-forecast__visual");
+                const forecastVisual =
+                  location.querySelector<HTMLElement>(".story-forecast__visual");
                 const forecastModel = location.querySelector<HTMLElement>(".story-forecast__model");
                 const locationHandoff = location.querySelector<HTMLElement>(
                   ".story-location__handoff"

@@ -607,7 +607,10 @@ export function InventoryPage() {
 
       <Card className="retail-inventory-list-card">
         <CardContent className="space-y-4 p-4 lg:p-5">
-          <div className="retail-inventory-toolbar flex min-w-0 flex-wrap items-center gap-2" data-mobile-filters-open={mobileFiltersOpen}>
+          <div
+            className="retail-inventory-toolbar flex min-w-0 flex-wrap items-center gap-2"
+            data-mobile-filters-open={mobileFiltersOpen}
+          >
             <label className="ys-inventory-search relative flex h-10 min-w-[260px] flex-1 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3">
               <Search className="h-4 w-4 text-slate-500" aria-hidden="true" />
               <input
@@ -636,101 +639,107 @@ export function InventoryPage() {
               <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
               <span>Filters</span>
               {activeFilterCount > 0 ? (
-                <span className="retail-inventory-filter-count" aria-label={`${activeFilterCount} active filters`}>
+                <span
+                  className="retail-inventory-filter-count"
+                  aria-label={`${activeFilterCount} active filters`}
+                >
                   {activeFilterCount}
                 </span>
               ) : null}
-              <ChevronDown className="retail-inventory-filter-toggle-chevron h-4 w-4" aria-hidden="true" />
+              <ChevronDown
+                className="retail-inventory-filter-toggle-chevron h-4 w-4"
+                aria-hidden="true"
+              />
             </button>
             <div
               className="retail-inventory-filter-panel"
               data-open={mobileFiltersOpen}
               id="retail-inventory-filter-panel"
             >
-            <FilterSelect
-              icon={Filter}
-              label="Stock level"
-              minWidthClassName="min-w-[190px]"
-              value={stockStatus}
-              onChange={(value) => {
-                setStockStatus(value as StockStatusFilter);
-                setPage(1);
-              }}
-            >
-              <option value="ALL">All stock levels</option>
-              <option value="IN_STOCK">In stock</option>
-              <option value="LOW_STOCK">Low stock</option>
-              <option value="OUT_OF_STOCK">Out of stock</option>
-            </FilterSelect>
-            <FilterSelect
-              icon={Tag}
-              label="Category"
-              minWidthClassName="min-w-[190px]"
-              value={categoryId}
-              onChange={(value) => {
-                setCategoryId(value);
-                setPage(1);
-              }}
-            >
-              <option value="ALL">All categories</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </FilterSelect>
-            <FilterSelect
-              icon={CircleCheck}
-              label="Availability"
-              minWidthClassName="min-w-[198px]"
-              value={productStatus}
-              onChange={(value) => {
-                setProductStatus(value as ProductStatusFilter);
-                setPage(1);
-              }}
-            >
-              <option value="ALL">All availability</option>
-              <option value="ACTIVE">Available</option>
-              <option value="INACTIVE">Unavailable</option>
-              <option value="DISCONTINUED">Discontinued</option>
-            </FilterSelect>
-            <FilterSelect
-              icon={ArrowUpDown}
-              label="Sort"
-              minWidthClassName="min-w-[220px]"
-              value={`${sortBy}:${sortOrder}`}
-              onChange={(value) => {
-                const [nextSortBy, nextSortOrder] = value.split(":") as [
-                  InventorySortBy,
-                  SortOrder
-                ];
-                setSortBy(nextSortBy);
-                setSortOrder(nextSortOrder);
-                setPage(1);
-              }}
-            >
-              <option value="updatedAt:desc">Recently updated</option>
-              <option value="productName:asc">Product name</option>
-              <option value="quantityOnHand:asc">Lowest stock</option>
-              <option value="quantityOnHand:desc">Highest stock</option>
-              <option value="reorderLevel:asc">Reorder level</option>
-            </FilterSelect>
-            {activeFilterCount > 0 ? (
-              <button
-                className="retail-inventory-filter-reset"
-                onClick={() => {
-                  setStockStatus("ALL");
-                  setCategoryId("ALL");
-                  setProductStatus("ALL");
-                  setSortBy("updatedAt");
-                  setSortOrder("desc");
+              <FilterSelect
+                icon={Filter}
+                label="Stock level"
+                minWidthClassName="min-w-[190px]"
+                value={stockStatus}
+                onChange={(value) => {
+                  setStockStatus(value as StockStatusFilter);
                   setPage(1);
                 }}
-                type="button"
               >
-                Reset filters
-              </button>
-            ) : null}
+                <option value="ALL">All stock levels</option>
+                <option value="IN_STOCK">In stock</option>
+                <option value="LOW_STOCK">Low stock</option>
+                <option value="OUT_OF_STOCK">Out of stock</option>
+              </FilterSelect>
+              <FilterSelect
+                icon={Tag}
+                label="Category"
+                minWidthClassName="min-w-[190px]"
+                value={categoryId}
+                onChange={(value) => {
+                  setCategoryId(value);
+                  setPage(1);
+                }}
+              >
+                <option value="ALL">All categories</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </FilterSelect>
+              <FilterSelect
+                icon={CircleCheck}
+                label="Availability"
+                minWidthClassName="min-w-[198px]"
+                value={productStatus}
+                onChange={(value) => {
+                  setProductStatus(value as ProductStatusFilter);
+                  setPage(1);
+                }}
+              >
+                <option value="ALL">All availability</option>
+                <option value="ACTIVE">Available</option>
+                <option value="INACTIVE">Unavailable</option>
+                <option value="DISCONTINUED">Discontinued</option>
+              </FilterSelect>
+              <FilterSelect
+                icon={ArrowUpDown}
+                label="Sort"
+                minWidthClassName="min-w-[220px]"
+                value={`${sortBy}:${sortOrder}`}
+                onChange={(value) => {
+                  const [nextSortBy, nextSortOrder] = value.split(":") as [
+                    InventorySortBy,
+                    SortOrder
+                  ];
+                  setSortBy(nextSortBy);
+                  setSortOrder(nextSortOrder);
+                  setPage(1);
+                }}
+              >
+                <option value="updatedAt:desc">Recently updated</option>
+                <option value="productName:asc">Product name</option>
+                <option value="quantityOnHand:asc">Lowest stock</option>
+                <option value="quantityOnHand:desc">Highest stock</option>
+                <option value="reorderLevel:asc">Reorder level</option>
+              </FilterSelect>
+              {activeFilterCount > 0 ? (
+                <button
+                  className="retail-inventory-filter-reset"
+                  onClick={() => {
+                    setStockStatus("ALL");
+                    setCategoryId("ALL");
+                    setProductStatus("ALL");
+                    setSortBy("updatedAt");
+                    setSortOrder("desc");
+                    setPage(1);
+                  }}
+                  type="button"
+                >
+                  Reset filters
+                </button>
+              ) : null}
             </div>
           </div>
 
@@ -768,7 +777,9 @@ export function InventoryPage() {
             />
           ) : null}
 
-          <p className="retail-inventory-mobile-hint">Tap a product to see its SKU, batches, and stock actions.</p>
+          <p className="retail-inventory-mobile-hint">
+            Tap a product to see its SKU, batches, and stock actions.
+          </p>
           <div aria-busy={isLoading} className="relative">
             {initialLoading ? (
               <InventoryTableSkeleton rowCount={pageSize} />
@@ -894,7 +905,10 @@ function FilterSelect({
     if (!isValidElement<{ value?: string; children?: ReactNode }>(child)) return [];
     return [{ value: String(child.props.value ?? ""), label: String(child.props.children ?? "") }];
   });
-  const selectedIndex = Math.max(0, options.findIndex((option) => option.value === value));
+  const selectedIndex = Math.max(
+    0,
+    options.findIndex((option) => option.value === value)
+  );
   const selectedLabel = options[selectedIndex]?.label ?? label;
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(selectedIndex);
@@ -937,7 +951,9 @@ function FilterSelect({
   function onOptionKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
-      setActiveIndex((index + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length);
+      setActiveIndex(
+        (index + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length
+      );
     } else if (event.key === "Home" || event.key === "End") {
       event.preventDefault();
       setActiveIndex(event.key === "Home" ? 0 : options.length - 1);
@@ -994,13 +1010,17 @@ function FilterSelect({
               key={option.value}
               onClick={() => choose(option.value)}
               onKeyDown={(event) => onOptionKeyDown(event, index)}
-              ref={(node) => { optionRefs.current[index] = node; }}
+              ref={(node) => {
+                optionRefs.current[index] = node;
+              }}
               role="option"
               tabIndex={index === activeIndex ? 0 : -1}
               type="button"
             >
               <span>{option.label}</span>
-              {option.value === value ? <Check aria-hidden="true" className="h-4 w-4 shrink-0" /> : null}
+              {option.value === value ? (
+                <Check aria-hidden="true" className="h-4 w-4 shrink-0" />
+              ) : null}
             </button>
           ))}
         </div>
@@ -1051,7 +1071,9 @@ function InventoryTable({
                   {row.barcode ?? "No barcode"} · {row.category.name}
                 </div>
               </td>
-              <td data-label="SKU" className="px-3 py-3 align-middle break-words text-slate-700">{row.sku}</td>
+              <td data-label="SKU" className="px-3 py-3 align-middle break-words text-slate-700">
+                {row.sku}
+              </td>
               <td data-label="Stock" className="px-3 py-3 align-middle text-center">
                 <div className="tabular-nums text-base font-semibold text-slate-950">
                   {row.currentQuantity}
@@ -1073,7 +1095,10 @@ function InventoryTable({
               <td data-label="Expiry" className="px-3 py-3 align-middle text-slate-700">
                 <ExpiryValue quantity={row.currentQuantity} value={row.nearestExpiry} />
               </td>
-              <td data-label="Batches" className="px-3 py-3 align-middle text-center tabular-nums text-slate-700">
+              <td
+                data-label="Batches"
+                className="px-3 py-3 align-middle text-center tabular-nums text-slate-700"
+              >
                 {row.batchCount === 0 ? "None" : row.batchCount}
               </td>
               <td data-label="Status" className="px-3 py-3 align-middle text-center">
@@ -1467,7 +1492,10 @@ function StockInDialog({
                   Count the units that physically arrived.
                 </p>
               </div>
-              <div className="ys-stock-quick-additions flex items-center gap-1.5" aria-label="Quick quantity additions">
+              <div
+                className="ys-stock-quick-additions flex items-center gap-1.5"
+                aria-label="Quick quantity additions"
+              >
                 {[5, 10, 25].map((amount) => (
                   <Button
                     key={amount}
@@ -2237,14 +2265,23 @@ function StockActivityDialog({
                               {formatMovementChange(item)}
                             </span>
                           </TableCell>
-                          <TableCell data-label="Stock" className="align-middle text-center font-medium tabular-nums text-slate-800">
+                          <TableCell
+                            data-label="Stock"
+                            className="align-middle text-center font-medium tabular-nums text-slate-800"
+                          >
                             {item.quantityBefore} <span className="text-slate-400">→</span>{" "}
                             {item.quantityAfter}
                           </TableCell>
-                          <TableCell data-label="Reason" className="align-middle text-sm text-slate-600">
+                          <TableCell
+                            data-label="Reason"
+                            className="align-middle text-sm text-slate-600"
+                          >
                             {formatMovementReason(item)}
                           </TableCell>
-                          <TableCell data-label="By" className="align-middle text-sm text-slate-600">
+                          <TableCell
+                            data-label="By"
+                            className="align-middle text-sm text-slate-600"
+                          >
                             {item.performedBy?.name ?? "System"}
                           </TableCell>
                         </TableRow>

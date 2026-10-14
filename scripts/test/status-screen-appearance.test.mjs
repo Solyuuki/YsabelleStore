@@ -72,7 +72,10 @@ test("dark status UI uses proportional galaxy artwork without changing light mod
   assert.match(screen, /bg-\[#F7F9FF\] text-\[#101426\]/);
   assert.match(screen, /<StorefrontGalaxyArtwork className="status-screen__cosmos-artwork" \/>/);
   assert.match(css, /\.status-screen-main\s*\{[^}]*padding-block: clamp\(2rem, 6vh, 4rem\);/);
-  assert.doesNotMatch(css, /\.status-screen\[data-status-theme="dark"\] \.status-screen__brand-logo/);
+  assert.doesNotMatch(
+    css,
+    /\.status-screen\[data-status-theme="dark"\] \.status-screen__brand-logo/
+  );
   assert.match(css, /\.status-screen\[data-status-theme="dark"\] \{/);
   assert.match(css, /background-image: var\(--storefront-galaxy-background\);/);
   assert.match(css, /background-size: auto;/);

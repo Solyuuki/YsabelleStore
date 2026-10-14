@@ -7,14 +7,32 @@
 /* Secondary navigation must remain legible on the dark account surfaces,
    including saved-account and verification states on login and register. */
 :root.dark .customer-app .customer-auth-page .customer-auth-card .customer-mobile-auth__back,
-:root.dark .customer-app .customer-auth-page .customer-auth-card .customer-email-quick-sign.customer-mobile-auth .customer-email-quick-sign__back,
+:root.dark
+  .customer-app
+  .customer-auth-page
+  .customer-auth-card
+  .customer-email-quick-sign.customer-mobile-auth
+  .customer-email-quick-sign__back,
 :root.dark .customer-app .customer-auth-page .customer-auth-card .customer-recovery-tertiary {
   color: #dce6fa;
   opacity: 1;
 }
-:root.dark .customer-app .customer-auth-page .customer-auth-card .customer-mobile-auth__back:hover:not(:disabled),
-:root.dark .customer-app .customer-auth-page .customer-auth-card .customer-email-quick-sign.customer-mobile-auth .customer-email-quick-sign__back:hover:not(:disabled),
-:root.dark .customer-app .customer-auth-page .customer-auth-card .customer-recovery-tertiary:hover:not(:disabled) {
+:root.dark
+  .customer-app
+  .customer-auth-page
+  .customer-auth-card
+  .customer-mobile-auth__back:hover:not(:disabled),
+:root.dark
+  .customer-app
+  .customer-auth-page
+  .customer-auth-card
+  .customer-email-quick-sign.customer-mobile-auth
+  .customer-email-quick-sign__back:hover:not(:disabled),
+:root.dark
+  .customer-app
+  .customer-auth-page
+  .customer-auth-card
+  .customer-recovery-tertiary:hover:not(:disabled) {
   color: #fff;
 }
 :root.dark .customer-app .customer-auth-page .customer-auth-card .customer-mobile-auth__secondary,
@@ -23,8 +41,16 @@
 :root.dark .customer-app .customer-auth-page .customer-auth-card .customer-auth-switch a {
   color: #c7b9ff;
 }
-:root.dark .customer-app .customer-auth-page .customer-auth-card .customer-mobile-auth__secondary:hover:not(:disabled),
-:root.dark .customer-app .customer-auth-page .customer-auth-card .customer-known-accounts__other:hover:not(:disabled),
+:root.dark
+  .customer-app
+  .customer-auth-page
+  .customer-auth-card
+  .customer-mobile-auth__secondary:hover:not(:disabled),
+:root.dark
+  .customer-app
+  .customer-auth-page
+  .customer-auth-card
+  .customer-known-accounts__other:hover:not(:disabled),
 :root.dark .customer-app .customer-auth-page .customer-auth-card .customer-auth-forgot-row a:hover,
 :root.dark .customer-app .customer-auth-page .customer-auth-card .customer-auth-switch a:hover {
   color: #f1eaff;
@@ -34,7 +60,10 @@
 :root.dark .customer-app .customer-auth-page .customer-remember-choice small {
   color: #cedbef;
 }
-:root.dark .customer-app .customer-auth-page .customer-recovery-progress__step:not(.customer-recovery-progress__step--active) {
+:root.dark
+  .customer-app
+  .customer-auth-page
+  .customer-recovery-progress__step:not(.customer-recovery-progress__step--active) {
   color: #cfdaee;
 }
 :root.dark .customer-app .customer-auth-page .customer-auth-quick-divider {
@@ -91,7 +120,8 @@
   }
 
   /* Mobile heading: brand icon + label + title share a single short header. */
-  .customer-app .customer-auth-page:is(.customer-auth-page--login, .customer-auth-page--register)
+  .customer-app
+    .customer-auth-page:is(.customer-auth-page--login, .customer-auth-page--register)
     .customer-auth-card__intro {
     display: grid;
     grid-template-columns: 2.3rem minmax(0, 1fr);
@@ -100,8 +130,10 @@
     margin: 0 0 0.9rem;
     text-align: left;
   }
-  .customer-app .customer-auth-page:is(.customer-auth-page--login, .customer-auth-page--register)
-    .customer-auth-card__intro > .customer-auth-card__icon {
+  .customer-app
+    .customer-auth-page:is(.customer-auth-page--login, .customer-auth-page--register)
+    .customer-auth-card__intro
+    > .customer-auth-card__icon {
     grid-column: 1;
     grid-row: 1 / 3;
     width: 2.3rem;
@@ -109,15 +141,19 @@
     margin: 0;
     border-radius: 0.75rem;
   }
-  .customer-app .customer-auth-page:is(.customer-auth-page--login, .customer-auth-page--register)
-    .customer-auth-card__intro > .customer-eyebrow {
+  .customer-app
+    .customer-auth-page:is(.customer-auth-page--login, .customer-auth-page--register)
+    .customer-auth-card__intro
+    > .customer-eyebrow {
     grid-column: 2;
     grid-row: 1;
     margin: 0;
     font-size: 0.66rem;
   }
-  .customer-app .customer-auth-page:is(.customer-auth-page--login, .customer-auth-page--register)
-    .customer-auth-card__intro > h1 {
+  .customer-app
+    .customer-auth-page:is(.customer-auth-page--login, .customer-auth-page--register)
+    .customer-auth-card__intro
+    > h1 {
     grid-column: 2;
     grid-row: 2;
     margin: 0;
@@ -127,8 +163,10 @@
   }
   /* The form labels, provider names, and optional phone label already explain
      each step. Keep long explanatory copy on desktop, not in the phone viewport. */
-  .customer-app .customer-auth-page:is(.customer-auth-page--login, .customer-auth-page--register)
-    .customer-auth-card__intro > p:last-child:not(.customer-eyebrow) {
+  .customer-app
+    .customer-auth-page:is(.customer-auth-page--login, .customer-auth-page--register)
+    .customer-auth-card__intro
+    > p:last-child:not(.customer-eyebrow) {
     display: none;
   }
 
@@ -181,7 +219,9 @@
 
   /* Saved-account state has its own heading; don't render two introductory
      blocks or a second account-creation footer in this mode. */
-  .customer-app .customer-auth-page .customer-auth-card:has(> .customer-known-accounts)
+  .customer-app
+    .customer-auth-page
+    .customer-auth-card:has(> .customer-known-accounts)
     > :is(.customer-auth-card__intro, .customer-auth-switch) {
     display: none;
   }

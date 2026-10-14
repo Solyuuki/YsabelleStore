@@ -12,14 +12,18 @@ const rider = read("frontend/src/components/customer/OrderRiderInformation.tsx")
 const css = read("frontend/src/styles/customer-delivery-handoff.css");
 
 test("Rider fields and distinct public vs internal notes are stored persistently", () => {
-  for (const name of ["riderName", "riderPhone", "customerDeliveryNote", "deliveryNotes"]) assert.ok(prisma.includes(name));
-  for (const name of ["rider_name", "rider_phone", "customer_delivery_note"]) assert.ok(migration.includes(name));
+  for (const name of ["riderName", "riderPhone", "customerDeliveryNote", "deliveryNotes"])
+    assert.ok(prisma.includes(name));
+  for (const name of ["rider_name", "rider_phone", "customer_delivery_note"])
+    assert.ok(migration.includes(name));
   assert.ok(service.includes("DELIVERY_RIDER_PHONE_REQUIRED"));
   assert.ok(service.includes("INVALID_RIDER_PHONE"));
 });
 test("Customer response hides staff notes and draft contact before dispatch", () => {
   assert.ok(!storefront.includes("deliveryNotes: order.deliveryNotes"));
-  assert.ok(storefront.includes('["OUT_FOR_DELIVERY", "DELIVERED"].includes(order.deliveryStatus)'));
+  assert.ok(
+    storefront.includes('["OUT_FOR_DELIVERY", "DELIVERED"].includes(order.deliveryStatus)')
+  );
   assert.ok(!rider.includes("deliveryNotes"));
   assert.ok(rider.includes("navigator.clipboard.writeText"));
 });

@@ -3,12 +3,7 @@ import { BarcodeFormat, DecodeHintType } from "@zxing/library";
 import { Camera, CameraOff, Flashlight, ScanBarcode, X, ZoomIn, ZoomOut } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
 type PosCameraScannerProps = {
   onDetected: (barcode: string) => void;
@@ -29,16 +24,19 @@ type CameraCapabilities = MediaTrackCapabilities & {
 };
 
 const HINTS = new Map<DecodeHintType, unknown>([
-  [DecodeHintType.POSSIBLE_FORMATS, [
-    BarcodeFormat.EAN_13,
-    BarcodeFormat.EAN_8,
-    BarcodeFormat.UPC_A,
-    BarcodeFormat.UPC_E,
-    BarcodeFormat.CODE_128,
-    BarcodeFormat.CODE_39,
-    BarcodeFormat.ITF,
-    BarcodeFormat.CODABAR
-  ]],
+  [
+    DecodeHintType.POSSIBLE_FORMATS,
+    [
+      BarcodeFormat.EAN_13,
+      BarcodeFormat.EAN_8,
+      BarcodeFormat.UPC_A,
+      BarcodeFormat.UPC_E,
+      BarcodeFormat.CODE_128,
+      BarcodeFormat.CODE_39,
+      BarcodeFormat.ITF,
+      BarcodeFormat.CODABAR
+    ]
+  ],
   [DecodeHintType.TRY_HARDER, true]
 ]);
 
@@ -67,7 +65,9 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
   const [error, setError] = useState<string | null>(null);
   const [torchAvailable, setTorchAvailable] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
-  const [zoomRange, setZoomRange] = useState<{ min: number; max: number; step: number } | null>(null);
+  const [zoomRange, setZoomRange] = useState<{ min: number; max: number; step: number } | null>(
+    null
+  );
   const [zoom, setZoom] = useState(1);
   callbackRef.current = onDetected;
 
@@ -87,7 +87,9 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
 
       if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
         setStatus("error");
-        setError("Camera access requires HTTPS (or localhost) and an updated browser. You can still type or use a Bluetooth barcode scanner.");
+        setError(
+          "Camera access requires HTTPS (or localhost) and an updated browser. You can still type or use a Bluetooth barcode scanner."
+        );
         return;
       }
       const video = videoRef.current;
@@ -96,7 +98,10 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
       try {
         // ZXing decodes EAN, UPC, Code 128, and other retail 1D barcodes on
         // both Android and iOS, including browsers without BarcodeDetector.
-        const reader = new BrowserMultiFormatReader(HINTS, { delayBetweenScanAttempts: 180, delayBetweenScanSuccess: 220 });
+        const reader = new BrowserMultiFormatReader(HINTS, {
+          delayBetweenScanAttempts: 180,
+          delayBetweenScanSuccess: 220
+        });
         const constraints: MediaStreamConstraints = {
           audio: false,
           video: {
@@ -141,12 +146,17 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
               max: capabilities.zoom.max,
               step: capabilities.zoom.step || 0.5
             });
-            setZoom((track.getSettings() as MediaTrackSettings & { zoom?: number }).zoom ?? capabilities.zoom.min);
+            setZoom(
+              (track.getSettings() as MediaTrackSettings & { zoom?: number }).zoom ??
+                capabilities.zoom.min
+            );
           }
           if (capabilities?.focusMode?.includes("continuous")) {
-            void track.applyConstraints({
-              advanced: [{ focusMode: "continuous" } as AdvancedCameraSettings]
-            }).catch(() => undefined);
+            void track
+              .applyConstraints({
+                advanced: [{ focusMode: "continuous" } as AdvancedCameraSettings]
+              })
+              .catch(() => undefined);
           }
         }
         setStatus("scanning");
@@ -255,9 +265,10 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
         </div>
 
         <div aria-live="polite" className="pos-camera-scanner__status">
-          {error ?? (status === "scanning"
-            ? "Scanning EAN, UPC, Code 128 and retail barcodes automatically."
-            : "Requesting camera access…")}
+          {error ??
+            (status === "scanning"
+              ? "Scanning EAN, UPC, Code 128 and retail barcodes automatically."
+              : "Requesting camera access…")}
         </div>
 
         <div className="pos-camera-scanner__controls">
@@ -303,8 +314,8 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
           </button>
         </div>
         <p className="pos-camera-scanner__hint">
-          For best results, wipe the lens, keep the barcode flat, and use good lighting.
-          The camera stops as soon as a code is detected or the scanner closes.
+          For best results, wipe the lens, keep the barcode flat, and use good lighting. The camera
+          stops as soon as a code is detected or the scanner closes.
         </p>
       </DialogContent>
     </Dialog>

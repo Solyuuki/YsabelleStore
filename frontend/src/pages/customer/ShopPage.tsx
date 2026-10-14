@@ -249,9 +249,7 @@ export function ShopPage({
     // Three 44px options plus padding and spacing require roughly 158px.
     // Flip the menu above when the mobile dock leaves less room below.
     setAvailabilityOpensAbove(
-      !!triggerBounds &&
-        bottomLimit - triggerBounds.bottom < 166 &&
-        triggerBounds.top > 166
+      !!triggerBounds && bottomLimit - triggerBounds.bottom < 166 && triggerBounds.top > 166
     );
     setAvailabilityOpen(true);
   }
@@ -348,7 +346,9 @@ export function ShopPage({
             onClick={() => setCategoriesExpanded((current) => !current)}
             type="button"
           >
-            <span className="shop-category-toggle__label">{activeCategory?.name ?? "Categories"}</span>
+            <span className="shop-category-toggle__label">
+              {activeCategory?.name ?? "Categories"}
+            </span>
             <ChevronDown aria-hidden="true" className="shop-category-toggle__chevron" size={18} />
           </button>
           <CustomerLink
@@ -445,11 +445,13 @@ export function ShopPage({
                   id="shop-availability-options"
                   role="group"
                 >
-                  {([
-                    ["all", "All availability"],
-                    ["in-stock", "In stock"],
-                    ["out-of-stock", "Out of stock"]
-                  ] as const).map(([value, label]) => (
+                  {(
+                    [
+                      ["all", "All availability"],
+                      ["in-stock", "In stock"],
+                      ["out-of-stock", "Out of stock"]
+                    ] as const
+                  ).map(([value, label]) => (
                     <button
                       aria-pressed={availabilityParam === value}
                       className={availabilityParam === value ? "is-selected" : ""}
@@ -459,7 +461,9 @@ export function ShopPage({
                     >
                       <span>{label}</span>
                       {availabilityParam === value ? (
-                        <span aria-hidden="true" className="customer-select__option-check">✓</span>
+                        <span aria-hidden="true" className="customer-select__option-check">
+                          ✓
+                        </span>
                       ) : null}
                     </button>
                   ))}

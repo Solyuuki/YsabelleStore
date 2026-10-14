@@ -586,7 +586,10 @@ function ReviewsSection({
               onChange={(event) => {
                 setReviewComment(event.target.value);
                 if (reviewRating > 0) {
-                  writeReviewDraft(productId, { rating: reviewRating, comment: event.target.value });
+                  writeReviewDraft(productId, {
+                    rating: reviewRating,
+                    comment: event.target.value
+                  });
                 }
               }}
               placeholder="What did you like about this product?"
@@ -619,7 +622,11 @@ function ReviewsSection({
             </div>
             {authStatus === "authenticated" && !reviewContextLoading && !reviewContext?.eligible ? (
               <div className="customer-review-composer__eligibility" role="status">
-                <strong>{reviewError ? "Purchase verification unavailable" : "Signed in · Purchase not verified"}</strong>
+                <strong>
+                  {reviewError
+                    ? "Purchase verification unavailable"
+                    : "Signed in · Purchase not verified"}
+                </strong>
                 <p>
                   {reviewError
                     ? "We couldn't verify your orders right now. Retry the eligibility check."
@@ -634,7 +641,11 @@ function ReviewsSection({
                     Retry verification
                   </button>
                 ) : (
-                  <CustomerLink className="customer-review-composer__orders-link" href="/account" navigate={navigate}>
+                  <CustomerLink
+                    className="customer-review-composer__orders-link"
+                    href="/account"
+                    navigate={navigate}
+                  >
                     Check order history
                   </CustomerLink>
                 )}
@@ -665,7 +676,11 @@ function ReviewsSection({
                     : (summary.distribution.find((entry) => entry.rating === rating)?.count ?? 0);
                 return (
                   <button
-                    aria-label={rating === null ? `All reviews (${count})` : `${rating}-star reviews (${count})`}
+                    aria-label={
+                      rating === null
+                        ? `All reviews (${count})`
+                        : `${rating}-star reviews (${count})`
+                    }
                     aria-pressed={ratingFilter === rating}
                     className={ratingFilter === rating ? "is-active" : ""}
                     key={rating ?? "all"}

@@ -36,7 +36,9 @@ test("Export and Add Product remain operable and escape their scroll regions", (
   assert.match(dialog, /onClick=\{\(\) => void handlePdf\(\)\}/);
   assert.match(dialog, /onClick=\{\(\) => void handlePrint\(\)\}/);
   assert.match(dialog, /onClick=\{\(\) => void handleCsv\(\)\}/);
-  assert.ok(planner.includes('<DialogContent className="ys-restock-product-picker max-w-[820px]">'));
+  assert.ok(
+    planner.includes('<DialogContent className="ys-restock-product-picker max-w-[820px]">')
+  );
   assert.match(planner, /ys-report-v2-picker-body/);
   assert.match(planner, /ys-report-v2-picker-footer/);
   assert.match(planner, /addExistingProduct\(candidate\)/);

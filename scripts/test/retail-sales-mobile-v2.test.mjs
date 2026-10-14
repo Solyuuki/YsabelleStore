@@ -23,7 +23,10 @@ test("Sales list is compact and keyboard accessible on all phone and tablet pres
 });
 test("Tap-to-open sales detail sheet is a single accessible scroll with paired sticky actions", () => {
   assert.match(sales, /window.matchMedia\(SALES_MOBILE_VIEWPORT\)\.matches/);
-  assert.match(sales, /<Dialog open=\{isMobileReceiptOpen\} onOpenChange=\{setIsMobileReceiptOpen\}>/);
+  assert.match(
+    sales,
+    /<Dialog open=\{isMobileReceiptOpen\} onOpenChange=\{setIsMobileReceiptOpen\}>/
+  );
   assert.match(sales, /className="ys-sales-mobile-sheet-scroll"/);
   assert.match(sales, /className="ys-sales-mobile-sheet-footer"/);
   assert.match(sales, /aria-label="Close receipt details"/);
@@ -33,7 +36,22 @@ test("Tap-to-open sales detail sheet is a single accessible scroll with paired s
   assert.match(sales, /setIsMobileReceiptOpen\(false\)/);
 });
 test("Receipt item rows retain exact transaction line, batch, and total values", () => {
-  for (const field of ["sale.saleNumber", "sale.saleDate", "sale.cashierName", "sale.itemCount", "sale.items.map", "item.productName", "item.barcode ?? item.sku", "item.quantity", "item.unitPrice", "item.totalAmount", "item.batchId", "sale.subtotalAmount", "sale.discountAmount", "sale.totalAmount"]) {
+  for (const field of [
+    "sale.saleNumber",
+    "sale.saleDate",
+    "sale.cashierName",
+    "sale.itemCount",
+    "sale.items.map",
+    "item.productName",
+    "item.barcode ?? item.sku",
+    "item.quantity",
+    "item.unitPrice",
+    "item.totalAmount",
+    "item.batchId",
+    "sale.subtotalAmount",
+    "sale.discountAmount",
+    "sale.totalAmount"
+  ]) {
     assert.ok(modal.includes(field), "Missing sale field: " + field);
   }
   assert.match(css, /\.ys-sales-mobile-item-list\s*\{[^}]*list-style: none;/);

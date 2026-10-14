@@ -246,14 +246,25 @@ export function SalesPage() {
                                 {sale.cashierName ?? "Unassigned cashier"}
                               </p>
                             </td>
-                            <td data-label="Date" className="ys-sales-transaction-date px-4 py-3 text-slate-600">
+                            <td
+                              data-label="Date"
+                              className="ys-sales-transaction-date px-4 py-3 text-slate-600"
+                            >
                               {new Intl.DateTimeFormat("en-PH", {
                                 dateStyle: "medium",
                                 timeStyle: "short"
                               }).format(new Date(sale.saleDate))}
                             </td>
-                            <td data-label="Items" className="ys-sales-transaction-items px-4 py-3 text-slate-600">{sale.itemCount}</td>
-                            <td data-label="Total" className="ys-sales-transaction-total px-4 py-3 font-semibold text-slate-950">
+                            <td
+                              data-label="Items"
+                              className="ys-sales-transaction-items px-4 py-3 text-slate-600"
+                            >
+                              {sale.itemCount}
+                            </td>
+                            <td
+                              data-label="Total"
+                              className="ys-sales-transaction-total px-4 py-3 font-semibold text-slate-950"
+                            >
                               {currencyFormatter.format(Number(sale.totalAmount))}
                             </td>
                           </tr>
@@ -389,7 +400,13 @@ export function SalesPage() {
             <div className="flex min-w-0 items-center justify-between gap-3">
               <DialogTitle>Receipt details</DialogTitle>
               <DialogClose asChild>
-                <Button aria-label="Close receipt details" className="ys-sales-mobile-sheet-x" size="icon" type="button" variant="secondary">
+                <Button
+                  aria-label="Close receipt details"
+                  className="ys-sales-mobile-sheet-x"
+                  size="icon"
+                  type="button"
+                  variant="secondary"
+                >
                   <X aria-hidden="true" className="h-4 w-4" />
                 </Button>
               </DialogClose>

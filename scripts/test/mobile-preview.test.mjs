@@ -120,7 +120,10 @@ test("Google Quick Sign escapes the embedded phone preview before OAuth", () => 
   assert.match(service, /parent\.location\.origin === currentWindow\.location\.origin/);
   assert.match(service, /parent\.location\.pathname === "\/mobile-preview\.html"/);
   assert.match(service, /throw new Error\([\s\S]*?Open Ysabelle Store in a full browser tab/);
-  assert.match(service, /customerSocialAuthNavigationWindow\(window\)\.location\.assign\(url\.toString\(\)\)/);
+  assert.match(
+    service,
+    /customerSocialAuthNavigationWindow\(window\)\.location\.assign\(url\.toString\(\)\)/
+  );
   assert.match(login, /startCustomerSocialAuth\(provider, quickSignReturnTo, "login"\)/);
   assert.match(register, /startCustomerSocialAuth\(provider, returnTo, "register"\)/);
   assert.match(preview, /Google Quick Sign opens the full browser page/);
@@ -168,8 +171,12 @@ test("OAuth returns to the signed-in mobile preview, restores the viewport and c
     });
     const iframe = element({ src: "/?preview=welcome" });
     Object.defineProperty(iframe, "src", {
-      get() { return this.attributes.src; },
-      set(value) { this.attributes.src = value; }
+      get() {
+        return this.attributes.src;
+      },
+      set(value) {
+        this.attributes.src = value;
+      }
     });
     const inputs = {
       device: element(),
@@ -211,8 +218,12 @@ test("OAuth returns to the signed-in mobile preview, restores the viewport and c
       URL,
       URLSearchParams,
       document: {
-        getElementById(id) { return inputs[id]; },
-        querySelectorAll() { return buttons; }
+        getElementById(id) {
+          return inputs[id];
+        },
+        querySelectorAll() {
+          return buttons;
+        }
       }
     });
     return {
@@ -265,10 +276,19 @@ test("small touch phones show portrait guidance while tablets support either ori
   assert.match(html, /Rotate your phone upright to continue using Ysabelle Store/);
   assert.match(html, /class="phone-orientation-notice"[^>]*role="status"/);
   assert.match(css, /\.phone-orientation-notice\s*\{\s*display: none;/);
-  assert.match(css, /@media \(orientation: landscape\) and \(max-width: 1180px\) and \(max-height: 500px\) and \(pointer: coarse\)/);
-  assert.match(css, /\.phone-orientation-notice\s*\{[^}]*position: fixed;[^}]*display: grid;[^}]*height: 100dvh;/);
+  assert.match(
+    css,
+    /@media \(orientation: landscape\) and \(max-width: 1180px\) and \(max-height: 500px\) and \(pointer: coarse\)/
+  );
+  assert.match(
+    css,
+    /\.phone-orientation-notice\s*\{[^}]*position: fixed;[^}]*display: grid;[^}]*height: 100dvh;/
+  );
   assert.match(css, /:root\.dark \.phone-orientation-notice\s*\{/);
-  assert.doesNotMatch(css.split("/* Portrait-only phone browsing guard.")[1], /screen\.orientation\.lock/);
+  assert.doesNotMatch(
+    css.split("/* Portrait-only phone browsing guard.")[1],
+    /screen\.orientation\.lock/
+  );
 
   assert.match(qa, /\{ name: "phone-landscape", width: 640, height: 320 \}/);
   assert.match(qa, /\{ name: "tablet", width: 768, height: 1024 \}/);
@@ -319,8 +339,12 @@ test("preview route selection restores from hash, highlights the active view and
   });
   const preview = element({ src: "/?preview=welcome" });
   Object.defineProperty(preview, "src", {
-    get() { return this.attributes.src; },
-    set(value) { this.attributes.src = value; }
+    get() {
+      return this.attributes.src;
+    },
+    set(value) {
+      this.attributes.src = value;
+    }
   });
   const fullPage = element();
   const ids = {
@@ -338,12 +362,16 @@ test("preview route selection restores from hash, highlights the active view and
   const fakeWindow = {
     innerHeight: 1080,
     location: { hash: "#dashboard" },
-    addEventListener(name, callback) { events.set(name, callback); }
+    addEventListener(name, callback) {
+      events.set(name, callback);
+    }
   };
 
   runInNewContext(script, {
     document: {
-      getElementById(id) { return ids[id]; },
+      getElementById(id) {
+        return ids[id];
+      },
       querySelectorAll(selector) {
         assert.equal(selector, "[data-view][data-route]");
         return buttons;
@@ -410,9 +438,9 @@ test("preview route selection restores from hash, highlights the active view and
 
 test("store entrance fits short landscape phone viewports without scroll clipping", () => {
   const css = read("frontend/src/styles/customer-home-premium.css");
-  const shortLandscape = css.split(
-    "@media (max-width: 950px) and (max-height: 440px)"
-  )[1]?.split("/* Home becomes shopping-first")[0];
+  const shortLandscape = css
+    .split("@media (max-width: 950px) and (max-height: 440px)")[1]
+    ?.split("/* Home becomes shopping-first")[0];
 
   assert.ok(shortLandscape, "Missing short-height responsive rule");
   assert.match(shortLandscape, /\.store-entrance\s*\{[^}]*height: 100svh;/);
@@ -426,19 +454,25 @@ test("store entrance fits short landscape phone viewports without scroll clippin
   assert.doesNotMatch(shortLandscape, /overflow:\s*hidden/);
 });
 
-
 test("320px welcome keeps the two intended title lines centered without changing entrance behavior", () => {
   const entrance = read("frontend/src/components/customer/StoreEntrance.tsx");
   const css = read("frontend/src/styles/customer-home-premium.css");
-  const narrow = css.split("/* At 320px portrait, fit the authored two-line welcome headline")[1]
+  const narrow = css
+    .split("/* At 320px portrait, fit the authored two-line welcome headline")[1]
     ?.split("/* A phone in landscape can be only 320-430px tall.")[0];
 
   assert.ok(narrow, "Missing 320px entrance typography");
   assert.match(entrance, /<span>Your Neighborhood Store<\/span>\s*<span>Now Online\.<\/span>/);
   assert.match(narrow, /@media \(max-width: 359px\) and \(orientation: portrait\)/);
-  assert.match(narrow, /\.store-entrance h1\s*\{[^}]*font-size: clamp\(1\.35rem, 6\.7vw, 1\.52rem\);/);
+  assert.match(
+    narrow,
+    /\.store-entrance h1\s*\{[^}]*font-size: clamp\(1\.35rem, 6\.7vw, 1\.52rem\);/
+  );
   assert.match(narrow, /\.store-entrance h1 span:first-child\s*\{\s*white-space: nowrap;/);
-  assert.match(css, /\.store-entrance__content\s*\{[^}]*align-items: center;[^}]*justify-content: center;/);
+  assert.match(
+    css,
+    /\.store-entrance__content\s*\{[^}]*align-items: center;[^}]*justify-content: center;/
+  );
   assert.match(css, /\.store-entrance h1\s*\{[^}]*text-wrap: balance;/);
   assert.match(entrance, /onClick=\{enterStore\}/);
 });

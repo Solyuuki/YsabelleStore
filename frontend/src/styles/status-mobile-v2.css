@@ -22,7 +22,8 @@
     flex: 1 0 auto;
     width: 100%;
     min-width: 0;
-    padding-inline: max(1rem, env(safe-area-inset-left, 0px)) max(1rem, env(safe-area-inset-right, 0px));
+    padding-inline: max(1rem, env(safe-area-inset-left, 0px))
+      max(1rem, env(safe-area-inset-right, 0px));
     padding-top: max(1rem, env(safe-area-inset-top, 0px));
     padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
   }
@@ -57,7 +58,9 @@
     object-position: center;
   }
 
-  .status-screen[data-status-theme="dark"] .status-screen__system-illustration .status-illustration {
+  .status-screen[data-status-theme="dark"]
+    .status-screen__system-illustration
+    .status-illustration {
     width: clamp(7.25rem, 22vw, 10.5rem);
     min-height: 0;
   }
@@ -214,7 +217,9 @@
   .reliability-banner {
     top: max(0.65rem, env(safe-area-inset-top, 0px));
     left: 50%;
-    width: calc(100% - max(1.3rem, env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px)));
+    width: calc(
+      100% - max(1.3rem, env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px))
+    );
     max-width: 33rem;
     min-width: 0;
     border-radius: 0.8rem;
@@ -254,19 +259,34 @@
 @media (max-width: 359px) {
   .status-screen .status-screen-main,
   .status-screen .status-screen-main.status-screen-main--system {
-    padding-inline: max(0.85rem, env(safe-area-inset-left, 0px)) max(0.85rem, env(safe-area-inset-right, 0px));
+    padding-inline: max(0.85rem, env(safe-area-inset-left, 0px))
+      max(0.85rem, env(safe-area-inset-right, 0px));
     padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
     padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
   }
-  .status-screen .status-illustration { width: 7.65rem; }
-  .status-screen[data-status-theme="dark"] .status-screen__system-illustration .status-illustration {
+  .status-screen .status-illustration {
+    width: 7.65rem;
+  }
+  .status-screen[data-status-theme="dark"]
+    .status-screen__system-illustration
+    .status-illustration {
     width: 7.25rem;
   }
-  .status-screen .status-screen__title { font-size: 1.72rem; }
-  .status-screen .status-screen__description { font-size: 0.83rem; }
-  .status-screen .status-screen__status-number { font-size: 4.1rem; }
-  .status-screen .status-screen__eyebrow { font-size: 0.66rem; }
-  .status-screen .status-screen__note { padding: 0.65rem; }
+  .status-screen .status-screen__title {
+    font-size: 1.72rem;
+  }
+  .status-screen .status-screen__description {
+    font-size: 0.83rem;
+  }
+  .status-screen .status-screen__status-number {
+    font-size: 4.1rem;
+  }
+  .status-screen .status-screen__eyebrow {
+    font-size: 0.66rem;
+  }
+  .status-screen .status-screen__note {
+    padding: 0.65rem;
+  }
 }
 
 /* When the device has less vertical space, favor reachable actions over
@@ -277,20 +297,41 @@
     padding-top: max(0.6rem, env(safe-area-inset-top, 0px));
     padding-bottom: max(0.6rem, env(safe-area-inset-bottom, 0px));
   }
-  .status-screen .status-illustration { width: min(7.2rem, 34vw); }
-  .status-screen .status-illustration[data-status-family="navigation"] { width: min(7rem, 31vw); }
-  .status-screen[data-status-theme="dark"] .status-screen__system-illustration .status-illustration {
+  .status-screen .status-illustration {
     width: min(7.2rem, 34vw);
   }
-  .status-screen .status-screen__eyebrow { margin-top: 0.6rem; }
-  .status-screen .status-screen__title { margin-top: 0.35rem; }
-  .status-screen .status-screen__description { margin-top: 0.55rem; line-height: 1.45; }
-  .status-screen .status-screen__note { margin-top: 0.6rem; }
-  .status-screen .status-screen__actions { margin-top: 0.75rem; }
+  .status-screen .status-illustration[data-status-family="navigation"] {
+    width: min(7rem, 31vw);
+  }
+  .status-screen[data-status-theme="dark"]
+    .status-screen__system-illustration
+    .status-illustration {
+    width: min(7.2rem, 34vw);
+  }
+  .status-screen .status-screen__eyebrow {
+    margin-top: 0.6rem;
+  }
+  .status-screen .status-screen__title {
+    margin-top: 0.35rem;
+  }
+  .status-screen .status-screen__description {
+    margin-top: 0.55rem;
+    line-height: 1.45;
+  }
+  .status-screen .status-screen__note {
+    margin-top: 0.6rem;
+  }
+  .status-screen .status-screen__actions {
+    margin-top: 0.75rem;
+  }
 }
 @media (max-width: 1024px) and (max-height: 480px) {
-  .status-screen .status-illustration { width: min(5.6rem, 26vw); }
-  .status-screen[data-status-theme="dark"] .status-screen__system-illustration .status-illustration {
+  .status-screen .status-illustration {
+    width: min(5.6rem, 26vw);
+  }
+  .status-screen[data-status-theme="dark"]
+    .status-screen__system-illustration
+    .status-illustration {
     width: min(5.6rem, 26vw);
   }
 }
@@ -312,17 +353,35 @@
     background: #23344e !important;
     border-color: #627796 !important;
   }
-  :root.dark .ys-status-mobile-toast__title { color: #f2f6ff; }
-  :root.dark .ys-status-mobile-toast__message { color: #ccd9ed; }
+  :root.dark .ys-status-mobile-toast__title {
+    color: #f2f6ff;
+  }
+  :root.dark .ys-status-mobile-toast__message {
+    color: #ccd9ed;
+  }
   :root.dark .ys-status-mobile-toast__icon {
     background: #324662;
     color: #d2e4ff;
   }
-  :root.dark .ys-status-mobile-toast__dismiss { color: #d5e2f5; }
-  :root.dark .ys-status-mobile-toast[data-toast-variant="error"] { border-color: #b97586 !important; }
-  :root.dark .ys-status-mobile-toast[data-toast-variant="error"] .ys-status-mobile-toast__icon { color: #ffc4cc; }
-  :root.dark .ys-status-mobile-toast[data-toast-variant="warning"] { border-color: #b99b60 !important; }
-  :root.dark .ys-status-mobile-toast[data-toast-variant="warning"] .ys-status-mobile-toast__icon { color: #ffe0a2; }
-  :root.dark .ys-status-mobile-toast[data-toast-variant="success"] { border-color: #5a9a86 !important; }
-  :root.dark .ys-status-mobile-toast[data-toast-variant="success"] .ys-status-mobile-toast__icon { color: #b2f0d6; }
+  :root.dark .ys-status-mobile-toast__dismiss {
+    color: #d5e2f5;
+  }
+  :root.dark .ys-status-mobile-toast[data-toast-variant="error"] {
+    border-color: #b97586 !important;
+  }
+  :root.dark .ys-status-mobile-toast[data-toast-variant="error"] .ys-status-mobile-toast__icon {
+    color: #ffc4cc;
+  }
+  :root.dark .ys-status-mobile-toast[data-toast-variant="warning"] {
+    border-color: #b99b60 !important;
+  }
+  :root.dark .ys-status-mobile-toast[data-toast-variant="warning"] .ys-status-mobile-toast__icon {
+    color: #ffe0a2;
+  }
+  :root.dark .ys-status-mobile-toast[data-toast-variant="success"] {
+    border-color: #5a9a86 !important;
+  }
+  :root.dark .ys-status-mobile-toast[data-toast-variant="success"] .ys-status-mobile-toast__icon {
+    color: #b2f0d6;
+  }
 }

@@ -169,7 +169,8 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
             <p className="customer-support-hero__lead">
               Send one clear request and receive a ticket reference you can keep for follow-up.
               <span className="customer-support-hero__extra">
-                {" "}Order numbers are optional, but useful for purchase-related concerns.
+                {" "}
+                Order numbers are optional, but useful for purchase-related concerns.
               </span>
             </p>
             <div className="customer-support-hero__signals" aria-label="Support safeguards">
@@ -263,7 +264,9 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
                 className="customer-support-form"
                 onSubmit={(event) => void handleSubmit(event)}
               >
-                <div className={`customer-support-form__two-column${signedIn ? " customer-support-form__verified-fields" : ""}`}>
+                <div
+                  className={`customer-support-form__two-column${signedIn ? " customer-support-form__verified-fields" : ""}`}
+                >
                   <label>
                     <span>Name</span>
                     <div
@@ -475,10 +478,7 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
           )}
         </section>
 
-        <aside
-          className="customer-support-sidebar"
-          data-mobile-open={showSupportTips}
-        >
+        <aside className="customer-support-sidebar" data-mobile-open={showSupportTips}>
           <button
             aria-controls="customer-support-tips-panel"
             aria-expanded={showSupportTips}
@@ -496,7 +496,8 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
               <h2>For order concerns</h2>
               <p>
                 Include the order number shown in your order history or confirmation when available.
-                It helps connect the ticket to the correct purchase without exposing payment secrets.
+                It helps connect the ticket to the correct purchase without exposing payment
+                secrets.
               </p>
               <button
                 className="customer-support-text-action"
@@ -519,10 +520,7 @@ export function CustomerSupportPage({ navigate }: { navigate: (path: string) => 
         </aside>
       </div>
 
-      <div
-        className="customer-container customer-support-faq"
-        data-mobile-open={showSupportFaq}
-      >
+      <div className="customer-container customer-support-faq" data-mobile-open={showSupportFaq}>
         <div className="customer-support-faq__heading">
           <p className="customer-eyebrow">Frequently asked questions</p>
           <h2>Before you send a request</h2>

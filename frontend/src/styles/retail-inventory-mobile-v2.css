@@ -1,14 +1,22 @@
 /* Sprint 12 — Inventory workspace: phone-first density and native select contrast.
    Desktop inventory table, search semantics and stock mutations are unchanged. */
-.retail-inventory-filter-panel { display: contents; }
+.retail-inventory-filter-panel {
+  display: contents;
+}
 .retail-inventory-filter-reset,
 .retail-inventory-filter-toggle,
-.retail-inventory-mobile-hint { display: none; }
+.retail-inventory-mobile-hint {
+  display: none;
+}
 
 /* Inventory filter listboxes are rendered in the app, avoiding OS-native
    white popup styling under Windows and mobile dark mode. */
-.ys-inventory-filter[data-open="true"] { z-index: 60; }
-.ys-inventory-filter-caption { display: none; }
+.ys-inventory-filter[data-open="true"] {
+  z-index: 60;
+}
+.ys-inventory-filter-caption {
+  display: none;
+}
 .ys-inventory-filter-trigger {
   display: flex;
   width: 100%;
@@ -101,8 +109,8 @@
   color: #ffffff;
 }
 
-
-@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+@media (max-width: 767px),
+  (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
   .retail-workspace [data-retail-module="inventory"] .retail-inventory-page {
     min-width: 0;
     max-width: 100%;
@@ -156,7 +164,10 @@
   .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-toggle-chevron {
     transition: transform 150ms ease;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-toggle[aria-expanded="true"] .retail-inventory-filter-toggle-chevron {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-filter-toggle[aria-expanded="true"]
+    .retail-inventory-filter-toggle-chevron {
     transform: rotate(180deg);
   }
   .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-panel {
@@ -170,10 +181,15 @@
     border-radius: 0.75rem;
     background: #f4f7fd;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-panel[data-open="false"] {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-filter-panel[data-open="false"] {
     display: none;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-panel .ys-inventory-filter {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-filter-panel
+    .ys-inventory-filter {
     display: flex;
     box-sizing: border-box;
     width: 100%;
@@ -185,7 +201,10 @@
     padding-inline: 0.65rem;
     background: #fff;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-panel .ys-inventory-filter {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-filter-panel
+    .ys-inventory-filter {
     height: auto;
     min-height: 66px;
     display: grid;
@@ -194,19 +213,29 @@
     gap: 0.2rem;
     padding: 0.35rem 0.5rem;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-panel .ys-inventory-filter-caption {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-filter-panel
+    .ys-inventory-filter-caption {
     display: block;
     padding-inline: 0.25rem;
     color: #5e6d86;
     font-size: 0.68rem;
     font-weight: 700;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-panel .ys-inventory-filter-trigger {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-filter-panel
+    .ys-inventory-filter-trigger {
     min-height: 38px;
     padding-inline: 0.35rem;
     font-size: 0.83rem;
   }
-  :root.dark .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-panel .ys-inventory-filter-caption {
+  :root.dark
+    .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-filter-panel
+    .ys-inventory-filter-caption {
     color: #c6d3e9;
   }
   .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-reset {
@@ -260,59 +289,107 @@
     overflow-wrap: anywhere;
     text-align: left !important;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table tbody > tr > td::before {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    tbody
+    > tr
+    > td::before {
     display: none;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table tbody > tr > td[data-label="Product"] {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    tbody
+    > tr
+    > td[data-label="Product"] {
     grid-column: 1 / -1;
     grid-row: 1;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table td[data-label="Product"] > div:first-child {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    td[data-label="Product"]
+    > div:first-child {
     font-size: 0.86rem;
     font-weight: 750;
     line-height: 1.35;
     white-space: normal;
     overflow-wrap: anywhere;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table td[data-label="Product"] > div:last-child {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    td[data-label="Product"]
+    > div:last-child {
     margin-top: 0.2rem;
     color: #68788e;
     font-size: 0.69rem;
     line-height: 1.3;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table td[data-label="Stock"] {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    td[data-label="Stock"] {
     grid-column: 1;
     grid-row: 2;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table td[data-label="Stock"] > div:first-child {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    td[data-label="Stock"]
+    > div:first-child {
     display: inline;
     font-size: 1rem;
     font-weight: 800;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table td[data-label="Stock"] > div:last-child {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    td[data-label="Stock"]
+    > div:last-child {
     display: inline;
     margin-left: 0.3rem;
     color: #64748b;
     font-size: 0.68rem;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table td[data-label="Status"] {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    td[data-label="Status"] {
     grid-column: 2;
     grid-row: 2;
     justify-self: end;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table td[data-label="Status"] > div {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    td[data-label="Status"]
+    > div {
     justify-content: flex-end;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table td[data-label="Status"] > div > span {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    td[data-label="Status"]
+    > div
+    > span {
     font-size: 0.64rem;
     white-space: nowrap;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table td[data-label="Restock levels"] {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    td[data-label="Restock levels"] {
     grid-column: 1;
     grid-row: 3;
     align-self: start;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table td[data-label="Restock levels"] > div {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    td[data-label="Restock levels"]
+    > div {
     display: flex;
     gap: 0.25rem;
     flex-wrap: wrap;
@@ -320,7 +397,10 @@
     font-size: 0.69rem;
     line-height: 1.35;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table td[data-label="Expiry"] {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    td[data-label="Expiry"] {
     grid-column: 2;
     grid-row: 3;
     justify-self: end;
@@ -328,12 +408,21 @@
     text-align: right !important;
     font-size: 0.7rem;
   }
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table td[data-label="SKU"],
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table td[data-label="Batches"] {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    td[data-label="SKU"],
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    td[data-label="Batches"] {
     display: none;
   }
   /* The full SKU, batches, expiry and stock controls remain in the row details. */
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-list-card [aria-label="inventory records pagination"] {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-list-card
+    [aria-label="inventory records pagination"] {
     max-width: 100%;
   }
 
@@ -341,7 +430,11 @@
     border-color: #526684;
     background: #1c2c45;
   }
-  :root.dark .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-panel .ys-inventory-filter {
+  :root.dark
+    .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-filter-panel
+    .ys-inventory-filter {
     background: #263852 !important;
     border-color: #607795 !important;
   }
@@ -351,18 +444,35 @@
   :root.dark .retail-workspace [data-retail-module="inventory"] .retail-inventory-filter-reset {
     color: #c9bbff;
   }
-  :root.dark .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table tbody > tr {
+  :root.dark
+    .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    tbody
+    > tr {
     border-color: #526686;
     background: #21334f;
     color: #eff4ff;
   }
-  :root.dark .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table td[data-label="Product"] > div:last-child,
-  :root.dark .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table td[data-label="Stock"] > div:last-child {
+  :root.dark
+    .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    td[data-label="Product"]
+    > div:last-child,
+  :root.dark
+    .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    td[data-label="Stock"]
+    > div:last-child {
     color: #c1d0e8;
   }
-  :root.dark .retail-workspace [data-retail-module="inventory"] .retail-inventory-data-table :is(
-    td[data-label="Restock levels"], td[data-label="Expiry"]
-  ) {
+  :root.dark
+    .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-data-table
+    :is(td[data-label="Restock levels"], td[data-label="Expiry"]) {
     color: #d9e4f7;
   }
 }
@@ -378,19 +488,29 @@
 
 /* Inventory stock dialogs: small-screen metrics and workflow actions, not
    four full-width metric cards or a side-scrolling stock movement table. */
-@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+@media (max-width: 767px),
+  (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
   :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-modal > [class~="px-6"] {
     padding-inline: 0.85rem !important;
   }
-  :root[data-appearance-scope="retail"] .ys-inventory-details-modal .retail-inventory-details-metrics {
+  :root[data-appearance-scope="retail"]
+    .ys-inventory-details-modal
+    .retail-inventory-details-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.45rem;
   }
-  :root[data-appearance-scope="retail"] .ys-inventory-details-modal .retail-inventory-details-metrics > div {
+  :root[data-appearance-scope="retail"]
+    .ys-inventory-details-modal
+    .retail-inventory-details-metrics
+    > div {
     min-width: 0;
     padding: 0.6rem 0.7rem;
   }
-  :root[data-appearance-scope="retail"] .ys-inventory-details-modal .retail-inventory-details-metrics > div > div {
+  :root[data-appearance-scope="retail"]
+    .ys-inventory-details-modal
+    .retail-inventory-details-metrics
+    > div
+    > div {
     margin-top: 0.3rem;
     min-height: 0;
     font-size: 1.05rem;
@@ -402,7 +522,10 @@
   :root[data-appearance-scope="retail"] .ys-inventory-details-modal section.rounded-lg .mt-3 {
     margin-top: 0.5rem;
   }
-  :root[data-appearance-scope="retail"] .ys-inventory-details-modal section.rounded-lg [class~="py-2.5"] {
+  :root[data-appearance-scope="retail"]
+    .ys-inventory-details-modal
+    section.rounded-lg
+    [class~="py-2.5"] {
     padding-block: 0.4rem;
   }
   :root[data-appearance-scope="retail"] .ys-inventory-details-actions {
@@ -468,13 +591,33 @@
   :root[data-appearance-scope="retail"] .retail-inventory-activity-table td::before {
     display: none;
   }
-  :root[data-appearance-scope="retail"] .retail-inventory-activity-table td[data-label="Date"] { grid-column: 1; grid-row: 1; }
-  :root[data-appearance-scope="retail"] .retail-inventory-activity-table td[data-label="Change"] { grid-column: 2; grid-row: 1; }
-  :root[data-appearance-scope="retail"] .retail-inventory-activity-table td[data-label="Activity"] { grid-column: 1; grid-row: 2; }
-  :root[data-appearance-scope="retail"] .retail-inventory-activity-table td[data-label="Stock"] { grid-column: 2; grid-row: 2; }
-  :root[data-appearance-scope="retail"] .retail-inventory-activity-table td[data-label="Reason"] { grid-column: 1; grid-row: 3; }
-  :root[data-appearance-scope="retail"] .retail-inventory-activity-table td[data-label="By"] { grid-column: 2; grid-row: 3; }
-  :root[data-appearance-scope="retail"] .retail-inventory-activity-table td:is([data-label="Reason"], [data-label="By"])::before {
+  :root[data-appearance-scope="retail"] .retail-inventory-activity-table td[data-label="Date"] {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  :root[data-appearance-scope="retail"] .retail-inventory-activity-table td[data-label="Change"] {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  :root[data-appearance-scope="retail"] .retail-inventory-activity-table td[data-label="Activity"] {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  :root[data-appearance-scope="retail"] .retail-inventory-activity-table td[data-label="Stock"] {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  :root[data-appearance-scope="retail"] .retail-inventory-activity-table td[data-label="Reason"] {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  :root[data-appearance-scope="retail"] .retail-inventory-activity-table td[data-label="By"] {
+    grid-column: 2;
+    grid-row: 3;
+  }
+  :root[data-appearance-scope="retail"]
+    .retail-inventory-activity-table
+    td:is([data-label="Reason"], [data-label="By"])::before {
     display: block;
     margin-bottom: 0.15rem;
     color: #64748b;
@@ -487,16 +630,20 @@
     border-color: #596f8e;
     background: #263852;
   }
-  :root.dark[data-appearance-scope="retail"] .retail-inventory-activity-table td:is([data-label="Reason"], [data-label="By"])::before {
+  :root.dark[data-appearance-scope="retail"]
+    .retail-inventory-activity-table
+    td:is([data-label="Reason"], [data-label="By"])::before {
     color: #b8c9e4;
   }
 }
 
-
-.ys-inventory-mobile-page-label { display: none; }
+.ys-inventory-mobile-page-label {
+  display: none;
+}
 /* The Inventory pager uses the same mobile composition as Deliveries:
    summary above, page-size selector on left, page actions on right. */
-@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+@media (max-width: 767px),
+  (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
   .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination {
     box-sizing: border-box;
     min-width: 0;
@@ -521,7 +668,12 @@
   .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination > div > label > span {
     display: none;
   }
-  .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination > div > label > select {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .ys-inventory-pagination
+    > div
+    > label
+    > select {
     width: 4rem;
     min-width: 0;
     height: 40px;
@@ -538,10 +690,16 @@
     flex-wrap: nowrap;
     gap: 0.25rem;
   }
-  .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination .ys-inventory-page-token {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .ys-inventory-pagination
+    .ys-inventory-page-token {
     display: none;
   }
-  .retail-workspace [data-retail-module="inventory"] .ys-inventory-pagination .ys-inventory-mobile-page-label {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .ys-inventory-pagination
+    .ys-inventory-mobile-page-label {
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -564,8 +722,10 @@
 
 /* Stock editors: the generic [class*="grid-cols-["] dialog rule previously forced
    +/- controls and stock calculations into a single tall column. */
-@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
-  :root[data-appearance-scope="retail"] [role="dialog"]:is(.ys-stock-receive-modal,.ys-stock-adjust-modal) {
+@media (max-width: 767px),
+  (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"]:is(.ys-stock-receive-modal, .ys-stock-adjust-modal) {
     box-sizing: border-box;
     width: calc(100vw - 1.5rem) !important;
     max-width: calc(100vw - 1.5rem) !important;
@@ -577,53 +737,84 @@
     gap: 0;
     overflow: hidden !important;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"]:is(.ys-stock-receive-modal,.ys-stock-adjust-modal) > :first-child {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"]:is(.ys-stock-receive-modal, .ys-stock-adjust-modal)
+    > :first-child {
     flex: none;
     min-width: 0;
-    padding: .85rem 3rem .75rem 1rem;
+    padding: 0.85rem 3rem 0.75rem 1rem;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"]:is(.ys-stock-receive-modal,.ys-stock-adjust-modal) > :first-child > button {
-    right: .65rem;
-    top: .6rem;
+  :root[data-appearance-scope="retail"]
+    [role="dialog"]:is(.ys-stock-receive-modal, .ys-stock-adjust-modal)
+    > :first-child
+    > button {
+    right: 0.65rem;
+    top: 0.6rem;
     min-width: 40px;
     min-height: 40px;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"]:is(.ys-stock-receive-modal,.ys-stock-adjust-modal) .ys-stock-dialog-form {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"]:is(.ys-stock-receive-modal, .ys-stock-adjust-modal)
+    .ys-stock-dialog-form {
     flex: 1 1 auto;
     min-width: 0;
     min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: .85rem 1rem 1rem;
+    padding: 0.85rem 1rem 1rem;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"]:is(.ys-stock-receive-modal,.ys-stock-adjust-modal) .ys-stock-dialog-form > :not([hidden]) ~ :not([hidden]) {
-    margin-block-start: .8rem !important;
+  :root[data-appearance-scope="retail"]
+    [role="dialog"]:is(.ys-stock-receive-modal, .ys-stock-adjust-modal)
+    .ys-stock-dialog-form
+    > :not([hidden])
+    ~ :not([hidden]) {
+    margin-block-start: 0.8rem !important;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"]:is(.ys-stock-receive-modal,.ys-stock-adjust-modal) .ys-stock-dialog-form > div:first-child {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"]:is(.ys-stock-receive-modal, .ys-stock-adjust-modal)
+    .ys-stock-dialog-form
+    > div:first-child {
     min-width: 0;
-    gap: .65rem;
-    padding: .7rem .75rem;
+    gap: 0.65rem;
+    padding: 0.7rem 0.75rem;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"]:is(.ys-stock-receive-modal,.ys-stock-adjust-modal) .ys-stock-dialog-form > div:first-child > div:last-child {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"]:is(.ys-stock-receive-modal, .ys-stock-adjust-modal)
+    .ys-stock-dialog-form
+    > div:first-child
+    > div:last-child {
     min-width: 3.3rem;
     flex: none;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"]:is(.ys-stock-receive-modal,.ys-stock-adjust-modal) .ys-stock-dialog-form > div:first-child p {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"]:is(.ys-stock-receive-modal, .ys-stock-adjust-modal)
+    .ys-stock-dialog-form
+    > div:first-child
+    p {
     line-height: 1.3;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"]:is(.ys-stock-receive-modal,.ys-stock-adjust-modal) .ys-stock-dialog-form > div:first-child p.text-2xl {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"]:is(.ys-stock-receive-modal, .ys-stock-adjust-modal)
+    .ys-stock-dialog-form
+    > div:first-child
+    p.text-2xl {
     font-size: 1.15rem;
-    margin-top: .2rem;
+    margin-top: 0.2rem;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-modal .ys-stock-quantity-stepper {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"].ys-inventory-modal
+    .ys-stock-quantity-stepper {
     display: grid;
-    grid-template-columns: 44px minmax(0,1fr) 44px !important;
+    grid-template-columns: 44px minmax(0, 1fr) 44px !important;
     min-width: 0;
-    gap: .5rem;
+    gap: 0.5rem;
     align-items: center;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-modal .ys-stock-quantity-stepper > :is(input,button) {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"].ys-inventory-modal
+    .ys-stock-quantity-stepper
+    > :is(input, button) {
     min-width: 0;
     width: 100%;
     min-height: 44px;
@@ -631,74 +822,108 @@
   }
   :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-modal .ys-stock-receipt-math {
     display: grid;
-    grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr) !important;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr) !important;
     min-width: 0;
     align-items: center;
-    gap: .3rem;
-    padding: .65rem .45rem;
+    gap: 0.3rem;
+    padding: 0.65rem 0.45rem;
   }
   :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-modal .ys-stock-adjust-math {
     display: grid;
-    grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) !important;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
     min-width: 0;
     align-items: center;
-    gap: .5rem;
-    padding: .65rem .65rem;
+    gap: 0.5rem;
+    padding: 0.65rem 0.65rem;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-modal .ys-stock-math > div { min-width: 0; }
+  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-modal .ys-stock-math > div {
+    min-width: 0;
+  }
   :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-modal .ys-stock-math p {
-    font-size: .64rem;
+    font-size: 0.64rem;
     line-height: 1.3;
     overflow-wrap: break-word;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-modal .ys-stock-math p:last-child {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"].ys-inventory-modal
+    .ys-stock-math
+    p:last-child {
     font-size: 1.05rem;
     line-height: 1.25;
-    margin-top: .2rem;
+    margin-top: 0.2rem;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-modal .ys-stock-quick-additions { flex-wrap: wrap; gap: .35rem; }
-  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-modal .ys-stock-quick-additions button {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"].ys-inventory-modal
+    .ys-stock-quick-additions {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  :root[data-appearance-scope="retail"]
+    [role="dialog"].ys-inventory-modal
+    .ys-stock-quick-additions
+    button {
     min-height: 40px;
-    padding-inline: .65rem;
+    padding-inline: 0.65rem;
   }
   :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-modal .ys-stock-batch-panel {
     min-width: 0;
-    padding: .75rem;
+    padding: 0.75rem;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-modal .ys-stock-batch-panel > :not([hidden]) ~ :not([hidden]) {
-    margin-block-start: .75rem !important;
+  :root[data-appearance-scope="retail"]
+    [role="dialog"].ys-inventory-modal
+    .ys-stock-batch-panel
+    > :not([hidden])
+    ~ :not([hidden]) {
+    margin-block-start: 0.75rem !important;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-modal .ys-stock-reason-options { gap: .4rem; }
-  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-modal .ys-stock-reason-options button {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"].ys-inventory-modal
+    .ys-stock-reason-options {
+    gap: 0.4rem;
+  }
+  :root[data-appearance-scope="retail"]
+    [role="dialog"].ys-inventory-modal
+    .ys-stock-reason-options
+    button {
     min-height: 40px;
-    font-size: .75rem;
-    padding: .4rem .65rem;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.65rem;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"]:is(.ys-stock-receive-modal,.ys-stock-adjust-modal) .ys-stock-dialog-footer {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"]:is(.ys-stock-receive-modal, .ys-stock-adjust-modal)
+    .ys-stock-dialog-footer {
     display: grid;
-    grid-template-columns: repeat(2,minmax(0,1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     flex: none;
     min-width: 0;
-    gap: .5rem;
-    padding: .7rem 1rem calc(.7rem + env(safe-area-inset-bottom,0px));
+    gap: 0.5rem;
+    padding: 0.7rem 1rem calc(0.7rem + env(safe-area-inset-bottom, 0px));
   }
-  :root[data-appearance-scope="retail"] [role="dialog"]:is(.ys-stock-receive-modal,.ys-stock-adjust-modal) .ys-stock-dialog-footer button {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"]:is(.ys-stock-receive-modal, .ys-stock-adjust-modal)
+    .ys-stock-dialog-footer
+    button {
     min-width: 0;
     width: 100%;
     min-height: 44px;
-    padding-inline: .4rem;
-    font-size: .78rem;
+    padding-inline: 0.4rem;
+    font-size: 0.78rem;
     white-space: normal;
   }
 }
 
 /* Import header: the ? and X share the same action row without overlap. */
-@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
-  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-import-modal .ys-inventory-import-header {
+@media (max-width: 767px),
+  (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"].ys-inventory-import-modal
+    .ys-inventory-import-header {
     padding: 0.8rem 0.85rem;
     gap: 0.6rem;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-import-modal .ys-inventory-import-heading {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"].ys-inventory-import-modal
+    .ys-inventory-import-heading {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
@@ -706,19 +931,27 @@
     gap: 0.65rem;
     min-width: 0;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-import-modal .ys-inventory-import-header-actions {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"].ys-inventory-import-modal
+    .ys-inventory-import-header-actions {
     display: flex;
     flex: none;
     align-items: center;
     gap: 0.45rem;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-import-modal .ys-inventory-import-heading [role="heading"] {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"].ys-inventory-import-modal
+    .ys-inventory-import-heading
+    [role="heading"] {
     min-width: 0;
     overflow-wrap: anywhere;
     line-height: 1.3;
     font-size: 0.95rem;
   }
-  :root[data-appearance-scope="retail"] [role="dialog"].ys-inventory-import-modal .ys-inventory-import-header-actions button {
+  :root[data-appearance-scope="retail"]
+    [role="dialog"].ys-inventory-import-modal
+    .ys-inventory-import-header-actions
+    button {
     min-width: 40px;
     min-height: 40px;
     width: 40px;
@@ -736,24 +969,38 @@
     column-gap: 0.5rem;
   }
 
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar .ys-inventory-search {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-toolbar
+    .ys-inventory-search {
     grid-column: 1;
     min-width: 0;
     width: 100%;
     padding-inline: 0.65rem;
   }
 
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar .ys-inventory-search > svg {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-toolbar
+    .ys-inventory-search
+    > svg {
     flex: none;
   }
 
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar .ys-inventory-search > input {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-toolbar
+    .ys-inventory-search
+    > input {
     flex: 1 1 auto;
     min-width: 0;
     width: 100%;
   }
 
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar .retail-inventory-filter-toggle {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-toolbar
+    .retail-inventory-filter-toggle {
     position: relative;
     grid-column: 2;
     width: 44px;
@@ -765,12 +1012,22 @@
     gap: 0;
   }
 
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar .retail-inventory-filter-toggle > span:not(.retail-inventory-filter-count),
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar .retail-inventory-filter-toggle-chevron {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-toolbar
+    .retail-inventory-filter-toggle
+    > span:not(.retail-inventory-filter-count),
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-toolbar
+    .retail-inventory-filter-toggle-chevron {
     display: none;
   }
 
-  .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar .retail-inventory-filter-count {
+  .retail-workspace
+    [data-retail-module="inventory"]
+    .retail-inventory-toolbar
+    .retail-inventory-filter-count {
     position: absolute;
     top: -0.3rem;
     right: -0.3rem;
@@ -780,7 +1037,6 @@
   }
 }
 
-
 /* Content-width guard for small-device presets. A nominal 360px phone can
    offer less usable width after app-shell and card padding. Scope to the
    Inventory card's content box instead of relying on viewport width alone. */
@@ -788,21 +1044,28 @@
   container: inventory-panel / inline-size;
 }
 
-@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+@media (max-width: 767px),
+  (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
   @container inventory-panel (max-width: 345px) {
     .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar {
       grid-template-columns: minmax(0, 1fr);
       gap: 0.5rem;
     }
 
-    .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar > .ys-inventory-search {
+    .retail-workspace
+      [data-retail-module="inventory"]
+      .retail-inventory-toolbar
+      > .ys-inventory-search {
       grid-column: 1;
       grid-row: 1;
       width: 100%;
       min-width: 0;
     }
 
-    .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar > .retail-inventory-filter-toggle {
+    .retail-workspace
+      [data-retail-module="inventory"]
+      .retail-inventory-toolbar
+      > .retail-inventory-filter-toggle {
       grid-column: 1;
       grid-row: 2;
       justify-self: stretch;
@@ -812,22 +1075,41 @@
       gap: 0.5rem;
     }
 
-    .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar > .retail-inventory-filter-toggle > span:not(.retail-inventory-filter-count),
-    .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar > .retail-inventory-filter-toggle .retail-inventory-filter-toggle-chevron {
+    .retail-workspace
+      [data-retail-module="inventory"]
+      .retail-inventory-toolbar
+      > .retail-inventory-filter-toggle
+      > span:not(.retail-inventory-filter-count),
+    .retail-workspace
+      [data-retail-module="inventory"]
+      .retail-inventory-toolbar
+      > .retail-inventory-filter-toggle
+      .retail-inventory-filter-toggle-chevron {
       display: inline-flex;
     }
 
-    .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar > .retail-inventory-filter-toggle > span:not(.retail-inventory-filter-count) {
+    .retail-workspace
+      [data-retail-module="inventory"]
+      .retail-inventory-toolbar
+      > .retail-inventory-filter-toggle
+      > span:not(.retail-inventory-filter-count) {
       margin-right: auto;
     }
 
-    .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar > .retail-inventory-filter-toggle .retail-inventory-filter-count {
+    .retail-workspace
+      [data-retail-module="inventory"]
+      .retail-inventory-toolbar
+      > .retail-inventory-filter-toggle
+      .retail-inventory-filter-count {
       position: static;
       margin-left: 0;
       margin-right: 0.15rem;
     }
 
-    .retail-workspace [data-retail-module="inventory"] .retail-inventory-toolbar > .retail-inventory-filter-panel {
+    .retail-workspace
+      [data-retail-module="inventory"]
+      .retail-inventory-toolbar
+      > .retail-inventory-filter-panel {
       grid-column: 1;
       grid-row: 3;
     }
@@ -836,25 +1118,34 @@
 
 /* Inventory details: desktop retains the existing three-button action layout.
    Mobile turns history into a secondary header link above paired stock actions. */
-.ys-inventory-stock-actions-head { display: contents; }
+.ys-inventory-stock-actions-head {
+  display: contents;
+}
 .ys-inventory-stock-actions-title,
 .ys-inventory-history-mobile,
 .ys-inventory-history-chevron,
-.ys-inventory-adjust-mobile { display: none; }
+.ys-inventory-adjust-mobile {
+  display: none;
+}
 
-@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+@media (max-width: 767px),
+  (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
   :root[data-appearance-scope="retail"] .ys-inventory-details-modal .ys-inventory-details-footer {
     display: block;
     padding: 0.65rem 0.85rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
   }
-  :root[data-appearance-scope="retail"] .ys-inventory-details-modal .retail-inventory-details-actions {
+  :root[data-appearance-scope="retail"]
+    .ys-inventory-details-modal
+    .retail-inventory-details-actions {
     display: flex;
     flex-direction: column;
     align-items: stretch;
     min-width: 0;
     gap: 0.55rem;
   }
-  :root[data-appearance-scope="retail"] .ys-inventory-details-modal .ys-inventory-stock-actions-head {
+  :root[data-appearance-scope="retail"]
+    .ys-inventory-details-modal
+    .ys-inventory-stock-actions-head {
     display: flex;
     width: 100%;
     min-width: 0;
@@ -864,7 +1155,9 @@
     padding-bottom: 0.4rem;
     border-bottom: 1px solid #d4deed;
   }
-  :root[data-appearance-scope="retail"] .ys-inventory-details-modal .ys-inventory-stock-actions-title {
+  :root[data-appearance-scope="retail"]
+    .ys-inventory-details-modal
+    .ys-inventory-stock-actions-title {
     display: block;
     min-width: 0;
     color: #253451;
@@ -888,16 +1181,26 @@
     font-size: 0.75rem;
     font-weight: 700;
   }
-  :root[data-appearance-scope="retail"] .ys-inventory-details-modal .ys-inventory-history-action:hover {
+  :root[data-appearance-scope="retail"]
+    .ys-inventory-details-modal
+    .ys-inventory-history-action:hover {
     text-decoration: underline;
     text-underline-offset: 3px;
   }
   :root[data-appearance-scope="retail"] .ys-inventory-details-modal .ys-inventory-history-desktop,
-  :root[data-appearance-scope="retail"] .ys-inventory-details-modal .ys-inventory-adjust-desktop { display: none; }
+  :root[data-appearance-scope="retail"] .ys-inventory-details-modal .ys-inventory-adjust-desktop {
+    display: none;
+  }
   :root[data-appearance-scope="retail"] .ys-inventory-details-modal .ys-inventory-history-mobile,
-  :root[data-appearance-scope="retail"] .ys-inventory-details-modal .ys-inventory-adjust-mobile { display: inline; }
-  :root[data-appearance-scope="retail"] .ys-inventory-details-modal .ys-inventory-history-chevron { display: block; }
-  :root[data-appearance-scope="retail"] .ys-inventory-details-modal .retail-inventory-owner-actions {
+  :root[data-appearance-scope="retail"] .ys-inventory-details-modal .ys-inventory-adjust-mobile {
+    display: inline;
+  }
+  :root[data-appearance-scope="retail"] .ys-inventory-details-modal .ys-inventory-history-chevron {
+    display: block;
+  }
+  :root[data-appearance-scope="retail"]
+    .ys-inventory-details-modal
+    .retail-inventory-owner-actions {
     display: grid;
     width: 100%;
     min-width: 0;
@@ -905,7 +1208,10 @@
     align-items: stretch;
     gap: 0.5rem;
   }
-  :root[data-appearance-scope="retail"] .ys-inventory-details-modal .retail-inventory-owner-actions > button {
+  :root[data-appearance-scope="retail"]
+    .ys-inventory-details-modal
+    .retail-inventory-owner-actions
+    > button {
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -920,17 +1226,27 @@
     line-height: 1.2;
     font-weight: 700;
   }
-  :root[data-appearance-scope="retail"] .ys-inventory-details-modal .retail-inventory-owner-actions > button svg {
+  :root[data-appearance-scope="retail"]
+    .ys-inventory-details-modal
+    .retail-inventory-owner-actions
+    > button
+    svg {
     width: 15px;
     height: 15px;
   }
-  :root.dark[data-appearance-scope="retail"] .ys-inventory-details-modal .ys-inventory-stock-actions-head {
+  :root.dark[data-appearance-scope="retail"]
+    .ys-inventory-details-modal
+    .ys-inventory-stock-actions-head {
     border-bottom-color: #566c89;
   }
-  :root.dark[data-appearance-scope="retail"] .ys-inventory-details-modal .ys-inventory-stock-actions-title {
+  :root.dark[data-appearance-scope="retail"]
+    .ys-inventory-details-modal
+    .ys-inventory-stock-actions-title {
     color: #f0f5ff;
   }
-  :root.dark[data-appearance-scope="retail"] .ys-inventory-details-modal .ys-inventory-history-action {
+  :root.dark[data-appearance-scope="retail"]
+    .ys-inventory-details-modal
+    .ys-inventory-history-action {
     color: #d3c9ff !important;
   }
 }

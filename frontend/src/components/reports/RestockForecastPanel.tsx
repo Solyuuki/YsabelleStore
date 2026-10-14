@@ -222,7 +222,10 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
     : null;
   const productDemandChart = useMemo(() => buildDemandChart(selected), [selected]);
   const mobileForecastPoints = productDemandChart.filter((point) => point.forecast !== null);
-  const activeMobileForecastPoint = mobileForecastPoints[Math.min(mobileChartMonth, Math.max(0, mobileForecastPoints.length - 1))] ?? null;
+  const activeMobileForecastPoint =
+    mobileForecastPoints[
+      Math.min(mobileChartMonth, Math.max(0, mobileForecastPoints.length - 1))
+    ] ?? null;
   const nextMonthPreview = useMemo(
     () => buildNextMonthRestockPreview(selected, selectedActiveRestock),
     [selected, selectedActiveRestock]
@@ -361,7 +364,9 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <CardTitle>
-                <span className="ys-report-v2-full-title">{reportMonthLabel} inventory recommendation report</span>
+                <span className="ys-report-v2-full-title">
+                  {reportMonthLabel} inventory recommendation report
+                </span>
                 <span className="ys-report-v2-short-title">{reportMonthLabel} inventory plan</span>
               </CardTitle>
               <Badge variant={summary.actionCount > 0 ? "warning" : "success"}>
@@ -408,7 +413,10 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
         ) : null}
 
         <div className="ys-report-v2-forecast-layout grid gap-3 xl:grid-cols-[0.9fr_1.1fr]">
-          <div className="ys-report-v2-product-list min-w-0 rounded-lg border border-slate-200 bg-white" ref={productListRef}>
+          <div
+            className="ys-report-v2-product-list min-w-0 rounded-lg border border-slate-200 bg-white"
+            ref={productListRef}
+          >
             <div className="border-b border-slate-200 px-4 py-3">
               <p className="text-sm font-semibold text-slate-950">Monthly product report</p>
               <p className="mt-1 text-xs text-slate-500">
@@ -418,7 +426,10 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
             </div>
             <div className="overflow-hidden">
               {items.length > 0 ? (
-                <Table aria-label="Forecast product watchlist" className="ys-report-v2-watchlist-table">
+                <Table
+                  aria-label="Forecast product watchlist"
+                  className="ys-report-v2-watchlist-table"
+                >
                   <TableHeader className="bg-slate-50">
                     <TableRow>
                       <TableHead>Product</TableHead>
@@ -878,7 +889,13 @@ function DemandChart({ data }: { data: ReturnType<typeof buildDemandChart> }) {
     <ResponsiveContainer height="100%" width="100%">
       <LineChart data={data} margin={{ bottom: 4, left: 0, right: 8, top: 8 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="label" interval="preserveStartEnd" minTickGap={24} padding={{ left: 8, right: 16 }} tick={{ fontSize: 11 }} />
+        <XAxis
+          dataKey="label"
+          interval="preserveStartEnd"
+          minTickGap={24}
+          padding={{ left: 8, right: 16 }}
+          tick={{ fontSize: 11 }}
+        />
         <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={38} />
         <Tooltip formatter={(value, name) => [formatNumber(Number(value), 1), String(name)]} />
         <Line
@@ -909,7 +926,13 @@ function RestockPreviewChart({ data }: { data: ReturnType<typeof buildRestockPre
     <ResponsiveContainer height="100%" width="100%">
       <BarChart data={data} margin={{ bottom: 4, left: 0, right: 8, top: 8 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="label" interval="preserveStartEnd" minTickGap={24} padding={{ left: 8, right: 16 }} tick={{ fontSize: 11 }} />
+        <XAxis
+          dataKey="label"
+          interval="preserveStartEnd"
+          minTickGap={24}
+          padding={{ left: 8, right: 16 }}
+          tick={{ fontSize: 11 }}
+        />
         <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={38} />
         <Tooltip formatter={(value) => [formatNumber(Number(value)), "Restock units"]} />
         <Bar dataKey="restock" fill="#4f46e5" name="Restock units" radius={[4, 4, 0, 0]} />

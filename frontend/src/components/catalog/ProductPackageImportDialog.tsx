@@ -284,7 +284,10 @@ export function ProductPackageImportDialog({
                 <span className="ys-products-v2-guide-text">Guide</span>
               </Button>
             </div>
-            <DialogDescription id="product-package-import-description" className="ys-products-v2-import-description max-w-prose">
+            <DialogDescription
+              id="product-package-import-description"
+              className="ys-products-v2-import-description max-w-prose"
+            >
               Import a product package from your computer or Google Drive. The system scans folders,
               validates catalog data, matches product images, and rejects blocking issues before
               import.

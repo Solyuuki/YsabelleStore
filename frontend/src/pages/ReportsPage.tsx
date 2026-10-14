@@ -66,7 +66,9 @@ export function ReportsPage() {
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [exportOpen, setExportOpen] = useState(false);
   const [draftsOpen, setDraftsOpen] = useState(true);
-  const [mobileSection, setMobileSection] = useState<"overview" | "recommendations" | "planner">("overview");
+  const [mobileSection, setMobileSection] = useState<"overview" | "recommendations" | "planner">(
+    "overview"
+  );
   const [restockOrdersRefreshVersion, setRestockOrdersRefreshVersion] = useState(0);
   const restockDraftsRef = useRef<HTMLDivElement | null>(null);
 
@@ -247,7 +249,11 @@ export function ReportsPage() {
             onClick={() => setMobileSection(section)}
             type="button"
           >
-            {section === "overview" ? "Overview" : section === "recommendations" ? "Recommendations" : "Planner"}
+            {section === "overview"
+              ? "Overview"
+              : section === "recommendations"
+                ? "Recommendations"
+                : "Planner"}
           </button>
         ))}
       </nav>
@@ -278,10 +284,19 @@ export function ReportsPage() {
               ))}
             </div>
             <div className="ys-report-v2-summary-bottom">
-              <span>Expiry attention: <strong>{summary.expiry.nearExpiryBatches.toLocaleString()}</strong></span>
-              <span>Out of stock: <strong>{summary.inventory.outOfStockItems.toLocaleString()}</strong></span>
+              <span>
+                Expiry attention:{" "}
+                <strong>{summary.expiry.nearExpiryBatches.toLocaleString()}</strong>
+              </span>
+              <span>
+                Out of stock: <strong>{summary.inventory.outOfStockItems.toLocaleString()}</strong>
+              </span>
             </div>
-            <button className="ys-report-v2-view-recommendations" onClick={() => setMobileSection("recommendations")} type="button">
+            <button
+              className="ys-report-v2-view-recommendations"
+              onClick={() => setMobileSection("recommendations")}
+              type="button"
+            >
               <span>See recommendations</span>
               <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0" />
             </button>
@@ -294,7 +309,6 @@ export function ReportsPage() {
 
           <section className="ys-report-v2-recommendations space-y-3">
             <RestockForecastPanel refreshVersion={refreshVersion + restockOrdersRefreshVersion} />
-
           </section>
           <section className="ys-report-v2-planner space-y-3">
             <RestockPlanningPanel

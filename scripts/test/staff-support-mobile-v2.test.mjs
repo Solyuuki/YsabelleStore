@@ -21,7 +21,12 @@ test("Ticket details and status editor are collapsible but operational on mobile
   assert.match(page, /const \[mobileDetailsOpen, setMobileDetailsOpen\] = useState\(false\)/);
   assert.match(page, /aria-expanded=\{mobileDetailsOpen\}/);
   assert.match(page, /ys-support-mobile-ticket-details/);
-  for (const text of ['label="Customer"', 'label="Email"', 'label="Order"', 'label="Last activity"']) {
+  for (const text of [
+    'label="Customer"',
+    'label="Email"',
+    'label="Order"',
+    'label="Last activity"'
+  ]) {
     assert.ok(page.includes(text), "missing ticket fact: " + text);
   }
   assert.match(page, /statusOptions\.map\(\(status\) =>/);
@@ -47,7 +52,10 @@ test("Mobile conversation has dedicated scrolling and sticky readable compose co
   assert.match(page, /thread.scrollTop = thread.scrollHeight/);
   assert.match(css, /\.ys-support-mobile-composer\s*\{[^}]*safe-area-inset-bottom/);
   assert.match(css, /\.ys-support-mobile-ticket-details\[data-open="true"\]\s*\{/);
-  assert.match(css, /:root.dark .retail-workspace \[data-retail-module="customer-support"\] .ys-support-mobile-compose-row textarea/);
+  assert.match(
+    css,
+    /:root.dark .retail-workspace \[data-retail-module="customer-support"\] .ys-support-mobile-compose-row textarea/
+  );
   assert.match(css, /@media \(max-width: 359px\)/);
 });
 
@@ -56,7 +64,6 @@ test("Switching tickets never briefly renders another ticket's messages or statu
   assert.match(page, /detail && detail.id === selectedTicketId/);
 });
 
-
 test("status pills keep full labels and expose two-way horizontal navigation at narrow widths", () => {
   assert.match(page, /ys-support-mobile-status-toolbar/);
   assert.match(page, /ref=\{statusChipsRef\}/);
@@ -64,7 +71,10 @@ test("status pills keep full labels and expose two-way horizontal navigation at 
   assert.match(page, /scrollStatusChips\(1\)/);
   assert.match(page, /data-scrollable=\{statusChipsScroll.hasOverflow\}/);
   assert.match(css, /\.ys-support-mobile-status-toolbar\s*\{[^}]*flex-direction: column;/);
-  assert.match(css, /\.ys-support-status-scroll-buttons\[data-scrollable="false"\]\s*\{\s*display: none;/);
+  assert.match(
+    css,
+    /\.ys-support-status-scroll-buttons\[data-scrollable="false"\]\s*\{\s*display: none;/
+  );
   assert.match(css, /\.ys-support-mobile-status-toolbar, \.ys-support-mobile-status-chips/);
   assert.match(page, /aria-label="Previous status choices"/);
   assert.match(page, /aria-label="Next status choices"/);
@@ -85,19 +95,33 @@ test("support More filters stacks complete select values based on actual panel w
   assert.match(page, /aria-label=\{label\}/);
   assert.match(css, /\.ys-support-filter-select\s*\{/);
   assert.match(css, /min-height: 44px;/);
-  assert.match(css, /:root.dark .retail-workspace \[data-retail-module="customer-support"\] .ys-support-filter-select option/);
+  assert.match(
+    css,
+    /:root.dark .retail-workspace \[data-retail-module="customer-support"\] .ys-support-filter-select option/
+  );
 });
-
 
 test("Support conversation occupies the actual app workspace rather than using a hardcoded viewport subtraction", () => {
   const responsive = css.slice(css.indexOf("@media (max-width: 1024px)"));
-  assert.match(responsive, /\.retail-workspace > main\[data-retail-module="customer-support"\]\s*\{\s*display: flex;\s*flex-direction: column;\s*min-height: 0;/);
-  assert.match(responsive, /\.retail-workspace > main\[data-retail-module="customer-support"\] > div\s*\{\s*display: flex;\s*flex: 1 1 auto;\s*flex-direction: column;\s*min-height: 0;/);
+  assert.match(
+    responsive,
+    /\.retail-workspace > main\[data-retail-module="customer-support"\]\s*\{\s*display: flex;\s*flex-direction: column;\s*min-height: 0;/
+  );
+  assert.match(
+    responsive,
+    /\.retail-workspace > main\[data-retail-module="customer-support"\] > div\s*\{\s*display: flex;\s*flex: 1 1 auto;\s*flex-direction: column;\s*min-height: 0;/
+  );
   assert.match(responsive, /\.ys-support-page\s*\{[^}]*flex: 1 1 auto;/);
-  assert.match(responsive, /\.ys-support-inbox\s*\{[^}]*flex: 1 1 auto;\s*height: auto;\s*min-height: 0;/);
+  assert.match(
+    responsive,
+    /\.ys-support-inbox\s*\{[^}]*flex: 1 1 auto;\s*height: auto;\s*min-height: 0;/
+  );
   assert.doesNotMatch(responsive, /height:\s*max\(350px,\s*calc\(100dvh - 160px\)\)/);
   assert.match(responsive, /\.ys-support-inbox__conversation\s*\{[^}]*flex: 1 1 auto;/);
-  assert.match(responsive, /\.ys-support-thread\s*\{[^}]*grid-row: 3;[^}]*min-height: 0;[^}]*overflow-y: auto;/);
+  assert.match(
+    responsive,
+    /\.ys-support-thread\s*\{[^}]*grid-row: 3;[^}]*min-height: 0;[^}]*overflow-y: auto;/
+  );
   assert.match(responsive, /\.ys-support-mobile-composer\s*\{[^}]*flex: none;/);
 
   const appLayout = read("frontend/src/layouts/AppLayout.tsx");
@@ -107,10 +131,16 @@ test("Support conversation occupies the actual app workspace rather than using a
 });
 
 test("Long mobile Support conversations constrain messages to the middle grid row", () => {
-  assert.match(css, /\.ys-support-conversation-layout\s*\{[^}]*display: grid;[^}]*grid-template-rows: auto auto minmax\(0, 1fr\) auto;/);
+  assert.match(
+    css,
+    /\.ys-support-conversation-layout\s*\{[^}]*display: grid;[^}]*grid-template-rows: auto auto minmax\(0, 1fr\) auto;/
+  );
   assert.match(css, /\.ys-support-mobile-chat-header\s*\{[^}]*grid-row: 1;/);
   assert.match(css, /\.ys-support-mobile-ticket-details\[data-open="true"\]\s*\{[^}]*grid-row: 2;/);
-  assert.match(css, /\.ys-support-thread\s*\{[^}]*grid-row: 3;[^}]*min-height: 0;[^}]*overflow-y: auto;[^}]*touch-action: pan-y;/);
+  assert.match(
+    css,
+    /\.ys-support-thread\s*\{[^}]*grid-row: 3;[^}]*min-height: 0;[^}]*overflow-y: auto;[^}]*touch-action: pan-y;/
+  );
   assert.match(css, /\.ys-support-mobile-composer\s*\{[^}]*grid-row: 4;/);
   assert.match(page, /aria-label="Conversation messages"/);
   assert.match(page, /role="region"/);
@@ -127,8 +157,14 @@ test("Mobile wheel over any chat bubble scrolls the message viewport, not the ou
   assert.match(page, /thread\.scrollHeight - thread\.clientHeight/);
   assert.match(page, /event\.deltaMode === 1 \? 16/);
   assert.match(page, /event\.deltaMode === 2 \? thread\.clientHeight : 1/);
-  assert.match(page, /event\.preventDefault\(\);\s*thread\.scrollTop = Math\.max\(0, Math\.min\(maxScroll, thread\.scrollTop \+ scrollAmount\)\);/);
-  assert.match(page, /addEventListener\("wheel", wheelMessages, \{ capture: true, passive: false \}\)/);
+  assert.match(
+    page,
+    /event\.preventDefault\(\);\s*thread\.scrollTop = Math\.max\(0, Math\.min\(maxScroll, thread\.scrollTop \+ scrollAmount\)\);/
+  );
+  assert.match(
+    page,
+    /addEventListener\("wheel", wheelMessages, \{ capture: true, passive: false \}\)/
+  );
   assert.match(page, /removeEventListener\("wheel", wheelMessages, true\)/);
   assert.match(page, /event\.ctrlKey/);
   assert.match(page, /window\.matchMedia\("\(max-width: 1024px\)"\)\.matches/);

@@ -348,7 +348,11 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
             </button>
           </DialogClose>
           <DialogClose asChild>
-            <button aria-label="Close download report" className="ys-report-v2-modal-close" type="button">
+            <button
+              aria-label="Close download report"
+              className="ys-report-v2-modal-close"
+              type="button"
+            >
               <X aria-hidden="true" className="h-4 w-4" />
             </button>
           </DialogClose>
@@ -676,7 +680,9 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
         </div>
         <div className="ys-report-v2-download-footer">
           <DialogClose asChild>
-            <Button type="button" variant="secondary">Cancel</Button>
+            <Button type="button" variant="secondary">
+              Cancel
+            </Button>
           </DialogClose>
         </div>
       </DialogContent>

@@ -1360,7 +1360,6 @@ body {
   color: #cef5e5;
 }
 
-
 /* Portrait-only phone browsing guard. Ordinary browser tabs cannot force the
    operating system to rotate; this lightweight notice blocks cramped
    landscape layouts on small touch phones. Tablet landscape (>500px tall)

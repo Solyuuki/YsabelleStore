@@ -25,16 +25,38 @@ export function OrderRiderInformation({ order }: { order: StorefrontOrder }) {
         <Truck aria-hidden="true" size={19} />
         <div>
           <strong>Rider information</strong>
-          <span>{order.deliveryStatus === "DELIVERED" ? "Delivery completed" : "Your order is on the way"}</span>
+          <span>
+            {order.deliveryStatus === "DELIVERED"
+              ? "Delivery completed"
+              : "Your order is on the way"}
+          </span>
         </div>
       </div>
       <div className="customer-rider-handoff__grid">
         <div className="customer-rider-handoff__contact">
           <dl>
-            <div><dt>Delivery service</dt><dd>{order.courierProvider || "Courier"}</dd></div>
-            {order.riderName ? <div><dt>Rider</dt><dd>{order.riderName}</dd></div> : null}
-            {order.riderPhone ? <div><dt>Contact number</dt><dd className="customer-rider-handoff__phone">{order.riderPhone}</dd></div> : null}
-            {order.courierReference ? <div><dt>Booking reference</dt><dd>{order.courierReference}</dd></div> : null}
+            <div>
+              <dt>Delivery service</dt>
+              <dd>{order.courierProvider || "Courier"}</dd>
+            </div>
+            {order.riderName ? (
+              <div>
+                <dt>Rider</dt>
+                <dd>{order.riderName}</dd>
+              </div>
+            ) : null}
+            {order.riderPhone ? (
+              <div>
+                <dt>Contact number</dt>
+                <dd className="customer-rider-handoff__phone">{order.riderPhone}</dd>
+              </div>
+            ) : null}
+            {order.courierReference ? (
+              <div>
+                <dt>Booking reference</dt>
+                <dd>{order.courierReference}</dd>
+              </div>
+            ) : null}
           </dl>
           {order.riderPhone ? (
             <div className="customer-rider-handoff__actions">
@@ -46,7 +68,11 @@ export function OrderRiderInformation({ order }: { order: StorefrontOrder }) {
               </button>
             </div>
           ) : null}
-          {copyFeedback ? <p aria-live="polite" className="customer-rider-handoff__feedback">{copyFeedback}</p> : null}
+          {copyFeedback ? (
+            <p aria-live="polite" className="customer-rider-handoff__feedback">
+              {copyFeedback}
+            </p>
+          ) : null}
         </div>
         {order.customerDeliveryNote ? (
           <div className="customer-rider-handoff__note">

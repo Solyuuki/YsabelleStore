@@ -290,15 +290,20 @@ function serializeStorefrontOrder(order: StorefrontOrderRecord) {
     deliveryStatus: order.deliveryStatus,
     // Never return draft handoff data or internal staff notes to customer sessions.
     courierProvider: ["OUT_FOR_DELIVERY", "DELIVERED"].includes(order.deliveryStatus)
-      ? order.courierProvider : null,
+      ? order.courierProvider
+      : null,
     courierReference: ["OUT_FOR_DELIVERY", "DELIVERED"].includes(order.deliveryStatus)
-      ? order.courierReference : null,
+      ? order.courierReference
+      : null,
     riderName: ["OUT_FOR_DELIVERY", "DELIVERED"].includes(order.deliveryStatus)
-      ? order.riderName : null,
+      ? order.riderName
+      : null,
     riderPhone: ["OUT_FOR_DELIVERY", "DELIVERED"].includes(order.deliveryStatus)
-      ? order.riderPhone : null,
+      ? order.riderPhone
+      : null,
     customerDeliveryNote: ["OUT_FOR_DELIVERY", "DELIVERED"].includes(order.deliveryStatus)
-      ? order.customerDeliveryNote : null,
+      ? order.customerDeliveryNote
+      : null,
     dispatchedAt: order.dispatchedAt,
     deliveredAt: order.deliveredAt,
     customerConfirmedAt: order.customerConfirmedAt,

@@ -77,8 +77,12 @@ export function Toast({ onDismiss, toast }: ToastProps) {
           <Icon className="h-4 w-4" />
         </div>
         <div className="ys-status-mobile-toast__copy min-w-0 flex-1">
-          <p className="ys-status-mobile-toast__title text-sm font-semibold text-slate-950">{toast.title}</p>
-          <p className="ys-status-mobile-toast__message mt-0.5 text-sm leading-5 text-slate-600">{toast.message}</p>
+          <p className="ys-status-mobile-toast__title text-sm font-semibold text-slate-950">
+            {toast.title}
+          </p>
+          <p className="ys-status-mobile-toast__message mt-0.5 text-sm leading-5 text-slate-600">
+            {toast.message}
+          </p>
         </div>
         <Button
           aria-label={`Dismiss ${toast.title}`}

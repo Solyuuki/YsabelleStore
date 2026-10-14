@@ -2268,7 +2268,9 @@
 :root.dark [role="dialog"].ys-moderation-dialog .ys-moderation-cancel:disabled {
   opacity: 0.7;
 }
-:root.dark [role="dialog"].ys-moderation-dialog :is(.ys-moderation-cancel, .ys-moderation-confirm):focus-visible {
+:root.dark
+  [role="dialog"].ys-moderation-dialog
+  :is(.ys-moderation-cancel, .ys-moderation-confirm):focus-visible {
   outline: 2px solid #b7a7ff;
   outline-offset: 2px;
 }

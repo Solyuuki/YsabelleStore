@@ -94,8 +94,8 @@ async function measurePage(page, viewport) {
     // Use untransformed layout heights. The entrance/reveal animation scales
     // cards as they enter view and is not a structural height mismatch.
     const cardHeights = categoryCards.map((card) => card.offsetHeight);
-    const categoryImages = categoryCards.map((card) =>
-      card.querySelector(".home-category-card__visual")?.offsetHeight ?? 0
+    const categoryImages = categoryCards.map(
+      (card) => card.querySelector(".home-category-card__visual")?.offsetHeight ?? 0
     );
     const unevenHeights = (values) =>
       values.length > 1 && Math.max(...values) - Math.min(...values) > 2;
@@ -146,8 +146,7 @@ async function measurePage(page, viewport) {
         }
         if (
           label &&
-          (getComputedStyle(label).display === "none" ||
-            label.scrollWidth > label.clientWidth + 1)
+          (getComputedStyle(label).display === "none" || label.scrollWidth > label.clientWidth + 1)
         ) {
           productLayout.clippedBadges.push(index);
         }
@@ -190,9 +189,7 @@ async function measurePage(page, viewport) {
 
     const dock = document.querySelector(".customer-mobile-dock");
     const dockVisible =
-      dock &&
-      getComputedStyle(dock).display !== "none" &&
-      dock.getBoundingClientRect().height > 0;
+      dock && getComputedStyle(dock).display !== "none" && dock.getBoundingClientRect().height > 0;
 
     return {
       width: window.innerWidth,
@@ -276,7 +273,9 @@ async function checkShopAvailability(page, viewport) {
       right: rect.right,
       top: rect.top,
       bottom: rect.bottom,
-      dockTop: document.querySelector(".customer-mobile-dock")?.getBoundingClientRect().top ?? window.innerHeight,
+      dockTop:
+        document.querySelector(".customer-mobile-dock")?.getBoundingClientRect().top ??
+        window.innerHeight,
       buttons: buttons.length,
       shortButtons: buttons.filter((button) => button.getBoundingClientRect().height < 43).length
     };
@@ -318,7 +317,9 @@ async function checkShopAvailability(page, viewport) {
   }
   await trigger.click();
   await options.waitFor({ state: "visible" });
-  const checked = await options.getByRole("button", { name: "In stock" }).getAttribute("aria-pressed");
+  const checked = await options
+    .getByRole("button", { name: "In stock" })
+    .getAttribute("aria-pressed");
   if (checked !== "true") issues.push("Selected availability filter state did not persist");
   await page.keyboard.press("Escape");
   await options.waitFor({ state: "hidden", timeout: 2000 });
@@ -370,7 +371,9 @@ async function checkMobileAccountTabs(page, viewport) {
     state.contentWidth <= 0 ||
     state.contentWidth > state.layoutWidth + 2
   ) {
-    return [`Account rail still occupies mobile space at ${viewport.width}px: ${JSON.stringify(state)}`];
+    return [
+      `Account rail still occupies mobile space at ${viewport.width}px: ${JSON.stringify(state)}`
+    ];
   }
   return [];
 }
@@ -391,7 +394,9 @@ async function checkFavoritesCardDensity(page, viewport) {
         <main class="customer-account-content-v2">
           <section id="favorites-panel" class="customer-account-section">
             <div class="customer-account-favorites-grid">
-              ${Array.from({ length: 8 }, (_, index) => `
+              ${Array.from(
+                { length: 8 },
+                (_, index) => `
                 <article class="customer-product-card">
                   <div class="customer-product-card__media">
                     <a class="customer-product-card__visual-link">
@@ -404,7 +409,8 @@ async function checkFavoritesCardDensity(page, viewport) {
                     <div class="customer-product-card__price-row">₱42.00</div>
                     <div class="customer-product-card__actions"></div>
                   </div>
-                </article>`).join("")}
+                </article>`
+              ).join("")}
             </div>
           </section>
         </main>
@@ -427,7 +433,9 @@ async function checkFavoritesCardDensity(page, viewport) {
         cardCount: cards.length,
         widths: rects.map((rect) => rect.width),
         images: visuals.map((rect) => ({ width: rect.width, height: rect.height })),
-        clipped: rects.some((rect) => rect.left < gridRect.left - 1 || rect.right > gridRect.right + 1)
+        clipped: rects.some(
+          (rect) => rect.left < gridRect.left - 1 || rect.right > gridRect.right + 1
+        )
       };
     } finally {
       fixture.remove();
@@ -435,7 +443,7 @@ async function checkFavoritesCardDensity(page, viewport) {
   });
   if (!state) return ["Account favorites sizing fixture could not render"];
   const expectedColumns = viewport.width <= 640 ? 2 : viewport.width <= 1050 ? 3 : 4;
-  const expectedCardMax = (state.width / expectedColumns) + 2;
+  const expectedCardMax = state.width / expectedColumns + 2;
   if (
     state.display !== "grid" ||
     state.cardCount !== 8 ||
@@ -444,7 +452,9 @@ async function checkFavoritesCardDensity(page, viewport) {
     state.widths.some((width) => width > expectedCardMax || width < 85) ||
     state.images.some((image) => image.height <= 0 || image.height > image.width * 0.81 + 1)
   ) {
-    return [`Favorites cards are oversized or overflowing at ${viewport.width}px: ${JSON.stringify(state)}`];
+    return [
+      `Favorites cards are oversized or overflowing at ${viewport.width}px: ${JSON.stringify(state)}`
+    ];
   }
   return [];
 }
@@ -506,7 +516,10 @@ async function checkActiveDeliveryDarkContrast(page, viewport) {
     app.appendChild(fixture);
 
     const parseRGB = (value) => {
-      const matches = value.match(/[0-9.]+/g)?.slice(0, 3).map(Number);
+      const matches = value
+        .match(/[0-9.]+/g)
+        ?.slice(0, 3)
+        .map(Number);
       return matches?.length === 3 ? matches : null;
     };
     const luminosity = (rgb) => {
@@ -530,19 +543,30 @@ async function checkActiveDeliveryDarkContrast(page, viewport) {
       const checks = [
         [".customer-account-order-topline > div > span", panel.backgroundColor],
         [".customer-account-order-topline > div > strong", panel.backgroundColor],
-        [".customer-account-order-topline > .customer-delivery-status",
-          css(".customer-account-order-topline > .customer-delivery-status").backgroundColor],
+        [
+          ".customer-account-order-topline > .customer-delivery-status",
+          css(".customer-account-order-topline > .customer-delivery-status").backgroundColor
+        ],
         [".customer-account-delivery-overview > div > span", overview.backgroundColor],
         [".customer-account-delivery-overview > div > strong", overview.backgroundColor],
         [".customer-account-delivery-address", panel.backgroundColor],
-        [".customer-delivery-stepper li.is-current .customer-delivery-stepper__copy strong",
-          panel.backgroundColor],
-        [".customer-delivery-stepper li:not(.is-complete) .customer-delivery-stepper__copy strong",
-          panel.backgroundColor],
-        [".customer-delivery-stepper li:not(.is-complete) .customer-delivery-stepper__copy small",
-          panel.backgroundColor],
-        [".customer-delivery-stepper li:not(.is-complete) .customer-delivery-stepper__marker",
-          css(".customer-delivery-stepper li:not(.is-complete) .customer-delivery-stepper__marker").backgroundColor]
+        [
+          ".customer-delivery-stepper li.is-current .customer-delivery-stepper__copy strong",
+          panel.backgroundColor
+        ],
+        [
+          ".customer-delivery-stepper li:not(.is-complete) .customer-delivery-stepper__copy strong",
+          panel.backgroundColor
+        ],
+        [
+          ".customer-delivery-stepper li:not(.is-complete) .customer-delivery-stepper__copy small",
+          panel.backgroundColor
+        ],
+        [
+          ".customer-delivery-stepper li:not(.is-complete) .customer-delivery-stepper__marker",
+          css(".customer-delivery-stepper li:not(.is-complete) .customer-delivery-stepper__marker")
+            .backgroundColor
+        ]
       ];
       const card = fixture.querySelector(".customer-account-order-v2--active");
       const progress = fixture.querySelector(".customer-delivery-progress");
@@ -580,19 +604,21 @@ async function checkActiveDeliveryDarkContrast(page, viewport) {
   });
   if (!metrics) return ["Delivery tracking dark account fixture could not render"];
   const issues = [];
-  if (metrics.dark.panelBackground !== "rgb(34, 49, 73)" ||
-      metrics.dark.tileBackground !== "rgb(43, 59, 85)" ||
-      metrics.light.tileBackground === metrics.dark.tileBackground) {
+  if (
+    metrics.dark.panelBackground !== "rgb(34, 49, 73)" ||
+    metrics.dark.tileBackground !== "rgb(43, 59, 85)" ||
+    metrics.light.tileBackground === metrics.dark.tileBackground
+  ) {
     issues.push(
       "Delivery tracking dark summary tiles reverted to light-mode surfaces: " +
-      JSON.stringify({
-        selectorMatches: metrics.dark.selectorMatches,
-        documentDark: metrics.dark.documentDark,
-        lightPanel: metrics.light.panelBackground,
-        darkPanel: metrics.dark.panelBackground,
-        lightTile: metrics.light.tileBackground,
-        darkTile: metrics.dark.tileBackground
-      })
+        JSON.stringify({
+          selectorMatches: metrics.dark.selectorMatches,
+          documentDark: metrics.dark.documentDark,
+          lightPanel: metrics.light.panelBackground,
+          darkPanel: metrics.dark.panelBackground,
+          lightTile: metrics.light.tileBackground,
+          darkTile: metrics.dark.tileBackground
+        })
     );
   }
   if (viewport.width <= 720) {
@@ -648,7 +674,10 @@ async function checkDeliveryTrackingContrast(page, viewport) {
     app.appendChild(fixture);
 
     const rgb = (color) => {
-      const channels = color.match(/[0-9.]+/g)?.slice(0, 3).map(Number);
+      const channels = color
+        .match(/[0-9.]+/g)
+        ?.slice(0, 3)
+        .map(Number);
       return channels?.length === 3 ? channels : null;
     };
     const luminance = (color) => {
@@ -672,9 +701,8 @@ async function checkDeliveryTrackingContrast(page, viewport) {
           tag,
           color: style.color,
           fontSize: parseFloat(style.fontSize),
-          contrast: fg === null || bg === null
-            ? 0
-            : (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05)
+          contrast:
+            fg === null || bg === null ? 0 : (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05)
         };
       });
       return { background, results };
@@ -839,8 +867,7 @@ async function checkCheckoutContentDensity(page, viewport) {
       const padding = getComputedStyle(section);
       const width = window.innerWidth;
       const inContainer = (bounds) =>
-        bounds.left >= containerBounds.left - 1 &&
-        bounds.right <= containerBounds.right + 1;
+        bounds.left >= containerBounds.left - 1 && bounds.right <= containerBounds.right + 1;
       return {
         gutterLeft: containerBounds.left,
         gutterRight: width - containerBounds.right,
@@ -852,7 +879,8 @@ async function checkCheckoutContentDensity(page, viewport) {
         saveHeight: save.getBoundingClientRect().height,
         saveBorder: getComputedStyle(save).borderLeftWidth,
         sectionFits: inContainer(sectionBounds),
-        optionFits: optionBounds.left >= sectionBounds.left - 1 &&
+        optionFits:
+          optionBounds.left >= sectionBounds.left - 1 &&
           optionBounds.right <= sectionBounds.right + 1,
         summaryFits: inContainer(summaryBounds),
         horizontalOverflow: fixture.scrollWidth > fixture.clientWidth + 2
@@ -865,13 +893,19 @@ async function checkCheckoutContentDensity(page, viewport) {
   if (!metrics) return ["Checkout content density fixture did not render"];
   const issues = [];
   if (
-    metrics.gutterLeft < 11 || metrics.gutterRight < 11 ||
-    metrics.sectionPadding < 13 || metrics.sectionPadding > 18 ||
+    metrics.gutterLeft < 11 ||
+    metrics.gutterRight < 11 ||
+    metrics.sectionPadding < 13 ||
+    metrics.sectionPadding > 18 ||
     metrics.sectionWidth < 270 ||
-    metrics.inputHeight < 47 || metrics.inputFontSize < 16 ||
-    metrics.optionHeight < 70 || metrics.saveHeight < 43 ||
+    metrics.inputHeight < 47 ||
+    metrics.inputFontSize < 16 ||
+    metrics.optionHeight < 70 ||
+    metrics.saveHeight < 43 ||
     parseFloat(metrics.saveBorder) > 1 ||
-    !metrics.sectionFits || !metrics.optionFits || !metrics.summaryFits ||
+    !metrics.sectionFits ||
+    !metrics.optionFits ||
+    !metrics.summaryFits ||
     metrics.horizontalOverflow
   ) {
     issues.push(
@@ -890,7 +924,8 @@ async function checkCheckoutPolicySpacing(page, viewport) {
     const fixture = document.createElement("div");
     fixture.className = "customer-checkout-page";
     fixture.setAttribute("aria-hidden", "true");
-    fixture.style.cssText = "position:absolute;left:0;top:0;width:calc(100vw - 32px);visibility:hidden;pointer-events:none;z-index:-1;";
+    fixture.style.cssText =
+      "position:absolute;left:0;top:0;width:calc(100vw - 32px);visibility:hidden;pointer-events:none;z-index:-1;";
     fixture.innerHTML = `
       <aside class="customer-order-summary customer-checkout-summary">
         <div class="customer-checkout-policy-group">
@@ -915,10 +950,10 @@ async function checkCheckoutPolicySpacing(page, viewport) {
         display: groupStyle.display,
         helperMarginBottom: paragraphStyle.marginBottom,
         buttonHeight: buttonBounds.height,
-        buttonFits: buttonBounds.left >= groupBounds.left - 1 &&
-          buttonBounds.right <= groupBounds.right + 1,
-        paragraphFits: helperBounds.left >= groupBounds.left - 1 &&
-          helperBounds.right <= groupBounds.right + 1
+        buttonFits:
+          buttonBounds.left >= groupBounds.left - 1 && buttonBounds.right <= groupBounds.right + 1,
+        paragraphFits:
+          helperBounds.left >= groupBounds.left - 1 && helperBounds.right <= groupBounds.right + 1
       };
     } finally {
       fixture.remove();
@@ -965,15 +1000,21 @@ async function checkMobileCart(page, viewport) {
     return {
       count: cards.length,
       pageWidth: document.documentElement.scrollWidth,
-      hasSummary: Boolean(document.querySelector(".customer-cart-summary-stack .customer-order-summary")),
+      hasSummary: Boolean(
+        document.querySelector(".customer-cart-summary-stack .customer-order-summary")
+      ),
       results: cards.map((card) => {
         const bounds = card.getBoundingClientRect();
         const image = card.querySelector(".customer-product-visual")?.getBoundingClientRect();
         const info = card.querySelector(".customer-cart-item__info")?.getBoundingClientRect();
-        const actions = card.querySelector(".customer-cart-item__quantity")?.getBoundingClientRect();
+        const actions = card
+          .querySelector(".customer-cart-item__quantity")
+          ?.getBoundingClientRect();
         const remove = card.querySelector(".customer-cart-item__info button");
         const minus = card.querySelector(".customer-quantity button");
-        const total = card.querySelector(".customer-cart-item__quantity > strong")?.getBoundingClientRect();
+        const total = card
+          .querySelector(".customer-cart-item__quantity > strong")
+          ?.getBoundingClientRect();
         const fits = (rect) =>
           !!rect &&
           rect.left >= bounds.left - 1 &&
@@ -1002,19 +1043,22 @@ async function checkMobileCart(page, viewport) {
   }
   if (!metrics.hasSummary) issues.push("Order summary missing from multi-item cart");
   if (metrics.pageWidth > viewport.width + 1) issues.push("Multi-item cart overflows screen width");
-  if (metrics.results.some((item) =>
-    item.height > 235 ||
-    item.imageWidth > 102 ||
-    item.imageHeight > 102 ||
-    !item.imageFits ||
-    !item.infoFits ||
-    !item.actionFits ||
-    !item.totalFits ||
-    item.controlsHeight < 43 ||
-    item.removeHeight < 43 ||
-    !item.labeledRemove ||
-    item.contentOverflows
-  )) {
+  if (
+    metrics.results.some(
+      (item) =>
+        item.height > 235 ||
+        item.imageWidth > 102 ||
+        item.imageHeight > 102 ||
+        !item.imageFits ||
+        !item.infoFits ||
+        !item.actionFits ||
+        !item.totalFits ||
+        item.controlsHeight < 43 ||
+        item.removeHeight < 43 ||
+        !item.labeledRemove ||
+        item.contentOverflows
+    )
+  ) {
     issues.push("Cart line is oversized, clipped, or has unusable actions");
   }
 
@@ -1068,7 +1112,10 @@ async function checkMobileCart(page, viewport) {
 
 async function checkMobileProductDetail(page, viewport) {
   const issues = [];
-  const href = await page.locator(".customer-product-card__visual-link").first().getAttribute("href");
+  const href = await page
+    .locator(".customer-product-card__visual-link")
+    .first()
+    .getAttribute("href");
   if (!href) return ["No shop product link available for product detail QA"];
   await page.goto(new URL(href, BASE_URL).href, { waitUntil: "domcontentloaded", timeout: 20000 });
   const hero = page.locator(".customer-product-page .customer-product-visual--large");
@@ -1080,10 +1127,16 @@ async function checkMobileProductDetail(page, viewport) {
 
   const state = await page.evaluate(() => {
     const hero = document.querySelector(".customer-product-page .customer-product-visual--large");
-    const rail = document.querySelector(".customer-product-page .customer-product-size-selector__options");
+    const rail = document.querySelector(
+      ".customer-product-page .customer-product-size-selector__options"
+    );
     const options = rail ? [...rail.querySelectorAll(".customer-product-size-option")] : [];
-    const arrows = [...document.querySelectorAll(".customer-product-page .customer-product-size-selector__arrow")];
-    const relatedRail = document.querySelector(".customer-product-page .customer-related-products__viewport");
+    const arrows = [
+      ...document.querySelectorAll(".customer-product-page .customer-product-size-selector__arrow")
+    ];
+    const relatedRail = document.querySelector(
+      ".customer-product-page .customer-related-products__viewport"
+    );
     const relatedCards = relatedRail
       ? [...relatedRail.querySelectorAll(":scope > .customer-product-card")]
       : [];
@@ -1095,7 +1148,9 @@ async function checkMobileProductDetail(page, viewport) {
       )
     ];
     const arrowBounds = relatedControls.map((button) => button.getBoundingClientRect());
-    const relatedShell = document.querySelector(".customer-product-page .customer-related-products__rail-shell");
+    const relatedShell = document.querySelector(
+      ".customer-product-page .customer-related-products__rail-shell"
+    );
     const shellBounds = relatedShell?.getBoundingClientRect();
     const arrowLayout = {
       count: relatedControls.length,
@@ -1103,12 +1158,11 @@ async function checkMobileProductDetail(page, viewport) {
         relatedBounds && arrowBounds.length === 2
           ? Math.abs(
               (arrowBounds[0].left + arrowBounds[1].right) / 2 -
-              (relatedBounds.left + relatedBounds.right) / 2
+                (relatedBounds.left + relatedBounds.right) / 2
             ) < 3
           : true,
       belowCards:
-        !relatedBounds ||
-        arrowBounds.every((arrow) => arrow.top >= relatedBounds.bottom + 1),
+        !relatedBounds || arrowBounds.every((arrow) => arrow.top >= relatedBounds.bottom + 1),
       inShell:
         !!shellBounds &&
         arrowBounds.every(
@@ -1118,7 +1172,9 @@ async function checkMobileProductDetail(page, viewport) {
             arrow.bottom <= shellBounds.bottom + 1
         ),
       touchTargets: arrowBounds.every((arrow) => arrow.width >= 43 && arrow.height >= 43),
-      staticPosition: relatedControls.every((button) => getComputedStyle(button).position === "static")
+      staticPosition: relatedControls.every(
+        (button) => getComputedStyle(button).position === "static"
+      )
     };
     const relatedLayout = {
       arrowLayout,
@@ -1128,21 +1184,25 @@ async function checkMobileProductDetail(page, viewport) {
       largestImageHeight: Math.max(
         0,
         ...relatedCards.map(
-          (card) => card.querySelector(".customer-product-visual")?.getBoundingClientRect().height ?? 0
+          (card) =>
+            card.querySelector(".customer-product-visual")?.getBoundingClientRect().height ?? 0
         )
       ),
-      hasSnap: relatedRail ? getComputedStyle(relatedRail).scrollSnapType.includes("mandatory") : false,
-      canSwipe: relatedRail
-        ? relatedRail.scrollWidth > relatedRail.clientWidth + 2
+      hasSnap: relatedRail
+        ? getComputedStyle(relatedRail).scrollSnapType.includes("mandatory")
         : false,
+      canSwipe: relatedRail ? relatedRail.scrollWidth > relatedRail.clientWidth + 2 : false,
       cardOverflowsHeight: relatedCards.some((card) => card.scrollHeight > card.clientHeight + 2),
       countOfClippedActions: relatedCards.filter((card) => {
         const parent = card.getBoundingClientRect();
-        const action = card.querySelector(".customer-product-card__cart-button")?.getBoundingClientRect();
-        return action && (
-          action.left < parent.left - 1 ||
-          action.right > parent.right + 1 ||
-          action.bottom > parent.bottom + 1
+        const action = card
+          .querySelector(".customer-product-card__cart-button")
+          ?.getBoundingClientRect();
+        return (
+          action &&
+          (action.left < parent.left - 1 ||
+            action.right > parent.right + 1 ||
+            action.bottom > parent.bottom + 1)
         );
       }).length
     };
@@ -1220,13 +1280,14 @@ async function checkMobileProductDetail(page, viewport) {
     ) {
       issues.push("Related-product carousel cards are oversized, clipped or not swipeable");
     }
-    if (state.relatedLayout.arrowLayout.count === 2 && (
-      !state.relatedLayout.arrowLayout.belowCards ||
-      !state.relatedLayout.arrowLayout.inShell ||
-      !state.relatedLayout.arrowLayout.centered ||
-      !state.relatedLayout.arrowLayout.touchTargets ||
-      !state.relatedLayout.arrowLayout.staticPosition
-    )) {
+    if (
+      state.relatedLayout.arrowLayout.count === 2 &&
+      (!state.relatedLayout.arrowLayout.belowCards ||
+        !state.relatedLayout.arrowLayout.inShell ||
+        !state.relatedLayout.arrowLayout.centered ||
+        !state.relatedLayout.arrowLayout.touchTargets ||
+        !state.relatedLayout.arrowLayout.staticPosition)
+    ) {
       issues.push("Related-product arrows overlap cards or fall outside their navigation row");
     }
   }
@@ -1304,9 +1365,9 @@ async function checkMorePanel(page, viewport) {
     issues.push("More panel touches or clips the viewport edge");
   }
   if (viewport.width <= 700 && viewport.height > viewport.width) {
-    const dockTop = await page.locator(".customer-mobile-dock").evaluate(
-      (element) => element.getBoundingClientRect().top
-    );
+    const dockTop = await page
+      .locator(".customer-mobile-dock")
+      .evaluate((element) => element.getBoundingClientRect().top);
     if (rect.y + rect.height > dockTop - 6) {
       issues.push(
         `More panel overlaps dock: panelBottom=${Math.round(rect.y + rect.height)}, dockTop=${Math.round(dockTop)}`
@@ -1379,7 +1440,13 @@ async function checkRetailLoginMobile(page, viewport) {
       const element = document.querySelector(selector);
       if (!element) return null;
       const rect = element.getBoundingClientRect();
-      return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, width: rect.width };
+      return {
+        left: rect.left,
+        right: rect.right,
+        top: rect.top,
+        bottom: rect.bottom,
+        width: rect.width
+      };
     };
     const content = document.querySelector(".welcome-content");
     const intro = document.querySelector(".ys-retail-welcome__mobile-intro");
@@ -1425,7 +1492,8 @@ async function checkRetailLoginMobile(page, viewport) {
 async function checkSupportMobileLayout(page, viewport) {
   // Read-only, guest-mode browser QA: never submit a real support ticket.
   await page.locator(".customer-support-form select").waitFor({
-    state: "visible", timeout: 15000
+    state: "visible",
+    timeout: 15000
   });
 
   const dimensions = await page.evaluate(() => {
@@ -1480,7 +1548,9 @@ async function checkSupportMobileLayout(page, viewport) {
     dimensions.selectChevronRightGutter < 12 ||
     dimensions.selectChevronRightGutter > 20
   ) {
-    issues.push("Support concern selector must display exactly one non-tiled chevron 16px from the edge");
+    issues.push(
+      "Support concern selector must display exactly one non-tiled chevron 16px from the edge"
+    );
   }
   if (!dimensions.faqClosed || !dimensions.tipsClosed) {
     issues.push("Supplementary Support tips/FAQ should start collapsed on phone");
@@ -1525,7 +1595,8 @@ async function checkSupportMobileLayout(page, viewport) {
 async function checkAboutMobileIntelligence(page, viewport) {
   // Exercise the actual About screens without changing operational data.
   await page.locator(".about-forecast-demo__chart-mobile").waitFor({
-    state: "visible", timeout: 20000
+    state: "visible",
+    timeout: 20000
   });
   const picker = page.locator(".system-preview__mobile-stage-picker select");
   await picker.waitFor({ state: "visible", timeout: 20000 });
@@ -1550,8 +1621,9 @@ async function checkAboutMobileIntelligence(page, viewport) {
       legacyStageRail: metrics(".system-preview__nav ol"),
       stagePicker: metrics(".system-preview__mobile-stage-picker"),
       kpiLayout: (() => {
-        const container = Array.from(document.querySelectorAll(".system-preview__metrics"))
-          .find((node) => node.children.length === 3 && node.getBoundingClientRect().width > 0);
+        const container = Array.from(document.querySelectorAll(".system-preview__metrics")).find(
+          (node) => node.children.length === 3 && node.getBoundingClientRect().width > 0
+        );
         if (!container) return null;
         const cards = Array.from(container.children).map((node) => {
           const box = node.getBoundingClientRect();
@@ -1565,23 +1637,23 @@ async function checkAboutMobileIntelligence(page, viewport) {
   });
   const issues = [];
   if (
-    !result.chart || result.chart.display === "none" ||
-    !result.chartWrap || result.chartWrap.scrollWidth > result.chartWrap.clientWidth + 2 ||
+    !result.chart ||
+    result.chart.display === "none" ||
+    !result.chartWrap ||
+    result.chartWrap.scrollWidth > result.chartWrap.clientWidth + 2 ||
     result.desktopChart?.display !== "none"
   ) {
     issues.push("Forecast phone chart hidden or horizontally scrollable");
   }
-  if (
-    result.legacyStageRail?.display !== "none" ||
-    result.stagePicker?.display === "none"
-  ) {
+  if (result.legacyStageRail?.display !== "none" || result.stagePicker?.display === "none") {
     issues.push("System Intelligence stage picker not replacing the 7-column rail");
   }
   // All three KPIs must occupy a complete 1 + 2 layout at 320–430px.
   // Avoid relying on CSS source alone: check the rendered positions.
   const kpi = result.kpiLayout;
   if (
-    !kpi || kpi.cards.length !== 3 ||
+    !kpi ||
+    kpi.cards.length !== 3 ||
     Math.abs(kpi.cards[0].width - kpi.width) > 2 ||
     Math.abs(kpi.cards[1].top - kpi.cards[2].top) > 2 ||
     kpi.cards[0].bottom >= kpi.cards[1].top ||
@@ -1590,7 +1662,8 @@ async function checkAboutMobileIntelligence(page, viewport) {
     issues.push("Three system KPIs leave an orphaned mobile grid cell");
   }
   if (
-    !result.deliveryStage || !result.deliveryFrame ||
+    !result.deliveryStage ||
+    !result.deliveryFrame ||
     result.deliveryStage.width > viewport.width + 1 ||
     result.deliveryFrame.width > result.deliveryStage.width + 2
   ) {
@@ -1718,7 +1791,9 @@ async function run() {
             issues.push(`Document overflow: ${result.scrollWidth}px > ${viewport.width}px`);
           }
           if (result.horizontalRailsInPortrait) {
-            issues.push(`Horizontal product rails in portrait: ${result.horizontalRailsInPortrait}`);
+            issues.push(
+              `Horizontal product rails in portrait: ${result.horizontalRailsInPortrait}`
+            );
           }
           if (route === "/" && viewport.width <= 700 && viewport.height > viewport.width) {
             if (result.categoryLayout.count < 2) {

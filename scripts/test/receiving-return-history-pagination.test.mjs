@@ -22,7 +22,10 @@ test("Return History paging still loads actual return reports with abort and pag
   assert.match(dialog, /listRestockOrders\(\{ hasReturns: true, page, pageSize \}/);
   assert.match(dialog, /new AbortController\(\)/);
   assert.match(dialog, /onPageChange=\{setPage\}/);
-  assert.match(dialog, /onPageSizeChange=\{\(nextSize\) => \{\s*setPageSize\(nextSize\);\s*setPage\(1\);/);
+  assert.match(
+    dialog,
+    /onPageSizeChange=\{\(nextSize\) => \{\s*setPageSize\(nextSize\);\s*setPage\(1\);/
+  );
   assert.match(dialog, /onView\(order\)/);
   assert.match(dialog, /totalItems=\{meta\.totalItems\}/);
 });

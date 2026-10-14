@@ -293,7 +293,6 @@ test("Forecast preview is StrictMode-safe because it is a declarative DOM chart"
   assert.doesNotMatch(motion, /useEffect|requestAnimationFrame|<video/);
 });
 
-
 test("phone About experience hides only floating chapter rail, not native scrolling or GSAP scenes", () => {
   const css = read("frontend/src/styles/customer-about-premium.css");
   const discover = read("frontend/src/pages/customer/DiscoverPage.tsx");
@@ -301,7 +300,10 @@ test("phone About experience hides only floating chapter rail, not native scroll
 
   assert.ok(mobileRule, "Missing About phone progress rule");
   assert.match(mobileRule, /@media \(max-width: 700px\)/);
-  assert.match(mobileRule, /\.about-experience \.discover-progress\s*\{[^}]*display: none;[^}]*pointer-events: none;/);
+  assert.match(
+    mobileRule,
+    /\.about-experience \.discover-progress\s*\{[^}]*display: none;[^}]*pointer-events: none;/
+  );
   assert.doesNotMatch(mobileRule, /overflow:\s*hidden/);
   assert.match(css, /\.about-experience \.discover-progress\s*\{[^}]*display: block;/);
   assert.match(discover, /window\.addEventListener\("scroll", requestStoryUiUpdate/);

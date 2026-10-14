@@ -164,7 +164,13 @@ export function ProductCard({
           aria-pressed={isFavorite}
           aria-busy={isUpdatingFavorite}
           className="customer-product-card__favorite"
-          data-tooltip={isUpdatingFavorite ? "Updating favorites..." : isFavorite ? "Remove from favorites" : "Save to favorites"}
+          data-tooltip={
+            isUpdatingFavorite
+              ? "Updating favorites..."
+              : isFavorite
+                ? "Remove from favorites"
+                : "Save to favorites"
+          }
           disabled={isUpdatingFavorite}
           onClick={() => void handleFavorite()}
           type="button"
@@ -219,9 +225,7 @@ export function ProductCard({
                 className="customer-button customer-button--compact customer-product-card__cart-button"
                 data-tour={tourTarget ? "add-to-cart" : undefined}
                 aria-label={
-                  isReady
-                    ? `Add ${selectedQuantity} ${product.name} to cart`
-                    : "Cart loading"
+                  isReady ? `Add ${selectedQuantity} ${product.name} to cart` : "Cart loading"
                 }
                 disabled={!isReady}
                 onClick={handleAddToCart}

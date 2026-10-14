@@ -384,11 +384,13 @@ function AlertMetricCard({ summary }: { summary: DashboardSummary }) {
         <div className="ys-dashboard-alert-mobile">
           <strong>{alertCount.toLocaleString()}</strong>
           <span>
-            {summary.inventory.lowStockItems} low stock · {summary.expiry.nearExpiryBatches} near expiry
+            {summary.inventory.lowStockItems} low stock · {summary.expiry.nearExpiryBatches} near
+            expiry
           </span>
           {summary.inventory.outOfStockItems + summary.expiry.expiredBatches > 0 ? (
             <small>
-              {summary.inventory.outOfStockItems} out of stock · {summary.expiry.expiredBatches} expired
+              {summary.inventory.outOfStockItems} out of stock · {summary.expiry.expiredBatches}{" "}
+              expired
             </small>
           ) : null}
         </div>

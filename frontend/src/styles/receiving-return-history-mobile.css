@@ -1,7 +1,9 @@
 /* Sprint 12 Receiving: Return History pagination only.
    Dialog renders in a portal, so selectors target the dialog itself and
    never the Incoming Deliveries queue, cards, or its pagination. */
-.ys-receiving-return-history-dialog .ys-receiving-return-pagination .ys-inventory-mobile-page-label {
+.ys-receiving-return-history-dialog
+  .ys-receiving-return-pagination
+  .ys-inventory-mobile-page-label {
   display: none;
 }
 
@@ -55,11 +57,19 @@
   }
 
   /* Retain native accessible "Rows per page" label, hide its long visual copy. */
-  [role="dialog"].ys-receiving-return-history-dialog .ys-receiving-return-pagination > div > label > span {
+  [role="dialog"].ys-receiving-return-history-dialog
+    .ys-receiving-return-pagination
+    > div
+    > label
+    > span {
     display: none;
   }
 
-  [role="dialog"].ys-receiving-return-history-dialog .ys-receiving-return-pagination > div > label > select {
+  [role="dialog"].ys-receiving-return-history-dialog
+    .ys-receiving-return-pagination
+    > div
+    > label
+    > select {
     width: 4rem;
     min-width: 0;
     height: 40px;
@@ -81,11 +91,15 @@
     gap: 0.2rem;
   }
 
-  [role="dialog"].ys-receiving-return-history-dialog .ys-receiving-return-pagination .ys-inventory-page-token {
+  [role="dialog"].ys-receiving-return-history-dialog
+    .ys-receiving-return-pagination
+    .ys-inventory-page-token {
     display: none;
   }
 
-  [role="dialog"].ys-receiving-return-history-dialog .ys-receiving-return-pagination .ys-inventory-mobile-page-label {
+  [role="dialog"].ys-receiving-return-history-dialog
+    .ys-receiving-return-pagination
+    .ys-inventory-mobile-page-label {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -128,20 +142,28 @@
 /* Preserve dark-mode contrast for the portaled return-history dialog,
    including the native page-size options (Select normally forces light). */
 :root.dark[data-appearance-scope="retail"]
-  [role="dialog"].ys-receiving-return-history-dialog .ys-receiving-return-pagination {
+  [role="dialog"].ys-receiving-return-history-dialog
+  .ys-receiving-return-pagination {
   background: #24354f !important;
   border-color: #566e8e !important;
 }
 
 :root.dark[data-appearance-scope="retail"]
-  [role="dialog"].ys-receiving-return-history-dialog .ys-receiving-return-pagination > p,
+  [role="dialog"].ys-receiving-return-history-dialog
+  .ys-receiving-return-pagination
+  > p,
 :root.dark[data-appearance-scope="retail"]
-  [role="dialog"].ys-receiving-return-history-dialog .ys-receiving-return-pagination > div > label {
+  [role="dialog"].ys-receiving-return-history-dialog
+  .ys-receiving-return-pagination
+  > div
+  > label {
   color: #d5e1f3 !important;
 }
 
 :root.dark[data-appearance-scope="retail"]
-  [role="dialog"].ys-receiving-return-history-dialog .ys-receiving-return-pagination select {
+  [role="dialog"].ys-receiving-return-history-dialog
+  .ys-receiving-return-pagination
+  select {
   background-color: #2c3f5b !important;
   border-color: #7186a5 !important;
   color: #f3f6ff !important;
@@ -149,14 +171,19 @@
 }
 
 :root.dark[data-appearance-scope="retail"]
-  [role="dialog"].ys-receiving-return-history-dialog .ys-receiving-return-pagination select option {
+  [role="dialog"].ys-receiving-return-history-dialog
+  .ys-receiving-return-pagination
+  select
+  option {
   background: #20314a;
   color: #f4f7ff;
 }
 
 :root.dark[data-appearance-scope="retail"]
   [role="dialog"].ys-receiving-return-history-dialog
-  .ys-receiving-return-pagination nav button:not(:disabled) {
+  .ys-receiving-return-pagination
+  nav
+  button:not(:disabled) {
   background: #2c3f5b !important;
   border-color: #667e9f !important;
   color: #f4f7ff !important;
@@ -164,12 +191,17 @@
 
 :root.dark[data-appearance-scope="retail"]
   [role="dialog"].ys-receiving-return-history-dialog
-  .ys-receiving-return-pagination nav button:not(:disabled):hover {
+  .ys-receiving-return-pagination
+  nav
+  button:not(:disabled):hover {
   background: #3b5071 !important;
 }
 
 :root.dark[data-appearance-scope="retail"]
-  [role="dialog"].ys-receiving-return-history-dialog .ys-receiving-return-pagination nav button:disabled {
+  [role="dialog"].ys-receiving-return-history-dialog
+  .ys-receiving-return-pagination
+  nav
+  button:disabled {
   background: #26384f !important;
   border-color: #556c89 !important;
   color: #c1cfe4 !important;
@@ -178,7 +210,8 @@
 
 :root.dark[data-appearance-scope="retail"]
   [role="dialog"].ys-receiving-return-history-dialog
-  .ys-receiving-return-pagination .ys-inventory-mobile-page-label {
+  .ys-receiving-return-pagination
+  .ys-inventory-mobile-page-label {
   background: #5147d9 !important;
   color: #fff !important;
 }

@@ -1,14 +1,15 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-const read = path => readFileSync(new URL("../../"+path, import.meta.url), "utf8");
+const read = (path) => readFileSync(new URL("../../" + path, import.meta.url), "utf8");
 const page = read("frontend/src/pages/ReceivingPage.tsx");
 const css = read("frontend/src/styles/retail-receiving-mobile-v2.css");
 
 test("Receiving v2 mobile overview is compact and preserves the three active queue views", () => {
   assert.match(page, /ys-receiving-v2-summary/);
   assert.match(page, /ys-receiving-v2-stat-mobile/);
-  for(const view of ["ready","partial","history"]) assert.ok(page.includes('changeView("'+view+'")'));
+  for (const view of ["ready", "partial", "history"])
+    assert.ok(page.includes('changeView("' + view + '")'));
   assert.match(page, /ys-receiving-v2-stat-desktop/);
   assert.match(css, /\.ys-receiving-v2-stat-mobile\s*\{[^}]*min-height: 68px;/);
   assert.match(css, /\.ys-receiving-v2-stat-desktop\s*\{\s*display: none;/);
@@ -41,7 +42,10 @@ test("Mobile ticket item cards show full product, sku, and distinct expected/rem
   assert.match(page, /ys-receiving-v2-mobile-sku/);
   assert.match(page, /line\.requestedQuantity\.toLocaleString\(\)/);
   assert.match(page, /remainingQuantity\(line\)\.toLocaleString\(\)/);
-  assert.match(css, /\.ys-receiving-v2-item-quantities\s*\{[^}]*grid-template-columns: repeat\(2,minmax\(0,1fr\)\);/);
+  assert.match(
+    css,
+    /\.ys-receiving-v2-item-quantities\s*\{[^}]*grid-template-columns: repeat\(2,minmax\(0,1fr\)\);/
+  );
 });
 test("Compact Receiving pagination retains server page and page-size controls", () => {
   assert.match(page, /className="ys-receiving-v2-pagination m-4"/);
@@ -53,10 +57,18 @@ test("Compact Receiving pagination retains server page and page-size controls", 
 });
 test("Receiving operational backend actions, validations, and modal scroll are retained", () => {
   for (const fragment of [
-    "listRestockOrders(","initialReceiptRows(","cancelRestockOrder(","receiveRestockOrder(",
-    "buildReceiptPayload(","confirmReceipt(","ArrivalOptions onSelect={startReceipt}",
-    "ReceiptEditor","LotExpiryDialog","ReturnReportDialog",
-  ]) assert.ok(page.includes(fragment), fragment);
+    "listRestockOrders(",
+    "initialReceiptRows(",
+    "cancelRestockOrder(",
+    "receiveRestockOrder(",
+    "buildReceiptPayload(",
+    "confirmReceipt(",
+    "ArrivalOptions onSelect={startReceipt}",
+    "ReceiptEditor",
+    "LotExpiryDialog",
+    "ReturnReportDialog"
+  ])
+    assert.ok(page.includes(fragment), fragment);
   assert.match(page, /ys-receiving-v2-dialog-body/);
   assert.match(css, /grid-template-rows: auto minmax\(0,1fr\) auto;/);
   assert.match(css, /overscroll-behavior-y: contain;/);

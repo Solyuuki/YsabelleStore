@@ -38,7 +38,10 @@ export function RetailReceiptDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={cn("flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[820px] flex-col overflow-hidden p-0", className)}
+        className={cn(
+          "flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[820px] flex-col overflow-hidden p-0",
+          className
+        )}
         aria-describedby="retail-receipt-dialog-description"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5">
@@ -59,7 +62,12 @@ export function RetailReceiptDialog({
 
         <DialogFooter className="ys-sales-print-footer border-t border-slate-200 px-6 py-5">
           <DialogClose asChild>
-            <Button className="ys-sales-print-close" disabled={isPrinting} type="button" variant="secondary">
+            <Button
+              className="ys-sales-print-close"
+              disabled={isPrinting}
+              type="button"
+              variant="secondary"
+            >
               Close
             </Button>
           </DialogClose>

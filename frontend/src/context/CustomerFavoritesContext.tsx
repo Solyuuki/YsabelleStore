@@ -92,8 +92,7 @@ export function CustomerFavoritesProvider({ children }: { children: ReactNode })
       } catch (error) {
         if (
           error instanceof CustomerAccountRequestError &&
-          (error.code === "CUSTOMER_SESSION_REQUIRED" ||
-            error.code === "CUSTOMER_SESSION_INVALID")
+          (error.code === "CUSTOMER_SESSION_REQUIRED" || error.code === "CUSTOMER_SESSION_INVALID")
         ) {
           // An expired server session can lag behind the client-side auth state.
           // Refresh it and request login instead of reporting a connection error.

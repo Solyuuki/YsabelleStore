@@ -290,7 +290,6 @@
   }
 }
 
-
 /* Sprint 12: true phone popover composition. Driver.js positions the guide
    against the highlighted element; only the popover internals change.
    Keep stage spotlight, scroll settle and step transition animations intact. */

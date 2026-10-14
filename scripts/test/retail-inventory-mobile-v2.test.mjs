@@ -102,10 +102,16 @@ test("Inventory mobile search hint remains fully visible with an accessible full
 
 test("narrow Inventory toolbar reserves readable search width by using an accessible icon-only filter", () => {
   assert.match(inventory, /placeholder="Search products"/);
-  assert.match(inventory, /aria-label=\{mobileFiltersOpen \? "Hide inventory filters" : "Show inventory filters"\}/);
+  assert.match(
+    inventory,
+    /aria-label=\{mobileFiltersOpen \? "Hide inventory filters" : "Show inventory filters"\}/
+  );
   assert.match(css, /@media \(max-width: 479px\)/);
   assert.match(css, /grid-template-columns: minmax\(0, 1fr\) 44px;/);
-  assert.match(css, /\.retail-inventory-filter-toggle > span:not\(\.retail-inventory-filter-count\)/);
+  assert.match(
+    css,
+    /\.retail-inventory-filter-toggle > span:not\(\.retail-inventory-filter-count\)/
+  );
   assert.match(css, /\.retail-inventory-filter-toggle-chevron\s*\{\s*display: none;/);
   assert.match(css, /\.retail-inventory-filter-count\s*\{\s*position: absolute;/);
 });
@@ -113,12 +119,23 @@ test("narrow Inventory toolbar reserves readable search width by using an access
 test("Inventory toolbar stacks search above Filters when the usable content width is small", () => {
   assert.match(css, /container: inventory-panel \/ inline-size;/);
   assert.match(css, /@container inventory-panel \(max-width: 345px\)/);
-  assert.match(css, /\.retail-inventory-toolbar > \.ys-inventory-search\s*\{\s*grid-column: 1;\s*grid-row: 1;/);
-  assert.match(css, /\.retail-inventory-toolbar > \.retail-inventory-filter-toggle\s*\{\s*grid-column: 1;\s*grid-row: 2;/);
-  assert.match(css, /\.retail-inventory-toolbar > \.retail-inventory-filter-panel\s*\{\s*grid-column: 1;\s*grid-row: 3;/);
-  assert.match(css, /\.retail-inventory-filter-toggle > span:not\(\.retail-inventory-filter-count\)/);
+  assert.match(
+    css,
+    /\.retail-inventory-toolbar > \.ys-inventory-search\s*\{\s*grid-column: 1;\s*grid-row: 1;/
+  );
+  assert.match(
+    css,
+    /\.retail-inventory-toolbar > \.retail-inventory-filter-toggle\s*\{\s*grid-column: 1;\s*grid-row: 2;/
+  );
+  assert.match(
+    css,
+    /\.retail-inventory-toolbar > \.retail-inventory-filter-panel\s*\{\s*grid-column: 1;\s*grid-row: 3;/
+  );
+  assert.match(
+    css,
+    /\.retail-inventory-filter-toggle > span:not\(\.retail-inventory-filter-count\)/
+  );
 });
-
 
 test("Inventory mobile stock actions display history in a compact header and two role-gated buttons", () => {
   const start = inventory.indexOf('className="ys-inventory-details-footer');
@@ -137,5 +154,8 @@ test("Inventory mobile stock actions display history in a compact header and two
   assert.match(actions, /disabled=\{!inventory \|\| isLoading \|\| mutationPending\}/);
   assert.match(css, /\.ys-inventory-stock-actions-head \{ display: contents; \}/);
   assert.match(css, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
-  assert.match(css, /:root\.dark\[data-appearance-scope="retail"\] \.ys-inventory-details-modal \.ys-inventory-history-action/);
+  assert.match(
+    css,
+    /:root\.dark\[data-appearance-scope="retail"\] \.ys-inventory-details-modal \.ys-inventory-history-action/
+  );
 });

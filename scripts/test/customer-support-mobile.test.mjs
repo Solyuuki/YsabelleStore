@@ -13,17 +13,32 @@ test("support concern dropdown uses one chevron with an edge-safe gutter in both
   assert.match(page, /import "@\/styles\/customer-support-mobile\.css"/);
   assert.match(page, /className="customer-support-select-wrap"/);
   assert.match(page, /<select\s+onChange=/);
-  assert.match(page, /<ChevronDown[\s\S]*?className="customer-support-select-chevron"[\s\S]*?size=\{18\}/);
+  assert.match(
+    page,
+    /<ChevronDown[\s\S]*?className="customer-support-select-chevron"[\s\S]*?size=\{18\}/
+  );
   assert.equal(
     (page.match(/className="customer-support-select-chevron"/g) ?? []).length,
     1,
     "Exactly one real SVG arrow must be mounted"
   );
-  assert.match(css, /\.customer-support-select-wrap select\s*\{[^}]*appearance: none;[^}]*padding-right: 3rem;[^}]*background-image: none !important;/);
-  assert.match(css, /\.customer-support-select-chevron\s*\{[^}]*position: absolute;[^}]*right: 1rem;[^}]*pointer-events: none;/);
-  assert.match(css, /:root\.dark \.customer-app \.customer-support-select-wrap \.customer-support-select-chevron\s*\{[^}]*color: #d8e5fb;/);
+  assert.match(
+    css,
+    /\.customer-support-select-wrap select\s*\{[^}]*appearance: none;[^}]*padding-right: 3rem;[^}]*background-image: none !important;/
+  );
+  assert.match(
+    css,
+    /\.customer-support-select-chevron\s*\{[^}]*position: absolute;[^}]*right: 1rem;[^}]*pointer-events: none;/
+  );
+  assert.match(
+    css,
+    /:root\.dark \.customer-app \.customer-support-select-wrap \.customer-support-select-chevron\s*\{[^}]*color: #d8e5fb;/
+  );
   assert.doesNotMatch(css, /background-image: url\(/);
-  assert.match(contrast, /customer-support-form :is\(input, select, textarea\)\s*\{[^}]*background: #17243a;/);
+  assert.match(
+    contrast,
+    /customer-support-form :is\(input, select, textarea\)\s*\{[^}]*background: #17243a;/
+  );
   assert.match(theme, /\.customer-support-form select,[\s\S]*?background: #152139;/);
 });
 
@@ -36,11 +51,23 @@ test("mobile contact support stays form-first with optional verified-contact sum
   assert.match(page, /customer-support-form__verified-fields/);
   assert.match(page, /customer-support-form__verified-phone/);
   assert.match(css, /@media \(max-width: 700px\)/);
-  assert.match(css, /\.customer-app \.customer-support-form__verified-fields,[\s\S]*?\.customer-app \.customer-support-form__verified-phone,[\s\S]*?\{\s*display: none;/);
-  assert.match(css, /\.customer-app \.customer-support-account-note__mobile\s*\{[^}]*display: grid;/);
-  assert.match(css, /\.customer-app \.customer-support-form :is\(input, select\)\s*\{[^}]*min-height: 46px;/);
+  assert.match(
+    css,
+    /\.customer-app \.customer-support-form__verified-fields,[\s\S]*?\.customer-app \.customer-support-form__verified-phone,[\s\S]*?\{\s*display: none;/
+  );
+  assert.match(
+    css,
+    /\.customer-app \.customer-support-account-note__mobile\s*\{[^}]*display: grid;/
+  );
+  assert.match(
+    css,
+    /\.customer-app \.customer-support-form :is\(input, select\)\s*\{[^}]*min-height: 46px;/
+  );
   assert.match(css, /\.customer-app \.customer-support-form textarea\s*\{[^}]*min-height: 136px;/);
-  assert.match(css, /\.customer-app \.customer-support-submit\s*\{[^}]*width: 100%;[^}]*min-height: 46px;/);
+  assert.match(
+    css,
+    /\.customer-app \.customer-support-submit\s*\{[^}]*width: 100%;[^}]*min-height: 46px;/
+  );
   assert.match(css, /\.customer-app \.customer-support-hero__card\s*\{\s*display: none;/);
 });
 
@@ -58,10 +85,22 @@ test("supplemental help remains accessible, while the mobile FAQ and tips start 
   assert.match(page, /setShowSupportFaq\(\(open\) => !open\)/);
   assert.match(page, /FAQS\.map\(\(faq\) =>/);
   assert.match(css, /\.customer-app \.customer-support-faq__list\s*\{\s*display: none;/);
-  assert.match(css, /\.customer-app \.customer-support-faq\[data-mobile-open="true"\] \.customer-support-faq__list\s*\{\s*display: grid;/);
-  assert.match(css, /\.customer-app \.customer-support-sidebar\[data-mobile-open="true"\] \.customer-support-sidebar__content\s*\{\s*display: grid;/);
-  assert.match(css, /\.customer-app \.customer-support-mobile-disclosure:focus-visible\s*\{[^}]*outline: 3px/);
-  assert.match(css, /:root\.dark \.customer-app \.customer-support-mobile-disclosure\s*\{[^}]*color: #eef3ff;/);
+  assert.match(
+    css,
+    /\.customer-app \.customer-support-faq\[data-mobile-open="true"\] \.customer-support-faq__list\s*\{\s*display: grid;/
+  );
+  assert.match(
+    css,
+    /\.customer-app \.customer-support-sidebar\[data-mobile-open="true"\] \.customer-support-sidebar__content\s*\{\s*display: grid;/
+  );
+  assert.match(
+    css,
+    /\.customer-app \.customer-support-mobile-disclosure:focus-visible\s*\{[^}]*outline: 3px/
+  );
+  assert.match(
+    css,
+    /:root\.dark \.customer-app \.customer-support-mobile-disclosure\s*\{[^}]*color: #eef3ff;/
+  );
 });
 
 test("support request validation, guest contact fields and reference remain operational", () => {

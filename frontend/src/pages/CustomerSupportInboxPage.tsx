@@ -234,7 +234,8 @@ export function CustomerSupportInboxPage() {
           setSelectedTicketId((current) => {
             if (
               current &&
-              (mobileConversationOpenRef.current || result.items.some((ticket) => ticket.id === current))
+              (mobileConversationOpenRef.current ||
+                result.items.some((ticket) => ticket.id === current))
             ) {
               return current;
             }
@@ -391,28 +392,28 @@ export function CustomerSupportInboxPage() {
   return (
     <div className="ys-support-page">
       <div className="ys-support-desktop-page-header">
-      <PageHeader
-        actions={
-          <>
-            <StatusBadge variant={gmailStatus?.configured ? "success" : "warning"}>
-              {gmailStatus?.configured ? "Gmail connected" : "Gmail setup required"}
-            </StatusBadge>
-            <Button
-              onClick={() => void refreshSupportInbox()}
-              disabled={syncingInbox}
-              size="sm"
-              type="button"
-              variant="secondary"
-            >
-              <RefreshCw className="h-4 w-4" aria-hidden="true" />
-              {syncingInbox ? "Syncing..." : "Refresh"}
-            </Button>
-          </>
-        }
-        description="Review customer concerns, keep conversation history together, and manage ticket lifecycle from one staff workspace."
-        eyebrow="Customer care"
-        title="Support"
-      />
+        <PageHeader
+          actions={
+            <>
+              <StatusBadge variant={gmailStatus?.configured ? "success" : "warning"}>
+                {gmailStatus?.configured ? "Gmail connected" : "Gmail setup required"}
+              </StatusBadge>
+              <Button
+                onClick={() => void refreshSupportInbox()}
+                disabled={syncingInbox}
+                size="sm"
+                type="button"
+                variant="secondary"
+              >
+                <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                {syncingInbox ? "Syncing..." : "Refresh"}
+              </Button>
+            </>
+          }
+          description="Review customer concerns, keep conversation history together, and manage ticket lifecycle from one staff workspace."
+          eyebrow="Customer care"
+          title="Support"
+        />
       </div>
 
       {error ? (
@@ -424,12 +425,22 @@ export function CustomerSupportInboxPage() {
         </div>
       ) : null}
 
-      <section className="ys-support-inbox grid h-[clamp(740px,calc(100dvh-13.5rem),880px)] min-h-[680px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:grid-cols-[390px_minmax(0,1fr)]" data-mobile-conversation={mobileConversationOpen}>
+      <section
+        className="ys-support-inbox grid h-[clamp(740px,calc(100dvh-13.5rem),880px)] min-h-[680px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:grid-cols-[390px_minmax(0,1fr)]"
+        data-mobile-conversation={mobileConversationOpen}
+      >
         <aside className="ys-support-list-panel flex min-h-0 flex-col border-b border-slate-200 xl:border-b-0 xl:border-r">
           <div className="ys-support-mobile-inbox-heading">
             <h2>Support</h2>
             <span>{gmailStatus?.configured ? "Gmail connected" : "Gmail unavailable"}</span>
-            <button aria-label="Refresh support inbox" disabled={syncingInbox} onClick={() => void refreshSupportInbox()} type="button"><RefreshCw className="h-4 w-4" aria-hidden="true" /></button>
+            <button
+              aria-label="Refresh support inbox"
+              disabled={syncingInbox}
+              onClick={() => void refreshSupportInbox()}
+              type="button"
+            >
+              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+            </button>
           </div>
           <div className="ys-support-list-filters space-y-3 border-b border-slate-200 p-4">
             <div className="relative">
@@ -460,7 +471,10 @@ export function CustomerSupportInboxPage() {
                     aria-pressed={statusFilter === filter}
                     className="ys-support-status-chip"
                     key={filter}
-                    onClick={() => { setStatusFilter(filter); resetToFirstPage(); }}
+                    onClick={() => {
+                      setStatusFilter(filter);
+                      resetToFirstPage();
+                    }}
                     type="button"
                   >
                     {filter === "ALL" ? "All" : STATUS_LABELS[filter]}
@@ -492,12 +506,21 @@ export function CustomerSupportInboxPage() {
                 </button>
               </div>
             </div>
-            <button aria-controls="ys-support-extra-filters" aria-expanded={mobileFiltersOpen}
-              className="ys-support-mobile-filter-toggle" onClick={() => setMobileFiltersOpen((value) => !value)} type="button">
+            <button
+              aria-controls="ys-support-extra-filters"
+              aria-expanded={mobileFiltersOpen}
+              className="ys-support-mobile-filter-toggle"
+              onClick={() => setMobileFiltersOpen((value) => !value)}
+              type="button"
+            >
               <SlidersHorizontal aria-hidden="true" className="h-4 w-4" /> More filters
               <ChevronDown aria-hidden="true" className="h-4 w-4" />
             </button>
-            <div className="ys-support-filter-row grid grid-cols-2 gap-2" data-open={mobileFiltersOpen} id="ys-support-extra-filters">
+            <div
+              className="ys-support-filter-row grid grid-cols-2 gap-2"
+              data-open={mobileFiltersOpen}
+              id="ys-support-extra-filters"
+            >
               <FilterSelect
                 label="Status"
                 onChange={(value) => {
@@ -681,12 +704,16 @@ function TicketListItem({
       type="button"
     >
       <div className="ys-support-ticket-line flex items-start justify-between gap-3">
-        <span className="ys-support-ticket-avatar" aria-hidden="true">{ticket.customerName.trim().charAt(0).toUpperCase() || "?"}</span>
+        <span className="ys-support-ticket-avatar" aria-hidden="true">
+          {ticket.customerName.trim().charAt(0).toUpperCase() || "?"}
+        </span>
         <div className="ys-support-ticket-main min-w-0">
           <p className="ys-support-ticket-number truncate text-xs font-bold tracking-wide text-indigo-700">
             {ticket.ticketNumber}
           </p>
-          <p className="ys-support-ticket-subject mt-1 truncate text-sm font-semibold text-slate-950">{ticket.subject}</p>
+          <p className="ys-support-ticket-subject mt-1 truncate text-sm font-semibold text-slate-950">
+            {ticket.subject}
+          </p>
         </div>
         <SupportStatusBadge status={ticket.status} />
       </div>
@@ -772,7 +799,8 @@ function SupportConversation({
       const maxScroll = Math.max(0, thread.scrollHeight - thread.clientHeight);
       if (maxScroll <= 1 || Math.abs(event.deltaY) < Math.abs(event.deltaX)) return;
 
-      const multiplier = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? thread.clientHeight : 1;
+      const multiplier =
+        event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? thread.clientHeight : 1;
       const scrollAmount = event.deltaY * multiplier;
       if (Math.abs(scrollAmount) < 0.01) return;
 
@@ -791,39 +819,84 @@ function SupportConversation({
   }, [detail.id, detail.messages.length]);
 
   return (
-    <div className="ys-support-conversation-layout flex h-full min-h-0 flex-col" ref={mobileConversationRef}>
+    <div
+      className="ys-support-conversation-layout flex h-full min-h-0 flex-col"
+      ref={mobileConversationRef}
+    >
       <div className="ys-support-mobile-chat-header">
-        <button aria-label="Back to conversations" className="ys-support-mobile-chat-back" onClick={onBack} type="button">
+        <button
+          aria-label="Back to conversations"
+          className="ys-support-mobile-chat-back"
+          onClick={onBack}
+          type="button"
+        >
           <ArrowLeft aria-hidden="true" className="h-5 w-5" />
         </button>
-        <span className="ys-support-mobile-chat-avatar" aria-hidden="true">{detail.customerName.trim().charAt(0).toUpperCase() || "?"}</span>
+        <span className="ys-support-mobile-chat-avatar" aria-hidden="true">
+          {detail.customerName.trim().charAt(0).toUpperCase() || "?"}
+        </span>
         <div className="ys-support-mobile-chat-title">
           <strong>{detail.subject}</strong>
-          <span>{detail.ticketNumber} · {STATUS_LABELS[detail.status]}</span>
+          <span>
+            {detail.ticketNumber} · {STATUS_LABELS[detail.status]}
+          </span>
         </div>
-        <button aria-controls={`support-details-${detail.id}`} aria-expanded={mobileDetailsOpen}
-          aria-label={mobileDetailsOpen ? "Hide ticket details and status" : "Show ticket details and status"}
-          className="ys-support-mobile-info" onClick={() => setMobileDetailsOpen((value) => !value)} type="button">
+        <button
+          aria-controls={`support-details-${detail.id}`}
+          aria-expanded={mobileDetailsOpen}
+          aria-label={
+            mobileDetailsOpen ? "Hide ticket details and status" : "Show ticket details and status"
+          }
+          className="ys-support-mobile-info"
+          onClick={() => setMobileDetailsOpen((value) => !value)}
+          type="button"
+        >
           <Info aria-hidden="true" className="h-5 w-5" />
         </button>
       </div>
-      <section aria-label="Ticket details and status" className="ys-support-mobile-ticket-details"
-        data-open={mobileDetailsOpen} id={`support-details-${detail.id}`}>
+      <section
+        aria-label="Ticket details and status"
+        className="ys-support-mobile-ticket-details"
+        data-open={mobileDetailsOpen}
+        id={`support-details-${detail.id}`}
+      >
         <div className="ys-support-mobile-ticket-meta">
           <SupportFact icon={UserRound} label="Customer" value={detail.customerName} />
           <SupportFact icon={Mail} label="Email" value={detail.customerEmail} />
-          <SupportFact icon={PackageSearch} label="Order" value={detail.customerOrder?.orderNumber ?? "Not linked"} />
-          <SupportFact icon={Clock3} label="Last activity" value={formatDateTime(detail.lastMessageAt)} />
+          <SupportFact
+            icon={PackageSearch}
+            label="Order"
+            value={detail.customerOrder?.orderNumber ?? "Not linked"}
+          />
+          <SupportFact
+            icon={Clock3}
+            label="Last activity"
+            value={formatDateTime(detail.lastMessageAt)}
+          />
         </div>
         <div className="ys-support-mobile-status-editor">
           <label className="grid min-w-0 flex-1 gap-1 text-xs font-medium text-slate-500">
             <span>Ticket status</span>
-            <select aria-label="Ticket status" className="ys-retail-select-chevron h-10 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
-              disabled={statusSaving} onChange={(event) => onStatusChange(event.target.value as StaffSupportStatus)} value={statusDraft}>
-              {statusOptions.map((status) => <option key={status} value={status}>{STATUS_LABELS[status]}</option>)}
+            <select
+              aria-label="Ticket status"
+              className="ys-retail-select-chevron h-10 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+              disabled={statusSaving}
+              onChange={(event) => onStatusChange(event.target.value as StaffSupportStatus)}
+              value={statusDraft}
+            >
+              {statusOptions.map((status) => (
+                <option key={status} value={status}>
+                  {STATUS_LABELS[status]}
+                </option>
+              ))}
             </select>
           </label>
-          <Button disabled={!statusChanged || statusSaving} onClick={onStatusSave} size="sm" type="button">
+          <Button
+            disabled={!statusChanged || statusSaving}
+            onClick={onStatusSave}
+            size="sm"
+            type="button"
+          >
             {statusSaving ? "Saving..." : "Update"}
           </Button>
         </div>
@@ -907,16 +980,36 @@ function SupportConversation({
 
       <form className="ys-support-mobile-composer" onSubmit={onReplySubmit}>
         {detail.status === "CLOSED" ? (
-          <button className="ys-support-mobile-reopen" disabled={statusSaving} onClick={onReopen} type="button">
-            <RotateCcw aria-hidden="true" className="h-4 w-4" /> {statusSaving ? "Reopening..." : "Reopen this ticket to reply"}
+          <button
+            className="ys-support-mobile-reopen"
+            disabled={statusSaving}
+            onClick={onReopen}
+            type="button"
+          >
+            <RotateCcw aria-hidden="true" className="h-4 w-4" />{" "}
+            {statusSaving ? "Reopening..." : "Reopen this ticket to reply"}
           </button>
         ) : !gmailConfigured ? (
-          <p className="ys-support-mobile-email-warning">Gmail must be connected before a customer reply can be sent.</p>
+          <p className="ys-support-mobile-email-warning">
+            Gmail must be connected before a customer reply can be sent.
+          </p>
         ) : (
           <div className="ys-support-mobile-compose-row">
-            <Textarea aria-label="Write a support reply" disabled={replySaving} maxLength={5000}
-              onChange={(event) => onReplyChange(event.target.value)} placeholder="Message customer..." rows={1} value={reply} />
-            <Button aria-label="Send customer reply" disabled={replySaving || !reply.trim()} size="icon" type="submit">
+            <Textarea
+              aria-label="Write a support reply"
+              disabled={replySaving}
+              maxLength={5000}
+              onChange={(event) => onReplyChange(event.target.value)}
+              placeholder="Message customer..."
+              rows={1}
+              value={reply}
+            />
+            <Button
+              aria-label="Send customer reply"
+              disabled={replySaving || !reply.trim()}
+              size="icon"
+              type="submit"
+            >
               <Send aria-hidden="true" className="h-4 w-4" />
             </Button>
           </div>

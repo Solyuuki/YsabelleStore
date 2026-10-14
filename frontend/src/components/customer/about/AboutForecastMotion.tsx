@@ -163,10 +163,7 @@ export function AboutForecastMotion() {
                 y1="22"
                 y2="159"
               />
-              <path
-                className="about-forecast-demo__actual-line"
-                d="M16 144 L75 119 L134 95"
-              />
+              <path className="about-forecast-demo__actual-line" d="M16 144 L75 119 L134 95" />
               <path
                 className="about-forecast-demo__forecast-line"
                 d="M134 95 L190 74 L248 50 L304 35"
@@ -175,12 +172,24 @@ export function AboutForecastMotion() {
               <circle cx="134" cy="95" r="4.5" fill="#23b4ae" />
               <circle cx="304" cy="35" r="5" fill="#aa91ff" />
               <g className="about-forecast-demo__mobile-chart-labels">
-                <text x="16" y="166">2023</text>
-                <text x="139" y="166">2025</text>
-                <text x="271" y="166">2028</text>
-                <text x="16" y="136">18.4k</text>
-                <text x="139" y="88">24.1k</text>
-                <text x="267" y="25">31.1k</text>
+                <text x="16" y="166">
+                  2023
+                </text>
+                <text x="139" y="166">
+                  2025
+                </text>
+                <text x="271" y="166">
+                  2028
+                </text>
+                <text x="16" y="136">
+                  18.4k
+                </text>
+                <text x="139" y="88">
+                  24.1k
+                </text>
+                <text x="267" y="25">
+                  31.1k
+                </text>
               </g>
             </svg>
 
