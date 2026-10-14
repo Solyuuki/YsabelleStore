@@ -55,7 +55,10 @@ const railCss = await readFile(
 );
 assert.match(customerAppSource, /<StoreEntrance/);
 assert.match(customerAppSource, /sessionStorage\.setItem\(STORE_ENTRANCE_SESSION_KEY/);
-assert.match(customerAppSource, /pathname === "\/" && \(previewWelcome \|\| !storeEntranceDismissed\)/);
+assert.match(
+  customerAppSource,
+  /pathname === "\/" && \(previewWelcome \|\| !storeEntranceDismissed\)/
+);
 assert.match(entranceSource, /autoPlay/);
 assert.doesNotMatch(entranceSource, /\sloop(?:\s|=|>)/);
 assert.match(entranceSource, /muted/);

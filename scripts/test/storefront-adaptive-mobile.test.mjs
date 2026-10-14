@@ -631,10 +631,7 @@ test("phone recommendation carousel stays compact while page scrolling works wit
   assert.ok(styles, "Missing scoped phone carousel CSS");
 
   assert.match(styles, /@media\s*\(max-width:\s*700px\)\s*and\s*\(orientation:\s*portrait\)/);
-  assert.match(
-    css,
-    /html\[data-appearance-scope="storefront"\][\s\S]*?scrollbar-width:\s*none;/
-  );
+  assert.match(css, /html\[data-appearance-scope="storefront"\][\s\S]*?scrollbar-width:\s*none;/);
   assert.match(css, /html\[data-appearance-scope="storefront"\]::-webkit-scrollbar/);
   assert.doesNotMatch(styles, /(?:html|body)[^{]*\{[^}]*overflow(?:-y)?:\s*hidden/);
   assert.match(
@@ -960,7 +957,9 @@ test("checkout content uses wider readable form sections without changing naviga
   const css = read("frontend/src/styles/customer-adaptive-mobile.css");
   const checkout = read("frontend/src/pages/customer/CheckoutPage.tsx");
   const qa = read("tools/mobile-qa/run.mjs");
-  const marker = css.indexOf("/* Sprint 12 checkout content breathing room — portrait phones only.");
+  const marker = css.indexOf(
+    "/* Sprint 12 checkout content breathing room — portrait phones only."
+  );
   const mediaStart = css.indexOf("@media (max-width: 700px) and (orientation: portrait)", marker);
   const firstBrace = css.indexOf("{", mediaStart);
   let nesting = 0;
