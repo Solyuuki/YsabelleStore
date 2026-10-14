@@ -46,7 +46,7 @@ jobs:
               'frontend/src/styles/retail-deliveries-mobile-v2.css'
             ];
             const modified = execFileSync('git', ['diff', '--name-only', '-z'])
-              .toString('utf8').split('\\0').filter(Boolean);
+              .toString('utf8').split('\0').filter(Boolean);
             if (modified.some(path => !allowed.includes(path))) throw new Error('Unexpected file changed by formatter.');
             if (!modified.length) {
               core.info('No formatting changes required.');
