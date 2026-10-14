@@ -1,4 +1,5 @@
 name: Sprint 12 format-only repair
+# Rerun after Vite ImportMeta type scope alignment.
 on:
   push:
     branches:
