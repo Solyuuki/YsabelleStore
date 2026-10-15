@@ -360,8 +360,9 @@ export async function getDashboardOperations(now = new Date()): Promise<Dashboar
     )
     .map((candidate): DashboardRestockAction => {
       const urgent =
-        candidate.forecastDecision?.riskLevel === "HIGH" ||
-        candidate.forecastDecision?.riskLevel === "CRITICAL";
+        candidate.recommendedQuantity > 0 &&
+        (candidate.forecastDecision?.riskLevel === "HIGH" ||
+          candidate.forecastDecision?.riskLevel === "CRITICAL");
       const displayedQuantity = urgent
         ? candidate.recommendedQuantity
         : candidate.nextMonthRestock.estimatedRestock;

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  estimateNextMonthRestock,
   monthlyRestockCycle,
   nextMonthlyRestockDate
 } from "../src/services/restockMonthlyCyclePolicy.js";
@@ -107,4 +108,31 @@ test("a projected stockout before next activation bypasses monthly waiting", () 
   });
   assert.equal(sarima.riskLevel, "HIGH");
   assert.equal(sarima.recommendedActionDate, now.toISOString());
+});
+
+test("next-month quantities use projected opening stock, not today's target gap", () => {
+  const preview = estimateNextMonthRestock({
+    currentDemand: 30,
+    expectedNextDemand: 30,
+    sellableStock: 60,
+    incomingStock: 0,
+    expiryRiskQuantity: 0,
+    targetStockLevel: 80,
+    reorderLevel: 15
+  });
+  assert.deepEqual(preview, {
+    estimatedRestock: 80,
+    expectedDemand: 30,
+    projectedOpeningStock: 30
+  });
+  const zeroDemand = estimateNextMonthRestock({
+    currentDemand: 0,
+    expectedNextDemand: 0,
+    sellableStock: 12,
+    incomingStock: 0,
+    expiryRiskQuantity: 0,
+    targetStockLevel: 30,
+    reorderLevel: 5
+  });
+  assert.equal(zeroDemand.estimatedRestock, 18);
 });

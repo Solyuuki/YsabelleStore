@@ -296,7 +296,8 @@ async function completeMonthlyRun(
 }
 
 async function runRestockAutomation(): Promise<RestockAutomationResult> {
-  const batch = monthlyBatchIdentity();
+  const cycleNow = new Date();
+  const batch = monthlyBatchIdentity(cycleNow);
   // Snapshot-first: an existing month is immutable, even after worker restarts.
   // Do not rerun the forecast or mutate the Owner's saved draft on refresh.
   const monthOrders = await loadAutomatedTicketsForMonth(batch);
@@ -321,7 +322,7 @@ async function runRestockAutomation(): Promise<RestockAutomationResult> {
   }
 
   // Release cutover: preserve existing October orders but never create a new October batch midmonth.
-  if (!monthlyRestockCycle().automationEnabled) {
+  if (!monthlyRestockCycle(cycleNow).automationEnabled) {
     return { orderId: null, orderNumber: null, status: "NO_ACTION" };
   }
   const claim = await claimMonthlyRun(batch.monthKey);

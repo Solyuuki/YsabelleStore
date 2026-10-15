@@ -287,8 +287,9 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
       restock,
       units: items.reduce((sum, item) => {
         const urgent =
-          item.forecastDecision?.riskLevel === "HIGH" ||
-          item.forecastDecision?.riskLevel === "CRITICAL";
+          item.recommendedQuantity > 0 &&
+          (item.forecastDecision?.riskLevel === "HIGH" ||
+            item.forecastDecision?.riskLevel === "CRITICAL");
         return sum + Math.max(0, urgent ? item.recommendedQuantity : item.nextMonthRestock.estimatedRestock);
       }, 0)
     };
@@ -465,8 +466,9 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                       const selectedRow = item.product.id === selectedProductId;
                       const activeRestock = activeRestockByProduct.get(item.product.id) ?? null;
                       const urgent =
-                        item.forecastDecision?.riskLevel === "HIGH" ||
-                        item.forecastDecision?.riskLevel === "CRITICAL";
+                        item.recommendedQuantity > 0 &&
+                        (item.forecastDecision?.riskLevel === "HIGH" ||
+                          item.forecastDecision?.riskLevel === "CRITICAL");
                       const displayQuantity = urgent
                         ? item.recommendedQuantity
                         : item.nextMonthRestock.estimatedRestock;
@@ -789,7 +791,10 @@ function RecommendationCard({
   const [expandedMobileDetails, setExpandedMobileDetails] = useState(false);
   useEffect(() => setExpandedMobileDetails(false), [selected.product.id]);
   const urgent =
-    selected.stockHealth.status === "OUT_OF_STOCK" || risk === "CRITICAL" || risk === "HIGH";
+    selected.recommendedQuantity > 0 &&
+    (selected.stockHealth.status === "OUT_OF_STOCK" ||
+      risk === "CRITICAL" ||
+      risk === "HIGH");
   const tone = hasProcessedOrder ? "indigo" : needsOrder ? "amber" : "emerald";
   const classes = {
     amber: {
