@@ -19,7 +19,7 @@ improvements, and privacy-aware rider delivery handoff.
 | Field                             | Value                                                                            |
 | --------------------------------- | -------------------------------------------------------------------------------- |
 | Active sprint                     | 12                                                                               |
-| App display version               | v0.2.0 (independent of sprint number)                                            |
+| App display version               | v0.12.0 (explicit Sprint 12 release label)                                            |
 | npm workspace version             | 0.1.0                                                                            |
 | Canonical release                 | `g2-s12-c5-a2`                                                                   |
 | Schema / catalog / media versions | 12 / 5 / 2                                                                       |

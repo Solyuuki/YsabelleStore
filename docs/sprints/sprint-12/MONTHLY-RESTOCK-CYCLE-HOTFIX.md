@@ -29,3 +29,13 @@
 ## Release boundary
 
 Only commit to the existing `staging` branch and let existing PR #56 run its normal review checks. No direct main merge, no forced database migration, and no unrelated catalogue/media modifications.
+
+## Follow-up UI and coverage QA (October 15, 2026)
+
+- Recent completed-POS history and forecast-based cover retain distinct provenance and labels.
+- Missing historical coverage never appears as a dash inside an Owner-facing recommendation.
+- Limited completed POS history displays a neutral "History limited" status rather than an unexplained "Normal"; forward-looking forecast risk stays separate.
+- Public Storefront footer omits the Staff / Owner Login link; protected internal sign-in routes remain intact.
+- Visible application release label is v0.12.0; private workspace package versions stay unchanged.
+- No changes to SARIMA estimation, monthly automation, Owner approvals, Receiving or stock mutations.
+- Verify history-missing, zero-demand, forecast-cover, direct internal login, mobile contrast and version checks before release.

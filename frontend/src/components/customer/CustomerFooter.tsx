@@ -130,9 +130,6 @@ export function CustomerFooter({
               Pasig City, Metro Manila
             </span>
           </p>
-          <CustomerLink className="customer-footer__staff" href="/staff-login" navigate={navigate}>
-            Staff / Owner Login
-          </CustomerLink>
         </div>
       </div>
       <div className="customer-container customer-footer__bottom">

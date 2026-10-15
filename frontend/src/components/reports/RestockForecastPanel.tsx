@@ -31,6 +31,8 @@ import {
   orderStatusLabel,
   riskLabel,
   sourceLabel,
+  stockAlertExplanation,
+  stockCoverage,
   stockStatusLabel,
   stockStatusVariant,
   usableStock
@@ -302,7 +304,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
   const selectedDemand = Math.ceil(
     selected?.forecastDecision?.currentMonthDemand ?? selected?.forecast?.currentMonthDemand ?? 0
   );
-  const selectedCoverageDays = selected?.stockHealth.coverageDays ?? null;
+  const selectedCoverage = stockCoverage(selected);
   const selectedRisk = selected?.forecastDecision?.riskLevel ?? null;
   const selectedHasProcessedOrder = Boolean(
     selectedActiveRestock && selectedActiveRestock.totalRemaining > 0
@@ -620,7 +622,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-product-transition>
                 <ForecastMetric compact label="Usable stock" value={usableStock(selected)} />
                 <ForecastMetric compact label="Expected 30d" value={selectedDemand} />
-                <ForecastMetric compact label="Stock cover" value={coverageLabel(selected)} />
+                <ForecastMetric compact label={selectedCoverage.metricLabel} value={coverageLabel(selected)} />
                 <ForecastMetric
                   compact
                   label="May run out"
@@ -632,7 +634,6 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                 <div data-product-transition>
                   <RecommendationCard
                     activeRestock={selectedActiveRestock}
-                    demand={selectedDemand}
                     estimatedNextMonthQuantity={nextMonthPreview?.estimatedRestock ?? 0}
                     hasProcessedOrder={selectedHasProcessedOrder}
                     needsOrder={selectedNeedsOrder}
@@ -761,10 +762,10 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                 </div>
               ) : null}
 
-              {selected && selectedCoverageDays !== null ? (
+              {selected ? (
                 <p className="text-xs leading-5 text-slate-500" data-product-transition>
-                  Forecasts are estimates. Use this as ordering guidance together with supplier lead
-                  time and current store conditions.
+                  {selectedCoverage.detail} Check supplier lead time and current store conditions
+                  before ordering.
                 </p>
               ) : null}
             </div>
@@ -777,7 +778,6 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
 
 function RecommendationCard({
   activeRestock,
-  demand,
   estimatedNextMonthQuantity,
   hasProcessedOrder,
   needsOrder,
@@ -787,7 +787,6 @@ function RecommendationCard({
   activeRestock: ReturnType<typeof buildActiveRestockByProduct> extends Map<string, infer T>
     ? T | null
     : never;
-  demand: number;
   estimatedNextMonthQuantity: number;
   hasProcessedOrder: boolean;
   needsOrder: boolean;
@@ -857,7 +856,7 @@ function RecommendationCard({
                 : `${formatNumber(activeRestock.totalRemaining)} units are included in ${activeRestock.latestOrderNumber}, which is ${orderStatusLabel(activeRestock.latestStatus).toLowerCase()}. Incoming stock is already included in the plan, so no additional restock quantity is required.`
               : needsOrder
                 ? urgent
-                  ? `Stockout risk needs prompt Owner review. Current usable stock covers about ${coverageLabel(selected)} at roughly ${formatNumber(demand)} units per month. Manual emergency procurement remains available.`
+                  ? stockAlertExplanation(selected)
                   : `Scheduled for ${formatDate(selected.scheduledRestockAt)}. This is an estimate, not an order. No monthly restock action is required yet; quantities will be recalculated at cycle activation.`
                 : "Current usable stock is expected to cover demand. Keep monitoring this product for changes."}
           </p>
