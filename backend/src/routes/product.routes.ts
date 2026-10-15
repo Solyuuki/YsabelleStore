@@ -35,7 +35,11 @@ export const productRouter = Router();
 
 productRouter.use(requireAuth);
 
-productRouter.get("/import/template", requireRole("OWNER"), downloadProductImportTemplateController);
+productRouter.get(
+  "/import/template",
+  requireRole("OWNER"),
+  downloadProductImportTemplateController
+);
 
 productRouter.post(
   "/import/preview",
