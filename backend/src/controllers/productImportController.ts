@@ -9,6 +9,7 @@ import {
   previewProductPackage
 } from "../services/productPackageImportService.js";
 import { preparePackageImageIdentity } from "../services/productPackageImageIdentityService.js";
+import { getProductImportTemplateCsv } from "../services/productImportService.js";
 
 type RequestWithFile = Parameters<RequestHandler>[0] & {
   file?: Express.Multer.File;
@@ -37,6 +38,15 @@ function getGoogleDriveLink(request: Parameters<RequestHandler>[0]) {
   }
   return link;
 }
+
+/** The downloadable CSV columns come from the same schema as the package validator. */
+export const downloadProductImportTemplateController: RequestHandler = (_request, response) => {
+  response
+    .status(200)
+    .setHeader("Content-Type", "text/csv; charset=utf-8")
+    .setHeader("Content-Disposition", 'attachment; filename="products.csv"')
+    .send(getProductImportTemplateCsv());
+};
 
 export const previewProductImportController: RequestHandler = async (request, response, next) => {
   try {
