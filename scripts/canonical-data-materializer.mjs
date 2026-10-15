@@ -3,6 +3,11 @@ import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { normalizeCanonicalText, sha256CanonicalText } from "./lib/canonical-text.mjs";
+import {
+  collectOwnerEditedProductIds,
+  collectRuntimeImageOverrides,
+  isProtectedImageColumn
+} from "./canonical-runtime-image-overrides.mjs";
 
 const ROOT = resolve("."),
   STATE = "database/prisma/state/canonical-state.json",
@@ -404,7 +409,15 @@ function upsert(p, rows) {
   const cols = p.columns.map((c) => "`" + c + "`").join(", "),
     updates = p.columns
       .filter((c) => c !== "id")
-      .map((c) => "`" + c + "`=VALUES(`" + c + "`)")
+      .map((c) => {
+        const quoted = "`" + c + "`";
+        if (p.table !== "products") return quoted + "=VALUES(" + quoted + ")";
+        // Owner edits are runtime-owned. Never overwrite them during Git pull.
+        const ownerEdited =
+          "EXISTS(SELECT 1 FROM catalog_audit_logs WHERE canonical_product_id=VALUES(`id`) " +
+          "AND action='MANUAL_PRODUCT_UPDATE' AND automated=0)";
+        return quoted + "=IF(" + ownerEdited + ", " + quoted + ", VALUES(" + quoted + "))";
+      })
       .join(", ");
   return (
     "INSERT INTO `" +
@@ -573,6 +586,10 @@ export async function verifyCanonicalSubset(prisma, subset) {
 
 export async function inspectCanonicalDbDrift(prisma, subset) {
   const findings = [];
+  const [overrides, ownerEdited] = await Promise.all([
+    collectRuntimeImageOverrides(prisma, subset),
+    collectOwnerEditedProductIds(prisma, subset)
+  ]);
   for (const table of Object.keys(subset.rows ?? {})) {
     const expectedRows = subset.rows?.[table] ?? [];
     if (!expectedRows.length) continue;
@@ -602,6 +619,8 @@ export async function inspectCanonicalDbDrift(prisma, subset) {
         continue;
       }
       for (const column of columns) {
+        if (table === "products" && ownerEdited.has(String(expected.id))) continue;
+        if (isProtectedImageColumn(table, column, expected.id, overrides)) continue;
         const expectedValue = normalizeCanonicalDbValue(table, column, expected[column]);
         const actualValue = normalizeCanonicalDbValue(table, column, actual[column]);
         if (expectedValue !== actualValue) {
@@ -635,9 +654,18 @@ export async function inspectCanonicalDbDrift(prisma, subset) {
 export async function applyCanonicalSubset(prisma, subset) {
   await prisma.$transaction(
     async (tx) => {
+      const imageOverrides = await collectRuntimeImageOverrides(tx, subset);
       await tx.$executeRawUnsafe("SET FOREIGN_KEY_CHECKS=0");
       try {
         for (const s of subset.statements) await tx.$executeRawUnsafe(s);
+        for (const override of imageOverrides.values()) {
+          await tx.$executeRawUnsafe(
+            "UPDATE products SET active_image_asset_id=?, image_url=? WHERE id=?",
+            override.imageId,
+            override.imageUrl,
+            override.productId
+          );
+        }
       } finally {
         await tx.$executeRawUnsafe("SET FOREIGN_KEY_CHECKS=1");
       }

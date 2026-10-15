@@ -131,13 +131,7 @@
 /* Homepage and catalog: quiet midnight blue behind approved product photography. */
 :root.dark
   .customer-app
-  :is(
-    .customer-home,
-    .customer-shop-page,
-    .customer-account-page-v2,
-    .customer-checkout-page,
-    .customer-cart-page
-  ) {
+  :is(.customer-home, .customer-shop-page, .customer-account-page-v2, .customer-cart-page) {
   background:
     url("/textures/ys-dark-midnight-velvet.svg") center / cover no-repeat,
     #101827;
@@ -943,8 +937,8 @@
   .ysabelle-guide.driver-popover
   .driver-popover-next-btn:disabled:is(:hover, :focus-visible) {
   background: #192438 !important;
-  border-color: #344259 !important;
-  color: #74839a !important;
+  border-color: #425475 !important;
+  color: #aab9d0 !important;
   box-shadow: none;
   transform: none;
 }

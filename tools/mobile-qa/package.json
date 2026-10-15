@@ -1,0 +1,10 @@
+{
+  "name": "ysabelle-mobile-browser-qa",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Isolated Playwright browser checks for the Ysabelle customer Storefront.",
+  "dependencies": {
+    "playwright": "^1.54.0"
+  }
+}

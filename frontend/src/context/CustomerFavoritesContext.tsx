@@ -10,6 +10,7 @@ import {
 
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import {
+  CustomerAccountRequestError,
   addCustomerFavorite,
   fetchCustomerFavorites,
   removeCustomerFavorite
@@ -29,7 +30,7 @@ type CustomerFavoritesContextValue = {
 const CustomerFavoritesContext = createContext<CustomerFavoritesContextValue | null>(null);
 
 export function CustomerFavoritesProvider({ children }: { children: ReactNode }) {
-  const { status } = useCustomerAuth();
+  const { refreshSession, status } = useCustomerAuth();
   const [favoriteProducts, setFavoriteProducts] = useState<StorefrontFavoriteProduct[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -78,17 +79,30 @@ export function CustomerFavoritesProvider({ children }: { children: ReactNode })
         return "auth-required" as const;
       }
 
-      if (favoriteIds.has(productId)) {
-        await removeCustomerFavorite(productId);
-        setFavoriteProducts((current) => current.filter((product) => product.id !== productId));
-        return "removed" as const;
-      }
+      try {
+        if (favoriteIds.has(productId)) {
+          await removeCustomerFavorite(productId);
+          setFavoriteProducts((current) => current.filter((product) => product.id !== productId));
+          return "removed" as const;
+        }
 
-      await addCustomerFavorite(productId);
-      await refreshFavorites();
-      return "saved" as const;
+        await addCustomerFavorite(productId);
+        await refreshFavorites();
+        return "saved" as const;
+      } catch (error) {
+        if (
+          error instanceof CustomerAccountRequestError &&
+          (error.code === "CUSTOMER_SESSION_REQUIRED" || error.code === "CUSTOMER_SESSION_INVALID")
+        ) {
+          // An expired server session can lag behind the client-side auth state.
+          // Refresh it and request login instead of reporting a connection error.
+          await refreshSession();
+          return "auth-required" as const;
+        }
+        throw error;
+      }
     },
-    [favoriteIds, refreshFavorites, status]
+    [favoriteIds, refreshFavorites, refreshSession, status]
   );
 
   const value = useMemo(

@@ -1,6 +1,5 @@
-import { CircleHelp, Menu, MoonStar, ShoppingBasket, Sun, UserRound, X } from "lucide-react";
-import { useState } from "react";
-
+import { CircleHelp, MoonStar, Search, ShoppingBasket, Sun, UserRound, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useAppearance } from "@/context/AppearanceContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
@@ -22,9 +21,44 @@ export function CustomerHeader({
   pathname: string;
 }) {
   const { itemCount } = useCart();
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const mobileSearchRef = useRef<HTMLDivElement>(null);
+  const mobileSearchTriggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    setMobileSearchOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileSearchOpen) return;
+
+    const dismissOutsideSearch = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (mobileSearchRef.current?.contains(target)) return;
+      if (target.closest(".customer-mobile-search-trigger")) return;
+      if (target.closest(".customer-global-search__positioner")) return;
+      setMobileSearchOpen(false);
+    };
+
+    // GlobalSearch can stop its own Escape keydown when dismissing suggestions.
+    // A capture listener closes the mobile search shell regardless of nested
+    // autocomplete key handling or portaled results.
+    const dismissOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setMobileSearchOpen(false);
+      mobileSearchTriggerRef.current?.focus();
+    };
+
+    document.addEventListener("pointerdown", dismissOutsideSearch);
+    document.addEventListener("keydown", dismissOnEscape, true);
+    return () => {
+      document.removeEventListener("pointerdown", dismissOutsideSearch);
+      document.removeEventListener("keydown", dismissOnEscape, true);
+    };
+  }, [mobileSearchOpen]);
   const { storefrontTheme, setStorefrontTheme } = useAppearance();
   const { customer, status } = useCustomerAuth();
-  const [menuOpen, setMenuOpen] = useState(false);
   const isShopRoute = isCustomerShopRoute(pathname);
   const accountHref = status === "authenticated" ? "/account" : "/login";
   const accountLabel = status === "authenticated" ? "My Account" : "Sign In";
@@ -69,13 +103,36 @@ export function CustomerHeader({
 
         <div
           aria-hidden={isShopRoute || undefined}
-          className={`customer-header__search-region ${isShopRoute ? "is-hidden" : ""}`}
+          className={`customer-header__search-region ${isShopRoute ? "is-hidden" : ""} ${mobileSearchOpen ? "is-mobile-open" : ""}`}
           inert={isShopRoute || undefined}
+          ref={mobileSearchRef}
         >
-          <GlobalStorefrontSearch enabled={!isShopRoute} location={location} navigate={navigate} />
+          <GlobalStorefrontSearch
+            autoFocus={mobileSearchOpen}
+            enabled={!isShopRoute}
+            location={location}
+            navigate={navigate}
+          />
         </div>
 
         <div className="customer-header__actions">
+          {!isShopRoute ? (
+            <button
+              aria-controls="customer-global-search"
+              aria-expanded={mobileSearchOpen}
+              aria-label={mobileSearchOpen ? "Close storefront search" : "Open storefront search"}
+              className="customer-theme-toggle customer-mobile-search-trigger"
+              onClick={() => setMobileSearchOpen((current) => !current)}
+              ref={mobileSearchTriggerRef}
+              type="button"
+            >
+              {mobileSearchOpen ? (
+                <X aria-hidden="true" size={19} />
+              ) : (
+                <Search aria-hidden="true" size={19} />
+              )}
+            </button>
+          ) : null}
           <button
             aria-label="Open shopping guide"
             className="customer-icon-button customer-help-button"
@@ -127,38 +184,7 @@ export function CustomerHeader({
               <MoonStar aria-hidden="true" size={19} />
             )}
           </button>
-          <button
-            aria-expanded={menuOpen}
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            className="customer-menu-button"
-            onClick={() => setMenuOpen((current) => !current)}
-            type="button"
-          >
-            {menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
-          </button>
         </div>
-      </div>
-
-      <div className={`customer-mobile-panel ${menuOpen ? "is-open" : ""}`}>
-        <nav aria-label="Mobile customer navigation">
-          {links.map((link) => (
-            <CustomerLink
-              href={link.href}
-              key={link.href}
-              navigate={navigate}
-              onClick={() => setMenuOpen(false)}
-              onFocus={link.href === "/about" ? () => preloadAboutExperience() : undefined}
-            >
-              {link.label}
-            </CustomerLink>
-          ))}
-          <CustomerLink href={accountHref} navigate={navigate} onClick={() => setMenuOpen(false)}>
-            {accountLabel}
-          </CustomerLink>
-          <button onClick={onStartGuide} type="button">
-            Shopping Guide
-          </button>
-        </nav>
       </div>
     </header>
   );

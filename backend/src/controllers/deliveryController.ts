@@ -5,12 +5,14 @@ import {
   confirmCodCollected,
   getDeliveryTicket,
   listDeliveryTickets,
+  saveDeliveryHandoffDraft,
   updateDeliveryStatus
 } from "../services/deliveryService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { HttpError } from "../utils/httpError.js";
 import {
   codSettlementSchema,
+  deliveryHandoffDraftSchema,
   deliveryListQuerySchema,
   deliveryTicketParamsSchema,
   deliveryTransitionSchema
@@ -100,6 +102,27 @@ export const confirmCodCollectedController: RequestHandler = async (request, res
     response
       .status(200)
       .json(createSuccessResponse("COD payment collected and order completed.", ticket));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const saveDeliveryHandoffDraftController: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    requireUser(request);
+    const params = deliveryTicketParamsSchema.safeParse(request.params);
+    const body = deliveryHandoffDraftSchema.safeParse(request.body);
+    if (!params.success || !body.success) {
+      throw new HttpError(400, "Dispatch details are invalid.", {
+        code: "INVALID_DELIVERY_HANDOFF_REQUEST"
+      });
+    }
+    const ticket = await saveDeliveryHandoffDraft(params.data.orderId, body.data);
+    response.status(200).json(createSuccessResponse("Dispatch details saved.", ticket));
   } catch (error) {
     next(error);
   }

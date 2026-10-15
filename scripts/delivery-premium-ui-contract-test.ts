@@ -24,10 +24,12 @@ assert.match(accountCss, /\.customer-delivery-stepper/);
 assert.match(accountCss, /\.customer-account-history-card/);
 
 assert.match(deliveries, /Other courier \/ service name/);
-assert.match(deliveries, /Rider \/ booking reference/);
-assert.match(deliveries, /rider mobile, booking ID, plate number/);
+assert.match(deliveries, /Booking reference \(optional\)/);
+assert.match(deliveries, /Booking ID is separate from rider phone\./);
+assert.match(deliveries, /Rider phone number \(required to dispatch\)/);
 assert.match(deliveries, /Customer delivery note/);
-assert.match(deliveries, /Internal staff note/);
+assert.match(deliveries, /Internal delivery note/);
+assert.match(deliveries, /Owner &amp; Staff/);
 assert.match(deliveries, /Payment received/);
 assert.match(deliveries, /<StaffDeliveryProgress ticket=\{selected\} \/>/);
 

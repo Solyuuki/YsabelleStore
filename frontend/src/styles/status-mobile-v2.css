@@ -1,0 +1,387 @@
+/* Sprint 12: shared mobile HTTP/reliability screens (401/403/404/503,
+   SERVICE/DATABASE/OFFLINE/TIMEOUT), plus HTTP toast notifications.
+   Portals mount under document.body: do not depend on retail/storefront shell. */
+
+/* Shared scroll container handles short phones, browser zoom, and long translations
+   without trapping the recovery action beyond the visible viewport. */
+@media (max-width: 1024px) {
+  .status-screen[data-status-screen] {
+    width: 100%;
+    height: 100dvh;
+    min-height: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+  }
+
+  .status-screen .status-screen-main,
+  .status-screen .status-screen-main.status-screen-main--system {
+    flex: 1 0 auto;
+    width: 100%;
+    min-width: 0;
+    padding-inline: max(1rem, env(safe-area-inset-left, 0px))
+      max(1rem, env(safe-area-inset-right, 0px));
+    padding-top: max(1rem, env(safe-area-inset-top, 0px));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .status-screen .status-screen__content {
+    width: min(100%, 32rem);
+    max-width: 100%;
+    min-width: 0;
+    margin-inline: auto;
+    overflow-wrap: anywhere;
+  }
+
+  .status-screen .status-illustration {
+    width: clamp(7.5rem, 22vw, 11.25rem);
+    min-height: 0;
+    aspect-ratio: 5 / 4;
+    max-width: 100%;
+  }
+
+  .status-screen .status-illustration[data-status-family="navigation"] {
+    width: clamp(7rem, 21vw, 10.5rem);
+    min-height: 0;
+  }
+
+  .status-screen .status-illustration__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .status-screen[data-status-theme="dark"]
+    .status-screen__system-illustration
+    .status-illustration {
+    width: clamp(7.25rem, 22vw, 10.5rem);
+    min-height: 0;
+  }
+
+  .status-screen .status-screen__system-illustration {
+    margin-bottom: 0.55rem;
+  }
+
+  .status-screen .status-screen__code-badge {
+    max-width: 100%;
+    margin-top: 0.55rem;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.72rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+
+  .status-screen .status-screen__eyebrow {
+    margin-top: 0.75rem;
+    font-size: 0.7rem;
+    line-height: 1.35;
+    letter-spacing: 0.1em;
+  }
+
+  .status-screen .status-screen__title {
+    margin-top: 0.45rem;
+    font-size: clamp(1.7rem, 4.5vw, 2.25rem);
+    line-height: 1.14;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  .status-screen .status-screen__description {
+    max-width: 33ch;
+    margin: 0.75rem auto 0;
+    font-size: clamp(0.85rem, 1.75vw, 1rem);
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  .status-screen .status-screen__status-number {
+    margin-top: 0.4rem;
+    font-size: clamp(4.1rem, 11vw, 6.4rem);
+    line-height: 0.94;
+  }
+
+  .status-screen .status-screen__note {
+    max-width: 100%;
+    margin-top: 0.85rem;
+    padding: 0.75rem;
+    border-radius: 0.8rem;
+    overflow-wrap: anywhere;
+  }
+
+  .status-screen .status-screen__note-title {
+    font-size: 0.82rem;
+    line-height: 1.35;
+  }
+
+  .status-screen .status-screen__note-description {
+    margin-top: 0.25rem;
+    font-size: 0.76rem;
+    line-height: 1.45;
+  }
+
+  .status-screen .status-screen__actions {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 1.05rem;
+    gap: 0.55rem;
+  }
+
+  .status-screen .status-screen__actions > button {
+    min-width: 0;
+    min-height: 44px;
+    max-width: 100%;
+    white-space: normal;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+    padding: 0.6rem 0.85rem;
+  }
+
+  .status-screen .status-screen__footer {
+    margin-top: 0.7rem;
+    font-size: 0.7rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+
+  /* Non-blocking HTTP 405/409/413/415/429/500/502/504 notifications. */
+  .ys-status-mobile-notifications {
+    top: max(0.65rem, env(safe-area-inset-top, 0px));
+    right: max(0.65rem, env(safe-area-inset-right, 0px));
+    left: max(0.65rem, env(safe-area-inset-left, 0px));
+    width: auto;
+    max-width: min(calc(100% - 1.3rem), 25rem);
+    max-height: min(45dvh, 21rem);
+    margin-inline: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 0.45rem;
+  }
+
+  .ys-status-mobile-notifications::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ys-status-mobile-toast {
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+    border-radius: 0.65rem;
+  }
+
+  .ys-status-mobile-toast__body {
+    gap: 0.6rem;
+    padding: 0.65rem 0.55rem 0.65rem 0.75rem;
+  }
+
+  .ys-status-mobile-toast__icon {
+    width: 1.9rem;
+    height: 1.9rem;
+    flex: none;
+  }
+
+  .ys-status-mobile-toast__copy {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .ys-status-mobile-toast__title {
+    font-size: 0.77rem;
+    line-height: 1.35;
+  }
+
+  .ys-status-mobile-toast__message {
+    margin-top: 0.2rem;
+    font-size: 0.73rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+
+  .ys-status-mobile-toast__dismiss {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    margin: -0.25rem -0.25rem -0.25rem 0;
+  }
+
+  /* Health banners for retry, degraded and restored states. */
+  .reliability-banner {
+    top: max(0.65rem, env(safe-area-inset-top, 0px));
+    left: 50%;
+    width: calc(
+      100% - max(1.3rem, env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px))
+    );
+    max-width: 33rem;
+    min-width: 0;
+    border-radius: 0.8rem;
+    padding: 0.65rem 0.75rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    font-size: 0.77rem;
+    line-height: 1.4;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
+  .reliability-banner > span:not(.reliability-signal) {
+    flex: 1 1 12rem;
+    min-width: 0;
+  }
+
+  .reliability-banner__action {
+    flex: none;
+    min-height: 40px;
+    padding-inline: 0.4rem;
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 599px) {
+  .status-screen .status-screen__actions {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .status-screen .status-screen__actions > button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 359px) {
+  .status-screen .status-screen-main,
+  .status-screen .status-screen-main.status-screen-main--system {
+    padding-inline: max(0.85rem, env(safe-area-inset-left, 0px))
+      max(0.85rem, env(safe-area-inset-right, 0px));
+    padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  }
+  .status-screen .status-illustration {
+    width: 7.65rem;
+  }
+  .status-screen[data-status-theme="dark"]
+    .status-screen__system-illustration
+    .status-illustration {
+    width: 7.25rem;
+  }
+  .status-screen .status-screen__title {
+    font-size: 1.72rem;
+  }
+  .status-screen .status-screen__description {
+    font-size: 0.83rem;
+  }
+  .status-screen .status-screen__status-number {
+    font-size: 4.1rem;
+  }
+  .status-screen .status-screen__eyebrow {
+    font-size: 0.66rem;
+  }
+  .status-screen .status-screen__note {
+    padding: 0.65rem;
+  }
+}
+
+/* When the device has less vertical space, favor reachable actions over
+   maintaining desktop-level illustration size and whitespace. */
+@media (max-width: 1024px) and (max-height: 680px) {
+  .status-screen .status-screen-main,
+  .status-screen .status-screen-main.status-screen-main--system {
+    padding-top: max(0.6rem, env(safe-area-inset-top, 0px));
+    padding-bottom: max(0.6rem, env(safe-area-inset-bottom, 0px));
+  }
+  .status-screen .status-illustration {
+    width: min(7.2rem, 34vw);
+  }
+  .status-screen .status-illustration[data-status-family="navigation"] {
+    width: min(7rem, 31vw);
+  }
+  .status-screen[data-status-theme="dark"]
+    .status-screen__system-illustration
+    .status-illustration {
+    width: min(7.2rem, 34vw);
+  }
+  .status-screen .status-screen__eyebrow {
+    margin-top: 0.6rem;
+  }
+  .status-screen .status-screen__title {
+    margin-top: 0.35rem;
+  }
+  .status-screen .status-screen__description {
+    margin-top: 0.55rem;
+    line-height: 1.45;
+  }
+  .status-screen .status-screen__note {
+    margin-top: 0.6rem;
+  }
+  .status-screen .status-screen__actions {
+    margin-top: 0.75rem;
+  }
+}
+@media (max-width: 1024px) and (max-height: 480px) {
+  .status-screen .status-illustration {
+    width: min(5.6rem, 26vw);
+  }
+  .status-screen[data-status-theme="dark"]
+    .status-screen__system-illustration
+    .status-illustration {
+    width: min(5.6rem, 26vw);
+  }
+}
+
+/* Existing status animations respect reduced-motion settings; keep mobile
+   animations disabled under the same preference. */
+@media (prefers-reduced-motion: reduce) {
+  .status-screen .status-illustration__image,
+  .status-screen .status-illustration__halo,
+  .reliability-banner {
+    animation: none !important;
+  }
+}
+
+/* Portaled notification surfaces need their own dark styling, regardless of
+   whether the current page is the storefront or retail workspace. */
+@media (max-width: 1024px) {
+  :root.dark .ys-status-mobile-toast {
+    background: #23344e !important;
+    border-color: #627796 !important;
+  }
+  :root.dark .ys-status-mobile-toast__title {
+    color: #f2f6ff;
+  }
+  :root.dark .ys-status-mobile-toast__message {
+    color: #ccd9ed;
+  }
+  :root.dark .ys-status-mobile-toast__icon {
+    background: #324662;
+    color: #d2e4ff;
+  }
+  :root.dark .ys-status-mobile-toast__dismiss {
+    color: #d5e2f5;
+  }
+  :root.dark .ys-status-mobile-toast[data-toast-variant="error"] {
+    border-color: #b97586 !important;
+  }
+  :root.dark .ys-status-mobile-toast[data-toast-variant="error"] .ys-status-mobile-toast__icon {
+    color: #ffc4cc;
+  }
+  :root.dark .ys-status-mobile-toast[data-toast-variant="warning"] {
+    border-color: #b99b60 !important;
+  }
+  :root.dark .ys-status-mobile-toast[data-toast-variant="warning"] .ys-status-mobile-toast__icon {
+    color: #ffe0a2;
+  }
+  :root.dark .ys-status-mobile-toast[data-toast-variant="success"] {
+    border-color: #5a9a86 !important;
+  }
+  :root.dark .ys-status-mobile-toast[data-toast-variant="success"] .ys-status-mobile-toast__icon {
+    color: #b2f0d6;
+  }
+}

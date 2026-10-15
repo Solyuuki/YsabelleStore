@@ -469,16 +469,19 @@ export function WelcomePage({
           </span>
         </div>
         <div className="welcome-content">
-          <section className="auth-hero-enter max-w-[min(58vw,55rem)]">
+          <section className="ys-retail-welcome__hero auth-hero-enter max-w-[min(58vw,55rem)]">
             <div className="ys-retail-security-pill inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[13px] font-semibold text-emerald-800 shadow-sm">
               <ShieldCheck className="h-4 w-4 text-emerald-700" aria-hidden="true" />
               System Secure
             </div>
-            <h1 className="type-display mt-[clamp(1.5rem,2.4vw,2.5rem)]">YsabelleStore</h1>
-            <p className="type-body-lg mt-[clamp(1rem,1.8vw,1.75rem)] max-w-[clamp(42rem,52vw,58rem)] text-slate-600">
+            <h1 className="ys-retail-welcome__title type-display mt-[clamp(1.5rem,2.4vw,2.5rem)]">
+              YsabelleStore
+            </h1>
+            <p className="ys-retail-welcome__mobile-intro">Retail workspace · Owner &amp; Staff</p>
+            <p className="ys-retail-welcome__description type-body-lg mt-[clamp(1rem,1.8vw,1.75rem)] max-w-[clamp(42rem,52vw,58rem)] text-slate-600">
               {renderHeroCopy()}
             </p>
-            <div className="mt-[clamp(2rem,3.5vw,3.75rem)] max-w-[clamp(34rem,44vw,48rem)]">
+            <div className="ys-retail-welcome__feedback mt-[clamp(2rem,3.5vw,3.75rem)] max-w-[clamp(34rem,44vw,48rem)]">
               {showRememberedAccounts && (error || !hasTrustedDeviceAccounts) ? (
                 <div
                   className="ys-retail-welcome-note auth-panel-enter rounded-md border border-emerald-100 bg-white p-4 text-sm text-emerald-800 shadow-sm"
@@ -561,6 +564,7 @@ export function WelcomePage({
 
                   {totalRememberedAccountPages > 1 ? (
                     <AppPagination
+                      className="ys-retail-known-accounts-pagination"
                       itemLabel="accounts"
                       onPageChange={setRememberedAccountsPage}
                       page={currentRememberedAccountsPage}

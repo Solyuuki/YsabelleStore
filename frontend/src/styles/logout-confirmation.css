@@ -1,0 +1,104 @@
+/* Staff/owner logout: reuse the About catalog galaxy background in Dark Mode.
+   Keep the existing Light Mode presentation and all dialog behavior unchanged. */
+:root.dark .logout-confirmation-backdrop {
+  background-color: #17243c;
+  background-image: var(--storefront-galaxy-background);
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: auto;
+}
+
+:root.dark .logout-confirmation-backdrop::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background-image:
+    linear-gradient(rgb(159 173 242 / 5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(159 173 242 / 5%) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse at 50% 46%, #000 24%, transparent 90%);
+}
+
+:root.dark .logout-confirmation-panel {
+  position: relative;
+  z-index: 1;
+  border-color: #52658b;
+  background: rgb(17 27 50 / 97%);
+  color: #f2f5ff;
+  box-shadow:
+    0 34px 85px rgb(4 9 28 / 55%),
+    inset 0 1px 0 rgb(220 228 255 / 10%);
+}
+
+:root.dark .logout-confirmation-header {
+  border-color: #394c70;
+}
+
+:root.dark .logout-confirmation-warning {
+  border-color: #996c31;
+  background: rgb(245 158 11 / 12%);
+  color: #ffd080;
+}
+
+:root.dark .logout-confirmation-title {
+  color: #f5f7ff;
+}
+
+:root.dark .logout-confirmation-description {
+  color: #d1dced;
+}
+
+:root.dark .logout-confirmation-notice {
+  border-color: #587abb;
+  background: linear-gradient(115deg, #21365c, #1a2948);
+  color: #e4ecff;
+  box-shadow: inset 0 1px 0 rgb(224 236 255 / 7%);
+}
+
+:root.dark .logout-confirmation-notice svg {
+  color: #91b7ff;
+}
+
+:root.dark .logout-confirmation-actions {
+  border-color: #394c70;
+  background: #121d35;
+}
+
+:root.dark .logout-confirmation-cancel {
+  border-color: #7589af;
+  background: #243653;
+  color: #f5f7ff;
+}
+
+:root.dark .logout-confirmation-cancel:hover:not(:disabled) {
+  border-color: #a9bcdf;
+  background: #314664;
+  color: #ffffff;
+}
+
+:root.dark .logout-confirmation-actions button:focus-visible {
+  outline: 3px solid #b7caff;
+  outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+  :root.dark .logout-confirmation-header {
+    gap: 0.875rem;
+    padding: 1.25rem;
+  }
+
+  :root.dark .logout-confirmation-panel > div:nth-child(2) {
+    padding: 1.25rem;
+  }
+
+  :root.dark .logout-confirmation-notice {
+    align-items: flex-start;
+  }
+
+  :root.dark .logout-confirmation-actions {
+    gap: 0.625rem;
+    flex-wrap: wrap;
+    padding: 1rem 1.25rem;
+  }
+}

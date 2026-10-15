@@ -73,4 +73,5 @@ test("operational restock forecast can use stock policy when POS demand is unava
   assert.equal(forecast.demandSource, "NO_POS_HISTORY");
   assert.equal(forecast.expected30d, 0);
   assert.equal(forecast.suggestedQuantity, 7);
+  assert.equal(forecast.recommendedActionDate, "2026-09-30T16:00:00.000Z");
 });

@@ -12,7 +12,8 @@ import {
   deliveryStatusLabel,
   deliveryViewWhere,
   isCodSettlementReady,
-  isPaymongoPaymentPending
+  isPaymongoPaymentPending,
+  normalizeRiderPhone
 } from "../src/services/deliveryService.js";
 
 test("delivery status workflow permits only controlled forward transitions", () => {
@@ -121,4 +122,11 @@ test("delivery history retains completed or cancelled orders and unpaid COD rema
       }
     ]
   });
+});
+
+test("rider phone normalizes common Philippine formats and rejects invalid IDs", () => {
+  assert.equal(normalizeRiderPhone("0976 650 0867"), "09766500867");
+  assert.equal(normalizeRiderPhone("+63 976 650 0867"), "+639766500867");
+  assert.equal(normalizeRiderPhone("BOOKING-1234"), null);
+  assert.equal(normalizeRiderPhone(""), null);
 });

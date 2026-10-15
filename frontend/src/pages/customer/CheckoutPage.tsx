@@ -13,6 +13,7 @@ import {
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
+import { CustomerOrderPolicyInfo } from "@/components/customer/CustomerOrderPolicyInfo";
 import { formatCurrency } from "@/components/customer/ProductCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCart } from "@/context/CartContext";
@@ -100,6 +101,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
   const [saveAddressToAccount, setSaveAddressToAccount] = useState(Boolean(customer));
   const [paymentMethod, setPaymentMethod] = useState<StorefrontPaymentMethod>("PAYMONGO");
   const [pendingPaymongoOrder, setPendingPaymongoOrder] = useState<StorefrontOrder | null>(null);
+  const [orderPolicyAccepted, setOrderPolicyAccepted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [validationErrors, setValidationErrors] = useState<CheckoutValidationErrors>({});
@@ -172,6 +174,10 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if ((!items.length && !pendingPaymongoOrder) || submitting) return;
+    if (!pendingPaymongoOrder && !orderPolicyAccepted) {
+      setError("Please accept the order policy before placing your order.");
+      return;
+    }
 
     const form = new FormData(event.currentTarget);
     const effectivePhone = (
@@ -802,10 +808,34 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
               </div>
             </div>
 
-            <p className="customer-order-summary__helper">
-              Store staff will prepare your order and coordinate the courier. You can follow its
-              delivery status from My Account.
-            </p>
+            <div className="customer-checkout-policy-group">
+              <p className="customer-order-summary__helper">
+                Store staff will prepare your order and coordinate the courier. You can follow its
+                delivery status from My Account.
+              </p>
+              <CustomerOrderPolicyInfo />
+            </div>
+
+            {!pendingPaymongoOrder ? (
+              <label className="customer-order-agreement">
+                <input
+                  checked={orderPolicyAccepted}
+                  className="customer-order-agreement__checkbox"
+                  name="orderPolicyAccepted"
+                  onChange={(event) => {
+                    setOrderPolicyAccepted(event.target.checked);
+                    if (event.target.checked) setError("");
+                  }}
+                  required
+                  type="checkbox"
+                />
+                <span className="customer-order-agreement__text">
+                  I understand that submitting this order creates a reservation. I cannot cancel it
+                  directly from My Account after submission. Any cancellation request must be made
+                  through the store and is subject to the order, delivery and payment status.
+                </span>
+              </label>
+            ) : null}
 
             {error ? (
               <div aria-live="assertive" className="customer-form-error" role="alert">

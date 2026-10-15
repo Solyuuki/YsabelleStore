@@ -1,3 +1,5 @@
+import { nextMonthlyRestockDate } from "./restockMonthlyCyclePolicy.js";
+
 export type RestockForecastRisk = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 
 export type RestockForecastPointInput = {
@@ -72,17 +74,14 @@ function riskFor(
 
 function actionDateFor(
   riskLevel: RestockForecastRisk,
-  stockoutDate: string | null,
+  _stockoutDate: string | null,
   suggestedQuantity: number,
   now: Date
 ) {
   if (suggestedQuantity <= 0 || riskLevel === "LOW") return null;
   if (riskLevel === "CRITICAL" || riskLevel === "HIGH") return isoDate(now);
-  if (!stockoutDate) return isoDate(now);
-
-  const stockout = new Date(stockoutDate);
-  const recommended = addDays(stockout, -14);
-  return isoDate(recommended.getTime() <= now.getTime() ? now : recommended);
+  // Nonurgent replenishment is reviewed when the NEXT monthly batch activates.
+  return nextMonthlyRestockDate(now);
 }
 
 function decisionReason(
@@ -136,12 +135,16 @@ export function buildRestockForecastDecision(
       targetStockLevel + currentMonthDemand + expiryRiskQuantity - sellableStock - incomingStock
     )
   );
-  const riskLevel = riskFor(
+  const baseRisk = riskFor(
     daysUntilStockout,
     projectedEndingStock,
     reorderLevel,
     suggestedQuantity
   );
+  const stockoutBeforeCycle =
+    stockoutDate !== null &&
+    new Date(stockoutDate).getTime() < new Date(nextMonthlyRestockDate(now)).getTime();
+  const riskLevel = baseRisk === "MEDIUM" && stockoutBeforeCycle ? "HIGH" : baseRisk;
   const recommendedActionDate = actionDateFor(riskLevel, stockoutDate, suggestedQuantity, now);
 
   return {

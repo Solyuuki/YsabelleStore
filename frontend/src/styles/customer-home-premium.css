@@ -359,6 +359,56 @@
   }
 }
 
+/* At 320px portrait, fit the authored two-line welcome headline rather than
+   letting its first line wrap between Neighborhood and Store. */
+@media (max-width: 359px) and (orientation: portrait) {
+  .store-entrance__content {
+    width: calc(100% - 1rem);
+  }
+
+  .store-entrance h1 {
+    font-size: clamp(1.35rem, 6.7vw, 1.52rem);
+    letter-spacing: -0.045em;
+    line-height: 1.1;
+  }
+
+  .store-entrance h1 span:first-child {
+    white-space: nowrap;
+  }
+}
+
+/* A phone in landscape can be only 320-430px tall. Size the full entrance
+   stack to the available height rather than creating an iframe scrollbar. */
+@media (max-width: 950px) and (max-height: 440px) {
+  .store-entrance {
+    height: 100svh;
+    min-height: 100svh;
+  }
+
+  .store-entrance__content {
+    height: 100svh;
+    min-height: 0;
+    gap: clamp(0.4rem, 1.8svh, 0.75rem);
+    padding-block: max(0.5rem, env(safe-area-inset-top)) max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  .store-entrance__brand-mark {
+    width: clamp(88px, 31svh, 124px) !important;
+    height: clamp(88px, 31svh, 124px) !important;
+  }
+
+  .store-entrance h1 {
+    font-size: clamp(1.5rem, 7.5svh, 2.1rem);
+    line-height: 1.04;
+  }
+
+  .store-entrance__enter {
+    min-width: 132px;
+    min-height: 40px;
+    padding: 0.5rem 0.95rem;
+  }
+}
+
 /* Home becomes shopping-first after the entrance experience. */
 .customer-home {
   background: linear-gradient(145deg, #f4f6fb 0%, #f1f0f8 50%, #f7f2f6 100%);

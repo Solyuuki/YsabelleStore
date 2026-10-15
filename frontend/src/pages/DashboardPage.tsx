@@ -30,6 +30,7 @@ import {
   type DashboardSummary
 } from "@/services/dashboardApi";
 import { getWorkstationPreferences } from "@/services/workstationPreferences";
+import "@/styles/retail-dashboard-mobile.css";
 
 const currencyFormatter = new Intl.NumberFormat("en-PH", {
   currency: "PHP",
@@ -224,7 +225,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
       {summary ? (
         <>
           <section
-            className={`grid gap-4 md:grid-cols-2 ${preferences.showForecastSummary ? "xl:grid-cols-4" : "xl:grid-cols-3"}`}
+            className={`ys-dashboard-kpi-grid grid gap-4 md:grid-cols-2 ${preferences.showForecastSummary ? "xl:grid-cols-4" : "xl:grid-cols-3"}`}
           >
             <MetricCard
               accent="blue"
@@ -333,7 +334,7 @@ function MetricCard({ accent, detail, icon, label, value }: MetricCardProps) {
   return (
     <Card className={`${brandCardClass} ys-kpi-card-surface ys-kpi-card-surface--${accent}`}>
       <BrandAccent accent={accent} />
-      <CardContent className="flex min-h-40 flex-col justify-between p-5 pt-6">
+      <CardContent className="ys-dashboard-kpi-content flex min-h-40 flex-col justify-between p-5 pt-6">
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-slate-700">{label}</p>
           <BrandIcon accent={accent} icon={icon} />
@@ -357,7 +358,7 @@ function AlertMetricCard({ summary }: { summary: DashboardSummary }) {
   return (
     <Card className={`${brandCardClass} ys-kpi-card-surface ys-kpi-card-surface--amber`}>
       <BrandAccent accent="amber" />
-      <CardContent className="flex min-h-40 flex-col justify-between p-5 pt-6">
+      <CardContent className="ys-dashboard-kpi-content flex min-h-40 flex-col justify-between p-5 pt-6">
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-slate-700">Stock alerts</p>
           {alertCount > 0 ? (
@@ -366,7 +367,7 @@ function AlertMetricCard({ summary }: { summary: DashboardSummary }) {
             <BrandIcon accent="amber" icon={CheckCircle2} />
           )}
         </div>
-        <div className="mt-5 grid grid-cols-2 divide-x divide-slate-100">
+        <div className="ys-dashboard-alert-detail mt-5 grid grid-cols-2 divide-x divide-slate-100">
           <div className="pr-4">
             <p className="text-2xl font-semibold tracking-tight text-slate-950">
               {summary.inventory.lowStockItems}
@@ -380,7 +381,20 @@ function AlertMetricCard({ summary }: { summary: DashboardSummary }) {
             <p className="mt-1 text-xs text-slate-500">Near expiry</p>
           </div>
         </div>
-        <p className="mt-3 text-xs font-medium text-slate-500">
+        <div className="ys-dashboard-alert-mobile">
+          <strong>{alertCount.toLocaleString()}</strong>
+          <span>
+            {summary.inventory.lowStockItems} low stock · {summary.expiry.nearExpiryBatches} near
+            expiry
+          </span>
+          {summary.inventory.outOfStockItems + summary.expiry.expiredBatches > 0 ? (
+            <small>
+              {summary.inventory.outOfStockItems} out of stock · {summary.expiry.expiredBatches}{" "}
+              expired
+            </small>
+          ) : null}
+        </div>
+        <p className="ys-dashboard-alert-help mt-3 text-xs font-medium text-slate-500">
           {alertCount === 0
             ? "No immediate stock exceptions"
             : `${alertCount.toLocaleString()} total inventory exceptions`}
@@ -401,12 +415,15 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
   const reportMonth = operations
     ? reportMonthFormatter.format(new Date(operations.generatedAt))
     : "Current month";
+  const nextRestockMonth = operations
+    ? reportMonthFormatter.format(new Date(operations.restock.scheduledRestockAt))
+    : "Next month";
   const highPriorityCount = operations
     ? operations.restock.risk.CRITICAL + operations.restock.risk.HIGH
     : 0;
 
   return (
-    <Card className={brandCardClass}>
+    <Card className={`${brandCardClass} ys-dashboard-inventory-recommendation`}>
       <BrandAccent />
       <CardHeader className="border-b border-slate-100 pb-4 pt-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -415,7 +432,7 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
               Monthly inventory recommendation
             </p>
             <CardTitle className="mt-1">{reportMonth} report</CardTitle>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="ys-dashboard-recommendation-description mt-1 text-xs text-slate-500">
               Live monthly summary of forecast demand, stock coverage, incoming supply, and expiry
               exposure. Product-level detail stays in Reports.
             </p>
@@ -429,7 +446,7 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
               }`}
             >
               {operations.restock.actionableProducts > 0
-                ? `${operations.restock.actionableProducts} to review`
+                ? `${operations.restock.actionableProducts} projected / review`
                 : "All clear"}
             </span>
           ) : null}
@@ -442,9 +459,9 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
           <DashboardPanelError message={error} />
         ) : operations ? (
           <>
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="ys-dashboard-report-stats grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <MonthlyReportStat
-                label="Products requiring action"
+                label="Products in plan / review"
                 value={operations.restock.actionableProducts}
               />
               <MonthlyReportStat
@@ -470,18 +487,18 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
                       Monthly restock plan
                     </div>
                     <h3 className="mt-1 text-base font-semibold tracking-tight text-slate-950">
-                      {reportMonth} · Restock plan
+                      {nextRestockMonth} · Next restock preview
                     </h3>
-                    <p className="mt-1 max-w-3xl text-xs leading-5 text-slate-600">
-                      Live recommendation batch covering products to replenish and other inventory
-                      concerns. Review every product and quantity before making a purchase decision.
+                    <p className="ys-dashboard-monthly-batch-description mt-1 max-w-3xl text-xs leading-5 text-slate-600">
+                      Estimated next-month replenishment and independent stock/expiry alerts.
+                      Scheduled purchases wait for monthly activation and Owner approval.
                     </p>
                   </div>
                   <span className="ys-dashboard-monthly-batch__badge rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">
-                    For review
+                    Next restock preview
                   </span>
                 </div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <div className="ys-dashboard-plan-stats mt-4 grid gap-3 sm:grid-cols-3">
                   <MonthlyPlanStat
                     label="To restock"
                     unit={operations.restock.restockProducts === 1 ? "product" : "products"}
@@ -498,9 +515,10 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
                     value={operations.restock.otherReviewProducts}
                   />
                 </div>
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-violet-100 pt-3">
+                <div className="ys-dashboard-plan-footer mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-violet-100 pt-3">
                   <p className="text-xs leading-5 text-slate-600">
-                    Recommendation preview only · No purchase ticket is created by this card.
+                    Future-month preview only · No monthly purchase action is required before
+                    activation. Existing drafts and critical stock alerts are separate.
                   </p>
                   <Button onClick={() => onNavigate("/reports")} size="sm" type="button">
                     <ClipboardList aria-hidden="true" className="h-4 w-4" />

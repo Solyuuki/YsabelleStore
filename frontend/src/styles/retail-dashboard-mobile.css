@@ -1,0 +1,665 @@
+/*
+ * Sprint 12 — Mobile Dashboard v2
+ * Compact, accessible operational information instead of shrunken desktop.
+ * Retains dashboard fetches, forecasting logic, restock actions and desktop UI.
+ */
+
+.ys-dashboard-alert-mobile,
+.ys-sales-mobile-week,
+.ys-sales-hourly-chart__empty {
+  display: none;
+}
+
+.ys-sales-hourly-chart__plot {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 767px),
+  (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+  .retail-workspace .retail-dashboard-page {
+    display: grid;
+    min-width: 0;
+    max-width: 100%;
+    gap: 0.85rem;
+  }
+
+  .retail-workspace .retail-dashboard-page > * {
+    min-width: 0;
+    margin-block: 0;
+  }
+
+  /* Primary KPIs — 2 x 2 on phones (a lone third tile spans the row when
+     the forecast tile is disabled in user preferences). */
+  .retail-workspace .retail-dashboard-page .ys-dashboard-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-kpi-grid > :last-child:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-kpi-grid .ys-kpi-card-surface {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    border-radius: 0.9rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-kpi-content {
+    min-width: 0;
+    min-height: 114px;
+    gap: 0.55rem;
+    padding: 0.85rem 0.7rem 0.8rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-kpi-content > div:first-child {
+    align-items: flex-start;
+    gap: 0.3rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-kpi-content > div:first-child > p {
+    min-width: 0;
+    padding-top: 0.1rem;
+    font-size: 0.72rem;
+    line-height: 1.27;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-kpi-content .ys-material-accent {
+    width: 1.75rem;
+    height: 1.75rem;
+    flex: none;
+    border-radius: 0.58rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-kpi-content .ys-material-accent svg {
+    width: 0.89rem;
+    height: 0.89rem;
+  }
+
+  .retail-workspace
+    .retail-dashboard-page
+    .ys-dashboard-kpi-content
+    > div:nth-child(2):not(.ys-dashboard-alert-detail) {
+    min-width: 0;
+    margin-top: 0;
+  }
+
+  .retail-workspace
+    .retail-dashboard-page
+    .ys-dashboard-kpi-content
+    > div:nth-child(2)
+    > p:first-child {
+    font-size: clamp(1.03rem, 4.5vw, 1.38rem);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .retail-workspace
+    .retail-dashboard-page
+    .ys-dashboard-kpi-content
+    > div:nth-child(2)
+    > p:nth-child(2) {
+    margin-top: 0.35rem;
+    font-size: 0.68rem;
+    line-height: 1.35;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-alert-detail,
+  .retail-workspace .retail-dashboard-page .ys-dashboard-alert-help {
+    display: none;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-alert-mobile {
+    display: grid;
+    min-width: 0;
+    gap: 0.22rem;
+    margin-top: 0;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-alert-mobile strong {
+    font-size: clamp(1.03rem, 4.5vw, 1.38rem);
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-alert-mobile :is(span, small) {
+    color: #5b6881;
+    font-size: 0.65rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  /* Sales Pulse: four equal mini-stat tiles with untruncated currency,
+     a small heading, and thumb-friendly Calendar/Performance tabs. */
+  .retail-workspace .retail-dashboard-page .ys-dashboard-sales-pulse {
+    min-width: 0;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-pulse-header {
+    padding: 0.85rem 0.8rem 0.7rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-pulse-header > div {
+    gap: 0.6rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-pulse-description {
+    display: none;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-pulse-body {
+    min-width: 0;
+    padding: 0.8rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-pulse-body > div {
+    min-width: 0;
+    gap: 0.85rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-view-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    min-width: 0;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-view-tab {
+    display: flex;
+    min-width: 0;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    font-size: 0.77rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-summary-tile {
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 0.7rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-summary-tile > p:first-child {
+    font-size: 0.61rem;
+    line-height: 1.35;
+    letter-spacing: 0.015em;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-summary-tile__value {
+    margin-top: 0.35rem;
+    font-size: clamp(0.83rem, 3.6vw, 1.1rem);
+    line-height: 1.25;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .retail-workspace
+    .retail-dashboard-page
+    .ys-sales-summary-tile
+    > p:last-child:not(.ys-sales-summary-tile__value) {
+    margin-top: 0.3rem;
+    font-size: 0.65rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  /* The compact five-date selector deliberately has its navigation arrows
+     ABOVE the dates, so five 44px date targets fit in a 320px viewport. */
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week {
+    display: grid;
+    min-width: 0;
+    gap: 0.6rem;
+    padding: 0.7rem 0.55rem 0.75rem;
+    border-bottom: 1px solid #d7deec;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__header,
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__actions {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__header > strong {
+    min-width: 0;
+    font-size: 0.82rem;
+    line-height: 1.35;
+    white-space: nowrap;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__actions {
+    flex: none;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__actions > button {
+    box-sizing: border-box;
+    display: grid;
+    min-width: 44px;
+    min-height: 44px;
+    place-items: center;
+    padding: 0.35rem;
+    border: 1px solid #cbd3e8;
+    border-radius: 0.65rem;
+    background: #f4f6ff;
+    color: #53617f;
+    font-size: 0.73rem;
+    font-weight: 750;
+    cursor: pointer;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__actions > button:disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__days {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    min-width: 0;
+    gap: 0.3rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__day {
+    box-sizing: border-box;
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    min-height: 55px;
+    justify-items: center;
+    align-content: center;
+    gap: 0.25rem;
+    padding: 0.3rem 0;
+    border: 1px solid #cbd4e7;
+    border-radius: 0.7rem;
+    background: #f7f9ff;
+    color: #3c4d6a;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__day > span:first-child {
+    font-size: 0.63rem;
+    line-height: 1.1;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__day strong {
+    font-size: 0.84rem;
+    line-height: 1.05;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__dot,
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__dot-placeholder {
+    box-sizing: border-box;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #625bff;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__dot-placeholder {
+    background: transparent;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__day[aria-pressed="true"] {
+    border-color: #8073e7;
+    background: #eeebff;
+    box-shadow: inset 0 0 0 1px #8073e7;
+    color: #44369c;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__day:focus-visible,
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__actions > button:focus-visible {
+    outline: 3px solid #9989ff;
+    outline-offset: 2px;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__loading {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.72rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-month-grid[data-mobile-open="false"] {
+    display: none;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-month-grid .ys-sales-weekdays,
+  .retail-workspace .retail-dashboard-page .ys-sales-month-grid .ys-sales-empty-day {
+    display: none;
+  }
+
+  /* Expanded month remains a touch-friendly list of all dates, not a tiny
+     7-column calendar. Tapping a date still opens its exact day details. */
+  .retail-workspace .retail-dashboard-page .ys-sales-month-grid > .grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    min-width: 0;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-month-grid .ys-sales-day {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 0.55rem 0.4rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-month-grid .ys-sales-day > p {
+    display: none;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-month-grid .ys-sales-day > div {
+    justify-content: center;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-calendar > div:first-child {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding: 0.55rem 0.65rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-calendar > div:first-child > div {
+    display: flex;
+    min-width: 0;
+    flex: 1 1 auto;
+    justify-content: space-between;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-calendar .ys-sales-month-picker {
+    min-width: 120px;
+    max-width: 190px;
+    flex: 1 1 125px;
+  }
+
+  .retail-workspace
+    .retail-dashboard-page
+    .ys-sales-calendar
+    :is(button[aria-label="Previous month"], button[aria-label="Next month"]) {
+    box-sizing: border-box;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-calendar > div:first-child > button {
+    min-height: 44px;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-selected-day {
+    min-width: 0;
+    padding: 0.85rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-selected-day > div {
+    gap: 0.5rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mini-metric {
+    min-width: 0;
+    padding: 0.65rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mini-metric > p:last-child {
+    overflow-wrap: anywhere;
+    font-size: 0.79rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-pulse-body > div > p:last-child {
+    font-size: 0.7rem;
+    line-height: 1.45;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-chart {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    height: 184px;
+    padding: 0.65rem 0.35rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-detail-chart {
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 0.8rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-detail-chart > div:first-child {
+    gap: 0.4rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-hourly-chart {
+    height: 150px;
+    min-width: 0;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-hourly-chart__empty {
+    display: none;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-hourly-chart[data-mobile-empty="true"] {
+    height: auto;
+    min-height: 64px;
+  }
+
+  .retail-workspace
+    .retail-dashboard-page
+    .ys-sales-hourly-chart[data-mobile-empty="true"]
+    .ys-sales-hourly-chart__plot {
+    display: none;
+  }
+
+  .retail-workspace
+    .retail-dashboard-page
+    .ys-sales-hourly-chart[data-mobile-empty="true"]
+    .ys-sales-hourly-chart__empty {
+    display: flex;
+    min-height: 64px;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem;
+    border: 1px dashed #cbd5e7;
+    border-radius: 0.65rem;
+    background: #f6f8ff;
+    color: #596981;
+    font-size: 0.76rem;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-performance-signal {
+    min-width: 0;
+    padding: 0.8rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-performance-signal > p {
+    line-height: 1.5;
+  }
+
+  /* Inventory month — statistics visible immediately, purchase decision
+     stays behind the existing real Reports navigation action. */
+  .retail-workspace .retail-dashboard-page .ys-dashboard-inventory-recommendation > div {
+    min-width: 0;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-inventory-recommendation > :nth-child(2) {
+    padding: 0.9rem 0.8rem 0.7rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-inventory-recommendation > :nth-child(3) {
+    padding: 0.75rem 0.8rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-recommendation-description {
+    display: none;
+  }
+
+  .retail-workspace
+    .retail-dashboard-page
+    .ys-dashboard-inventory-recommendation
+    .ys-dashboard-report-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-report-stat {
+    min-width: 0;
+    padding: 0.7rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-report-stat > p:last-child {
+    font-size: 1.13rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-monthly-batch {
+    min-width: 0;
+    padding: 0.8rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-monthly-batch h3 {
+    font-size: 0.92rem;
+    line-height: 1.3;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-monthly-batch-description,
+  .retail-workspace .retail-dashboard-page .ys-dashboard-monthly-batch__badge {
+    display: none;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-plan-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.7rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-plan-stats > :nth-child(2) {
+    display: none;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-monthly-batch-stat {
+    min-width: 0;
+    padding: 0.65rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-monthly-batch-stat > div {
+    gap: 0.25rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-plan-footer {
+    display: grid;
+    gap: 0.65rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-plan-footer > button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* Secondary receiving/pipeline data stays operational and thumb-friendly. */
+  .retail-workspace .retail-dashboard-page .ys-dashboard-pipeline-stat {
+    min-width: 0;
+    padding: 0.7rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-pipeline-stat p:last-child {
+    font-size: 1.1rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-order {
+    min-width: 0;
+    padding: 0.75rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-dashboard-order .truncate {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .retail-workspace .retail-dashboard-page button:is(:focus-visible, [aria-pressed="true"]) {
+    outline-offset: 2px;
+  }
+
+  :root.dark .retail-workspace .retail-dashboard-page .ys-dashboard-alert-mobile :is(span, small) {
+    color: #c3d2ea;
+  }
+
+  :root.dark .retail-workspace .retail-dashboard-page .ys-sales-mobile-week {
+    border-color: #4e6080;
+  }
+
+  :root.dark .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__actions > button,
+  :root.dark .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__day {
+    border-color: #5b6c8a;
+    background: #293a55;
+    color: #e7efff;
+  }
+
+  :root.dark
+    .retail-workspace
+    .retail-dashboard-page
+    .ys-sales-mobile-week__day[aria-pressed="true"] {
+    border-color: #aaa1f1;
+    background: #3d3765;
+    color: #fff;
+    box-shadow: inset 0 0 0 1px #aaa1f1;
+  }
+
+  :root.dark .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__dot {
+    background: #c0aaff;
+  }
+
+  :root.dark
+    .retail-workspace
+    .retail-dashboard-page
+    .ys-sales-hourly-chart[data-mobile-empty="true"]
+    .ys-sales-hourly-chart__empty {
+    border-color: #596f91;
+    background: #24354f;
+    color: #d2def0;
+  }
+}
+
+@media (max-width: 359px) {
+  .retail-workspace .retail-dashboard-page .ys-dashboard-kpi-content {
+    padding-inline: 0.58rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-pulse-body {
+    padding-inline: 0.65rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__header > strong {
+    font-size: 0.75rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__actions {
+    gap: 0.12rem;
+  }
+
+  .retail-workspace .retail-dashboard-page .ys-sales-mobile-week__day {
+    min-height: 52px;
+  }
+}

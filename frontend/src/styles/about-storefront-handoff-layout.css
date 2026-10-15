@@ -31,3 +31,105 @@
     justify-self: center;
   }
 }
+
+/* Sprint 12 phone delivery story: content-led, no desktop-sized sticky scene.
+   The video remains a real 16:9 media panel; large vertical gaps and the
+   mobile scrub reveal no longer delay access to the actual illustration. */
+@media (max-width: 700px) {
+  .about-experience .story-delivery {
+    min-width: 0;
+    min-height: 0;
+    padding-block: 0;
+    overflow-x: clip;
+  }
+
+  .about-experience .story-delivery__stage {
+    position: relative;
+    top: auto;
+    width: min(calc(100% - 24px), 35rem);
+    min-width: 0;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 1rem;
+    padding-block: 2.4rem 3rem;
+  }
+
+  .about-experience .story-delivery__copy {
+    display: grid;
+    max-width: 100%;
+    min-width: 0;
+    align-content: start;
+    gap: 0.6rem;
+  }
+
+  .about-experience .story-delivery__copy h2 {
+    max-width: none;
+    margin: 0;
+    font-size: clamp(2.15rem, 10.2vw, 3.2rem);
+    line-height: 1.03;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .about-experience .story-delivery .story-mask__line {
+    white-space: normal;
+  }
+
+  .about-experience .story-delivery__tagline {
+    margin: 0;
+    font-size: clamp(1.1rem, 5.2vw, 1.4rem);
+    line-height: 1.18;
+  }
+
+  .about-experience .story-delivery__lead {
+    max-width: 100%;
+    margin: 0;
+    font-size: 0.84rem;
+    line-height: 1.52;
+  }
+
+  .about-experience .story-delivery__proofs {
+    display: flex;
+    flex-wrap: wrap;
+    min-width: 0;
+    gap: 0.4rem;
+    margin: 0;
+  }
+
+  .about-experience .story-delivery__proofs li {
+    min-height: 32px;
+    min-width: 0;
+    align-items: center;
+    padding: 0.4rem 0.55rem;
+    font-size: 0.66rem;
+    line-height: 1.2;
+  }
+
+  .about-experience .story-delivery__primary-action {
+    width: fit-content;
+    max-width: 100%;
+    min-height: 44px;
+    margin: 0;
+  }
+
+  .about-experience .story-delivery__visual {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    justify-self: stretch;
+    margin: 0;
+  }
+
+  .about-experience .story-delivery__frame {
+    box-sizing: border-box;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 1rem;
+    box-shadow: 0 16px 40px rgb(0 4 26 / 35%);
+  }
+
+  .about-experience .story-delivery__video {
+    object-fit: contain;
+  }
+}

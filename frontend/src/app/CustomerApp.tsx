@@ -22,6 +22,9 @@ import "@/styles/brand.css";
 import "@/styles/shopping-guide.css";
 import "@/styles/theme-storefront.css";
 import "@/styles/theme-storefront-contrast.css";
+import "@/styles/customer-order-policy.css";
+import "@/styles/customer-mobile-tokens.css";
+import "@/styles/customer-adaptive-mobile.css";
 import {
   getCustomerAuthPageKind,
   isCustomerProtectedRoute,
@@ -140,6 +143,10 @@ function CustomerAppRoutes({
   const authPageKind = getCustomerAuthPageKind(pathname);
   const protectedRoute = isCustomerProtectedRoute(pathname);
   const [storeEntranceDismissed, setStoreEntranceDismissed] = useState(readStoreEntranceState);
+  // Preview-only entry route keeps Welcome inspectable after Get Started; production is unchanged.
+  const previewWelcome =
+    import.meta.env.VITE_MOBILE_PREVIEW === "1" &&
+    locationUrl.searchParams.get("preview") === "welcome";
 
   useEffect(() => {
     if (redirect) navigate(redirect);
@@ -162,12 +169,13 @@ function CustomerAppRoutes({
     );
   }
 
-  if (pathname === "/" && !storeEntranceDismissed) {
+  if (pathname === "/" && (previewWelcome || !storeEntranceDismissed)) {
     return (
       <StoreEntrance
         onEnter={() => {
           writeStoreEntranceState();
           setStoreEntranceDismissed(true);
+          if (previewWelcome) navigate("/");
         }}
       />
     );
@@ -204,7 +212,8 @@ function CustomerAppRoutes({
   else if (pathname === "/register") page = <CustomerRegisterPage navigate={navigate} />;
   else if (pathname === "/account-recovery")
     page = <CustomerAccountRecoveryPage location={location} navigate={navigate} />;
-  else if (pathname === "/account") page = <CustomerAccountPage navigate={navigate} />;
+  else if (pathname === "/account")
+    page = <CustomerAccountPage location={location} navigate={navigate} />;
   else if (pathname === "/support") page = <CustomerSupportPage navigate={navigate} />;
   else if (pathname === "/privacy") page = <PrivacyPolicyPage navigate={navigate} />;
   else page = <CustomerNotFoundPage navigate={navigate} />;

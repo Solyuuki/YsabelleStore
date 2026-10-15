@@ -5,7 +5,9 @@ import { resolve } from "node:path";
 const pageSource = readFileSync(resolve(process.cwd(), "src/pages/PosPageV2.tsx"), "utf8");
 
 assert.match(pageSource, /USB barcode scanners work as keyboard input/);
-assert.match(pageSource, /Scan barcode or search name \/ SKU \/ price/);
+assert.match(pageSource, /aria-label="Scan barcode or search product"/);
+assert.match(pageSource, /placeholder="Barcode \/ product"/);
+assert.match(pageSource, /Search by product, SKU, price or barcode/);
 
 const addProductToCartSource = pageSource.match(
   /function addProductToCart\([\s\S]*?\n {2}async function handleSearch/

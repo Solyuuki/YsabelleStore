@@ -42,8 +42,10 @@ Ysabelle Store palette remains:
 - Surface: `#F7F9FF`
 - White: `#FFFFFF`
 
-The official Ysabelle full logo lockup is used in the page header. The background keeps a restrained
-animated Ysabelle aurora and faint grid. Status illustrations use slow float/halo motion and stop when
+**Sprint 12 superseding requirement:** Full-screen HTTP/reliability status pages no longer
+render the official Ysabelle logo or a branded header. The shared `StatusScreen` now centers only
+the status-specific illustration, code, explanation, and recovery action. Regular application
+branding remains unaffected. The background keeps a restrained animated Ysabelle aurora and faint grid. Status illustrations use slow float/halo motion and stop when
 `prefers-reduced-motion` is enabled. No new runtime animation dependency is introduced.
 
 ## Full-screen status matrix
@@ -118,8 +120,9 @@ preference, including when an HTTP error interrupts an already-dark session.
   `.customer-app` or `.app-shell-ambient` being ancestors of the portal.
 - Dark mode reuses the existing non-tiled galaxy gradient and proportional,
   deterministic `StorefrontGalaxyArtwork` SVG. It does not stretch the artwork.
-- Titles, descriptions, labels, status numbers/badges, original official logo, icons, safety
-  notes, buttons, hover states, and keyboard-focus rings receive dark-specific contrast.
+- Titles, descriptions, labels, status numbers/badges, icons, safety notes, buttons,
+  hover states, and keyboard-focus rings receive dark-specific contrast. The former status logo
+  and its dark-mode style were removed in Sprint 12.
 - System conditions reveal their already bundled local SVG illustrations in dark mode.
   The approved light-mode system layout remains unchanged.
 - The UI includes dark treatments for reconnecting, degraded, and restored banners.

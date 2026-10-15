@@ -164,7 +164,9 @@ export type StorefrontOrder = {
   deliveryStatus: StorefrontDeliveryStatus;
   courierProvider: string | null;
   courierReference: string | null;
-  deliveryNotes: string | null;
+  riderName: string | null;
+  riderPhone: string | null;
+  customerDeliveryNote: string | null;
   dispatchedAt: string | null;
   deliveredAt: string | null;
   customerConfirmedAt: string | null;

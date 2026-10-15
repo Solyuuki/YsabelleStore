@@ -36,7 +36,7 @@ assert.doesNotMatch(reportsSource, /New product restock/);
 assert.doesNotMatch(reportsSource, /Add new product/);
 assert.match(forecastSource, /inventory recommendation report/);
 assert.doesNotMatch(reportsSource, /Review recommendations/);
-assert.match(forecastSource, /Complete current-month view across all products/);
+assert.match(forecastSource, /Live planning view for the next monthly restock/);
 assert.match(reportsSource, /RestockForecastPanel/);
 assert.match(forecastSource, /Monthly product report/);
 const forecastWatchlistBodyStart = forecastSource.indexOf("<TableBody>");
@@ -50,10 +50,7 @@ const forecastWatchlistBody = forecastSource.slice(
 assert.match(forecastWatchlistBody, /role="button"/);
 assert.match(forecastWatchlistBody, /tabIndex=\{0\}/);
 assert.match(forecastWatchlistBody, /aria-pressed=\{selectedRow\}/);
-assert.match(
-  forecastWatchlistBody,
-  /onClick=\{\(\) => setSelectedProductId\(item\.product\.id\)\}/
-);
+assert.match(forecastWatchlistBody, /onClick=\{\(\) => openForecastProduct\(item\.product\.id\)\}/);
 assert.match(forecastWatchlistBody, /event\.key !== "Enter"/);
 assert.match(forecastWatchlistBody, /event\.key !== " "/);
 assert.match(forecastWatchlistBody, /cursor-pointer/);
@@ -62,7 +59,7 @@ assert.match(forecastWatchlistBody, /focus-visible:ring-indigo-500/);
 assert.doesNotMatch(forecastWatchlistBody, /<button/);
 assert.match(forecastSource, /loadAllRestockPlanningCandidates\(controller\.signal\)/);
 assert.match(forecastViewModelSource, /includeZero:\s*true/);
-assert.match(forecastSource, /Recommended next step/);
+assert.match(forecastSource, /Next monthly restock/);
 assert.match(forecastSource, /Expected monthly demand/);
 assert.match(forecastSource, /Gray shows recent sales\. Blue shows expected demand/);
 assert.match(forecastSource, /Forecast chart ready/);
@@ -109,7 +106,7 @@ assert.match(receivingSource, /Damage \/ return reason/);
 assert.match(receivingSource, /setReturnReportOrder\(updated\)/);
 assert.match(receivingSource, /receiveRestockOrder/);
 assert.match(receivingSource, /@\/components\/ui\/table/);
-assert.match(receivingSource, /<Table aria-label=/);
+assert.match(receivingSource, /<Table\s+aria-label=/);
 assert.match(receivingSource, /role="button"/);
 assert.match(receivingSource, /<StatCard/);
 assert.match(receivingSource, /<Dialog/);

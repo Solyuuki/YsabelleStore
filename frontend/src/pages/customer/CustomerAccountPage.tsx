@@ -17,9 +17,17 @@ import {
   ShieldCheck,
   UserRound
 } from "lucide-react";
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type FormEvent
+} from "react";
 
 import { ProductCard, formatCurrency } from "@/components/customer/ProductCard";
+import { OrderRiderInformation } from "@/components/customer/OrderRiderInformation";
 import { StorefrontGalaxyArtwork } from "@/components/customer/StorefrontGalaxyArtwork";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
@@ -130,17 +138,43 @@ function isCustomerSessionError(reason: unknown) {
   );
 }
 
-export function CustomerAccountPage({ navigate }: { navigate: (path: string) => void }) {
+export function CustomerAccountPage({
+  location,
+  navigate
+}: {
+  location: string;
+  navigate: (path: string) => void;
+}) {
   const { customer, error, logout, refreshSession } = useCustomerAuth();
   const { favoriteProducts, loading: favoritesLoading } = useCustomerFavorites();
   const [activeTab, setActiveTab] = useState<AccountTab>("orders");
+
+  // The compact Account popover opens the existing panel before paint,
+  // avoiding an Orders flash when another section is selected.
+  useLayoutEffect(() => {
+    const requestedView = new URL(location, window.location.origin).searchParams.get("view");
+    if (
+      requestedView === "orders" ||
+      requestedView === "favorites" ||
+      requestedView === "profile" ||
+      requestedView === "security"
+    ) {
+      setActiveTab(requestedView);
+    } else {
+      setActiveTab("orders");
+    }
+  }, [location]);
   const [orders, setOrders] = useState<StorefrontOrder[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [ordersError, setOrdersError] = useState<string | null>(null);
   const [confirmingOrder, setConfirmingOrder] = useState<string | null>(null);
   const [resumingPaymentOrder, setResumingPaymentOrder] = useState<string | null>(null);
   const [historyPage, setHistoryPage] = useState(1);
-  const historyPageSize = 5;
+  // Bound the Order History list to three compact cards per page on all viewports.
+  // Active deliveries retain their full live tracking; archived orders stay paginated.
+  const historyPageSize = 3;
+  const [favoritesPage, setFavoritesPage] = useState(1);
+  const favoritesPageSize = 8;
   const [sessions, setSessions] = useState<CustomerSessionSummary[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(true);
   const [sessionsError, setSessionsError] = useState<string | null>(null);
@@ -364,6 +398,15 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
     () => orders.filter((order) => ["DELIVERED", "CANCELLED"].includes(order.deliveryStatus)),
     [orders]
   );
+  const favoritesTotalPages = Math.max(1, Math.ceil(favoriteProducts.length / favoritesPageSize));
+  const paginatedFavoriteProducts = useMemo(
+    () =>
+      favoriteProducts.slice(
+        (favoritesPage - 1) * favoritesPageSize,
+        favoritesPage * favoritesPageSize
+      ),
+    [favoriteProducts, favoritesPage]
+  );
   const historyTotalPages = Math.max(1, Math.ceil(historicalOrders.length / historyPageSize));
   const paginatedHistoricalOrders = useMemo(
     () =>
@@ -374,6 +417,11 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
   useEffect(() => {
     if (historyPage > historyTotalPages) setHistoryPage(historyTotalPages);
   }, [historyPage, historyTotalPages]);
+
+  // Unfavoriting the last card on a page must never leave an empty page.
+  useEffect(() => {
+    if (favoritesPage > favoritesTotalPages) setFavoritesPage(favoritesTotalPages);
+  }, [favoritesPage, favoritesTotalPages]);
 
   async function handleResumePaymongo(orderNumber: string) {
     if (resumingPaymentOrder) return;
@@ -959,16 +1007,6 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                           </div>
                         ) : null}
 
-                        {order.courierProvider ? (
-                          <div className="customer-account-delivery-courier">
-                            <Truck aria-hidden="true" size={17} />
-                            <span>
-                              <strong>{order.courierProvider}</strong>
-                              {order.courierReference ? ` · ${order.courierReference}` : ""}
-                            </span>
-                          </div>
-                        ) : null}
-
                         {isPaymongoAwaitingPayment(order) ? (
                           <div className="customer-account-payment-gate">
                             <CreditCard aria-hidden="true" size={20} />
@@ -993,6 +1031,8 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                         ) : (
                           <DeliveryProgress order={order} />
                         )}
+
+                        <OrderRiderInformation order={order} />
 
                         {order.canCustomerConfirmReceipt ? (
                           <div className="customer-account-confirm-delivery">
@@ -1052,6 +1092,9 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                             </div>
                           </summary>
                           <div className="customer-account-history-card__details">
+                            {order.deliveryStatus === "DELIVERED" ? (
+                              <OrderRiderInformation order={order} />
+                            ) : null}
                             <div className="customer-account-history-card__payment">
                               <span>Payment</span>
                               <strong>
@@ -1076,17 +1119,15 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                         </details>
                       ))}
                     </div>
-                    {historicalOrders.length > historyPageSize ? (
-                      <AppPagination
-                        className="customer-account-history-pagination"
-                        itemLabel="orders"
-                        onPageChange={setHistoryPage}
-                        page={historyPage}
-                        pageSize={historyPageSize}
-                        totalItems={historicalOrders.length}
-                        totalPages={historyTotalPages}
-                      />
-                    ) : null}
+                    <AppPagination
+                      className="customer-account-history-pagination"
+                      itemLabel="orders"
+                      onPageChange={setHistoryPage}
+                      page={historyPage}
+                      pageSize={historyPageSize}
+                      totalItems={historicalOrders.length}
+                      totalPages={historyTotalPages}
+                    />
                   </>
                 ) : (
                   <div className="customer-account-state">No completed delivery history yet.</div>
@@ -1125,16 +1166,29 @@ export function CustomerAccountPage({ navigate }: { navigate: (path: string) => 
                 </button>
               </div>
             ) : (
-              <div className="customer-account-favorites-grid">
-                {favoriteProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    navigate={navigate}
-                    presentation="catalog"
-                    product={product}
+              <>
+                <div className="customer-account-favorites-grid">
+                  {paginatedFavoriteProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      navigate={navigate}
+                      presentation="catalog"
+                      product={product}
+                    />
+                  ))}
+                </div>
+                {favoriteProducts.length > favoritesPageSize ? (
+                  <AppPagination
+                    className="customer-account-history-pagination customer-account-favorites-pagination"
+                    itemLabel="favorites"
+                    onPageChange={setFavoritesPage}
+                    page={favoritesPage}
+                    pageSize={favoritesPageSize}
+                    totalItems={favoriteProducts.length}
+                    totalPages={favoritesTotalPages}
                   />
-                ))}
-              </div>
+                ) : null}
+              </>
             )}
           </section>
 

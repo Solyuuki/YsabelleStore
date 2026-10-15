@@ -116,3 +116,97 @@ test("printed receipts remain explicitly light", () => {
   assert.match(print, /@media print/);
   assert.match(print, /background: #ffffff !important/);
 });
+
+test("logout confirmation reuses the About galaxy and keeps both themes readable", () => {
+  const modal = read("frontend/src/components/shared/LogoutConfirmationModal.tsx");
+  const darkStyles = read("frontend/src/styles/logout-confirmation.css");
+  const theme = read("frontend/src/styles/theme-retail.css");
+
+  assert.match(modal, /@\/styles\/logout-confirmation\.css/);
+  assert.match(theme, /--storefront-galaxy-background:/);
+  assert.match(darkStyles, /:root\.dark \.logout-confirmation-backdrop/);
+  assert.match(darkStyles, /background-image: var\(--storefront-galaxy-background\)/);
+  assert.match(darkStyles, /background-size: 72px 72px/);
+
+  for (const part of [
+    "panel",
+    "header",
+    "warning",
+    "title",
+    "description",
+    "notice",
+    "actions",
+    "cancel"
+  ]) {
+    assert.ok(
+      modal.includes(`logout-confirmation-${part}`),
+      `Missing logout component target: ${part}`
+    );
+    assert.ok(
+      darkStyles.includes(`.logout-confirmation-${part}`),
+      `Missing scoped dark-mode contrast: ${part}`
+    );
+  }
+
+  // Light-mode utility styles and the original session controls remain intact.
+  assert.match(modal, /bg-white\/95/);
+  assert.match(modal, /bg-indigo-50\/80/);
+  assert.match(modal, /onClick=\{onCancel\}/);
+  assert.match(modal, /onClick=\{onConfirm\}/);
+  assert.match(modal, /event\.key === "Escape"/);
+  assert.match(modal, /isLoggingOut \? "Securing session\.\.\."/);
+});
+
+test("About dark preference themes mobile dock and portaled menus without changing story scenes", () => {
+  const appearance = read("frontend/src/context/AppearanceContext.tsx");
+  const mobile = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const app = read("frontend/src/app/CustomerApp.tsx");
+  const scoped = mobile.split("/* About/Discover chrome-only dark mode:")[1];
+
+  assert.ok(scoped, "Missing About-specific mobile chrome styles");
+  assert.match(appearance, /root\.dataset\.aboutChromeTheme = "dark"/);
+  assert.match(appearance, /!preserveAbout &&/);
+  assert.match(app, /customer-adaptive-mobile\.css/);
+  assert.match(scoped, /@media \(max-width: 1180px\)/);
+  for (const className of [
+    "customer-mobile-dock",
+    "customer-mobile-dock__link",
+    "customer-mobile-dock__more",
+    "customer-mobile-dock__more-icon",
+    "customer-mobile-more__sheet",
+    "customer-mobile-account__popover"
+  ]) {
+    assert.ok(scoped.includes(className), "Missing About dark style: " + className);
+  }
+  assert.match(scoped, /:root\[data-about-chrome-theme="dark"\]/);
+  assert.match(scoped, /background: rgb\(20 31 49 \/ 96%\)/);
+  assert.match(scoped, /color: #d4e0f3;/);
+  assert.match(scoped, /:focus-visible/);
+  assert.doesNotMatch(scoped, /\.discover-story|\.story-welcome|\.story-catalog/);
+  assert.doesNotMatch(scoped, /:root\.light/);
+});
+
+test("staff sidebar has an icon-only persisted appearance toggle in expanded and collapsed layouts", () => {
+  const sidebar = read("frontend/src/components/app/AppSidebar.tsx");
+  const theme = read("frontend/src/styles/theme-retail.css");
+  const appearance = read("frontend/src/context/AppearanceContext.tsx");
+  const mobile = read("frontend/src/components/app/RetailMobileNavigation.tsx");
+
+  assert.match(sidebar, /import \{ ChevronLeft, LogOut, Moon, Sun \} from "lucide-react";/);
+  assert.match(sidebar, /useAppearance\(\)/);
+  assert.match(sidebar, /user\?\.role === "STAFF" \? \(/);
+  assert.match(sidebar, /className="ys-staff-sidebar-theme-toggle/);
+  assert.match(
+    sidebar,
+    /aria-label=\{`Switch to \$\{retailTheme === "dark" \? "light" : "dark"\} mode`\}/
+  );
+  assert.match(sidebar, /aria-pressed=\{retailTheme === "dark"\}/);
+  assert.match(sidebar, /setRetailTheme\(retailTheme === "dark" \? "light" : "dark"\)/);
+  assert.match(sidebar, /collapsed \? "justify-center" : "justify-between"/);
+  assert.match(sidebar, /<Sun aria-hidden="true"/);
+  assert.match(sidebar, /<Moon aria-hidden="true"/);
+  assert.match(theme, /:root\.dark \.app-shell-ambient > aside \.ys-staff-sidebar-theme-toggle/);
+  assert.match(theme, /\.ys-staff-sidebar-theme-toggle:focus-visible/);
+  assert.match(appearance, /ysabellestore\.appearance\.retail\.v1/);
+  assert.match(mobile, /setRetailTheme\(retailTheme === "dark" \? "light" : "dark"\)/);
+});

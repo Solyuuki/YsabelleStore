@@ -15,7 +15,8 @@ import { getEffectiveMonthlySeries } from "../modules/forecasting/effective-sale
 import {
   buildProductSizeFamilyKey,
   extractCanonicalProductSize,
-  normalizeProductIdentity
+  normalizeProductIdentity,
+  verifiedProductSizeFamilyId
 } from "../utils/catalogIdentity.js";
 import { HttpError } from "../utils/httpError.js";
 import type {
@@ -166,6 +167,17 @@ function packagingLabel(unit: StorefrontProductRecord["unit"]) {
 }
 
 function isSameSizeVariantFamily(left: StorefrontProductRecord, right: StorefrontProductRecord) {
+  if (left.familyId && right.familyId) return left.familyId === right.familyId;
+
+  if (left.familyId || right.familyId) {
+    const verifiedId = verifiedProductSizeFamilyId(left);
+    return (
+      Boolean(verifiedId) &&
+      verifiedId === verifiedProductSizeFamilyId(right) &&
+      verifiedId === (left.familyId ?? right.familyId)
+    );
+  }
+
   return buildProductSizeFamilyKey(left) === buildProductSizeFamilyKey(right);
 }
 
@@ -188,7 +200,10 @@ async function listStorefrontSizeVariants(product: StorefrontProductRecord) {
     await prisma.product.findMany({
       include: storefrontProductInclude,
       orderBy: [{ name: "asc" }, { id: "asc" }],
-      where: storefrontProductWhere({ categoryId: product.categoryId })
+      where: storefrontProductWhere({
+        categoryId: product.categoryId,
+        ...(product.familyId ? { OR: [{ familyId: product.familyId }, { familyId: null }] } : {})
+      })
     })
   )
     .map((candidate) => {
@@ -196,11 +211,8 @@ async function listStorefrontSizeVariants(product: StorefrontProductRecord) {
       if (!size || !isSameSizeVariantFamily(product, candidate)) return null;
 
       const packageConfiguration = isPackageConfiguration(candidate.unit);
-      const compatibleDimension =
-        size.dimension === selectedSize.dimension ||
-        packageConfiguration ||
-        isPackageConfiguration(product.unit);
-      if (!compatibleDimension) return null;
+      // PACK/BOX are sale-unit labels, not proof that weight/volume/count match.
+      if (size.dimension !== selectedSize.dimension) return null;
 
       const availableStock = getSellableStockQuantity(candidate.inventoryBatches);
       return {
@@ -288,9 +300,22 @@ function serializeStorefrontOrder(order: StorefrontOrderRecord) {
     paymentMethod: order.paymentMethod,
     paymentStatus: order.paymentStatus,
     deliveryStatus: order.deliveryStatus,
-    courierProvider: order.courierProvider,
-    courierReference: order.courierReference,
-    deliveryNotes: order.deliveryNotes,
+    // Never return draft handoff data or internal staff notes to customer sessions.
+    courierProvider: ["OUT_FOR_DELIVERY", "DELIVERED"].includes(order.deliveryStatus)
+      ? order.courierProvider
+      : null,
+    courierReference: ["OUT_FOR_DELIVERY", "DELIVERED"].includes(order.deliveryStatus)
+      ? order.courierReference
+      : null,
+    riderName: ["OUT_FOR_DELIVERY", "DELIVERED"].includes(order.deliveryStatus)
+      ? order.riderName
+      : null,
+    riderPhone: ["OUT_FOR_DELIVERY", "DELIVERED"].includes(order.deliveryStatus)
+      ? order.riderPhone
+      : null,
+    customerDeliveryNote: ["OUT_FOR_DELIVERY", "DELIVERED"].includes(order.deliveryStatus)
+      ? order.customerDeliveryNote
+      : null,
     dispatchedAt: order.dispatchedAt,
     deliveredAt: order.deliveredAt,
     customerConfirmedAt: order.customerConfirmedAt,
@@ -313,7 +338,8 @@ function serializeStorefrontOrder(order: StorefrontOrderRecord) {
       id: event.id,
       status: event.status,
       actorType: event.actorType,
-      note: event.note,
+      // Staff event notes can contain internal operational details and are never customer-facing.
+      note: event.actorType === CustomerDeliveryActorType.STAFF ? null : event.note,
       createdAt: event.createdAt
     })),
     canCustomerConfirmReceipt:

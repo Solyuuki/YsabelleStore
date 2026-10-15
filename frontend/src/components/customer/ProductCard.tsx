@@ -3,6 +3,8 @@ import { CircleAlert, Flame, Heart, ShoppingCart, Star } from "lucide-react";
 import { useState } from "react";
 
 import { useCart } from "@/context/CartContext";
+import { CustomerAccountRequestError } from "@/services/customerAccountService";
+import { useToast } from "@/components/shared/ToastProvider";
 import { useCustomerFavorites } from "@/context/CustomerFavoritesContext";
 import type { StorefrontProduct } from "@/types/storefront";
 import { buildCustomerAuthPath } from "@/utils/customerRoutes";
@@ -53,10 +55,12 @@ export function ProductCard({
   tourTarget?: boolean;
 }) {
   const { addItem, isReady } = useCart();
+  const { pushToast } = useToast();
   const { favoriteIds, toggleFavorite } = useCustomerFavorites();
   const outOfStock = product.availableStock <= 0;
   const isFavorite = favoriteIds.has(product.id);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [isUpdatingFavorite, setIsUpdatingFavorite] = useState(false);
   const resolvedBadge = badge === undefined ? getStorefrontProductBadge(product) : badge;
   const showStockMessage =
     outOfStock || (product.stockStatus === "LOW_STOCK" && resolvedBadge?.tone !== "low-stock");
@@ -73,10 +77,29 @@ export function ProductCard({
     : "No reviews yet.";
 
   async function handleFavorite() {
-    const result = await toggleFavorite(product.id);
-    if (result === "auth-required") {
-      const returnTo = `${window.location.pathname}${window.location.search}`;
-      navigate(buildCustomerAuthPath("/login", returnTo));
+    if (isUpdatingFavorite) return;
+
+    setIsUpdatingFavorite(true);
+    try {
+      const result = await toggleFavorite(product.id);
+      if (result === "auth-required") {
+        const returnTo = `${window.location.pathname}${window.location.search}`;
+        navigate(buildCustomerAuthPath("/login", returnTo));
+      }
+    } catch (error) {
+      pushToast({
+        title: "Couldn't update favorites",
+        message:
+          error instanceof CustomerAccountRequestError &&
+          error.code === "CUSTOMER_AUTH_ORIGIN_REJECTED"
+            ? "This mobile preview origin is not allowed yet. Restart the development backend and retry."
+            : error instanceof Error
+              ? error.message
+              : "Please try again.",
+        variant: "error"
+      });
+    } finally {
+      setIsUpdatingFavorite(false);
     }
   }
 
@@ -121,7 +144,14 @@ export function ProductCard({
               ) : (
                 <CircleAlert aria-hidden="true" className="customer-product-badge__icon" />
               )}
-              <span>{resolvedBadge.label}</span>
+              <span className="customer-product-badge__label-full">{resolvedBadge.label}</span>
+              <span className="customer-product-badge__label-mobile">
+                {resolvedBadge.tone === "trending"
+                  ? "Trending"
+                  : resolvedBadge.tone === "best-seller"
+                    ? "Best seller"
+                    : resolvedBadge.label}
+              </span>
             </span>
           ) : null}
         </CustomerLink>
@@ -132,8 +162,16 @@ export function ProductCard({
               : `Save ${product.name} to favorites`
           }
           aria-pressed={isFavorite}
+          aria-busy={isUpdatingFavorite}
           className="customer-product-card__favorite"
-          data-tooltip={isFavorite ? "Remove from favorites" : "Save to favorites"}
+          data-tooltip={
+            isUpdatingFavorite
+              ? "Updating favorites..."
+              : isFavorite
+                ? "Remove from favorites"
+                : "Save to favorites"
+          }
+          disabled={isUpdatingFavorite}
           onClick={() => void handleFavorite()}
           type="button"
         >
@@ -154,7 +192,7 @@ export function ProductCard({
         >
           <Star aria-hidden="true" fill={hasReviews ? "currentColor" : "none"} />
           {hasReviews ? <strong>{formattedRating}</strong> : null}
-          <span>
+          <span className="customer-product-card__review-count">
             {hasReviews
               ? `(${product.reviewCount} ${product.reviewCount === 1 ? "review" : "reviews"})`
               : "No reviews yet"}
@@ -186,12 +224,20 @@ export function ProductCard({
               <button
                 className="customer-button customer-button--compact customer-product-card__cart-button"
                 data-tour={tourTarget ? "add-to-cart" : undefined}
+                aria-label={
+                  isReady ? `Add ${selectedQuantity} ${product.name} to cart` : "Cart loading"
+                }
                 disabled={!isReady}
                 onClick={handleAddToCart}
                 type="button"
               >
                 <ShoppingCart aria-hidden="true" size={17} strokeWidth={2} />
-                {isReady ? "Add to cart" : "Cart loading"}
+                <span className="customer-product-card__add-full">
+                  {isReady ? "Add to cart" : "Cart loading"}
+                </span>
+                <span aria-hidden="true" className="customer-product-card__add-mobile">
+                  {isReady ? "Add" : "Wait"}
+                </span>
               </button>
             </div>
           ) : (

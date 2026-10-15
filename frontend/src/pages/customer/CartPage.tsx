@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, ShoppingBasket, Trash2 } from "lucide-react";
 
 import { CustomerLink } from "@/components/customer/CustomerLink";
+import { CustomerOrderPolicyInfo } from "@/components/customer/CustomerOrderPolicyInfo";
 import { formatCurrency, formatUnit } from "@/components/customer/ProductCard";
 import { ProductVisual } from "@/components/customer/ProductVisual";
 import { QuantityControl } from "@/components/customer/QuantityControl";
@@ -88,7 +89,11 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
                       <p>
                         {formatCurrency(product.sellingPrice)} per {formatUnit(product.unit)}
                       </p>
-                      <button onClick={() => removeItem(product.id)} type="button">
+                      <button
+                        aria-label={`Remove ${product.name} from cart`}
+                        onClick={() => removeItem(product.id)}
+                        type="button"
+                      >
                         <Trash2 aria-hidden="true" size={15} /> Remove
                       </button>
                     </div>
@@ -117,34 +122,37 @@ export function CartPage({ navigate }: { navigate: (path: string) => void }) {
                 />
               ) : null}
             </section>
-            <aside className="customer-order-summary">
-              <p className="customer-kicker">Order summary</p>
-              <h2>Review Your Total</h2>
-              <div>
-                <span>Items ({itemCount})</span>
-                <strong>{formatCurrency(subtotal)}</strong>
-              </div>
-              <div className="customer-order-summary__total">
-                <span>Total</span>
-                <strong>{formatCurrency(subtotal)}</strong>
-              </div>
-              <p>
-                {status === "authenticated"
-                  ? "Final stock availability is checked when you place your pickup order."
-                  : "Sign in to move this guest cart into your account and continue to checkout."}
-              </p>
-              <CustomerLink
-                className="customer-button customer-button--full"
-                href={checkoutHref}
-                navigate={navigate}
-                aria-disabled={!isReady}
-                onClick={(event) => {
-                  if (!isReady) event.preventDefault();
-                }}
-              >
-                Proceed to checkout <ArrowRight aria-hidden="true" size={18} />
-              </CustomerLink>
-            </aside>
+            <div className="customer-cart-summary-stack">
+              <CustomerOrderPolicyInfo />
+              <aside className="customer-order-summary">
+                <p className="customer-kicker">Order summary</p>
+                <h2>Review Your Total</h2>
+                <div>
+                  <span>Items ({itemCount})</span>
+                  <strong>{formatCurrency(subtotal)}</strong>
+                </div>
+                <div className="customer-order-summary__total">
+                  <span>Total</span>
+                  <strong>{formatCurrency(subtotal)}</strong>
+                </div>
+                <p>
+                  {status === "authenticated"
+                    ? "Final stock availability is checked when you place your delivery order."
+                    : "Sign in to move this guest cart into your account and continue to checkout."}
+                </p>
+                <CustomerLink
+                  className="customer-button customer-button--full"
+                  href={checkoutHref}
+                  navigate={navigate}
+                  aria-disabled={!isReady}
+                  onClick={(event) => {
+                    if (!isReady) event.preventDefault();
+                  }}
+                >
+                  Proceed to checkout <ArrowRight aria-hidden="true" size={18} />
+                </CustomerLink>
+              </aside>
+            </div>
           </div>
         )}
       </div>

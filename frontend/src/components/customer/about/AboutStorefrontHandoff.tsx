@@ -150,7 +150,9 @@ export function AboutStorefrontHandoff({ navigate }: { navigate: (path: string) 
 
     const media = gsap.matchMedia();
 
-    media.add("(prefers-reduced-motion: no-preference)", () => {
+    // On phones show the complete delivery content directly: no long scroll scrub.
+    // Larger screens retain the approved reveal and video transition.
+    media.add("(min-width: 701px) and (prefers-reduced-motion: no-preference)", () => {
       const context = gsap.context(() => {
         const copy = Array.from(root.querySelectorAll<HTMLElement>("[data-delivery-copy]"));
         const proofs = Array.from(root.querySelectorAll<HTMLElement>("[data-delivery-proof]"));

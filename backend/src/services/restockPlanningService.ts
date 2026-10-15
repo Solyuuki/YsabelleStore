@@ -13,6 +13,11 @@ import {
 } from "./restockDemandForecastService.js";
 import { loadActiveInventoryForecasts } from "./inventoryForecastSourceService.js";
 import { buildRestockForecastDecision } from "./restockForecastDecisionService.js";
+import {
+  estimateNextMonthRestock,
+  monthlyRestockCycle,
+  nextMonthlyRestockDate
+} from "./restockMonthlyCyclePolicy.js";
 import { getIncomingRestockStock } from "./restockService.js";
 import { activeReservationsByProduct } from "./stockReservationService.js";
 import { classifyStockHealth } from "./stockHealthService.js";
@@ -170,6 +175,19 @@ export async function listRestockPlanningCandidates(
           riskLevel: operationalForecast!.riskLevel,
           suggestedQuantity: operationalForecast!.suggestedQuantity
         };
+    const nextPeriod = monthlyRestockCycle(now).nextMonth;
+    const expectedNextDemand =
+      activeForecast?.points.find((point) => point.period.slice(0, 7) === nextPeriod)
+        ?.predictedQuantity ?? forecastDecision.currentMonthDemand;
+    const nextMonthRestock = estimateNextMonthRestock({
+      currentDemand: forecastDecision.currentMonthDemand,
+      expectedNextDemand,
+      sellableStock: availableForNewOrders,
+      incomingStock,
+      expiryRiskQuantity,
+      targetStockLevel: product.targetStockLevel,
+      reorderLevel: product.reorderLevel
+    });
     const persistedOperationalRecommendation = recommendation?.forecastRecordId
       ? null
       : recommendation;
@@ -234,6 +252,7 @@ export async function listRestockPlanningCandidates(
           },
       forecastDecision,
       incomingStock,
+      nextMonthRestock,
       physicalOnHand: stockTruth.physicalOnHand,
       product: {
         barcode: product.barcode,
@@ -252,6 +271,7 @@ export async function listRestockPlanningCandidates(
       recommendationId,
       recommendationSource,
       recommendedQuantity,
+      scheduledRestockAt: nextMonthlyRestockDate(now),
       sellableStock: availableForNewOrders,
       stockHealth
     };

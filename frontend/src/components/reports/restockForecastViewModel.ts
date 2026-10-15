@@ -15,6 +15,7 @@ export const RISK_PRIORITY: Record<RestockForecastRisk, number> = {
 };
 
 export const ACTIVE_RESTOCK_STATUSES = [
+  "DRAFT",
   "APPROVED",
   "AWAITING_DELIVERY",
   "PARTIALLY_RECEIVED"
@@ -85,7 +86,8 @@ export function formatDate(value: string | null | undefined) {
   return new Intl.DateTimeFormat("en-PH", {
     day: "numeric",
     month: "short",
-    year: "numeric"
+    year: "numeric",
+    timeZone: "Asia/Manila"
   }).format(date);
 }
 
@@ -110,6 +112,12 @@ export function formatBatchMonth(value: string) {
 }
 
 export function stockStatusVariant(candidate: RestockPlanningCandidate) {
+  if (
+    candidate.stockHealth.status === "NORMAL" &&
+    candidate.stockHealth.demandSource === "INSUFFICIENT_HISTORY"
+  ) {
+    return "info" as const;
+  }
   switch (candidate.stockHealth.status) {
     case "OUT_OF_STOCK":
       return "danger" as const;
@@ -124,6 +132,12 @@ export function stockStatusVariant(candidate: RestockPlanningCandidate) {
 }
 
 export function stockStatusLabel(candidate: RestockPlanningCandidate) {
+  if (
+    candidate.stockHealth.status === "NORMAL" &&
+    candidate.stockHealth.demandSource === "INSUFFICIENT_HISTORY"
+  ) {
+    return "History limited";
+  }
   switch (candidate.stockHealth.status) {
     case "OUT_OF_STOCK":
       return "Out of Stock";
@@ -246,22 +260,83 @@ export function usableStock(candidate: RestockPlanningCandidate | null) {
   );
 }
 
-export function coverageLabel(candidate: RestockPlanningCandidate | null) {
+export type StockCoverage = {
+  basis: "HISTORICAL" | "FORECAST" | "UNAVAILABLE";
+  detail: string;
+  label: string;
+  metricLabel: string;
+};
+
+/** Historical coverage and forecast-based estimates must not share a label. */
+export function stockCoverage(candidate: RestockPlanningCandidate | null): StockCoverage {
   const coverageDays = candidate?.stockHealth.coverageDays;
-  if (coverageDays === null || coverageDays === undefined || !Number.isFinite(coverageDays)) {
-    return "-";
+  if (coverageDays !== null && coverageDays !== undefined && Number.isFinite(coverageDays)) {
+    return {
+      basis: "HISTORICAL",
+      detail:
+        "Coverage is based on recent completed POS sales. Forecast risk is assessed separately.",
+      label: `${Math.max(0, Math.round(coverageDays))} days`,
+      metricLabel: "Historical cover"
+    };
   }
-  return `${Math.max(0, Math.round(coverageDays))} days`;
+
+  const forecastDemand = candidate?.forecastDecision?.currentMonthDemand;
+  if (
+    forecastDemand !== undefined &&
+    forecastDemand !== null &&
+    Number.isFinite(forecastDemand) &&
+    forecastDemand > 0
+  ) {
+    const estimatedDays = Math.round((usableStock(candidate) / forecastDemand) * 30);
+    return {
+      basis: "FORECAST",
+      detail:
+        "Approximate coverage based on the 30-day demand forecast, not completed POS sales history.",
+      label: `~${Math.max(0, estimatedDays)} days`,
+      metricLabel: "Forecast cover"
+    };
+  }
+
+  return {
+    basis: "UNAVAILABLE",
+    detail: "Coverage cannot be calculated without a reliable positive demand rate.",
+    label: "Not available",
+    metricLabel: "Stock cover"
+  };
+}
+
+export function coverageLabel(candidate: RestockPlanningCandidate | null) {
+  return stockCoverage(candidate).label;
+}
+
+/** No dash placeholder can leak into an Owner-facing alert sentence. */
+export function stockAlertExplanation(candidate: RestockPlanningCandidate) {
+  const demand = candidate.forecastDecision?.currentMonthDemand;
+  const coverage = stockCoverage(candidate);
+  const demandText =
+    demand !== undefined && demand !== null && Number.isFinite(demand) && demand > 0
+      ? `Forecasted demand is about ${formatNumber(Math.ceil(demand))} units over 30 days against ${formatNumber(usableStock(candidate))} usable units.`
+      : "A reliable positive 30-day demand estimate is not available.";
+  const coverageText =
+    coverage.basis === "HISTORICAL"
+      ? `Recent completed sales indicate ${coverageLabel(candidate)} of historical stock cover.`
+      : coverage.basis === "FORECAST"
+        ? `Forecast-based stock cover is approximately ${coverageLabel(candidate).replace("~", "")}; historical coverage is unavailable.`
+        : "Stock coverage cannot be estimated reliably from the available demand data.";
+
+  return `Stockout risk needs prompt Owner review. ${demandText} ${coverageText} Manual emergency procurement remains available.`;
 }
 
 function nextMonthDate(candidate: RestockPlanningCandidate | null) {
-  const forecastPeriod = candidate?.forecast?.points[0]?.period;
-  if (forecastPeriod) {
-    const forecastDate = new Date(forecastPeriod);
-    if (!Number.isNaN(forecastDate.getTime())) return forecastDate;
+  // The backend date is midnight Manila; shift it for UTC-based month labels.
+  const activation = candidate?.scheduledRestockAt;
+  if (activation) {
+    const date = new Date(activation);
+    if (Number.isFinite(date.getTime())) {
+      return new Date(date.getTime() + 8 * 60 * 60 * 1000);
+    }
   }
-
-  const fallback = new Date();
+  const fallback = new Date(Date.now() + 8 * 60 * 60 * 1000);
   return new Date(Date.UTC(fallback.getUTCFullYear(), fallback.getUTCMonth() + 1, 1));
 }
 
@@ -272,44 +347,19 @@ export function buildNextMonthRestockPreview(
   if (!candidate) return null;
 
   const previewDate = nextMonthDate(candidate);
-  const expectedDemand = Math.max(
-    0,
-    Math.ceil(
-      candidate.forecast?.points[0]?.predictedQuantity ??
-        candidate.forecastDecision?.currentMonthDemand ??
-        candidate.forecast?.currentMonthDemand ??
-        0
-    )
-  );
-  const currentDemand = Math.max(
-    0,
-    Math.ceil(
-      candidate.forecastDecision?.currentMonthDemand ?? candidate.forecast?.currentMonthDemand ?? 0
-    )
-  );
-  const projectedOpeningStock = Math.max(0, usableStock(candidate) - currentDemand);
-  const targetStockLevel = Math.max(0, candidate.product.targetStockLevel);
-  const reorderLevel = Math.max(0, candidate.product.reorderLevel);
-  const demandGap = Math.max(
-    0,
-    Math.ceil(targetStockLevel + expectedDemand - projectedOpeningStock)
-  );
-  const reorderGap =
-    reorderLevel > 0 && projectedOpeningStock <= reorderLevel
-      ? Math.max(0, Math.ceil(reorderLevel + 1 - projectedOpeningStock))
-      : 0;
+  const { estimatedRestock, expectedDemand, projectedOpeningStock } = candidate.nextMonthRestock;
   const monthIndex = previewDate.getUTCMonth();
   const year = previewDate.getUTCFullYear();
   const activeIncoming = Math.max(
     0,
     Math.ceil(candidate.incomingStock),
-    Math.ceil(activeRestock?.totalRemaining ?? 0)
+    Math.ceil(activeRestock?.latestStatus === "DRAFT" ? 0 : (activeRestock?.totalRemaining ?? 0))
   );
 
   return {
     batchNumber: `RO-${MONTH_ABBREVIATIONS[monthIndex]}-${year}`,
     currentCycleQuantity: activeIncoming,
-    estimatedRestock: Math.max(demandGap, reorderGap),
+    estimatedRestock,
     expectedDemand,
     monthLabel: new Intl.DateTimeFormat("en-PH", {
       month: "long",
@@ -418,6 +468,7 @@ export function buildActiveRestockByProduct(orders: RestockOrder[]) {
 
   for (const order of orders) {
     const monthly = order.notes?.includes("[AutomatedRestockMonth:") ?? false;
+    if (order.status === "DRAFT" && !monthly) continue;
     const automated = monthly || (order.notes?.includes("[AutomatedRestock:") ?? false);
 
     for (const line of order.lines) {

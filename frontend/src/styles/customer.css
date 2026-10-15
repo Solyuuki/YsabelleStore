@@ -3502,17 +3502,18 @@
 }
 .customer-success-pickup strong {
   color: var(--customer-dark);
-  font-size: 0.78rem;
+  font-size: 0.84rem;
+  line-height: 1.4;
 }
 .customer-success-pickup span {
   color: #58627a;
-  font-size: 0.7rem;
-  line-height: 1.45;
+  font-size: 0.78rem;
+  line-height: 1.55;
 }
 .customer-success-pickup small {
-  color: #737c92;
-  font-size: 0.66rem;
-  line-height: 1.45;
+  color: #5d667b;
+  font-size: 0.74rem;
+  line-height: 1.55;
 }
 .customer-success-card__note {
   margin: 0.75rem 0 0.15rem;

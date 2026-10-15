@@ -248,6 +248,76 @@ test("product detail exposes size siblings in ascending package order and keeps 
   }
 });
 
+test("verified Gardenia family links 400g/600g but excludes unrelated bread", async () => {
+  const scope = await captureDatabaseFixtureScope(prisma);
+  const suffix = randomUUID().slice(0, 8);
+
+  try {
+    const { category } = await ensureCanonicalStorefrontCategory(0);
+    const classic = await createProduct(
+      category.id,
+      "Gardenia Classic Enriched White Bread 400g",
+      `${suffix}-gardenia-400`,
+      5
+    );
+    const enriched = await createProduct(
+      category.id,
+      "Gardenia Enriched White Bread 600g",
+      `${suffix}-gardenia-600`,
+      4
+    );
+    const unrelated = await createProduct(
+      category.id,
+      "Gardenia High Fiber Whole Wheat Bread 600g",
+      `${suffix}-wholewheat`,
+      3
+    );
+
+    await prisma.product.update({
+      where: { id: classic.id },
+      data: {
+        brand: "Gardenia",
+        variant: "Classic Enriched White",
+        sizeUnit: "GRAM",
+        sizeValue: "400",
+        unit: "PACK"
+      }
+    });
+    await prisma.product.update({
+      where: { id: enriched.id },
+      data: {
+        brand: "Gardenia",
+        variant: "Enriched White",
+        sizeUnit: "GRAM",
+        sizeValue: "600",
+        unit: "PACK"
+      }
+    });
+    await prisma.product.update({
+      where: { id: unrelated.id },
+      data: {
+        brand: "Gardenia",
+        variant: "Enriched White",
+        sizeUnit: "GRAM",
+        sizeValue: "600",
+        unit: "PACK"
+      }
+    });
+
+    const detail = await getStorefrontProduct(classic.id);
+    assert.deepEqual(
+      detail.sizeVariants.map((variant) => variant.id),
+      [classic.id, enriched.id]
+    );
+    assert.equal(
+      detail.sizeVariants.some((variant) => variant.id === unrelated.id),
+      false
+    );
+  } finally {
+    await scope.cleanup();
+  }
+});
+
 test("related products stay strictly inside the current category", async () => {
   const scope = await captureDatabaseFixtureScope(prisma);
   const suffix = randomUUID().slice(0, 8);

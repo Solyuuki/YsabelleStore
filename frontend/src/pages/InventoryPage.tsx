@@ -1,8 +1,10 @@
 import {
   ArrowUpDown,
+  Check,
   Boxes,
   CalendarDays,
   ChevronDown,
+  ChevronRight,
   CircleCheck,
   ClipboardList,
   FileUp,
@@ -14,10 +16,21 @@ import {
   PencilLine,
   Plus,
   Search,
+  SlidersHorizontal,
   Tag,
   X
 } from "lucide-react";
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import {
+  Children,
+  isValidElement,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+  type ReactNode
+} from "react";
 import type { LucideIcon } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
@@ -69,8 +82,18 @@ import {
 } from "@/services/catalogApi";
 import { waitForMinimumDuration } from "@/utils/timing";
 import { InventoryImportDialog } from "@/components/inventory/InventoryImportDialog";
+import "@/styles/retail-inventory-mobile-v2.css";
 
 const DEFAULT_PAGE_SIZE = 20;
+const MOBILE_INVENTORY_PAGE_SIZE = 10;
+const MOBILE_INVENTORY_VIEWPORT =
+  "(max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px)";
+
+function preferredInventoryPageSize() {
+  return typeof window !== "undefined" && window.matchMedia(MOBILE_INVENTORY_VIEWPORT).matches
+    ? MOBILE_INVENTORY_PAGE_SIZE
+    : DEFAULT_PAGE_SIZE;
+}
 const SEARCH_DEBOUNCE_MS = 350;
 const INVENTORY_INITIAL_MINIMUM_MS = 500;
 const INVENTORY_UPDATE_MINIMUM_MS = 400;
@@ -300,13 +323,14 @@ export function InventoryPage() {
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [stockStatus, setStockStatus] = useState<StockStatusFilter>("ALL");
   const [productStatus, setProductStatus] = useState<ProductStatusFilter>("ALL");
   const [categoryId, setCategoryId] = useState("ALL");
   const [sortBy, setSortBy] = useState<InventorySortBy>("updatedAt");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [pageSize, setPageSize] = useState(preferredInventoryPageSize);
   const [loadingReason, setLoadingReason] = useState<LoadingReason>("initial");
   const [error, setError] = useState<string | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
@@ -341,6 +365,21 @@ export function InventoryPage() {
   const isLoading = loadingReason !== null;
   const initialLoading = loadingReason === "initial" && rows.length === 0;
   const hasRows = rows.length > 0;
+  const activeFilterCount =
+    Number(stockStatus !== "ALL") +
+    Number(categoryId !== "ALL") +
+    Number(productStatus !== "ALL") +
+    Number(sortBy !== "updatedAt" || sortOrder !== "desc");
+
+  useEffect(() => {
+    const viewport = window.matchMedia(MOBILE_INVENTORY_VIEWPORT);
+    const onViewportChange = () => {
+      setPageSize(viewport.matches ? MOBILE_INVENTORY_PAGE_SIZE : DEFAULT_PAGE_SIZE);
+      setPage(1);
+    };
+    viewport.addEventListener("change", onViewportChange);
+    return () => viewport.removeEventListener("change", onViewportChange);
+  }, []);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -549,7 +588,7 @@ export function InventoryPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="retail-inventory-page space-y-6">
       <PageHeader
         title="Inventory"
         description="Monitor stock levels, batches, expiry dates, and inventory movements."
@@ -566,16 +605,19 @@ export function InventoryPage() {
         }
       />
 
-      <Card>
+      <Card className="retail-inventory-list-card">
         <CardContent className="space-y-4 p-4 lg:p-5">
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <div
+            className="retail-inventory-toolbar flex min-w-0 flex-wrap items-center gap-2"
+            data-mobile-filters-open={mobileFiltersOpen}
+          >
             <label className="ys-inventory-search relative flex h-10 min-w-[260px] flex-1 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3">
               <Search className="h-4 w-4 text-slate-500" aria-hidden="true" />
               <input
-                aria-label="Search inventory"
+                aria-label="Search inventory by product name, SKU, or barcode"
                 aria-busy={loadingReason === "search"}
                 className="w-full bg-transparent text-sm outline-none"
-                placeholder="Search product name, SKU, barcode"
+                placeholder="Search products"
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
               />
@@ -586,74 +628,119 @@ export function InventoryPage() {
                 />
               ) : null}
             </label>
-            <FilterSelect
-              icon={Filter}
-              label="Stock level"
-              minWidthClassName="min-w-[190px]"
-              value={stockStatus}
-              onChange={(value) => {
-                setStockStatus(value as StockStatusFilter);
-                setPage(1);
-              }}
+            <button
+              aria-controls="retail-inventory-filter-panel"
+              aria-expanded={mobileFiltersOpen}
+              aria-label={mobileFiltersOpen ? "Hide inventory filters" : "Show inventory filters"}
+              className="retail-inventory-filter-toggle"
+              onClick={() => setMobileFiltersOpen((open) => !open)}
+              type="button"
             >
-              <option value="ALL">All stock levels</option>
-              <option value="IN_STOCK">In stock</option>
-              <option value="LOW_STOCK">Low stock</option>
-              <option value="OUT_OF_STOCK">Out of stock</option>
-            </FilterSelect>
-            <FilterSelect
-              icon={Tag}
-              label="Category"
-              minWidthClassName="min-w-[190px]"
-              value={categoryId}
-              onChange={(value) => {
-                setCategoryId(value);
-                setPage(1);
-              }}
+              <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+              <span>Filters</span>
+              {activeFilterCount > 0 ? (
+                <span
+                  className="retail-inventory-filter-count"
+                  aria-label={`${activeFilterCount} active filters`}
+                >
+                  {activeFilterCount}
+                </span>
+              ) : null}
+              <ChevronDown
+                className="retail-inventory-filter-toggle-chevron h-4 w-4"
+                aria-hidden="true"
+              />
+            </button>
+            <div
+              className="retail-inventory-filter-panel"
+              data-open={mobileFiltersOpen}
+              id="retail-inventory-filter-panel"
             >
-              <option value="ALL">All categories</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </FilterSelect>
-            <FilterSelect
-              icon={CircleCheck}
-              label="Availability"
-              minWidthClassName="min-w-[198px]"
-              value={productStatus}
-              onChange={(value) => {
-                setProductStatus(value as ProductStatusFilter);
-                setPage(1);
-              }}
-            >
-              <option value="ALL">All availability</option>
-              <option value="ACTIVE">Available</option>
-              <option value="INACTIVE">Unavailable</option>
-              <option value="DISCONTINUED">Discontinued</option>
-            </FilterSelect>
-            <FilterSelect
-              icon={ArrowUpDown}
-              label="Sort"
-              minWidthClassName="min-w-[220px]"
-              value={`${sortBy}:${sortOrder}`}
-              onChange={(value) => {
-                const [nextSortBy, nextSortOrder] = value.split(":") as [
-                  InventorySortBy,
-                  SortOrder
-                ];
-                setSortBy(nextSortBy);
-                setSortOrder(nextSortOrder);
-                setPage(1);
-              }}
-            >
-              <option value="updatedAt:desc">Recently updated</option>
-              <option value="productName:asc">Product name</option>
-              <option value="quantityOnHand:asc">Lowest stock</option>
-              <option value="quantityOnHand:desc">Highest stock</option>
-              <option value="reorderLevel:asc">Reorder level</option>
-            </FilterSelect>
+              <FilterSelect
+                icon={Filter}
+                label="Stock level"
+                minWidthClassName="min-w-[190px]"
+                value={stockStatus}
+                onChange={(value) => {
+                  setStockStatus(value as StockStatusFilter);
+                  setPage(1);
+                }}
+              >
+                <option value="ALL">All stock levels</option>
+                <option value="IN_STOCK">In stock</option>
+                <option value="LOW_STOCK">Low stock</option>
+                <option value="OUT_OF_STOCK">Out of stock</option>
+              </FilterSelect>
+              <FilterSelect
+                icon={Tag}
+                label="Category"
+                minWidthClassName="min-w-[190px]"
+                value={categoryId}
+                onChange={(value) => {
+                  setCategoryId(value);
+                  setPage(1);
+                }}
+              >
+                <option value="ALL">All categories</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </FilterSelect>
+              <FilterSelect
+                icon={CircleCheck}
+                label="Availability"
+                minWidthClassName="min-w-[198px]"
+                value={productStatus}
+                onChange={(value) => {
+                  setProductStatus(value as ProductStatusFilter);
+                  setPage(1);
+                }}
+              >
+                <option value="ALL">All availability</option>
+                <option value="ACTIVE">Available</option>
+                <option value="INACTIVE">Unavailable</option>
+                <option value="DISCONTINUED">Discontinued</option>
+              </FilterSelect>
+              <FilterSelect
+                icon={ArrowUpDown}
+                label="Sort"
+                minWidthClassName="min-w-[220px]"
+                value={`${sortBy}:${sortOrder}`}
+                onChange={(value) => {
+                  const [nextSortBy, nextSortOrder] = value.split(":") as [
+                    InventorySortBy,
+                    SortOrder
+                  ];
+                  setSortBy(nextSortBy);
+                  setSortOrder(nextSortOrder);
+                  setPage(1);
+                }}
+              >
+                <option value="updatedAt:desc">Recently updated</option>
+                <option value="productName:asc">Product name</option>
+                <option value="quantityOnHand:asc">Lowest stock</option>
+                <option value="quantityOnHand:desc">Highest stock</option>
+                <option value="reorderLevel:asc">Reorder level</option>
+              </FilterSelect>
+              {activeFilterCount > 0 ? (
+                <button
+                  className="retail-inventory-filter-reset"
+                  onClick={() => {
+                    setStockStatus("ALL");
+                    setCategoryId("ALL");
+                    setProductStatus("ALL");
+                    setSortBy("updatedAt");
+                    setSortOrder("desc");
+                    setPage(1);
+                  }}
+                  type="button"
+                >
+                  Reset filters
+                </button>
+              ) : null}
+            </div>
           </div>
 
           {error ? (
@@ -690,6 +777,9 @@ export function InventoryPage() {
             />
           ) : null}
 
+          <p className="retail-inventory-mobile-hint">
+            Tap a product to see its SKU, batches, and stock actions.
+          </p>
           <div aria-busy={isLoading} className="relative">
             {initialLoading ? (
               <InventoryTableSkeleton rowCount={pageSize} />
@@ -710,6 +800,8 @@ export function InventoryPage() {
 
           {meta && meta.totalItems > 0 ? (
             <AppPagination
+              className="ys-inventory-pagination"
+              mobileCompact
               isLoading={isLoading}
               itemLabel="inventory records"
               page={page}
@@ -807,26 +899,133 @@ function FilterSelect({
   onChange: (value: string) => void;
   value: string;
 }) {
+  // A real themed listbox rather than an OS-native popup, which ignores dark
+  // option colors in several Windows / mobile browser combinations.
+  const options = Children.toArray(children).flatMap((child) => {
+    if (!isValidElement<{ value?: string; children?: ReactNode }>(child)) return [];
+    return [{ value: String(child.props.value ?? ""), label: String(child.props.children ?? "") }];
+  });
+  const selectedIndex = Math.max(
+    0,
+    options.findIndex((option) => option.value === value)
+  );
+  const selectedLabel = options[selectedIndex]?.label ?? label;
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(selectedIndex);
+  const [openAbove, setOpenAbove] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const menuId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    return () => document.removeEventListener("pointerdown", closeOnOutsidePointer);
+  }, [open]);
+
+  useEffect(() => {
+    if (open) optionRefs.current[activeIndex]?.focus();
+  }, [activeIndex, open]);
+
+  function openMenu(index = selectedIndex) {
+    if (options.length === 0) return;
+    const rect = rootRef.current?.getBoundingClientRect();
+    if (rect) {
+      const below = window.innerHeight - rect.bottom;
+      setOpenAbove(below < 220 && rect.top > below);
+    }
+    setActiveIndex(Math.min(Math.max(index, 0), options.length - 1));
+    setOpen(true);
+  }
+
+  function choose(nextValue: string) {
+    onChange(nextValue);
+    setOpen(false);
+    triggerRef.current?.focus();
+  }
+
+  function onOptionKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveIndex(
+        (index + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length
+      );
+    } else if (event.key === "Home" || event.key === "End") {
+      event.preventDefault();
+      setActiveIndex(event.key === "Home" ? 0 : options.length - 1);
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      setOpen(false);
+      triggerRef.current?.focus();
+    } else if (event.key === "Tab") {
+      setOpen(false);
+    } else if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      const option = options[index];
+      if (option) choose(option.value);
+    }
+  }
+
   return (
-    <label
-      className={`ys-inventory-filter relative flex h-10 shrink-0 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 pl-3 pr-4 text-sm text-slate-600 ${minWidthClassName ?? "w-auto"}`}
+    <div
+      className={`ys-inventory-filter relative flex h-10 shrink-0 items-center rounded-md border border-slate-200 bg-slate-50 text-sm text-slate-600 ${minWidthClassName ?? "w-auto"}`}
+      data-open={open}
+      data-side={openAbove ? "top" : "bottom"}
+      ref={rootRef}
     >
-      <span className="sr-only">{label}</span>
-      <Icon className="h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
-      <Select
-        aria-label={label}
-        className="h-auto w-full min-w-0 flex-1 border-0 bg-transparent px-0 py-0 shadow-none focus-visible:ring-0"
-        style={{ backgroundImage: "none" }}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
+      <span className="ys-inventory-filter-caption">{label}</span>
+      <button
+        aria-controls={open ? menuId : undefined}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        aria-label={`${label}: ${selectedLabel}`}
+        className="ys-inventory-filter-trigger"
+        onClick={() => (open ? setOpen(false) : openMenu())}
+        onKeyDown={(event) => {
+          if (!open && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+            event.preventDefault();
+            openMenu(event.key === "ArrowDown" ? selectedIndex : options.length - 1);
+          } else if (open && event.key === "Escape") {
+            event.preventDefault();
+            setOpen(false);
+          }
+        }}
+        ref={triggerRef}
+        type="button"
       >
-        {children}
-      </Select>
-      <ChevronDown
-        aria-hidden="true"
-        className="ys-inventory-filter-chevron pointer-events-none h-4 w-4 shrink-0 text-slate-500"
-      />
-    </label>
+        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+        <span className="ys-inventory-filter-selection">{selectedLabel}</span>
+        <ChevronDown aria-hidden="true" className="ys-inventory-filter-chevron h-4 w-4 shrink-0" />
+      </button>
+      {open ? (
+        <div aria-label={label} className="ys-inventory-filter-menu" id={menuId} role="listbox">
+          {options.map((option, index) => (
+            <button
+              aria-selected={option.value === value}
+              className="ys-inventory-filter-option"
+              key={option.value}
+              onClick={() => choose(option.value)}
+              onKeyDown={(event) => onOptionKeyDown(event, index)}
+              ref={(node) => {
+                optionRefs.current[index] = node;
+              }}
+              role="option"
+              tabIndex={index === activeIndex ? 0 : -1}
+              type="button"
+            >
+              <span>{option.label}</span>
+              {option.value === value ? (
+                <Check aria-hidden="true" className="h-4 w-4 shrink-0" />
+              ) : null}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -838,8 +1037,8 @@ function InventoryTable({
   rows: InventoryRecord[];
 }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[980px] table-fixed border-collapse text-left text-sm">
+    <div className="retail-inventory-table-wrap overflow-x-auto">
+      <table className="retail-inventory-data-table retail-mobile-data-table w-full min-w-[980px] table-fixed border-collapse text-left text-sm">
         <thead className="bg-slate-100 text-slate-700">
           <tr>
             <th className="w-[29%] px-3 py-2.5">Product</th>
@@ -855,7 +1054,7 @@ function InventoryTable({
           {rows.map((row) => (
             <tr
               aria-label={`View inventory for ${row.productName}`}
-              className="cursor-pointer border-t border-slate-200 bg-white transition-colors hover:bg-emerald-50/40 focus-visible:bg-emerald-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500"
+              className="retail-inventory-product-row cursor-pointer border-t border-slate-200 bg-white transition-colors hover:bg-emerald-50/40 focus-visible:bg-emerald-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500"
               key={row.inventoryId}
               tabIndex={0}
               onClick={() => onOpenDetails(row.productId)}
@@ -866,20 +1065,22 @@ function InventoryTable({
                 }
               }}
             >
-              <td className="px-3 py-3 align-middle">
+              <td data-label="Product" className="px-3 py-3 align-middle">
                 <div className="font-medium text-slate-950">{row.productName}</div>
                 <div className="mt-0.5 text-xs leading-5 text-slate-500">
                   {row.barcode ?? "No barcode"} · {row.category.name}
                 </div>
               </td>
-              <td className="px-3 py-3 align-middle break-words text-slate-700">{row.sku}</td>
-              <td className="px-3 py-3 align-middle text-center">
+              <td data-label="SKU" className="px-3 py-3 align-middle break-words text-slate-700">
+                {row.sku}
+              </td>
+              <td data-label="Stock" className="px-3 py-3 align-middle text-center">
                 <div className="tabular-nums text-base font-semibold text-slate-950">
                   {row.currentQuantity}
                 </div>
                 <div className="mt-0.5 text-xs text-slate-500">on hand</div>
               </td>
-              <td className="px-3 py-3 align-middle text-center">
+              <td data-label="Restock levels" className="px-3 py-3 align-middle text-center">
                 <div className="inline-flex items-center gap-2 whitespace-nowrap text-sm tabular-nums text-slate-700">
                   <span>
                     <span className="font-semibold text-slate-950">{row.reorderLevel}</span> reorder
@@ -891,13 +1092,16 @@ function InventoryTable({
                   </span>
                 </div>
               </td>
-              <td className="px-3 py-3 align-middle text-slate-700">
+              <td data-label="Expiry" className="px-3 py-3 align-middle text-slate-700">
                 <ExpiryValue quantity={row.currentQuantity} value={row.nearestExpiry} />
               </td>
-              <td className="px-3 py-3 align-middle text-center tabular-nums text-slate-700">
+              <td
+                data-label="Batches"
+                className="px-3 py-3 align-middle text-center tabular-nums text-slate-700"
+              >
                 {row.batchCount === 0 ? "None" : row.batchCount}
               </td>
-              <td className="px-3 py-3 align-middle text-center">
+              <td data-label="Status" className="px-3 py-3 align-middle text-center">
                 <div className="inline-flex justify-center">
                   <StockStatusBadge status={row.stockStatus} />
                 </div>
@@ -980,7 +1184,7 @@ function InventoryDetailsDialog({
     >
       <DialogContent
         aria-describedby="inventory-details-description"
-        className="ys-inventory-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[860px] flex-col gap-0 p-0"
+        className="ys-inventory-modal ys-inventory-details-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[860px] flex-col gap-0 p-0"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
           <DialogClose asChild>
@@ -1009,7 +1213,7 @@ function InventoryDetailsDialog({
             </Alert>
           ) : inventory ? (
             <div className="space-y-5">
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="retail-inventory-details-metrics grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <InventoryMetric label="On hand" value={String(inventory.currentQuantity)} />
                 <InventoryMetric label="Reorder at" value={String(inventory.reorderLevel)} />
                 <InventoryMetric label="Target" value={String(inventory.targetStockLevel)} />
@@ -1068,35 +1272,48 @@ function InventoryDetailsDialog({
             </div>
           ) : null}
         </div>
-        <DialogFooter className="border-t border-slate-200 bg-white/95">
-          <div className="flex w-full flex-wrap items-center justify-between gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onOpenMovements}
-              disabled={!inventory || isLoading}
-            >
-              <History className="h-4 w-4" />
-              Stock activity
-            </Button>
+        <DialogFooter className="ys-inventory-details-footer border-t border-slate-200 bg-white/95">
+          <div className="retail-inventory-details-actions flex w-full flex-wrap items-center justify-between gap-2">
+            <div className="ys-inventory-stock-actions-head">
+              <span className="ys-inventory-stock-actions-title">Stock actions</span>
+              <Button
+                className="ys-inventory-history-action"
+                type="button"
+                variant="secondary"
+                onClick={onOpenMovements}
+                disabled={!inventory || isLoading}
+              >
+                <History className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span className="ys-inventory-history-desktop">Stock activity</span>
+                <span className="ys-inventory-history-mobile">View history</span>
+                <ChevronRight
+                  className="ys-inventory-history-chevron h-4 w-4 shrink-0"
+                  aria-hidden="true"
+                />
+              </Button>
+            </div>
             {isOwner ? (
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="retail-inventory-owner-actions flex flex-wrap items-center gap-2">
                 <Button
+                  className="ys-inventory-adjust-action"
                   type="button"
                   variant="secondary"
                   onClick={onOpenAdjust}
                   disabled={!inventory || isLoading || mutationPending}
+                  aria-label="Adjust quantity"
                 >
-                  <PencilLine className="h-4 w-4" />
-                  Adjust quantity
+                  <PencilLine className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="ys-inventory-adjust-desktop">Adjust quantity</span>
+                  <span className="ys-inventory-adjust-mobile">Adjust qty</span>
                 </Button>
                 <Button
+                  className="ys-inventory-receive-action"
                   type="button"
                   onClick={onOpenStockIn}
                   disabled={!inventory || isLoading || mutationPending}
                 >
-                  <PackagePlus className="h-4 w-4" />
-                  Receive stock
+                  <PackagePlus className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>Receive stock</span>
                 </Button>
               </div>
             ) : null}
@@ -1224,7 +1441,7 @@ function StockInDialog({
     >
       <DialogContent
         aria-describedby="stock-in-description"
-        className="ys-inventory-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
+        className="ys-inventory-modal ys-stock-receive-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
           <DialogClose asChild>
@@ -1247,7 +1464,7 @@ function StockInDialog({
         </DialogHeader>
         <form
           id="stock-in-form"
-          className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5"
+          className="ys-stock-dialog-form min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5"
           onSubmit={(event) => void submit(event)}
         >
           <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3.5">
@@ -1275,7 +1492,10 @@ function StockInDialog({
                   Count the units that physically arrived.
                 </p>
               </div>
-              <div className="flex items-center gap-1.5" aria-label="Quick quantity additions">
+              <div
+                className="ys-stock-quick-additions flex items-center gap-1.5"
+                aria-label="Quick quantity additions"
+              >
                 {[5, 10, 25].map((amount) => (
                   <Button
                     key={amount}
@@ -1290,7 +1510,7 @@ function StockInDialog({
                 ))}
               </div>
             </div>
-            <div className="grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-2">
+            <div className="ys-stock-quantity-stepper grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-2">
               <Button
                 aria-label="Decrease received quantity"
                 disabled={pending || validQuantity <= 1}
@@ -1328,7 +1548,7 @@ function StockInDialog({
               </Button>
             </div>
 
-            <div className="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-center">
+            <div className="ys-stock-math ys-stock-receipt-math grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-center">
               <div>
                 <p className="text-xs font-medium text-slate-500">Current</p>
                 <p className="mt-1 text-lg font-semibold tabular-nums text-slate-950">
@@ -1356,7 +1576,7 @@ function StockInDialog({
             </div>
           </section>
 
-          <section className="space-y-4 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
+          <section className="ys-stock-batch-panel space-y-4 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
             <div className="flex items-center gap-2">
               <Tag className="h-4 w-4 text-slate-500" aria-hidden="true" />
               <div>
@@ -1450,7 +1670,7 @@ function StockInDialog({
             </Alert>
           ) : null}
         </form>
-        <DialogFooter className="border-t border-slate-200 bg-white/95">
+        <DialogFooter className="ys-stock-dialog-footer border-t border-slate-200 bg-white/95">
           <Button disabled={pending} type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
@@ -1545,7 +1765,7 @@ function StockAdjustmentDialog({
     >
       <DialogContent
         aria-describedby="stock-adjustment-description"
-        className="ys-inventory-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
+        className="ys-inventory-modal ys-stock-adjust-modal flex max-h-[90vh] w-[calc(100vw-32px)] max-w-[680px] flex-col gap-0 p-0"
       >
         <DialogHeader className="border-b border-slate-200 px-6 py-5 pr-14">
           <DialogClose asChild>
@@ -1568,7 +1788,7 @@ function StockAdjustmentDialog({
         </DialogHeader>
         <form
           id="stock-adjustment-form"
-          className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5"
+          className="ys-stock-dialog-form min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5"
           onSubmit={(event) => void submit(event)}
         >
           <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
@@ -1623,7 +1843,7 @@ function StockAdjustmentDialog({
 
           <div className="space-y-2">
             <Label htmlFor="adjustment-quantity">Quantity</Label>
-            <div className="grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-2">
+            <div className="ys-stock-quantity-stepper grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-2">
               <Button
                 aria-label="Decrease adjustment quantity"
                 disabled={pending || validQuantity <= 1}
@@ -1659,7 +1879,7 @@ function StockAdjustmentDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-center">
+          <div className="ys-stock-math ys-stock-adjust-math grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-center">
             <div>
               <p className="text-xs font-medium text-slate-500">Current</p>
               <p className="mt-1 text-xl font-semibold tabular-nums text-slate-950">
@@ -1679,7 +1899,7 @@ function StockAdjustmentDialog({
 
           <div className="space-y-2.5">
             <Label>Reason</Label>
-            <div className="flex flex-wrap gap-2">
+            <div className="ys-stock-reason-options flex flex-wrap gap-2">
               {adjustmentReasonOptions.map((option) => {
                 const selected = reasonPreset === option.value;
                 return (
@@ -1723,7 +1943,7 @@ function StockAdjustmentDialog({
 
           {error ? <p className="text-sm font-medium text-red-700">{error}</p> : null}
         </form>
-        <DialogFooter className="border-t border-slate-200 bg-white/95">
+        <DialogFooter className="ys-stock-dialog-footer border-t border-slate-200 bg-white/95">
           <Button disabled={pending} type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
@@ -1998,8 +2218,8 @@ function StockActivityDialog({
             />
           ) : (
             <div className={loading ? "opacity-60" : ""}>
-              <div className="max-h-[430px] overflow-auto rounded-lg border border-slate-200">
-                <Table className="min-w-[820px]">
+              <div className="retail-inventory-activity-scroll max-h-[430px] overflow-auto rounded-lg border border-slate-200">
+                <Table className="retail-inventory-activity-table min-w-[820px]">
                   <TableHeader className="sticky top-0 z-10 bg-slate-100">
                     <TableRow>
                       <TableHead className="w-[17%]">Date & time</TableHead>
@@ -2018,7 +2238,7 @@ function StockActivityDialog({
 
                       return (
                         <TableRow key={item.id}>
-                          <TableCell className="align-middle">
+                          <TableCell data-label="Date" className="align-middle">
                             <div className="font-medium text-slate-900">
                               {date.toLocaleDateString()}
                             </div>
@@ -2026,7 +2246,7 @@ function StockActivityDialog({
                               {date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
                             </div>
                           </TableCell>
-                          <TableCell className="align-middle">
+                          <TableCell data-label="Activity" className="align-middle">
                             <div className="font-medium text-slate-900">
                               {formatMovementAction(item.type)}
                             </div>
@@ -2034,7 +2254,7 @@ function StockActivityDialog({
                               <div className="mt-0.5 text-xs text-slate-500">{source}</div>
                             ) : null}
                           </TableCell>
-                          <TableCell className="align-middle text-center">
+                          <TableCell data-label="Change" className="align-middle text-center">
                             <span
                               className={`inline-flex min-w-12 justify-center rounded-full px-2 py-1 text-sm font-semibold tabular-nums ${
                                 reduction
@@ -2045,14 +2265,23 @@ function StockActivityDialog({
                               {formatMovementChange(item)}
                             </span>
                           </TableCell>
-                          <TableCell className="align-middle text-center font-medium tabular-nums text-slate-800">
+                          <TableCell
+                            data-label="Stock"
+                            className="align-middle text-center font-medium tabular-nums text-slate-800"
+                          >
                             {item.quantityBefore} <span className="text-slate-400">→</span>{" "}
                             {item.quantityAfter}
                           </TableCell>
-                          <TableCell className="align-middle text-sm text-slate-600">
+                          <TableCell
+                            data-label="Reason"
+                            className="align-middle text-sm text-slate-600"
+                          >
                             {formatMovementReason(item)}
                           </TableCell>
-                          <TableCell className="align-middle text-sm text-slate-600">
+                          <TableCell
+                            data-label="By"
+                            className="align-middle text-sm text-slate-600"
+                          >
                             {item.performedBy?.name ?? "System"}
                           </TableCell>
                         </TableRow>

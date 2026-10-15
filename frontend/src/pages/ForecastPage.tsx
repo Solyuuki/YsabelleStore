@@ -1,4 +1,13 @@
-import { AlertTriangle, ChevronLeft, ChevronRight, LoaderCircle, Search } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  LoaderCircle,
+  Search,
+  SlidersHorizontal
+} from "lucide-react";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import {
   CartesianGrid,
@@ -12,6 +21,7 @@ import {
 } from "recharts";
 
 import { EmptyState } from "@/components/shared/EmptyState";
+import "@/styles/retail-forecast-mobile-v2.css";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -106,6 +116,9 @@ function formatForecastTimestamp(value: string | null | undefined) {
 export function ForecastPage() {
   const [forecastData, setForecastData] = useState<PaginatedForecastProductsResponse | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
+  const mobileListRef = useRef<HTMLElement | null>(null);
+  const mobileDetailsRef = useRef<HTMLElement | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<ProductForecastDetail | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -307,11 +320,13 @@ export function ForecastPage() {
     setProductsPage(1);
   }, [deferredSearchQuery, selectedCategory, sortBy]);
 
+  // Sync only after a server response changes. Do not revert user-initiated
+  // pagination while the previous page's response is still displayed.
   useEffect(() => {
-    if (forecastData && forecastData.page !== productsPage) {
-      setProductsPage(forecastData.page);
+    if (forecastData) {
+      setProductsPage((current) => (current === forecastData.page ? current : forecastData.page));
     }
-  }, [forecastData, productsPage]);
+  }, [forecastData]);
 
   useEffect(() => {
     if (pageProducts.length === 0) {
@@ -424,8 +439,18 @@ export function ForecastPage() {
     listLoading || blockingCollectionError || forecastData?.status === "EMPTY";
   const refreshInProgress = forecastData?.isRefreshing === true;
 
+  function openMobileForecast(productId: string) {
+    setSelectedProductId(productId);
+    setMobileDetailOpen(true);
+  }
+
+  useEffect(() => {
+    if (!mobileDetailOpen || !window.matchMedia("(max-width: 699px)").matches) return;
+    mobileDetailsRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
+  }, [mobileDetailOpen, selectedProductId]);
+
   return (
-    <>
+    <div className="ys-forecast-v2" data-mobile-detail={mobileDetailOpen}>
       <PageHeader
         eyebrow="Owner forecast"
         title="Demand Forecast"
@@ -487,50 +512,69 @@ export function ForecastPage() {
         </div>
       ) : null}
 
-      <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr] xl:items-stretch">
-        <ForecastedProductsCard
-          categories={categories}
-          generatedAt={forecastData?.generatedAt ?? null}
-          forecastHorizonMonths={forecastData?.forecastHorizonMonths ?? 12}
-          loading={listLoading}
-          networkUpdating={refreshing}
-          pagination={forecastData}
-          searchQuery={searchQuery}
-          selectedCategory={selectedCategory}
-          selectedProductId={selectedProductId}
-          sortBy={sortBy}
-          totalProducts={forecastData?.totalItems ?? 0}
-          deliveryStatus={forecastData?.status ?? null}
-          hasForecastData={hasForecastData}
-          collectionError={effectiveCollectionError}
-          listControlsDisabled={listControlsDisabled}
-          onCategoryChange={setSelectedCategory}
-          onProductSelect={setSelectedProductId}
-          onProductsPageChange={setProductsPage}
-          onSearchChange={setSearchQuery}
-          onSortChange={setSortBy}
-        />
+      <section className="ys-forecast-v2-workspace grid gap-4 xl:grid-cols-[0.9fr_1.1fr] xl:items-stretch">
+        <section className="ys-forecast-v2-list" ref={mobileListRef}>
+          <ForecastedProductsCard
+            categories={categories}
+            generatedAt={forecastData?.generatedAt ?? null}
+            forecastHorizonMonths={forecastData?.forecastHorizonMonths ?? 12}
+            loading={listLoading}
+            networkUpdating={refreshing}
+            pagination={forecastData}
+            searchQuery={searchQuery}
+            selectedCategory={selectedCategory}
+            selectedProductId={selectedProductId}
+            sortBy={sortBy}
+            totalProducts={forecastData?.totalItems ?? 0}
+            deliveryStatus={forecastData?.status ?? null}
+            hasForecastData={hasForecastData}
+            collectionError={effectiveCollectionError}
+            listControlsDisabled={listControlsDisabled}
+            onCategoryChange={setSelectedCategory}
+            onProductSelect={openMobileForecast}
+            onProductsPageChange={setProductsPage}
+            onProductsPageSizeChange={(size) => {
+              setProductsPageSize(size);
+              setProductsPage(1);
+            }}
+            onSearchChange={setSearchQuery}
+            onSortChange={setSortBy}
+          />
+        </section>
+        <section className="ys-forecast-v2-detail" ref={mobileDetailsRef}>
+          <button
+            className="ys-forecast-v2-back"
+            onClick={() => {
+              setMobileDetailOpen(false);
+              window.requestAnimationFrame(() =>
+                mobileListRef.current?.scrollIntoView({ block: "start", behavior: "auto" })
+              );
+            }}
+            type="button"
+          >
+            <ChevronLeft aria-hidden="true" className="h-4 w-4" /> Back to products
+          </button>
+          <MonthlyForecastCard
+            collectionError={effectiveCollectionError}
+            detailError={detailError}
+            initialLoading={listLoading}
+            hasForecastData={hasForecastData}
+            isEmptyForecast={forecastData?.status === "EMPTY"}
+            loadingDetail={loadingDetail}
+            onRetryDetail={() => {
+              const productId = selectedProductSummary?.productId;
 
-        <MonthlyForecastCard
-          collectionError={effectiveCollectionError}
-          detailError={detailError}
-          initialLoading={listLoading}
-          hasForecastData={hasForecastData}
-          isEmptyForecast={forecastData?.status === "EMPTY"}
-          loadingDetail={loadingDetail}
-          onRetryDetail={() => {
-            const productId = selectedProductSummary?.productId;
-
-            if (productId) {
-              void loadSelectedProductDetail(productId);
-            }
-          }}
-          selectedSummary={selectedProductSummary}
-          forecastRows={forecastRows}
-          product={selectedProduct}
-        />
+              if (productId) {
+                void loadSelectedProductDetail(productId);
+              }
+            }}
+            selectedSummary={selectedProductSummary}
+            forecastRows={forecastRows}
+            product={selectedProduct}
+          />
+        </section>
       </section>
-    </>
+    </div>
   );
 }
 
@@ -545,6 +589,7 @@ function ForecastedProductsCard({
   onCategoryChange,
   onProductSelect,
   onProductsPageChange,
+  onProductsPageSizeChange,
   onSearchChange,
   onSortChange,
   pagination,
@@ -566,6 +611,7 @@ function ForecastedProductsCard({
   onCategoryChange: (category: string) => void;
   onProductSelect: (productId: string) => void;
   onProductsPageChange: (page: number) => void;
+  onProductsPageSizeChange: (pageSize: number) => void;
   onSearchChange: (searchQuery: string) => void;
   onSortChange: (sortBy: ForecastSortOption) => void;
   pagination: PaginatedForecastProductsResponse | null;
@@ -577,6 +623,7 @@ function ForecastedProductsCard({
   hasForecastData: boolean;
   listControlsDisabled: boolean;
 }) {
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const generatedLabel = formatForecastTimestamp(generatedAt);
   const subtitle = loading
     ? "Retrieving the latest verified demand forecast."
@@ -589,8 +636,8 @@ function ForecastedProductsCard({
           : "Loading forecast data.";
 
   return (
-    <Card className="flex h-full min-h-0 flex-col">
-      <CardHeader className="shrink-0">
+    <Card className="ys-forecast-v2-list-card flex h-full min-h-0 flex-col">
+      <CardHeader className="ys-forecast-v2-list-heading shrink-0">
         <div className="flex items-start justify-between gap-4">
           <div>
             <CardTitle>Forecasted Products</CardTitle>
@@ -601,21 +648,24 @@ function ForecastedProductsCard({
           </div>
         </div>
 
-        <div className="mt-4 grid gap-3">
-          <label className="relative block" aria-label="Search forecasted products">
+        <div className="ys-forecast-v2-search-container mt-4 grid gap-3">
+          <label
+            className="ys-forecast-v2-search relative block"
+            aria-label="Search forecasted products"
+          >
             <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" />
             <input
               aria-label="Search product by name or product ID"
               className="h-10 w-full rounded-md border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-950 outline-none placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
               disabled={listControlsDisabled}
               onChange={(event) => onSearchChange(event.target.value)}
-              placeholder="Search product by name or product ID..."
+              placeholder="Search product"
               value={searchQuery}
             />
           </label>
         </div>
 
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
+        <div className="ys-forecast-v2-desktop-filters mt-3 grid gap-3 md:grid-cols-2">
           <select
             className="ys-retail-select-chevron h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-950 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
             disabled={listControlsDisabled}
@@ -643,9 +693,87 @@ function ForecastedProductsCard({
             ))}
           </select>
         </div>
+
+        <div className="ys-forecast-v2-mobile-filters">
+          <button
+            aria-expanded={mobileFiltersOpen}
+            aria-controls="ys-forecast-v2-filter-panel"
+            className="ys-forecast-v2-filter-trigger"
+            disabled={listControlsDisabled}
+            onClick={() => setMobileFiltersOpen((open) => !open)}
+            type="button"
+          >
+            <SlidersHorizontal aria-hidden="true" className="h-4 w-4" />
+            <span>Filters &amp; sort</span>
+            {selectedCategory || sortBy !== "alphabeticalAsc" ? (
+              <span className="ys-forecast-v2-filter-dot" />
+            ) : null}
+            <ChevronDown aria-hidden="true" className="h-4 w-4" />
+          </button>
+          {mobileFiltersOpen ? (
+            <div className="ys-forecast-v2-filter-panel" id="ys-forecast-v2-filter-panel">
+              <fieldset>
+                <legend>Category</legend>
+                {[
+                  { value: "", label: "All categories" },
+                  ...categories.map((category) => ({ value: category, label: category }))
+                ].map((option) => (
+                  <button
+                    aria-pressed={selectedCategory === option.value}
+                    className="ys-forecast-v2-filter-choice"
+                    key={option.value}
+                    onClick={() => onCategoryChange(option.value)}
+                    type="button"
+                  >
+                    <span>{option.label}</span>
+                    {selectedCategory === option.value ? (
+                      <Check aria-hidden="true" className="h-4 w-4" />
+                    ) : null}
+                  </button>
+                ))}
+              </fieldset>
+              <fieldset>
+                <legend>Sort by</legend>
+                {forecastSortOptions.map((option) => (
+                  <button
+                    aria-pressed={sortBy === option.value}
+                    className="ys-forecast-v2-filter-choice"
+                    key={option.value}
+                    onClick={() => onSortChange(option.value)}
+                    type="button"
+                  >
+                    <span>{option.label}</span>
+                    {sortBy === option.value ? (
+                      <Check aria-hidden="true" className="h-4 w-4" />
+                    ) : null}
+                  </button>
+                ))}
+              </fieldset>
+              <div className="ys-forecast-v2-filter-actions">
+                <button
+                  className="ys-forecast-v2-filter-reset"
+                  type="button"
+                  onClick={() => {
+                    onCategoryChange("");
+                    onSortChange("alphabeticalAsc");
+                  }}
+                >
+                  Reset
+                </button>
+                <button
+                  className="ys-forecast-v2-filter-apply"
+                  type="button"
+                  onClick={() => setMobileFiltersOpen(false)}
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </CardHeader>
 
-      <CardContent className="min-h-0 flex-1 pt-0">
+      <CardContent className="ys-forecast-v2-list-content min-h-0 flex-1 pt-0">
         <div className="flex min-h-full flex-col gap-4" aria-busy={loading}>
           {loading ? (
             <div className="max-w-md" aria-live="polite">
@@ -668,9 +796,42 @@ function ForecastedProductsCard({
               title="No forecast data available"
             />
           ) : pagination && pagination.items.length > 0 ? (
-            <div className="flex h-full min-h-[32rem] flex-col justify-between gap-3">
-              <div className="overflow-hidden rounded-md border border-slate-200">
-                <table className="w-full text-left text-sm">
+            <div className="ys-forecast-v2-product-results flex h-full min-h-[32rem] flex-col justify-between gap-3">
+              <div className="ys-forecast-v2-mobile-cards" aria-label="Forecasted products">
+                {pagination.items.map((product) => (
+                  <button
+                    aria-label={`View forecast for ${product.productName}`}
+                    aria-pressed={selectedProductId === product.productId}
+                    className="ys-forecast-v2-product-card"
+                    key={product.productId}
+                    onClick={() => onProductSelect(product.productId)}
+                    type="button"
+                  >
+                    <span className="ys-forecast-v2-product-name">{product.productName}</span>
+                    <span className="ys-forecast-v2-product-category">{product.category}</span>
+                    <span className="ys-forecast-v2-product-metrics">
+                      <span>
+                        <small>Curr. Mo.</small>
+                        <strong>{formatNumber(product.currentMonthForecastQuantity)}</strong>
+                      </span>
+                      <span>
+                        <small>{forecastHorizonMonths} Mo.</small>
+                        <strong>{formatNumber(product.forecastHorizonTotal)}</strong>
+                      </span>
+                      <span>
+                        <small>Δ vs PY</small>
+                        <strong
+                          className={expectedChangeClassName(product.forecastVariancePercentage)}
+                        >
+                          {formatForecastVariance(product.forecastVariancePercentage)}
+                        </strong>
+                      </span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <div className="ys-forecast-v2-desktop-products overflow-hidden rounded-md border border-slate-200">
+                <table className="retail-mobile-data-table w-full text-left text-sm">
                   <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                     <tr>
                       <th className="px-3 py-2">Product</th>
@@ -689,7 +850,7 @@ function ForecastedProductsCard({
                         key={product.productId}
                         onClick={() => onProductSelect(product.productId)}
                       >
-                        <td className="px-3 py-3">
+                        <td data-label="Product" className="px-3 py-3">
                           <p className="font-medium text-slate-950">{product.productName}</p>
                           <p className="text-xs text-slate-500">
                             {product.productId} - {product.category}
@@ -700,10 +861,10 @@ function ForecastedProductsCard({
                             {formatForecastVariance(product.forecastVariancePercentage)}
                           </p>
                         </td>
-                        <td className="px-3 py-3 text-right font-medium">
+                        <td data-label="Current Month" className="px-3 py-3 text-right font-medium">
                           {formatNumber(product.currentMonthForecastQuantity)}
                         </td>
-                        <td className="px-3 py-3 text-right font-medium">
+                        <td data-label="Horizon" className="px-3 py-3 text-right font-medium">
                           {formatNumber(product.forecastHorizonTotal)}
                         </td>
                       </tr>
@@ -712,16 +873,33 @@ function ForecastedProductsCard({
                 </table>
               </div>
 
-              <AppPagination
-                isLoading={networkUpdating}
-                itemLabel="products"
-                onPageChange={onProductsPageChange}
-                page={pagination.page}
-                pageSize={pagination.pageSize}
-                pageSizeOptions={[]}
-                totalItems={pagination.totalItems}
-                totalPages={pagination.totalPages}
-              />
+              <div className="ys-forecast-v2-desktop-pagination">
+                <AppPagination
+                  isLoading={networkUpdating}
+                  itemLabel="products"
+                  onPageChange={onProductsPageChange}
+                  page={pagination.page}
+                  pageSize={pagination.pageSize}
+                  pageSizeOptions={[]}
+                  totalItems={pagination.totalItems}
+                  totalPages={pagination.totalPages}
+                />
+              </div>
+              <div className="ys-forecast-v2-mobile-pagination">
+                <AppPagination
+                  className="ys-forecast-v2-pager"
+                  mobileCompact
+                  isLoading={networkUpdating}
+                  itemLabel="products"
+                  onPageChange={onProductsPageChange}
+                  onPageSizeChange={onProductsPageSizeChange}
+                  page={pagination.page}
+                  pageSize={pagination.pageSize}
+                  pageSizeOptions={[7, 10, 20]}
+                  totalItems={pagination.totalItems}
+                  totalPages={pagination.totalPages}
+                />
+              </div>
             </div>
           ) : (
             <EmptyState
@@ -760,6 +938,8 @@ function MonthlyForecastCard({
   selectedSummary: ForecastProductSummary | null;
 }) {
   const [windowMonths, setWindowMonths] = useState(FORECAST_DETAIL_DEFAULT_WINDOW_MONTHS);
+  const [mobileSelectedMonth, setMobileSelectedMonth] = useState(0);
+  const [showAllMobileMonths, setShowAllMobileMonths] = useState(false);
   const [windowStart, setWindowStart] = useState(0);
   const totalForecastMonths = forecastRows.length;
   const windowSizes = useMemo(
@@ -780,6 +960,14 @@ function MonthlyForecastCard({
     effectiveWindowStart + effectiveWindowMonths
   );
   const chartData = useMemo(() => buildChartData(visibleForecastRows), [visibleForecastRows]);
+  const unavailableComparisonMonths = visibleForecastRows
+    .filter((point) => point.comparisonSalesQuantity === null)
+    .map((point) => formatMonthLabel(point.period));
+  const mobileForecastRows = visibleForecastRows.slice(0, 4);
+  const mobileChartData = buildChartData(mobileForecastRows);
+  const mobileMonthPoint =
+    mobileForecastRows[Math.min(mobileSelectedMonth, Math.max(0, mobileForecastRows.length - 1))] ??
+    null;
   const currentForecast = forecastRows[0] ?? null;
   const forecastHorizonTotal = product
     ? forecastRows.reduce((sum, point) => sum + point.predictedQuantity, 0)
@@ -795,7 +983,14 @@ function MonthlyForecastCard({
   useEffect(() => {
     setWindowMonths(FORECAST_DETAIL_DEFAULT_WINDOW_MONTHS);
     setWindowStart(0);
+    setMobileSelectedMonth(0);
+    setShowAllMobileMonths(false);
   }, [product?.productId]);
+
+  useEffect(() => {
+    setMobileSelectedMonth(0);
+    setShowAllMobileMonths(false);
+  }, [windowMonths, windowStart]);
 
   const detailTitle = product?.productName ?? selectedSummary?.productName ?? "Forecast details";
   const detailSubtitle = product
@@ -810,8 +1005,8 @@ function MonthlyForecastCard({
   );
 
   return (
-    <Card className="flex h-full min-h-0 flex-col">
-      <CardHeader className="shrink-0">
+    <Card className="ys-forecast-v2-detail-card flex h-full min-h-0 flex-col">
+      <CardHeader className="ys-forecast-v2-detail-heading shrink-0">
         <div className="flex items-start justify-between gap-4">
           <div>
             <CardTitle>{detailTitle}</CardTitle>
@@ -821,7 +1016,7 @@ function MonthlyForecastCard({
       </CardHeader>
 
       <CardContent
-        className="flex min-h-0 flex-1 flex-col gap-4 pt-0"
+        className="ys-forecast-v2-detail-content flex min-h-0 flex-1 flex-col gap-4 pt-0"
         aria-busy={initialLoading || loadingDetail}
       >
         {initialLoading ? (
@@ -900,7 +1095,7 @@ function MonthlyForecastCard({
           />
         ) : (
           <>
-            <div className="grid gap-3 md:grid-cols-3">
+            <div className="ys-forecast-v2-summary-metrics grid gap-3 md:grid-cols-3">
               <Metric
                 label="Current Month Forecast"
                 value={formatNumber(currentForecast.predictedQuantity, 1)}
@@ -918,7 +1113,7 @@ function MonthlyForecastCard({
             </div>
 
             {totalForecastMonths > FORECAST_DETAIL_DEFAULT_WINDOW_MONTHS ? (
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+              <div className="ys-forecast-v2-range flex flex-wrap items-center justify-between gap-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
                 <div>
                   <p className="text-xs font-semibold text-slate-700">Forecast range</p>
                   <p className="mt-0.5 text-xs text-slate-500">
@@ -991,32 +1186,150 @@ function MonthlyForecastCard({
               </div>
             ) : null}
 
-            <div className="ys-forecast-chart min-h-[20rem] flex-1">
-              <ResponsiveContainer height="100%" width="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" minTickGap={16} />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip formatter={(value) => formatNumber(Number(value), 1)} />
-                  <Legend />
-                  <Line
-                    connectNulls={false}
-                    dataKey="forecastedDemand"
-                    name="Forecasted Demand"
-                    stroke="#2563eb"
-                    strokeWidth={2}
-                  />
-                  <Line
-                    connectNulls={false}
-                    dataKey="priorYearComparison"
-                    name="Prior-Year Comparison"
-                    stroke="#047857"
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+            <div className="ys-forecast-v2-desktop-chart">
+              <div className="ys-forecast-chart min-h-[20rem] flex-1">
+                <ResponsiveContainer height="100%" width="100%">
+                  <LineChart data={chartData} margin={{ top: 12, right: 18, bottom: 8, left: 8 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="month"
+                      minTickGap={24}
+                      padding={{ left: 40, right: 40 }}
+                      tickMargin={10}
+                    />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip formatter={(value) => formatNumber(Number(value), 1)} />
+                    <Legend height={36} verticalAlign="bottom" wrapperStyle={{ fontSize: 12 }} />
+                    <Line
+                      connectNulls={false}
+                      dataKey="forecastedDemand"
+                      name="Forecasted Demand"
+                      stroke="#2563eb"
+                      strokeWidth={2}
+                    />
+                    <Line
+                      connectNulls={false}
+                      dataKey="priorYearComparison"
+                      name="Prior-Year Comparison"
+                      stroke="#047857"
+                      strokeWidth={2}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              {unavailableComparisonMonths.length > 0 ? (
+                <p className="px-2 pt-2 text-xs text-slate-500">
+                  {unavailableComparisonMonths.length === 1
+                    ? `Prior-year comparison is unavailable for ${unavailableComparisonMonths[0]}.`
+                    : `Prior-year comparison is unavailable for ${unavailableComparisonMonths.length} months (including ${unavailableComparisonMonths.slice(0, 2).join(", ")}).`}{" "}
+                  The line stops at missing data rather than showing invented values.
+                </p>
+              ) : null}
             </div>
 
+            <div className="ys-forecast-v2-mobile-chart" aria-label="Forecast demand trend">
+              <div className="ys-forecast-v2-chart-heading">
+                <strong>Demand forecast</strong>
+                <span>
+                  {mobileForecastRows.length} of {totalForecastMonths} months
+                </span>
+              </div>
+              <div className="ys-forecast-v2-chart-canvas">
+                <ResponsiveContainer height="100%" width="100%">
+                  <LineChart
+                    accessibilityLayer
+                    data={mobileChartData}
+                    margin={{ top: 12, right: 10, left: -22, bottom: 2 }}
+                    onClick={(state) => {
+                      const index = state?.activeTooltipIndex;
+                      if (
+                        typeof index === "number" &&
+                        Number.isInteger(index) &&
+                        index >= 0 &&
+                        index < mobileChartData.length
+                      ) {
+                        setMobileSelectedMonth(index);
+                      }
+                    }}
+                  >
+                    <CartesianGrid stroke="#526580" strokeDasharray="3 4" vertical={false} />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fontSize: 10, fill: "#B9C9E0" }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      width={37}
+                      tick={{ fontSize: 10, fill: "#B9C9E0" }}
+                      tickLine={false}
+                      axisLine={false}
+                      allowDecimals={false}
+                    />
+                    <Tooltip active={false} />
+                    <Line
+                      dataKey="forecastedDemand"
+                      stroke="#8883ff"
+                      strokeWidth={2.5}
+                      dot={{ r: 4, fill: "#8883ff" }}
+                      activeDot={{ r: 5 }}
+                      isAnimationActive={false}
+                    />
+                    <Line
+                      connectNulls={false}
+                      dataKey="priorYearComparison"
+                      stroke="#34c6a0"
+                      strokeWidth={2}
+                      dot={{ r: 3, fill: "#34c6a0" }}
+                      isAnimationActive={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="ys-forecast-v2-legend">
+                <span>Forecast</span>
+                <span>Prior year</span>
+              </div>
+              <div className="ys-forecast-v2-month-tabs" aria-label="Choose forecast month">
+                {mobileForecastRows.map((point, index) => (
+                  <button
+                    aria-pressed={index === mobileSelectedMonth}
+                    key={point.period}
+                    onClick={() => setMobileSelectedMonth(index)}
+                    type="button"
+                  >
+                    {formatMonthLabel(point.period).split(" ")[0]}
+                  </button>
+                ))}
+              </div>
+              {mobileMonthPoint ? (
+                <div className="ys-forecast-v2-selected-month" aria-live="polite">
+                  <div className="ys-forecast-v2-selected-title">
+                    <strong>{formatMonthLabel(mobileMonthPoint.period)}</strong>
+                    <span
+                      className={expectedChangeClassName(
+                        mobileMonthPoint.forecastVariancePercentage
+                      )}
+                    >
+                      {formatForecastVariance(mobileMonthPoint.forecastVariancePercentage)}
+                    </span>
+                  </div>
+                  <div className="ys-forecast-v2-selected-values">
+                    <span>
+                      <small>Demand</small>
+                      <strong>{formatNumber(mobileMonthPoint.predictedQuantity, 1)}</strong>
+                    </span>
+                    <span>
+                      <small>Prior year</small>
+                      <strong>
+                        {formatNumber(mobileMonthPoint.comparisonSalesQuantity, 1)}
+                        {mobileMonthPoint.comparisonSalesEstimated ? " (est.)" : ""}
+                      </strong>
+                    </span>
+                  </div>
+                </div>
+              ) : null}
+            </div>
             {hasEstimatedComparison ? (
               <p className="text-xs text-slate-500">
                 * Some prior-year values are reconstructed estimates because verified comparison
@@ -1025,8 +1338,49 @@ function MonthlyForecastCard({
               </p>
             ) : null}
 
-            <div className="rounded-md border border-slate-200">
-              <table className="w-full text-sm">
+            <div className="ys-forecast-v2-mobile-breakdown">
+              <div className="ys-forecast-v2-breakdown-heading">
+                <strong>Monthly breakdown</strong>
+                <span>{visibleForecastRows.length} months</span>
+              </div>
+              {visibleForecastRows.slice(0, showAllMobileMonths ? undefined : 3).map((point) => (
+                <article className="ys-forecast-v2-month-card" key={point.period}>
+                  <div className="ys-forecast-v2-month-heading">
+                    <strong>{formatMonthLabel(point.period)}</strong>
+                    <span className={expectedChangeClassName(point.forecastVariancePercentage)}>
+                      {formatForecastVariance(point.forecastVariancePercentage)}
+                    </span>
+                  </div>
+                  <div className="ys-forecast-v2-month-values">
+                    <span>
+                      <small>Demand</small>
+                      <strong>{formatNumber(point.predictedQuantity, 1)}</strong>
+                    </span>
+                    <span>
+                      <small>Prior yr</small>
+                      <strong>
+                        {formatNumber(point.comparisonSalesQuantity, 1)}
+                        {point.comparisonSalesEstimated ? " (est.)" : ""}
+                      </strong>
+                    </span>
+                  </div>
+                </article>
+              ))}
+              {visibleForecastRows.length > 3 ? (
+                <button
+                  className="ys-forecast-v2-view-months"
+                  onClick={() => setShowAllMobileMonths((current) => !current)}
+                  type="button"
+                >
+                  {showAllMobileMonths
+                    ? "Show fewer months"
+                    : `View full ${visibleForecastRows.length}-month forecast`}
+                  <ChevronDown aria-hidden="true" className="h-4 w-4" />
+                </button>
+              ) : null}
+            </div>
+            <div className="ys-forecast-v2-desktop-monthly rounded-md border border-slate-200">
+              <table className="retail-mobile-data-table w-full text-sm">
                 <thead className="sticky top-0 bg-slate-50 text-xs uppercase text-slate-500">
                   <tr>
                     <th className="px-3 py-2 text-left">Month</th>
@@ -1038,17 +1392,20 @@ function MonthlyForecastCard({
                 <tbody>
                   {visibleForecastRows.map((point) => (
                     <tr className="border-t border-slate-100" key={point.period}>
-                      <td className="px-3 py-2 font-medium">{formatMonthLabel(point.period)}</td>
-                      <td className="px-3 py-2 text-right">
+                      <td data-label="Month" className="px-3 py-2 font-medium">
+                        {formatMonthLabel(point.period)}
+                      </td>
+                      <td data-label="Forecasted Demand" className="px-3 py-2 text-right">
                         {formatNumber(point.predictedQuantity, 1)}
                       </td>
-                      <td className="px-3 py-2 text-right">
+                      <td data-label="Prior-Year Comparison" className="px-3 py-2 text-right">
                         {formatNumber(point.comparisonSalesQuantity)}
                         {point.comparisonSalesEstimated ? (
                           <span className="ml-1 text-xs text-slate-500">(est.)</span>
                         ) : null}
                       </td>
                       <td
+                        data-label="Expected Change"
                         className={`px-3 py-2 text-right font-medium ${expectedChangeClassName(point.forecastVariancePercentage)}`}
                       >
                         {formatForecastVariance(point.forecastVariancePercentage)}
@@ -1077,7 +1434,7 @@ function Metric({
   valueClassName?: string;
 }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
+    <div className="ys-forecast-v2-metric rounded-md border border-slate-200 bg-slate-50 p-3">
       <p className="text-xs uppercase text-slate-500">{label}</p>
       <p className={`mt-1 text-sm font-semibold ${valueClassName ?? "text-slate-950"}`}>{value}</p>
       {supportingText ? <p className="mt-1 text-xs text-slate-500">{supportingText}</p> : null}

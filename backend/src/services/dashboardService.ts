@@ -8,6 +8,7 @@ import {
 import { prisma } from "../database/prismaClient.js";
 import { getForecastSummary } from "../modules/forecasting/forecast.service.js";
 import { listRestockPlanningCandidates } from "./restockPlanningService.js";
+import { nextMonthlyRestockDate } from "./restockMonthlyCyclePolicy.js";
 import { summarizeMonthlyRestockActions } from "./dashboardMonthlyRestockSummary.js";
 import {
   buildRecommenderAssistant,
@@ -107,6 +108,7 @@ export type DashboardOperations = {
   generatedAt: string;
   restock: {
     actionableProducts: number;
+    scheduledRestockAt: string;
     actions: DashboardRestockAction[];
     restockProducts: number;
     otherReviewProducts: number;
@@ -349,13 +351,23 @@ export async function getDashboardOperations(now = new Date()): Promise<Dashboar
   const actions = planning.items
     .filter(
       (candidate) =>
-        candidate.recommendedQuantity > 0 ||
+        candidate.nextMonthRestock.estimatedRestock > 0 ||
+        ((candidate.forecastDecision?.riskLevel === "HIGH" ||
+          candidate.forecastDecision?.riskLevel === "CRITICAL") &&
+          candidate.recommendedQuantity > 0) ||
         candidate.stockHealth.status === "OVERSTOCK" ||
         candidate.expiryRiskQuantity > 0
     )
     .map((candidate): DashboardRestockAction => {
+      const urgent =
+        candidate.recommendedQuantity > 0 &&
+        (candidate.forecastDecision?.riskLevel === "HIGH" ||
+          candidate.forecastDecision?.riskLevel === "CRITICAL");
+      const displayedQuantity = urgent
+        ? candidate.recommendedQuantity
+        : candidate.nextMonthRestock.estimatedRestock;
       const actionType: DashboardRecommendationAction =
-        candidate.recommendedQuantity > 0
+        displayedQuantity > 0
           ? "RESTOCK"
           : candidate.expiryRiskQuantity > 0
             ? "EXPIRY_REVIEW"
@@ -387,7 +399,7 @@ export async function getDashboardOperations(now = new Date()): Promise<Dashboar
         rationale,
         recommendationSource: candidate.recommendationSource,
         recommendedActionDate: candidate.forecastDecision?.recommendedActionDate ?? null,
-        recommendedQuantity: candidate.recommendedQuantity,
+        recommendedQuantity: displayedQuantity,
         riskLevel,
         sellableStock: candidate.sellableStock,
         stockHealth: candidate.stockHealth.status
@@ -440,6 +452,7 @@ export async function getDashboardOperations(now = new Date()): Promise<Dashboar
     generatedAt: now.toISOString(),
     restock: {
       actionableProducts: actions.length,
+      scheduledRestockAt: nextMonthlyRestockDate(now),
       actions: visibleActions,
       restockProducts: monthlyBatchSummary.restockProducts,
       otherReviewProducts: monthlyBatchSummary.otherReviewProducts,

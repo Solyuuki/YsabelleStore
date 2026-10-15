@@ -1,9 +1,12 @@
+import { randomUUID } from "node:crypto";
+
 import { Prisma, RestockOrderStatus, RestockRecommendationSource } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import { listRestockPlanningCandidates } from "./restockPlanningService.js";
 import { assessProcurementSafety, exceedsRestockOrderBudget } from "./restockProcurementSafety.js";
 import { createRestockOrder } from "./restockService.js";
+import { monthlyRestockCycle } from "./restockMonthlyCyclePolicy.js";
 
 const AUTOMATION_PAGE_SIZE = 100;
 const DEFAULT_RECONCILE_INTERVAL_MS = 60 * 60_000;
@@ -224,8 +227,77 @@ function findMonthlyBatch(orders: RestockTicketIdentity[], batch: MonthlyBatchId
   return orders.find((order) => isMonthlyAutomatedTicket(order, batch)) ?? null;
 }
 
+/** Durable monthly gate, using existing deterministic audit primary keys.
+ * Completed no-action runs stay closed. A compare-and-swap lease allows crash recovery.
+ */
+const MONTHLY_LEASE_MS = 15 * 60_000;
+type MonthlyClaim = { id: string; lease: string };
+
+async function claimMonthlyRun(monthKey: string): Promise<MonthlyClaim | null> {
+  const id = "restock-monthly-run-" + monthKey;
+  const lease = randomUUID();
+  const stamp = new Date().toISOString();
+  const previous = await prisma.catalogAuditLog.findUnique({
+    select: { action: true, actor: true, reason: true },
+    where: { id }
+  });
+  if (!previous) {
+    try {
+      await prisma.catalogAuditLog.create({
+        data: {
+          action: "RESTOCK_MONTH_RUNNING",
+          actor: lease,
+          automated: true,
+          entityId: monthKey,
+          entityType: "RESTOCK_MONTH",
+          evidence: { activationMonth: monthKey },
+          id,
+          reason: stamp
+        }
+      });
+      return { id, lease };
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        return null;
+      }
+      throw error;
+    }
+  }
+  if (
+    previous.action === "RESTOCK_MONTH_CREATED" ||
+    previous.action === "RESTOCK_MONTH_NO_ACTION"
+  ) {
+    return null;
+  }
+  const started = Date.parse(previous.reason);
+  if (
+    previous.action === "RESTOCK_MONTH_RUNNING" &&
+    Number.isFinite(started) &&
+    Date.now() - started < MONTHLY_LEASE_MS
+  ) {
+    return null;
+  }
+  const result = await prisma.catalogAuditLog.updateMany({
+    data: { action: "RESTOCK_MONTH_RUNNING", actor: lease, reason: stamp },
+    where: { id, action: previous.action, actor: previous.actor, reason: previous.reason }
+  });
+  return result.count === 1 ? { id, lease } : null;
+}
+
+async function completeMonthlyRun(
+  claim: MonthlyClaim,
+  action: "RESTOCK_MONTH_CREATED" | "RESTOCK_MONTH_NO_ACTION" | "RESTOCK_MONTH_RETRY",
+  reason: string
+) {
+  await prisma.catalogAuditLog.updateMany({
+    data: { action, reason },
+    where: { id: claim.id, actor: claim.lease, action: "RESTOCK_MONTH_RUNNING" }
+  });
+}
+
 async function runRestockAutomation(): Promise<RestockAutomationResult> {
-  const batch = monthlyBatchIdentity();
+  const cycleNow = new Date();
+  const batch = monthlyBatchIdentity(cycleNow);
   // Snapshot-first: an existing month is immutable, even after worker restarts.
   // Do not rerun the forecast or mutate the Owner's saved draft on refresh.
   const monthOrders = await loadAutomatedTicketsForMonth(batch);
@@ -249,73 +321,100 @@ async function runRestockAutomation(): Promise<RestockAutomationResult> {
     };
   }
 
-  // First run of a new month only: assess the complete eligible product list.
-  // The result becomes an Owner-review draft with a DB-unique monthly identity.
-  const actionLines = await loadOperationalActionLines();
-  if (actionLines.length === 0) {
+  // Release cutover: preserve existing October orders but never create a new October batch midmonth.
+  if (!monthlyRestockCycle(cycleNow).automationEnabled) {
     return { orderId: null, orderNumber: null, status: "NO_ACTION" };
   }
+  const claim = await claimMonthlyRun(batch.monthKey);
+  if (!claim) return { orderId: null, orderNumber: null, status: "NO_ACTION" };
 
-  const actorId = await findAutomationActorId();
-  if (!actorId) {
-    console.warn(
-      "[restock] No active user is available to own the automated monthly restock batch."
-    );
-    return { orderId: null, orderNumber: null, status: "NO_ACTOR" };
-  }
-
-  const totalUnits = actionLines.reduce((sum, line) => sum + line.quantity, 0);
-  const previousMonth = new Date(batch.monthStart.getTime() - 86_400_000);
-  const sourceMonth = new Date(previousMonth.getTime() + MANILA_OFFSET_MS)
-    .toISOString()
-    .slice(0, 7);
-  let order: Awaited<ReturnType<typeof createRestockOrder>>;
   try {
-    // Unique orderNumber is claimed in the create transaction, not by a later rename.
-    order = await createRestockOrder(
-      {
-        notes: `${batch.marker} [RestockSourceMonth:${sourceMonth}] Frozen forecast-driven multi-product batch; Owner approval required.`,
-        lines: actionLines.map((line) => ({
-          isSelected: true,
-          notes: "Inventory Recommender generated this forecast-driven replenishment line.",
-          ownerOverrideReason: null,
-          productId: line.productId,
-          recommendationId: line.recommendationId,
-          recommendationSource: line.recommendationSource,
-          recommendedQuantity: line.quantity,
-          requestedQuantity: line.quantity
-        }))
-      },
-      actorId,
-      batch.orderNumber
-    );
-  } catch (error) {
-    // Multi-process race: one server already created the uniquely named batch.
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-      const competing = await prisma.restockOrder.findUnique({
-        select: { id: true, orderNumber: true, status: true },
-        where: { orderNumber: batch.orderNumber }
-      });
-      if (competing) {
-        return {
-          orderId: competing.id,
-          orderNumber: competing.orderNumber,
-          status: competing.status === RestockOrderStatus.CANCELLED ? "CANCELLED" : "EXISTING"
-        };
-      }
+    // Evaluate once per activated month, with persistent no-action/created state.
+    const actionLines = await loadOperationalActionLines();
+    if (actionLines.length === 0) {
+      await completeMonthlyRun(claim, "RESTOCK_MONTH_NO_ACTION", "No eligible monthly restock.");
+      return { orderId: null, orderNumber: null, status: "NO_ACTION" };
     }
+
+    const actorId = await findAutomationActorId();
+    if (!actorId) {
+      console.warn(
+        "[restock] No active user is available to own the automated monthly restock batch."
+      );
+      await completeMonthlyRun(claim, "RESTOCK_MONTH_RETRY", "No active Owner/actor; retry later.");
+      return { orderId: null, orderNumber: null, status: "NO_ACTOR" };
+    }
+
+    const totalUnits = actionLines.reduce((sum, line) => sum + line.quantity, 0);
+    const previousMonth = new Date(batch.monthStart.getTime() - 86_400_000);
+    const sourceMonth = new Date(previousMonth.getTime() + MANILA_OFFSET_MS)
+      .toISOString()
+      .slice(0, 7);
+    let order: Awaited<ReturnType<typeof createRestockOrder>>;
+    try {
+      // Unique orderNumber is claimed in the create transaction, not by a later rename.
+      order = await createRestockOrder(
+        {
+          notes: `${batch.marker} [RestockSourceMonth:${sourceMonth}] Frozen forecast-driven multi-product batch; Owner approval required.`,
+          lines: actionLines.map((line) => ({
+            isSelected: true,
+            notes: "Inventory Recommender generated this forecast-driven replenishment line.",
+            ownerOverrideReason: null,
+            productId: line.productId,
+            recommendationId: line.recommendationId,
+            recommendationSource: line.recommendationSource,
+            recommendedQuantity: line.quantity,
+            requestedQuantity: line.quantity
+          }))
+        },
+        actorId,
+        batch.orderNumber
+      );
+    } catch (error) {
+      // Multi-process race: one server already created the uniquely named batch.
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        const competing = await prisma.restockOrder.findUnique({
+          select: { id: true, orderNumber: true, status: true },
+          where: { orderNumber: batch.orderNumber }
+        });
+        if (competing) {
+          await completeMonthlyRun(
+            claim,
+            "RESTOCK_MONTH_CREATED",
+            "Concurrent monthly draft preserved."
+          );
+          return {
+            orderId: competing.id,
+            orderNumber: competing.orderNumber,
+            status: competing.status === RestockOrderStatus.CANCELLED ? "CANCELLED" : "EXISTING"
+          };
+        }
+      }
+      throw error;
+    }
+
+    await completeMonthlyRun(
+      claim,
+      "RESTOCK_MONTH_CREATED",
+      "One Owner-review monthly draft created."
+    );
+    console.info(
+      `[restock] Created owner-review monthly plan ${order.orderNumber} with ${actionLines.length} product(s) and ${totalUnits} recommended unit(s). Approval is required before Receiving.`
+    );
+
+    return {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      status: "CREATED"
+    };
+  } catch (error) {
+    await completeMonthlyRun(
+      claim,
+      "RESTOCK_MONTH_RETRY",
+      "Monthly run interrupted; retry allowed."
+    );
     throw error;
   }
-
-  console.info(
-    `[restock] Created owner-review monthly plan ${order.orderNumber} with ${actionLines.length} product(s) and ${totalUnits} recommended unit(s). Approval is required before Receiving.`
-  );
-
-  return {
-    orderId: order.id,
-    orderNumber: order.orderNumber,
-    status: "CREATED"
-  };
 }
 
 export async function ensureAutomatedRestockTicket() {

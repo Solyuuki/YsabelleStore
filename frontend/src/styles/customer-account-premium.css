@@ -337,15 +337,40 @@
     margin-left: auto;
   }
 
+  /* Four account views always fit in a 2×2 phone grid. Never use a
+     horizontal scroll rail: it clips the Security tab and exposes a bar. */
   .customer-account-nav {
     order: 3;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
-    overflow-x: auto;
-    justify-content: flex-start;
+    min-width: 0;
+    gap: 8px;
+    overflow: visible;
+    justify-content: stretch;
+    align-items: stretch;
   }
 
   .customer-account-nav button {
-    flex: 1 0 auto;
+    display: inline-flex;
+    flex: none;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0.55rem 0.3rem;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    font-size: clamp(0.76rem, 3.5vw, 0.85rem);
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+
+  .customer-account-nav button svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
   }
 
   .customer-account-hero,
@@ -1314,4 +1339,191 @@
   background-size: cover, auto !important;
   background-blend-mode: soft-light, normal !important;
   opacity: 0.52 !important;
+}
+
+/* Sprint 12: fit live delivery details inside narrow phones. The 620px
+   desktop progress rail was scrollable but hid most status markers on mobile.
+   Keep the complete five-stage timeline visible without horizontal scrolling. */
+@media (max-width: 720px) {
+  .customer-app .customer-account-page-v2,
+  .customer-app .customer-account-layout-v2,
+  .customer-app .customer-account-content-v2,
+  .customer-app #orders-panel,
+  .customer-app #orders-panel .customer-account-delivery-stack {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .customer-app #orders-panel .customer-account-order-v2--active {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    padding: clamp(12px, 3.5vw, 16px);
+  }
+
+  .customer-app #orders-panel .customer-account-order-topline {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .customer-app #orders-panel .customer-account-order-topline > div {
+    min-width: 0;
+  }
+
+  .customer-app #orders-panel .customer-account-order-topline > div > :is(span, strong) {
+    display: block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .customer-app #orders-panel .customer-account-order-topline > .customer-delivery-status {
+    width: fit-content;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .customer-app #orders-panel .customer-account-delivery-overview {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-block: 12px;
+  }
+
+  .customer-app #orders-panel .customer-account-delivery-overview > div {
+    min-width: 0;
+    padding: 9px 10px;
+  }
+
+  .customer-app #orders-panel .customer-account-delivery-overview > div:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .customer-app #orders-panel .customer-account-delivery-overview strong {
+    overflow-wrap: anywhere;
+  }
+
+  .customer-app
+    #orders-panel
+    :is(.customer-account-delivery-address, .customer-account-delivery-courier) {
+    min-width: 0;
+    margin-inline: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .customer-app
+    #orders-panel
+    :is(.customer-account-delivery-address, .customer-account-delivery-courier)
+    > span {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .customer-app #orders-panel .customer-delivery-progress {
+    min-width: 0;
+    max-width: 100%;
+    margin: 13px 0 0;
+    padding: 13px 0 0;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+
+  .customer-app #orders-panel .customer-delivery-stepper {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .customer-app #orders-panel .customer-delivery-stepper > li {
+    display: grid;
+    min-width: 0;
+    min-height: 46px;
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 10px;
+    text-align: left;
+    scroll-snap-align: none;
+  }
+
+  .customer-app #orders-panel .customer-delivery-stepper__track {
+    width: 30px;
+    min-height: 46px;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .customer-app #orders-panel .customer-delivery-stepper__marker {
+    width: 27px;
+    height: 27px;
+  }
+
+  .customer-app #orders-panel .customer-delivery-stepper__connector {
+    top: 27px;
+    left: calc(50% - 1px);
+    width: 2px;
+    height: calc(100% - 27px);
+    transform: none;
+  }
+
+  .customer-app #orders-panel .customer-delivery-stepper__copy {
+    min-width: 0;
+    align-content: start;
+    gap: 2px;
+    margin-top: 1px;
+    padding: 0 0 8px;
+    text-align: left;
+  }
+
+  .customer-app #orders-panel .customer-delivery-stepper__copy :is(strong, small) {
+    overflow-wrap: anywhere;
+  }
+
+  .customer-app #orders-panel .customer-account-history-card summary {
+    min-width: 0;
+    gap: 10px;
+    padding: 13px 14px;
+  }
+
+  .customer-app #orders-panel .customer-account-history-card__identity strong {
+    overflow-wrap: anywhere;
+  }
+
+  .customer-app #orders-panel .customer-account-history-card__summary {
+    min-width: 0;
+    column-gap: 9px;
+    row-gap: 6px;
+  }
+
+  .customer-app #orders-panel .customer-account-history-card__details {
+    min-width: 0;
+    padding: 12px 14px 14px;
+  }
+
+  .customer-app #orders-panel .customer-account-history-card__details li {
+    min-width: 0;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .customer-app #orders-panel .customer-account-history-card__details li > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .customer-app #orders-panel .customer-account-history-card__details li strong {
+    text-align: right;
+  }
+
+  .customer-app #orders-panel .customer-account-history-pagination {
+    min-width: 0;
+    gap: 9px;
+    padding: 10px;
+  }
+
+  .customer-app #orders-panel .customer-account-history-pagination nav {
+    max-width: 100%;
+  }
 }

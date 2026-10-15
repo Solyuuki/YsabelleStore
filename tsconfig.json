@@ -9,7 +9,7 @@
     "paths": {
       "@/*": ["./frontend/src/*"]
     },
-    "types": ["node"]
+    "types": ["node", "vite/client"]
   },
   "include": ["scripts/**/*.ts"]
 }

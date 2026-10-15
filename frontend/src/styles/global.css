@@ -1086,8 +1086,9 @@ body {
 
 /* Status illustrations use locally vendored open illustrations with restrained product motion. */
 .status-screen-main {
-  padding-top: clamp(0.5rem, 1.5vh, 1.25rem);
-  padding-bottom: clamp(6.5rem, 14vh, 10rem);
+  /* The HTTP status layout has no branded top header. Balance both edges
+     so the illustration, status code and recovery action remain centered. */
+  padding-block: clamp(2rem, 6vh, 4rem);
 }
 
 .status-screen-main.status-screen-main--system {
@@ -1171,8 +1172,7 @@ body {
 
 @media (max-width: 720px) {
   .status-screen-main {
-    padding-top: 0.5rem;
-    padding-bottom: clamp(4.5rem, 10vh, 6.5rem);
+    padding-block: clamp(1.5rem, 5vh, 3rem);
   }
 
   .status-illustration {
@@ -1187,8 +1187,7 @@ body {
 
 @media (max-height: 760px) and (min-width: 721px) {
   .status-screen-main {
-    padding-top: 0;
-    padding-bottom: 4rem;
+    padding-block: 1.5rem;
   }
 
   .status-illustration {
@@ -1255,10 +1254,6 @@ body {
 
 .status-screen[data-status-theme="dark"] .status-screen__light-wash {
   display: none;
-}
-
-.status-screen[data-status-theme="dark"] .status-screen__brand-logo {
-  filter: brightness(0) invert(1) drop-shadow(0 8px 20px rgb(5 10 26 / 30%));
 }
 
 .status-screen[data-status-theme="dark"] .status-screen__status-number {
@@ -1363,4 +1358,69 @@ body {
   border-color: #518c80;
   background: #203a38;
   color: #cef5e5;
+}
+
+/* Portrait-only phones: a browser cannot lock device hardware orientation.
+   Only coarse-pointer narrow landscape viewports are blocked; tablets stay free
+   to rotate. The HTML's early display:none prevents startup flashes. */
+@media (orientation: landscape) and (max-width: 1180px) and (max-height: 500px) and (pointer: coarse) {
+  .phone-portrait-guard {
+    position: fixed;
+    z-index: 2147483647;
+    inset: 0;
+    display: grid;
+    width: 100%;
+    height: 100dvh;
+    align-content: center;
+    justify-items: center;
+    gap: 0.75rem;
+    overflow-y: auto;
+    padding: max(1.5rem, env(safe-area-inset-top)) max(1.5rem, env(safe-area-inset-right))
+      max(1.5rem, env(safe-area-inset-bottom)) max(1.5rem, env(safe-area-inset-left));
+    background: #f1f4ff;
+    color: #182743;
+    text-align: center;
+    overscroll-behavior: contain;
+    touch-action: none;
+  }
+
+  .phone-portrait-guard__icon {
+    display: grid;
+    width: 3.25rem;
+    height: 3.25rem;
+    place-items: center;
+    border: 1px solid #a5abdb;
+    border-radius: 1rem;
+    background: #e2e5ff;
+    color: #5546c1;
+    font-size: 2.25rem;
+    line-height: 1;
+  }
+
+  .phone-portrait-guard strong {
+    font-size: 1.2rem;
+    font-weight: 800;
+  }
+
+  .phone-portrait-guard p {
+    max-width: 22rem;
+    margin: 0;
+    color: #4d5c78;
+    font-size: 0.9rem;
+  }
+
+  :root.dark .phone-portrait-guard {
+    background: #111e34;
+    color: #f0f3ff;
+  }
+
+  :root.dark .phone-portrait-guard__icon {
+    border-color: #68749e;
+    background: #293354;
+    color: #d5c6ff;
+  }
+
+  :root.dark .phone-portrait-guard p {
+    color: #bdcbea;
+  }
 }

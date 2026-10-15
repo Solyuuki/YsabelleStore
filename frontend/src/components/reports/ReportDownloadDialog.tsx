@@ -2,6 +2,7 @@ import {
   Boxes,
   CheckCircle2,
   ChevronLeft,
+  X,
   ChevronRight,
   Eye,
   EyeOff,
@@ -18,6 +19,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -337,7 +339,24 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
       }}
       open={open}
     >
-      <DialogContent className="ys-report-modal max-w-[760px]">
+      <DialogContent className="ys-report-modal max-w-[760px]" data-report-download="true">
+        <div className="ys-report-v2-modal-nav">
+          <DialogClose asChild>
+            <button className="ys-report-v2-modal-back" type="button">
+              <ChevronLeft aria-hidden="true" className="h-4 w-4 shrink-0" />
+              <span>Back to Reports</span>
+            </button>
+          </DialogClose>
+          <DialogClose asChild>
+            <button
+              aria-label="Close download report"
+              className="ys-report-v2-modal-close"
+              type="button"
+            >
+              <X aria-hidden="true" className="h-4 w-4" />
+            </button>
+          </DialogClose>
+        </div>
         <DialogHeader>
           <DialogTitle>Download report</DialogTitle>
           <DialogDescription>
@@ -346,12 +365,12 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-5 px-6 pb-6">
+        <div className="ys-report-v2-download-body space-y-5 px-6 pb-6">
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
               Report type
             </p>
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="ys-report-v2-type-grid grid gap-3 sm:grid-cols-3">
               <ReportChoice
                 active={reportType === "operational"}
                 description="Store health and sales overview"
@@ -590,9 +609,9 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
               Export format
             </p>
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="ys-report-v2-format-grid grid gap-3 sm:grid-cols-3">
               <Button
-                className="h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
+                className="ys-report-v2-format-card h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
                 disabled={exportDisabled}
                 onClick={() => void handlePdf()}
                 type="button"
@@ -609,7 +628,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
               </Button>
 
               <Button
-                className="ys-report-export-option ys-report-export-option--secondary h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
+                className="ys-report-v2-format-card ys-report-export-option ys-report-export-option--secondary h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
                 disabled={exportDisabled}
                 onClick={() => void handlePrint()}
                 type="button"
@@ -630,7 +649,7 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
               </Button>
 
               <Button
-                className="ys-report-export-option ys-report-export-option--secondary h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
+                className="ys-report-v2-format-card ys-report-export-option ys-report-export-option--secondary h-auto min-h-20 items-start justify-start whitespace-normal p-4 text-left"
                 disabled={exportDisabled}
                 onClick={() => void handleCsv()}
                 type="button"
@@ -659,6 +678,13 @@ export function ReportDownloadDialog({ completedSales, onOpenChange, open, summa
             </Alert>
           ) : null}
         </div>
+        <div className="ys-report-v2-download-footer">
+          <DialogClose asChild>
+            <Button type="button" variant="secondary">
+              Cancel
+            </Button>
+          </DialogClose>
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -680,7 +706,7 @@ function ReportChoice({
   return (
     <Button
       aria-pressed={active}
-      className={`h-auto min-h-28 items-start justify-start whitespace-normal p-4 text-left ${
+      className={`ys-report-v2-report-choice h-auto min-h-28 items-start justify-start whitespace-normal p-4 text-left ${
         active ? "ring-2 ring-indigo-500" : ""
       }`}
       onClick={onClick}

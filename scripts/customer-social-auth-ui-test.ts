@@ -6,7 +6,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { CustomerSocialAuthButtons } from "../frontend/src/components/customer/CustomerSocialAuthButtons.tsx";
 import {
   buildCustomerSocialAuthStartUrl,
+  customerSocialAuthNavigationWindow,
   getCustomerSocialAuthNotice,
+  startCustomerSocialAuth,
   type CustomerSocialAuthProvider
 } from "../frontend/src/services/customerSocialAuthService.ts";
 
@@ -188,5 +190,111 @@ assert.ok(
   accountNavigationIndex > socialLinkIndex,
   "Successful social linking should continue to the validated return path."
 );
+
+// Preview iframe is a visual QA shell, never a place to render Google's OAuth screen.
+const fullPage = {
+  location: { origin: "http://localhost:5174", pathname: "/login" }
+} as unknown as Window;
+Object.assign(fullPage, { self: fullPage, top: fullPage, parent: fullPage });
+assert.equal(customerSocialAuthNavigationWindow(fullPage), fullPage);
+
+const previewHost = {
+  location: { origin: "http://localhost:5174", pathname: "/mobile-preview.html" }
+} as unknown as Window;
+const framedPage = {
+  location: { origin: "http://localhost:5174", pathname: "/login" },
+  self: {},
+  parent: previewHost,
+  top: previewHost
+} as unknown as Window;
+assert.equal(customerSocialAuthNavigationWindow(framedPage), previewHost);
+
+const otherHost = {
+  location: { origin: "http://localhost:5174", pathname: "/external-widget" }
+} as unknown as Window;
+const untrustedFrame = { ...framedPage, parent: otherHost, top: otherHost } as Window;
+assert.throws(
+  () => customerSocialAuthNavigationWindow(untrustedFrame),
+  /Open Ysabelle Store in a full browser tab/
+);
+const nestedFrame = { ...framedPage, top: otherHost } as Window;
+assert.throws(
+  () => customerSocialAuthNavigationWindow(nestedFrame),
+  /Open Ysabelle Store in a full browser tab/
+);
+
+// Full-page Google auth must preserve the signed-in landing route and original
+// phone/tablet preset so the OAuth callback does not strand QA on desktop.
+const originalWindow = globalThis.window;
+let destinationUrl = "";
+const oauthPreviewHost = {
+  location: {
+    origin: "http://localhost:5174",
+    hostname: "localhost",
+    port: "5174",
+    pathname: "/mobile-preview.html",
+    assign(value: string) {
+      destinationUrl = value;
+    }
+  },
+  document: {
+    getElementById(id: string) {
+      if (id === "device") return { value: "390,844" };
+      if (id === "dimensions") return { textContent: "390 × 844 CSS pixels" };
+      return null;
+    }
+  }
+} as unknown as Window;
+const oauthPreviewChild = {
+  self: {},
+  location: { origin: "http://localhost:5174", pathname: "/login" },
+  parent: oauthPreviewHost,
+  top: oauthPreviewHost
+} as unknown as Window;
+
+try {
+  Object.assign(globalThis, { window: oauthPreviewChild });
+  startCustomerSocialAuth("google", "/account", "login");
+
+  const googleStart = new URL(destinationUrl);
+  assert.equal(googleStart.pathname, "/api/customer-auth/social/google/start");
+  assert.equal(googleStart.searchParams.get("authPage"), "login");
+  const previewLanding = new URL(
+    googleStart.searchParams.get("returnPath") ?? "",
+    "http://localhost:5173"
+  );
+  assert.equal(previewLanding.pathname, "/mobile-preview.html");
+  assert.equal(previewLanding.searchParams.get("authRoute"), "/account");
+  assert.equal(previewLanding.searchParams.get("authDevice"), "390,844");
+  assert.equal(previewLanding.searchParams.get("authPreviewPort"), "5174");
+
+  const topLevelBrowser = {
+    location: {
+      origin: "http://localhost:5173",
+      pathname: "/login",
+      assign(value: string) {
+        destinationUrl = value;
+      }
+    }
+  } as unknown as Window;
+  Object.assign(topLevelBrowser, {
+    self: topLevelBrowser,
+    top: topLevelBrowser,
+    parent: topLevelBrowser
+  });
+  Object.assign(globalThis, { window: topLevelBrowser });
+  startCustomerSocialAuth("google", "/account?view=orders", "login");
+  assert.equal(
+    new URL(destinationUrl).searchParams.get("returnPath"),
+    "/account?view=orders",
+    "Normal browser sign-in must not be forced into a mobile QA frame"
+  );
+} finally {
+  if (originalWindow === undefined) {
+    Reflect.deleteProperty(globalThis, "window");
+  } else {
+    Object.assign(globalThis, { window: originalWindow });
+  }
+}
 
 console.log("Customer social auth quick-sign UI contract passed.");

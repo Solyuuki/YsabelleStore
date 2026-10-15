@@ -37,6 +37,18 @@ export const deliveryTransitionSchema = z.object({
   ]),
   courierProvider: z.string().trim().max(80).optional(),
   courierReference: z.string().trim().max(120).optional(),
+  riderName: z.string().trim().max(120).optional(),
+  riderPhone: z.string().trim().max(24).optional(),
+  customerDeliveryNote: z.string().trim().max(500).optional(),
+  note: z.string().trim().max(255).optional()
+});
+
+export const deliveryHandoffDraftSchema = z.object({
+  courierProvider: z.string().trim().max(80).optional(),
+  courierReference: z.string().trim().max(120).optional(),
+  riderName: z.string().trim().max(120).optional(),
+  riderPhone: z.string().trim().max(24).optional(),
+  customerDeliveryNote: z.string().trim().max(500).optional(),
   note: z.string().trim().max(255).optional()
 });
 
@@ -46,4 +58,5 @@ export const codSettlementSchema = z.object({
 
 export type DeliveryListQuery = z.infer<typeof deliveryListQuerySchema>;
 export type DeliveryTransitionInput = z.infer<typeof deliveryTransitionSchema>;
+export type DeliveryHandoffDraftInput = z.infer<typeof deliveryHandoffDraftSchema>;
 export type CodSettlementInput = z.infer<typeof codSettlementSchema>;

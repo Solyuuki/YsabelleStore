@@ -62,7 +62,7 @@ export async function fetchStorefrontProducts(
 export async function fetchStorefrontProduct(productId: string, signal?: AbortSignal) {
   const response = await apiClient.request<StorefrontProductDetail>(
     `/api/storefront/products/${encodeURIComponent(productId)}`,
-    { signal }
+    { cache: "no-store", signal }
   );
   if (!response.success || !response.data) throw new Error(response.message);
   return response.data;

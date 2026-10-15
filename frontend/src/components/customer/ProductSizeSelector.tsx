@@ -102,7 +102,6 @@ export function ProductSizeSelector({
                 data-selected={isSelected || undefined}
                 data-sold-out={soldOut || undefined}
                 key={variant.id}
-                title={variant.name}
               >
                 <input
                   aria-label={`Select ${label}${soldOut ? ", sold out" : ""}`}
@@ -149,6 +148,11 @@ export function ProductSizeSelector({
           </button>
         ) : null}
       </div>
+      {hasOverflow ? (
+        <p aria-hidden="true" className="customer-product-size-selector__swipe-hint">
+          Swipe to see more sizes
+        </p>
+      ) : null}
     </fieldset>
   );
 }

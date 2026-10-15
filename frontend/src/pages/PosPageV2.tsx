@@ -1,4 +1,7 @@
 import {
+  ChevronDown,
+  ChevronUp,
+  Camera,
   LoaderCircle,
   Minus,
   PackageSearch,
@@ -12,6 +15,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { CashPaymentDialog } from "@/components/pos/CashPaymentDialog";
+import { PosCameraScanner } from "@/components/pos/PosCameraScanner";
 import { RetailReceiptDialog } from "@/components/receipt/RetailReceiptDialog";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -26,6 +30,7 @@ import { checkoutPosSale, searchPosProducts } from "@/services/posService";
 import type { PosProduct, PosSale } from "@/types/pos";
 import { buildRetailReceiptDataFromSale } from "@/utils/receipt";
 import { wait } from "@/utils/timing";
+import "@/styles/retail-pos-mobile-scanner.css";
 
 type CartLine = {
   product: PosProduct;
@@ -58,6 +63,18 @@ const currencyFormatter = new Intl.NumberFormat("en-PH", {
 });
 
 const PRODUCT_RESULTS_PAGE_SIZE = 10;
+const MOBILE_PRODUCT_RESULTS_PAGE_SIZE = 5;
+
+function getProductResultsPageSize() {
+  if (typeof window === "undefined") return PRODUCT_RESULTS_PAGE_SIZE;
+
+  return window.matchMedia(
+    "(max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px)"
+  ).matches
+    ? MOBILE_PRODUCT_RESULTS_PAGE_SIZE
+    : PRODUCT_RESULTS_PAGE_SIZE;
+}
+
 const MIN_SEARCH_LOADING_MS = 200;
 
 const initialSearchState: SearchState = {
@@ -80,7 +97,8 @@ export function PosPage() {
   const [searchState, setSearchState] = useState<SearchState>(initialSearchState);
   const [searchInput, setSearchInput] = useState("");
   const [cartLines, setCartLines] = useState<CartLine[]>([]);
-  const [productResultsPage, setProductResultsPage] = useState(1);
+  const [mobileCartOpen, setMobileCartOpen] = useState(false);
+  const [cameraScannerOpen, setCameraScannerOpen] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [isCashDialogOpen, setIsCashDialogOpen] = useState(false);
@@ -110,8 +128,20 @@ export function PosPage() {
   }, [cartLines]);
 
   useEffect(() => {
+    if (!mobileCartOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileCartOpen(false);
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [mobileCartOpen]);
+
+  useEffect(() => {
+    // Do not pop up the mobile keyboard before the cashier chooses manual input.
     const rafId = window.requestAnimationFrame(() => {
-      scannerInputRef.current?.focus({ preventScroll: true });
+      if (!window.matchMedia("(pointer: coarse) and (max-width: 767px)").matches) {
+        scannerInputRef.current?.focus({ preventScroll: true });
+      }
     });
 
     return () => window.cancelAnimationFrame(rafId);
@@ -119,18 +149,14 @@ export function PosPage() {
 
   useEffect(() => {
     const handleWindowFocus = () => {
-      if (!isCashDialogOpen && !isReceiptDialogOpen) {
+      if (!isCashDialogOpen && !isReceiptDialogOpen && !cameraScannerOpen) {
         focusScannerInput();
       }
     };
 
     window.addEventListener("focus", handleWindowFocus);
     return () => window.removeEventListener("focus", handleWindowFocus);
-  }, [isCashDialogOpen, isReceiptDialogOpen]);
-
-  useEffect(() => {
-    setProductResultsPage(1);
-  }, [searchState.query]);
+  }, [isCashDialogOpen, isReceiptDialogOpen, cameraScannerOpen]);
 
   useEffect(() => {
     if (!lastTouchedProductId) return;
@@ -158,7 +184,7 @@ export function PosPage() {
           ? { label: "Found", variant: "success" as const }
           : searchState.status === "no-match"
             ? { label: "No match", variant: "warning" as const }
-            : { label: "USB scanner ready", variant: "info" as const };
+            : { label: "USB ready", variant: "info" as const };
 
   const cartBadge = isCheckingOut
     ? { label: "Processing", variant: "info" as const }
@@ -170,7 +196,9 @@ export function PosPage() {
 
   function focusScannerInput() {
     window.requestAnimationFrame(() => {
-      scannerInputRef.current?.focus({ preventScroll: true });
+      if (!window.matchMedia("(pointer: coarse) and (max-width: 767px)").matches) {
+        scannerInputRef.current?.focus({ preventScroll: true });
+      }
     });
   }
 
@@ -237,9 +265,11 @@ export function PosPage() {
     return true;
   }
 
-  async function handleSearch(options: { autoAddExactMatch?: boolean; page?: number } = {}) {
-    const trimmedQuery = searchInput.trim();
-    const requestPage = options.page ?? productResultsPage;
+  async function handleSearch(
+    options: { autoAddExactMatch?: boolean; page?: number; queryOverride?: string } = {}
+  ) {
+    const trimmedQuery = (options.queryOverride ?? searchInput).trim();
+    const requestPage = options.page ?? 1;
     const startedAt = window.performance.now();
 
     setCheckoutError(null);
@@ -267,7 +297,7 @@ export function PosPage() {
     try {
       const response = await searchPosProducts(trimmedQuery, {
         page: requestPage,
-        pageSize: PRODUCT_RESULTS_PAGE_SIZE
+        pageSize: getProductResultsPageSize()
       });
       const remainingMs = Math.max(
         0,
@@ -361,6 +391,7 @@ export function PosPage() {
   function openCashPayment() {
     if (cartLines.length === 0 || isCheckingOut) return;
     setCheckoutError(null);
+    setMobileCartOpen(false);
     setIsCashDialogOpen(true);
   }
 
@@ -390,6 +421,7 @@ export function PosPage() {
       setReceiptPrintError(null);
       setReceiptPrintStatus("idle");
       setIsCashDialogOpen(false);
+      setMobileCartOpen(false);
       commitCartLines([]);
       setSearchState(initialSearchState);
       clearScannerInput();
@@ -467,14 +499,14 @@ export function PosPage() {
         description="Retail selling workspace for scanner input, product lookup, live cart review, and cash checkout."
       />
 
-      <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+      <section className="retail-pos-layout grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
         <div className="min-w-0 space-y-4">
-          <Card className="border-slate-200/80 bg-white/95 shadow-sm">
+          <Card className="retail-pos-search-card border-slate-200/80 bg-white/95 shadow-sm">
             <CardHeader>
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <CardTitle>Product search</CardTitle>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="retail-pos-search-help mt-1 text-sm text-slate-500">
                     USB barcode scanners work as keyboard input. Plug in the scanner and scan; no
                     pairing step is required.
                   </p>
@@ -484,7 +516,7 @@ export function PosPage() {
             </CardHeader>
             <CardContent>
               <form
-                className="grid gap-3 lg:grid-cols-[1fr_180px]"
+                className="retail-pos-search-form grid gap-3 lg:grid-cols-[1fr_180px]"
                 onSubmit={(event) => {
                   event.preventDefault();
                   void handleSearch({ autoAddExactMatch: true });
@@ -496,7 +528,8 @@ export function PosPage() {
                     ref={scannerInputRef}
                     aria-label="Scan barcode or search product"
                     className="pos-scanner-input w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
-                    placeholder="Scan barcode or search name / SKU / price"
+                    aria-describedby="retail-pos-search-hint"
+                    placeholder="Barcode / product"
                     value={searchInput}
                     onChange={(event) => setSearchInput(event.target.value)}
                     onKeyDown={(event) => {
@@ -514,7 +547,21 @@ export function PosPage() {
                     }}
                   />
                 </label>
-                <Button disabled={searchState.isLoading} type="submit" variant="secondary">
+                <button
+                  aria-label="Scan product barcode using phone camera"
+                  className="retail-pos-camera-launch"
+                  onClick={() => setCameraScannerOpen(true)}
+                  type="button"
+                >
+                  <Camera aria-hidden="true" size={20} />
+                  <span>Camera scan</span>
+                </button>
+                <Button
+                  className="retail-pos-search-submit"
+                  disabled={searchState.isLoading}
+                  type="submit"
+                  variant="secondary"
+                >
                   {searchState.isLoading ? (
                     <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
                   ) : (
@@ -523,6 +570,9 @@ export function PosPage() {
                   Search
                 </Button>
               </form>
+              <p className="retail-pos-mobile-search-hint" id="retail-pos-search-hint">
+                Search by product, SKU, price or barcode. Use the camera button to scan.
+              </p>
               {searchState.error ? (
                 <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                   {searchState.error}
@@ -531,7 +581,7 @@ export function PosPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200/80 bg-white/95 shadow-sm">
+          <Card className="retail-pos-results-card border-slate-200/80 bg-white/95 shadow-sm">
             <CardHeader>
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
@@ -559,7 +609,7 @@ export function PosPage() {
               ) : searchState.products.length > 0 ? (
                 <div className="space-y-3">
                   <div className="overflow-x-auto rounded-md border border-slate-200">
-                    <table className="w-full min-w-[760px] table-fixed border-collapse text-left text-sm">
+                    <table className="retail-mobile-data-table w-full min-w-[760px] table-fixed border-collapse text-left text-sm">
                       <thead className="bg-slate-50 text-xs uppercase tracking-[0.16em] text-slate-500">
                         <tr>
                           <th className="px-4 py-3 font-medium">Barcode / SKU</th>
@@ -581,17 +631,17 @@ export function PosPage() {
                               }`}
                               key={product.id}
                             >
-                              <td className="px-4 py-3">
+                              <td data-label="Barcode / SKU" className="px-4 py-3">
                                 <p className="font-medium text-slate-900">
                                   {product.barcode ?? product.sku}
                                 </p>
                                 <p className="text-xs text-slate-500">{product.sku}</p>
                               </td>
-                              <td className="px-4 py-3">
+                              <td data-label="Product" className="px-4 py-3">
                                 <p className="font-medium text-slate-900">{product.name}</p>
                                 <p className="text-xs text-slate-500">{product.categoryName}</p>
                               </td>
-                              <td className="px-4 py-3">
+                              <td data-label="Stock" className="px-4 py-3">
                                 <StatusBadge
                                   variant={
                                     isOutOfStock
@@ -606,11 +656,15 @@ export function PosPage() {
                                     : `${product.availableStock} in stock`}
                                 </StatusBadge>
                               </td>
-                              <td className="px-4 py-3 font-medium text-slate-900">
+                              <td
+                                data-label="Unit price"
+                                className="px-4 py-3 font-medium text-slate-900"
+                              >
                                 {currencyFormatter.format(Number(product.sellingPrice))}
                               </td>
-                              <td className="px-4 py-3 text-right">
+                              <td data-label="Action" className="px-4 py-3 text-right">
                                 <Button
+                                  aria-label={`Add ${product.name} to the current sale`}
                                   disabled={isOutOfStock}
                                   size="sm"
                                   type="button"
@@ -623,7 +677,7 @@ export function PosPage() {
                                   }
                                 >
                                   <Plus className="h-4 w-4" aria-hidden="true" />
-                                  Add
+                                  <span className="retail-pos-add-label">Add</span>
                                 </Button>
                               </td>
                             </tr>
@@ -636,8 +690,7 @@ export function PosPage() {
                   <AppPagination
                     itemLabel="products"
                     onPageChange={(nextPage) => {
-                      setProductResultsPage(nextPage);
-                      void handleSearch({ page: nextPage });
+                      void handleSearch({ page: nextPage, queryOverride: searchState.query });
                     }}
                     page={searchState.meta.page}
                     pageSize={searchState.meta.pageSize}
@@ -656,7 +709,36 @@ export function PosPage() {
           </Card>
         </div>
 
-        <Card className="border-slate-200/80 bg-white/95 shadow-sm xl:sticky xl:top-4 xl:flex xl:h-[calc(100vh-11rem)] xl:min-h-[560px] xl:flex-col">
+        {mobileCartOpen ? (
+          <button
+            aria-label="Close current sale"
+            className="retail-pos-cart__backdrop"
+            onClick={() => setMobileCartOpen(false)}
+            type="button"
+          />
+        ) : null}
+        <Card
+          aria-label="Current sale cart"
+          className="retail-pos-cart border-slate-200/80 bg-white/95 shadow-sm xl:sticky xl:top-4 xl:flex xl:h-[calc(100vh-11rem)] xl:min-h-[560px] xl:flex-col"
+          data-mobile-open={mobileCartOpen}
+        >
+          <button
+            aria-controls="retail-pos-cart-content"
+            aria-expanded={mobileCartOpen}
+            className="retail-pos-cart__toggle"
+            onClick={() => setMobileCartOpen((open) => !open)}
+            type="button"
+          >
+            <span className="retail-pos-cart__toggle-copy">
+              <strong>Current sale · {cartSummary.itemCount} items</strong>
+              <span>{currencyFormatter.format(cartSummary.total)}</span>
+            </span>
+            {mobileCartOpen ? (
+              <ChevronDown aria-hidden="true" size={21} />
+            ) : (
+              <ChevronUp aria-hidden="true" size={21} />
+            )}
+          </button>
           <CardHeader className="shrink-0">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
@@ -671,7 +753,7 @@ export function PosPage() {
             </div>
           </CardHeader>
 
-          <CardContent className="flex min-h-0 flex-1 flex-col">
+          <CardContent className="flex min-h-0 flex-1 flex-col" id="retail-pos-cart-content">
             {receiptSale ? (
               <div className="mb-3 shrink-0 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
                 <div className="flex items-start gap-2">
@@ -854,6 +936,16 @@ export function PosPage() {
           </CardContent>
         </Card>
       </section>
+
+      <PosCameraScanner
+        onDetected={(barcode) => {
+          setCameraScannerOpen(false);
+          setSearchInput(barcode);
+          void handleSearch({ queryOverride: barcode, autoAddExactMatch: true, page: 1 });
+        }}
+        onOpenChange={setCameraScannerOpen}
+        open={cameraScannerOpen}
+      />
 
       <CashPaymentDialog
         error={checkoutError}

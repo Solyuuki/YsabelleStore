@@ -15,7 +15,8 @@ import { isSupportedCatalogImageUrl, normalizeCatalogImageUrl } from "../utils/c
 import {
   extractCanonicalProductSize,
   normalizeCanonicalProductName,
-  normalizeProductIdentity
+  normalizeProductIdentity,
+  verifiedProductSizeFamilyId
 } from "../utils/catalogIdentity.js";
 import { HttpError } from "../utils/httpError.js";
 import { normalizeCode, normalizeWhitespace } from "../utils/normalizers.js";
@@ -1519,6 +1520,7 @@ export async function importProductsFromFile(
           imageUrl: row.imageUrl,
           brand: row.brand,
           variant: row.variant,
+          familyId: verifiedProductSizeFamilyId(row),
           sizeValue: row.sizeValue ? new Prisma.Decimal(row.sizeValue) : null,
           sizeUnit: row.sizeUnit,
           recordSource: "IMPORT",

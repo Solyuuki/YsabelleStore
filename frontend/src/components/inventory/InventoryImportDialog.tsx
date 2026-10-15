@@ -1,5 +1,6 @@
 import {
   CheckCircle2,
+  CircleHelp,
   Eye,
   FileSpreadsheet,
   FileText,
@@ -640,37 +641,45 @@ export function InventoryImportDialog({
         onEscapeKeyDown={(event) => isBusy && event.preventDefault()}
         onInteractOutside={(event) => isBusy && event.preventDefault()}
       >
-        <DialogHeader className="relative border-b border-slate-200 px-6 py-6 pr-14">
-          <DialogClose asChild>
-            <Button
-              aria-label="Close bulk delivery import"
-              className="absolute right-4 top-4"
-              disabled={isBusy}
-              size="icon"
-              type="button"
-              variant="ghost"
-            >
-              <X className="h-4 w-4" aria-hidden="true" />
-            </Button>
-          </DialogClose>
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <DialogTitle>Import inventory delivery</DialogTitle>
+        <DialogHeader className="ys-inventory-import-header relative border-b border-slate-200 px-6 py-6">
+          <div className="ys-inventory-import-heading flex items-start justify-between gap-3">
+            <DialogTitle className="min-w-0 flex-1 text-left">
+              Import inventory delivery
+            </DialogTitle>
+            <div className="ys-inventory-import-header-actions flex shrink-0 items-center gap-2">
               <Button
-                className="h-7 rounded-full px-2.5 text-xs"
+                aria-label="Toggle import guide"
+                aria-pressed={showGuide}
+                className="ys-inventory-import-guide h-10 w-10 p-0"
                 disabled={isBusy}
                 onClick={() => setShowGuide((current) => !current)}
+                title="Import guide"
                 type="button"
                 variant="secondary"
               >
-                ? Guide
+                <CircleHelp aria-hidden="true" className="h-4 w-4" />
               </Button>
+              <DialogClose asChild>
+                <Button
+                  aria-label="Close bulk delivery import"
+                  className="h-10 w-10 p-0"
+                  disabled={isBusy}
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </Button>
+              </DialogClose>
             </div>
-            <DialogDescription id="inventory-bulk-delivery-description" className="max-w-3xl">
-              Use Excel/CSV or a supplier PDF, optionally link the physical delivery to an existing
-              Restock Order, review discrepancies, then complete one validated receipt.
-            </DialogDescription>
           </div>
+          <DialogDescription
+            id="inventory-bulk-delivery-description"
+            className="max-w-3xl text-left"
+          >
+            Use Excel/CSV or a supplier PDF, optionally link the physical delivery to an existing
+            Restock Order, review discrepancies, then complete one validated receipt.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-5">

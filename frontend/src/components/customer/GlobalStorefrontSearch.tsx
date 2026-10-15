@@ -19,10 +19,12 @@ const SEARCH_SUGGESTION_LIMIT = 6;
 type SearchState = "error" | "idle" | "loading" | "success";
 
 export function GlobalStorefrontSearch({
+  autoFocus = false,
   enabled = true,
   location,
   navigate
 }: {
+  autoFocus?: boolean;
   enabled?: boolean;
   location: string;
   navigate: (path: string) => void;
@@ -38,6 +40,10 @@ export function GlobalStorefrontSearch({
 
   const normalizedQuery = normalizeStorefrontSearchQuery(searchValue);
   const isRecentMode = !normalizedQuery;
+
+  useEffect(() => {
+    if (autoFocus && enabled) inputRef.current?.focus();
+  }, [autoFocus, enabled]);
 
   useEffect(() => {
     setSearchValue(locationQuery);

@@ -36,6 +36,13 @@ export async function loadActiveInventoryForecasts(
   });
   if (!batch) return forecasts;
 
+  // A previous month's cached SARIMA can remain READY after the month rolls over.
+  // Until a current-month batch is activated, use completed-POS demand fallback.
+  const manilaNow = new Date(Date.now() + 8 * 60 * 60 * 1000);
+  const currentMonth = manilaNow.toISOString().slice(0, 7);
+  const forecastMonth = batch.forecastStartMonth.toISOString().slice(0, 7);
+  if (forecastMonth !== currentMonth) return forecasts;
+
   const rows = await db.forecastProductResult.findMany({
     select: {
       detailPayload: true,
@@ -46,12 +53,11 @@ export async function loadActiveInventoryForecasts(
       sourceProductId: { in: uniqueProductIds }
     }
   });
-  const forecastMonth = batch.forecastStartMonth.toISOString().slice(0, 7);
 
   for (const row of rows) {
     const detail = row.detailPayload as unknown as ProductForecastDetail;
     const points = detail.forecast
-      .filter((point) => point.period >= forecastMonth)
+      .filter((point) => point.period.slice(0, 7) >= currentMonth)
       .map((point) => ({
         lowerConfidence: point.lowerConfidence,
         period: point.period,

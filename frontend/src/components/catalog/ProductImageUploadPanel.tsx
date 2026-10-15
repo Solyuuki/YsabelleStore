@@ -347,16 +347,19 @@ export function ProductImageUploadPanel({
   }
 
   return (
-    <section className="ys-product-image-panel space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+    <section
+      className="ys-product-image-panel space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
+      data-quality-status={candidate?.qualityStatus ?? "NONE"}
+    >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-slate-950">Product image</p>
-          <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-600">
+          <p className="ys-product-image-guidance mt-1 max-w-2xl text-xs leading-5 text-slate-600">
             Upload a normal product photo. CIQE automatically optimizes and re-checks the processed
             result, then only allows an approved optimized image to be published.
           </p>
         </div>
-        {selectedFile || candidate ? (
+        {selectedFile && !candidate ? (
           <Button
             disabled={disabled || isBusy}
             onClick={openPicker}
@@ -427,7 +430,7 @@ export function ProductImageUploadPanel({
         phase === "approved" ||
         phase === "discarding" ||
         phase === "error") ? (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="ys-product-image-previews grid gap-4 md:grid-cols-2">
           <ImagePreview title="Original" url={originalPreviewUrl} />
           <ImagePreview
             loading={Boolean(
@@ -440,21 +443,19 @@ export function ProductImageUploadPanel({
       ) : null}
 
       {candidate ? (
-        <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Image quality
-              </p>
-              <p className="mt-1 text-sm font-semibold text-slate-950">
-                {formatQualityStatus(candidate.qualityStatus)}
-              </p>
-            </div>
+        <div
+          className="ys-product-image-quality-card space-y-3 rounded-xl border border-slate-200 bg-white p-4"
+          data-needs-action={candidate.qualityStatus !== "APPROVED"}
+        >
+          <div className="ys-product-image-quality-heading flex flex-wrap items-center justify-between gap-3">
+            <p className="ys-product-image-quality-title text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Image quality
+            </p>
             <QualityIndicator status={candidate.qualityStatus} />
           </div>
 
           {diagnostics.length > 0 ? (
-            <ul className="space-y-2 text-sm text-slate-700">
+            <ul className="ys-product-image-diagnostics space-y-2 text-sm text-slate-700">
               {diagnostics.map((diagnostic, index) => (
                 <li className="flex items-start gap-2" key={`${diagnostic.code}-${index}`}>
                   {diagnostic.severity === "error" ? (
@@ -473,15 +474,25 @@ export function ProductImageUploadPanel({
               ))}
             </ul>
           ) : candidate.qualityStatus === "APPROVED" ? (
-            <p className="text-sm text-slate-600">
+            <p className="ys-product-image-approved-description text-sm text-slate-600">
               The processed image passed the current catalog quality checks.
             </p>
           ) : null}
 
-          <div className="flex flex-wrap justify-end gap-2 pt-1">
-            <Button disabled={isBusy} onClick={openPicker} type="button" variant="secondary">
+          <div className="ys-product-image-quality-actions flex flex-wrap justify-end gap-2 pt-1">
+            <Button
+              aria-label="Upload another product image"
+              className="ys-product-image-replace-action"
+              disabled={disabled || isBusy}
+              onClick={openPicker}
+              type="button"
+              variant="secondary"
+            >
               <RefreshCw className="h-4 w-4" aria-hidden="true" />
-              Upload Another
+              <span className="ys-product-image-replace-desktop">Upload Another</span>
+              <span aria-hidden="true" className="ys-product-image-replace-mobile">
+                Replace
+              </span>
             </Button>
             {!candidate.approvedAt ? (
               <Button
@@ -511,7 +522,10 @@ export function ProductImageUploadPanel({
               </Button>
             ) : null}
             {phase === "approved" ? (
-              <span className="inline-flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
+              <span
+                className="ys-product-image-updated inline-flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800"
+                role="status"
+              >
                 <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                 Storefront image updated
               </span>
@@ -534,14 +548,14 @@ function ImagePreview({
 }) {
   return (
     <figure className="ys-product-image-preview overflow-hidden rounded-xl border border-slate-200 bg-white">
-      <figcaption className="border-b border-slate-200 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <figcaption className="ys-product-image-preview-caption border-b border-slate-200 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
         {title}
       </figcaption>
       <div className="ys-product-preview-canvas grid aspect-square place-items-center bg-slate-50 p-4">
         {url ? (
           <img
             alt={`${title} product preview`}
-            className="max-h-full max-w-full object-contain"
+            className="block h-full w-full min-h-0 min-w-0 object-contain object-center"
             src={url}
           />
         ) : loading ? (

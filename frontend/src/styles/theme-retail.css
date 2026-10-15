@@ -2209,3 +2209,83 @@
   background-repeat: no-repeat !important;
   background-size: 1rem 1rem !important;
 }
+
+/* Sprint 12: moderation uses a Radix portal, outside the retail app shell.
+   Restrict overrides to this dialog; do not recolor other modals or light mode. */
+:root.dark [role="dialog"].ys-moderation-dialog {
+  border-color: #617695;
+  background: #1b283e;
+  color: #f2f5ff;
+}
+:root.dark [role="dialog"].ys-moderation-dialog .ys-moderation-title {
+  color: #f3f6ff;
+}
+:root.dark [role="dialog"].ys-moderation-dialog .ys-moderation-description {
+  color: #cbd7eb;
+}
+:root.dark [role="dialog"].ys-moderation-dialog .ys-moderation-reason {
+  color: #e8eefb !important;
+}
+:root.dark [role="dialog"].ys-moderation-dialog .ys-moderation-reason-input {
+  border-color: #7185a7 !important;
+  background: #121e32 !important;
+  color: #f3f6ff !important;
+  color-scheme: dark;
+}
+:root.dark [role="dialog"].ys-moderation-dialog .ys-moderation-reason-input::placeholder {
+  color: #b8c8e1 !important;
+  opacity: 1;
+}
+:root.dark [role="dialog"].ys-moderation-dialog .ys-moderation-reason-input:focus-visible {
+  border-color: #b7a7ff !important;
+  outline: 2px solid #b7a7ff;
+  outline-offset: 1px;
+}
+:root.dark [role="dialog"].ys-moderation-dialog .ys-moderation-footer {
+  border-color: #536a8b;
+}
+:root.dark [role="dialog"].ys-moderation-dialog .ys-moderation-cancel {
+  border-color: #8299bb !important;
+  background: #31445f !important;
+  color: #eef3ff !important;
+}
+:root.dark [role="dialog"].ys-moderation-dialog .ys-moderation-cancel:hover:not(:disabled) {
+  background: #405675 !important;
+}
+:root.dark [role="dialog"].ys-moderation-dialog .ys-moderation-confirm {
+  background: #4e43d1 !important;
+  color: #fff !important;
+}
+:root.dark [role="dialog"].ys-moderation-dialog .ys-moderation-confirm:hover:not(:disabled) {
+  background: #6157e3 !important;
+}
+:root.dark [role="dialog"].ys-moderation-dialog .ys-moderation-confirm:disabled {
+  border: 1px solid #6976a0;
+  background: #3e4163 !important;
+  color: #d4dcf4 !important;
+  opacity: 1;
+}
+:root.dark [role="dialog"].ys-moderation-dialog .ys-moderation-cancel:disabled {
+  opacity: 0.7;
+}
+:root.dark
+  [role="dialog"].ys-moderation-dialog
+  :is(.ys-moderation-cancel, .ys-moderation-confirm):focus-visible {
+  outline: 2px solid #b7a7ff;
+  outline-offset: 2px;
+}
+
+/* Staff-only desktop sidebar appearance control; Owner Settings remains unchanged. */
+:root.dark .app-shell-ambient > aside .ys-staff-sidebar-theme-toggle {
+  border-color: #667b99;
+  background: #2b3d59;
+  color: #e7efff;
+}
+:root.dark .app-shell-ambient > aside .ys-staff-sidebar-theme-toggle:hover {
+  border-color: #a39aeb;
+  background: #374d6c;
+  color: #fff;
+}
+:root.dark .app-shell-ambient > aside .ys-staff-sidebar-theme-toggle:focus-visible {
+  outline-color: #b9adff;
+}

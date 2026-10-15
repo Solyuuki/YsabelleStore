@@ -1,0 +1,406 @@
+/*
+ * Sprint 12 · About: genuine phone presentation for Forecast and System
+ * Intelligence. Keep the authored dark/light scene palettes and desktop GSAP
+ * narratives; these rules affect only the compact viewport.
+ */
+.system-preview__mobile-stage-picker,
+.about-forecast-demo__chart-mobile {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .about-experience .discover-story .story-forecast,
+  .about-experience .story-intelligence {
+    min-width: 0;
+    min-height: 0;
+    overflow-x: clip;
+  }
+
+  .about-experience .discover-story .story-forecast__stage {
+    width: min(calc(100% - 24px), 35rem);
+    min-width: 0;
+    min-height: auto;
+    gap: 1rem;
+    padding-block: 2.5rem 3rem;
+  }
+
+  .about-experience .discover-story .story-forecast__header h2 {
+    max-width: 100%;
+    margin-top: 0.35rem;
+    font-size: clamp(1.85rem, 8.5vw, 2.65rem);
+    line-height: 1.08;
+    text-align: left;
+  }
+
+  .about-experience .discover-story .story-forecast__header h2 .story-mask__line {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .about-experience .discover-story .story-forecast__lead {
+    max-width: 35rem;
+    margin: 0.55rem 0 0;
+    font-size: 0.84rem;
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  .about-experience .story-forecast__visual,
+  .about-experience .about-forecast-demo,
+  .about-experience .about-forecast-demo__workspace,
+  .about-experience .about-forecast-demo__chart-panel,
+  .about-experience .about-forecast-demo__chart-wrap {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .about-experience .about-forecast-demo {
+    border-radius: 1rem;
+  }
+
+  .about-experience .about-forecast-demo__topbar {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.8rem;
+  }
+
+  .about-experience .about-forecast-demo__topbar strong {
+    font-size: 0.87rem;
+    line-height: 1.3;
+  }
+
+  .about-experience .about-forecast-demo__status {
+    flex: 0 1 auto;
+    max-width: 45%;
+    padding: 0.32rem 0.45rem;
+    font-size: 0.62rem;
+    white-space: normal;
+  }
+
+  .about-experience .about-forecast-demo__metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.42rem;
+    padding: 0.6rem 0.65rem 0;
+  }
+
+  .about-experience .about-forecast-demo__metrics article {
+    min-width: 0;
+    gap: 0.22rem;
+    padding: 0.65rem;
+  }
+
+  .about-experience .about-forecast-demo__metrics article:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .about-experience .about-forecast-demo__metrics strong {
+    font-size: clamp(0.98rem, 4.6vw, 1.2rem);
+  }
+
+  .about-experience .about-forecast-demo__metrics small {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    font-size: 0.65rem;
+  }
+
+  .about-experience .about-forecast-demo__workspace {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.6rem;
+    padding: 0.65rem;
+  }
+
+  .about-experience .about-forecast-demo__chart-heading {
+    gap: 0.45rem;
+    padding: 0.75rem 0.7rem 0;
+  }
+
+  .about-experience .about-forecast-demo__chart-heading strong {
+    font-size: 0.82rem;
+  }
+
+  .about-experience .about-forecast-demo__chart-wrap {
+    padding: 0.35rem 0.45rem 0.55rem;
+    overflow-x: hidden;
+    overscroll-behavior-inline: auto;
+  }
+
+  .about-experience .about-forecast-demo__chart {
+    display: none;
+  }
+
+  .about-experience .about-forecast-demo__chart-mobile {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-width: 0;
+    max-height: 13rem;
+    overflow: visible;
+  }
+
+  .about-experience .about-forecast-demo__mobile-chart-labels {
+    fill: #66758d;
+    font-size: 12px;
+    font-weight: 750;
+  }
+
+  .about-experience[data-about-hero-theme="dark"] .about-forecast-demo__mobile-chart-labels {
+    fill: #c3d2ec;
+  }
+
+  .about-experience .about-forecast-demo__years {
+    width: 100%;
+    padding: 0.25rem 0.1rem 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.4rem 0.2rem;
+    transform: none;
+  }
+
+  .about-experience .about-forecast-demo__years > div {
+    padding: 0.18rem 0;
+    gap: 0;
+  }
+
+  .about-experience .about-forecast-demo__years strong {
+    font-size: 0.78rem;
+  }
+
+  .about-experience .about-forecast-demo__years span {
+    font-size: 0.67rem;
+  }
+
+  .about-experience .about-forecast-demo__recommendation {
+    padding: 0.85rem;
+    min-height: 0;
+  }
+
+  .about-experience .about-forecast-demo__recommendation-head {
+    align-items: center;
+  }
+
+  .about-experience .about-forecast-demo__product {
+    margin-top: 0.7rem;
+    padding-bottom: 0.65rem;
+  }
+
+  .about-experience .about-forecast-demo__restock-value {
+    padding-block: 0.7rem;
+  }
+
+  .about-experience .about-forecast-demo__restock-value > strong {
+    font-size: 2.25rem;
+  }
+
+  .about-experience .about-forecast-demo__recommendation-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem;
+  }
+
+  .about-experience .about-forecast-demo__recommendation-grid > div {
+    min-width: 0;
+    padding: 0.55rem;
+  }
+
+  .about-experience .about-forecast-demo__recommendation-grid strong {
+    overflow-wrap: anywhere;
+    font-size: 0.78rem;
+  }
+
+  .about-experience .discover-story .story-forecast__footer {
+    gap: 0.5rem;
+  }
+
+  .about-experience .discover-story .story-forecast__takeaway {
+    max-width: none;
+  }
+
+  /* Seven stages become one native, keyboard-accessible compact selector,
+     rather than a seven-column carousel with a horizontal scrollbar. */
+  .about-experience .story-intelligence {
+    padding-block: 3rem;
+  }
+
+  .about-experience .story-intelligence__stage {
+    width: min(calc(100% - 24px), 35rem);
+    min-width: 0;
+  }
+
+  .about-experience .story-intelligence__heading-grid {
+    min-width: 0;
+    gap: 0.55rem;
+  }
+
+  .about-experience .story-intelligence__heading h2 {
+    font-size: clamp(1.85rem, 8.5vw, 2.65rem);
+    line-height: 1.1;
+  }
+
+  .about-experience .story-intelligence__heading p {
+    max-width: none;
+    font-size: 0.82rem;
+    line-height: 1.52;
+  }
+
+  .about-experience .system-preview {
+    min-width: 0;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+    border-radius: 1rem;
+  }
+
+  .about-experience .system-preview__nav {
+    min-width: 0;
+    padding: 0.7rem 0.8rem;
+  }
+
+  .about-experience .system-preview__nav > header {
+    padding: 0 0.1rem 0.5rem;
+  }
+
+  .about-experience .system-preview__nav ol {
+    display: none;
+  }
+
+  .about-experience .system-preview__mobile-stage-picker {
+    display: grid;
+    gap: 0.35rem;
+    margin-top: 0.65rem;
+  }
+
+  .about-experience .system-preview__mobile-stage-picker > span {
+    color: #cbd7fa;
+    font-size: 0.69rem;
+    font-weight: 750;
+  }
+
+  .about-experience .system-preview__mobile-stage-picker select {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid #7a89b6;
+    border-radius: 0.65rem;
+    background: #273557;
+    color: #f4f6ff;
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 700;
+  }
+
+  .about-experience .system-preview__mobile-stage-picker select:focus-visible {
+    outline: 3px solid #b3a5ff;
+    outline-offset: 2px;
+  }
+
+  .about-experience .system-preview__coachmark {
+    display: none;
+  }
+
+  .about-experience .system-preview__workspace {
+    min-width: 0;
+    grid-template-rows: auto auto auto auto;
+    border-radius: 0 0 1rem 1rem;
+  }
+
+  .about-experience .system-preview__workspace-bar {
+    min-height: 0;
+    padding: 0.72rem;
+    gap: 0.45rem;
+  }
+
+  .about-experience .system-preview__workspace-bar > div {
+    gap: 0.45rem;
+  }
+
+  .about-experience .system-preview__workspace-bar strong {
+    font-size: 0.82rem;
+    white-space: normal;
+  }
+
+  .about-experience .system-preview__workspace-copy {
+    gap: 0.35rem;
+    padding: 0.65rem 0.72rem;
+  }
+
+  .about-experience .system-preview__workspace-copy > span {
+    display: none;
+  }
+
+  .about-experience .system-preview__body {
+    min-width: 0;
+    padding: 0.6rem;
+  }
+
+  .about-experience .system-preview__metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.42rem;
+  }
+
+  /* Exactly three KPIs: feature the first metric across both columns,
+     then show the remaining two side by side. No empty fourth grid slot.
+     :nth-last-child(3) targets only groups of three; other stages stay intact. */
+  .about-experience
+    .system-preview__metrics
+    > .system-preview__metric:first-child:nth-last-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .about-experience .system-preview__metric {
+    min-width: 0;
+    padding: 0.55rem;
+  }
+
+  .about-experience .system-preview__metric strong {
+    overflow-wrap: anywhere;
+  }
+
+  .about-experience .system-preview__chart-card {
+    min-width: 0;
+    padding: 0.7rem 0.45rem;
+  }
+
+  .about-experience .system-preview__chart-card figcaption {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .about-experience .system-preview__chart-card svg {
+    width: 100%;
+    height: auto;
+    max-height: 12.5rem;
+    min-width: 0;
+  }
+
+  .about-experience .system-preview__chart-labels {
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    font-size: 0.65rem;
+  }
+
+  .about-experience .system-preview__content,
+  .about-experience .system-preview__review-card,
+  .about-experience .system-preview__table-card,
+  .about-experience .system-preview__recommendation {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .about-experience .system-preview__workspace-footer {
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    padding: 0.65rem 0.72rem;
+  }
+}
+
+@media (max-width: 359px) {
+  .about-experience .about-forecast-demo__status {
+    max-width: 42%;
+    font-size: 0.58rem;
+  }
+  .about-experience .system-preview__status {
+    max-width: 42%;
+    white-space: normal;
+  }
+}

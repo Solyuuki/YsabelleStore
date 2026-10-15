@@ -1,8 +1,13 @@
 import {
+  ArrowDownUp,
+  Check,
+  ChevronDown,
+  ChevronRight,
   Download,
   FileUp,
   Filter,
   LoaderCircle,
+  PackageCheck,
   PencilLine,
   Plus,
   Search,
@@ -21,6 +26,8 @@ import {
 } from "react";
 
 import { ProductImageUploadPanel } from "@/components/catalog/ProductImageUploadPanel";
+import type { CatalogSortOrder } from "@/components/catalog/ProductCatalogQoLEnhancements";
+import "@/styles/retail-products-mobile-v2.css";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -152,7 +159,13 @@ type ImportState = {
   error: string | null;
 };
 
-export function ProductsPage() {
+export function ProductsPage({
+  onSortOrderChange,
+  sortOrder
+}: {
+  onSortOrderChange: (value: CatalogSortOrder) => void;
+  sortOrder: CatalogSortOrder;
+}) {
   const [products, setProducts] = useState<ProductRecord[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -162,6 +175,8 @@ export function ProductsPage() {
     () => new Set()
   );
   const [searchInput, setSearchInput] = useState("");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [mobileSortOpen, setMobileSortOpen] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
   const [qualityFilter, setQualityFilter] = useState<"ALL" | ProductRecord["dataQualityStatus"]>(
@@ -893,370 +908,611 @@ export function ProductsPage() {
         triggerRef={importTriggerRef}
       />
 
-      <PageHeader
-        eyebrow="Owner workspace"
-        title="Products"
-        description="Import products, verify catalog state, and keep current stock aligned with inventory and POS."
-        actions={
-          <div className="flex flex-wrap items-center gap-2">
-            <Button onClick={() => setIsCreateDialogOpen(true)} type="button" variant="secondary">
-              <Plus className="h-4 w-4" aria-hidden="true" />
-              Add Product
-            </Button>
-            <Button
-              onClick={openImportDialog}
-              ref={importTriggerRef}
-              type="button"
-              variant="default"
-            >
-              <FileUp className="h-4 w-4" aria-hidden="true" />
-              Import Products
-            </Button>
-          </div>
-        }
-      />
-
-      <section className="space-y-6">
-        <Card className="w-full">
-          <CardHeader>
-            <div className="flex items-center justify-between gap-4">
-              <CardTitle>Catalog overview</CardTitle>
+      <div className="ys-products-v2-page">
+        <PageHeader
+          eyebrow="Owner workspace"
+          title="Products"
+          description="Import products, verify catalog state, and keep current stock aligned with inventory and POS."
+          actions={
+            <div className="ys-products-v2-actions flex flex-wrap items-center gap-2">
+              <Button
+                className="ys-products-v2-add"
+                onClick={() => setIsCreateDialogOpen(true)}
+                type="button"
+                variant="secondary"
+              >
+                <Plus className="h-4 w-4" aria-hidden="true" />
+                <span>Add Product</span>
+              </Button>
+              <Button
+                className="ys-products-v2-import"
+                onClick={openImportDialog}
+                ref={importTriggerRef}
+                type="button"
+                variant="default"
+              >
+                <FileUp className="h-4 w-4" aria-hidden="true" />
+                <span>Import Products</span>
+              </Button>
             </div>
-          </CardHeader>
-          <CardContent className="px-4 pb-4 pt-2 lg:px-5">
-            <div className="space-y-4">
-              <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_180px]">
-                <label className="ys-product-toolbar-filter relative flex h-11 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3">
-                  <Search className="h-4 w-4 text-slate-500" aria-hidden="true" />
-                  <input
-                    aria-busy={searchIsLoading}
-                    className={[
-                      "w-full bg-transparent text-sm outline-none",
-                      searchIsLoading ? "pr-8" : ""
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                    placeholder="Search name, SKU, barcode"
-                    value={searchInput}
-                    onChange={(event) => handleSearchChange(event.target.value)}
-                  />
-                  {searchIsLoading ? (
-                    <LoaderCircle className="absolute right-3 h-4 w-4 animate-spin text-emerald-700" />
-                  ) : null}
-                </label>
-                <label className="ys-product-toolbar-filter relative flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
-                  <Filter className="h-4 w-4 text-slate-500" aria-hidden="true" />
-                  <select
-                    aria-busy={filterIsLoading}
-                    className={[
-                      "ys-retail-select-chevron w-full bg-transparent outline-none",
-                      filterIsLoading ? "pr-6" : ""
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                    value={statusFilter}
-                    onChange={(event) =>
-                      handleStatusFilterChange(event.target.value as typeof statusFilter)
-                    }
-                  >
-                    <option value="ALL">All statuses</option>
-                    <option value="ACTIVE">Available</option>
-                    <option value="INACTIVE">Unavailable</option>
-                  </select>
-                  {filterIsLoading ? (
-                    <LoaderCircle className="pointer-events-none absolute right-3 h-4 w-4 animate-spin text-emerald-700" />
-                  ) : null}
-                </label>
-                <label className="ys-product-toolbar-filter relative flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
-                  <Filter className="h-4 w-4 text-slate-500" aria-hidden="true" />
-                  <select
-                    aria-busy={filterIsLoading}
-                    aria-label="Catalog quality"
-                    className={[
-                      "ys-retail-select-chevron w-full bg-transparent outline-none",
-                      filterIsLoading ? "pr-6" : ""
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                    value={qualityFilter}
-                    onChange={(event) =>
-                      handleQualityFilterChange(event.target.value as typeof qualityFilter)
-                    }
-                  >
-                    <option value="ALL">All quality</option>
-                    <option value="NEEDS_REVIEW">Needs review</option>
-                    <option value="APPROVED">Approved</option>
-                    <option value="REJECTED">Rejected</option>
-                  </select>
-                  {filterIsLoading ? (
-                    <LoaderCircle className="pointer-events-none absolute right-3 h-4 w-4 animate-spin text-emerald-700" />
-                  ) : null}
-                </label>
+          }
+        />
+
+        <section className="space-y-6">
+          <Card className="ys-products-v2-catalog-card w-full">
+            <CardHeader className="ys-products-v2-card-header">
+              <div className="flex items-center justify-between gap-4">
+                <CardTitle>Catalog overview</CardTitle>
               </div>
-              {catalogError ? (
-                <div
-                  aria-live="polite"
-                  className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
-                >
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <p>{catalogError}</p>
-                    <Button
-                      disabled={isCatalogLoading}
+            </CardHeader>
+            <CardContent className="ys-products-v2-card-content px-4 pb-4 pt-2 lg:px-5">
+              <div className="space-y-4">
+                <div className="ys-products-v2-desktop-filters grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_180px]">
+                  <label className="ys-product-toolbar-filter relative flex h-11 items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3">
+                    <Search className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                    <input
+                      aria-busy={searchIsLoading}
+                      className={[
+                        "w-full bg-transparent text-sm outline-none",
+                        searchIsLoading ? "pr-8" : ""
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      placeholder="Search name, SKU, barcode"
+                      value={searchInput}
+                      onChange={(event) => handleSearchChange(event.target.value)}
+                    />
+                    {searchIsLoading ? (
+                      <LoaderCircle className="absolute right-3 h-4 w-4 animate-spin text-emerald-700" />
+                    ) : null}
+                  </label>
+                  <label className="ys-product-toolbar-filter relative flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
+                    <Filter className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                    <select
+                      aria-busy={filterIsLoading}
+                      className={[
+                        "ys-retail-select-chevron w-full bg-transparent outline-none",
+                        filterIsLoading ? "pr-6" : ""
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      value={statusFilter}
+                      onChange={(event) =>
+                        handleStatusFilterChange(event.target.value as typeof statusFilter)
+                      }
+                    >
+                      <option value="ALL">All statuses</option>
+                      <option value="ACTIVE">Available</option>
+                      <option value="INACTIVE">Unavailable</option>
+                    </select>
+                    {filterIsLoading ? (
+                      <LoaderCircle className="pointer-events-none absolute right-3 h-4 w-4 animate-spin text-emerald-700" />
+                    ) : null}
+                  </label>
+                  <label className="ys-product-toolbar-filter relative flex h-11 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm">
+                    <Filter className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                    <select
+                      aria-busy={filterIsLoading}
+                      aria-label="Catalog quality"
+                      className={[
+                        "ys-retail-select-chevron w-full bg-transparent outline-none",
+                        filterIsLoading ? "pr-6" : ""
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      value={qualityFilter}
+                      onChange={(event) =>
+                        handleQualityFilterChange(event.target.value as typeof qualityFilter)
+                      }
+                    >
+                      <option value="ALL">All quality</option>
+                      <option value="NEEDS_REVIEW">Needs review</option>
+                      <option value="APPROVED">Approved</option>
+                      <option value="REJECTED">Rejected</option>
+                    </select>
+                    {filterIsLoading ? (
+                      <LoaderCircle className="pointer-events-none absolute right-3 h-4 w-4 animate-spin text-emerald-700" />
+                    ) : null}
+                  </label>
+                </div>
+                <div className="ys-products-v2-toolbar">
+                  <label className="ys-products-v2-search">
+                    <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <input
+                      aria-label="Search products by name SKU or barcode"
+                      aria-busy={searchIsLoading}
+                      onChange={(event) => handleSearchChange(event.target.value)}
+                      placeholder="Search products"
+                      type="search"
+                      value={searchInput}
+                    />
+                    {searchIsLoading ? (
+                      <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    ) : null}
+                  </label>
+                  <div className="ys-products-v2-controls">
+                    <button
+                      aria-controls="ys-products-v2-mobile-filter-panel"
+                      aria-expanded={mobileFiltersOpen}
+                      className="ys-products-v2-trigger"
                       onClick={() => {
-                        void refreshCatalog();
+                        setMobileFiltersOpen((current) => !current);
+                        setMobileSortOpen(false);
                       }}
                       type="button"
-                      variant="secondary"
                     >
-                      Retry
-                    </Button>
+                      <Filter className="h-4 w-4" aria-hidden="true" />
+                      <span>Filters</span>
+                      {statusFilter !== "ALL" || qualityFilter !== "ALL" ? (
+                        <span className="ys-products-v2-dot" aria-label="Filters active" />
+                      ) : null}
+                    </button>
+                    <button
+                      aria-controls="ys-products-v2-mobile-sort-panel"
+                      aria-expanded={mobileSortOpen}
+                      className="ys-products-v2-trigger"
+                      onClick={() => {
+                        setMobileSortOpen((current) => !current);
+                        setMobileFiltersOpen(false);
+                      }}
+                      type="button"
+                    >
+                      <ArrowDownUp className="h-4 w-4" aria-hidden="true" />
+                      <span>Sort</span>
+                      <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+                    </button>
                   </div>
+                  {mobileFiltersOpen ? (
+                    <div className="ys-products-v2-panel" id="ys-products-v2-mobile-filter-panel">
+                      <div className="ys-products-v2-panel-heading">
+                        <strong>Product filters</strong>
+                        <button
+                          onClick={() => setMobileFiltersOpen(false)}
+                          type="button"
+                          aria-label="Close product filters"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <fieldset>
+                        <legend>Availability</legend>
+                        {(
+                          [
+                            ["ALL", "All statuses"],
+                            ["ACTIVE", "Available"],
+                            ["INACTIVE", "Unavailable"]
+                          ] as const
+                        ).map(([value, label]) => (
+                          <button
+                            aria-pressed={statusFilter === value}
+                            className="ys-products-v2-option"
+                            key={value}
+                            onClick={() => handleStatusFilterChange(value)}
+                            type="button"
+                          >
+                            <span>{label}</span>
+                            {statusFilter === value ? (
+                              <Check className="h-4 w-4" aria-hidden="true" />
+                            ) : null}
+                          </button>
+                        ))}
+                      </fieldset>
+                      <fieldset>
+                        <legend>Catalog quality</legend>
+                        {(
+                          [
+                            ["ALL", "All quality"],
+                            ["APPROVED", "Approved"],
+                            ["NEEDS_REVIEW", "Needs review"],
+                            ["REJECTED", "Rejected"]
+                          ] as const
+                        ).map(([value, label]) => (
+                          <button
+                            aria-pressed={qualityFilter === value}
+                            className="ys-products-v2-option"
+                            key={value}
+                            onClick={() => handleQualityFilterChange(value)}
+                            type="button"
+                          >
+                            <span>{label}</span>
+                            {qualityFilter === value ? (
+                              <Check className="h-4 w-4" aria-hidden="true" />
+                            ) : null}
+                          </button>
+                        ))}
+                      </fieldset>
+                      <div className="ys-products-v2-panel-actions">
+                        <button
+                          className="ys-products-v2-reset"
+                          onClick={() => {
+                            handleStatusFilterChange("ALL");
+                            handleQualityFilterChange("ALL");
+                          }}
+                          type="button"
+                        >
+                          Reset
+                        </button>
+                        <button
+                          className="ys-products-v2-apply"
+                          onClick={() => setMobileFiltersOpen(false)}
+                          type="button"
+                        >
+                          Apply filters
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+                  {mobileSortOpen ? (
+                    <div className="ys-products-v2-panel" id="ys-products-v2-mobile-sort-panel">
+                      <strong>Sort products</strong>
+                      {(
+                        [
+                          ["desc", "Latest first"],
+                          ["asc", "Oldest first"]
+                        ] as const
+                      ).map(([value, label]) => (
+                        <button
+                          aria-pressed={sortOrder === value}
+                          className="ys-products-v2-option"
+                          key={value}
+                          onClick={() => {
+                            onSortOrderChange(value);
+                            setMobileSortOpen(false);
+                          }}
+                          type="button"
+                        >
+                          <span>{label}</span>
+                          {sortOrder === value ? (
+                            <Check className="h-4 w-4" aria-hidden="true" />
+                          ) : null}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
+                {catalogError ? (
+                  <div
+                    aria-live="polite"
+                    className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+                  >
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <p>{catalogError}</p>
+                      <Button
+                        disabled={isCatalogLoading}
+                        onClick={() => {
+                          void refreshCatalog();
+                        }}
+                        type="button"
+                        variant="secondary"
+                      >
+                        Retry
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
 
-              {paginationMeta?.totalItems === 0 && !isCatalogLoading && !catalogError ? (
-                <EmptyState
-                  description="Import a CSV or Excel file to populate the catalog."
-                  icon={ShieldCheck}
-                  title="No products yet"
-                />
-              ) : null}
+                {paginationMeta?.totalItems === 0 && !isCatalogLoading && !catalogError ? (
+                  <EmptyState
+                    description="Import a CSV or Excel file to populate the catalog."
+                    icon={ShieldCheck}
+                    title="No products yet"
+                  />
+                ) : null}
 
-              <div aria-busy={isCatalogLoading} aria-live="polite" className="relative">
-                {showCatalogSkeleton ? (
-                  <CatalogTableSkeleton rowCount={pageSize} />
-                ) : hasCatalogRows ? (
-                  <div className={showCatalogOverlay ? "pointer-events-none opacity-70" : ""}>
-                    <div className="overflow-hidden">
-                      <table className="w-full table-fixed border-collapse text-left text-sm">
-                        <thead className="bg-slate-100 text-slate-700">
-                          <tr>
-                            <th className="w-[48%] px-2 py-2.5 lg:w-[32%] xl:w-[28%]">Product</th>
-                            <th className="hidden w-[12%] px-2 py-2.5 lg:table-cell">SKU</th>
-                            <th className="hidden w-[14%] px-2 py-2.5 xl:table-cell">Barcode</th>
-                            <th className="hidden w-[13%] px-2 py-2.5 lg:table-cell">Category</th>
-                            <th className="w-[12%] px-2 py-2.5 lg:w-[11%]">Status</th>
-                            <th className="hidden w-[10%] px-2 py-2.5 lg:table-cell">
-                              Selling price
-                            </th>
-                            <th className="w-[15rem] px-2 py-2.5 text-center lg:w-[15rem]">
-                              Action
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {products.map((product) => {
-                            const isSelected = selectedProductId === product.id;
-                            const isStatusPending = pendingAvailabilityProductIds.has(product.id);
-                            const availabilityAction = getAvailabilityAction(product.status);
-                            const variantReady = isProductVariantReady(product);
-                            const identitySummary = productIdentitySummary(product);
-
-                            return (
-                              <tr
-                                aria-selected={isSelected}
-                                className={[
-                                  "border-t border-slate-200 transition-colors",
-                                  "cursor-pointer focus-within:bg-emerald-50/70",
-                                  isSelected
-                                    ? "bg-emerald-50/70 ring-1 ring-inset ring-emerald-200"
-                                    : "bg-white hover:bg-emerald-50/40",
-                                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500"
-                                ].join(" ")}
-                                key={product.id}
-                                onClick={() => toggleSelection(product.id)}
-                                onKeyDown={(event) => {
-                                  if (event.key === "Enter" || event.key === " ") {
-                                    event.preventDefault();
-                                    toggleSelection(product.id);
-                                  }
-                                }}
-                                tabIndex={0}
+                <div aria-busy={isCatalogLoading} aria-live="polite" className="relative">
+                  {showCatalogSkeleton ? (
+                    <CatalogTableSkeleton rowCount={pageSize} />
+                  ) : hasCatalogRows ? (
+                    <div className={showCatalogOverlay ? "pointer-events-none opacity-70" : ""}>
+                      <div className="ys-products-v2-mobile-list" aria-label="Product catalog">
+                        {products.map((product) => {
+                          const availabilityAction = getAvailabilityAction(product.status);
+                          const statusBusy = pendingAvailabilityProductIds.has(product.id);
+                          return (
+                            <article className="ys-products-v2-product-card" key={product.id}>
+                              <button
+                                aria-label={`View details for ${product.name}`}
+                                className="ys-products-v2-product-main"
+                                onClick={() => setSelectedProductId(product.id)}
+                                type="button"
                               >
-                                <td className="px-2 py-2 align-top lg:py-2.5">
-                                  <div className="font-medium text-slate-950 xl:truncate">
-                                    {product.name}
-                                  </div>
-                                  <div className="mt-0.5 max-h-10 overflow-hidden text-xs leading-5 text-slate-500">
-                                    {product.description ?? "No description"}
-                                  </div>
-                                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                                    <StatusBadge
-                                      variant={
-                                        product.dataQualityStatus === "APPROVED"
-                                          ? "success"
-                                          : product.dataQualityStatus === "REJECTED"
-                                            ? "error"
-                                            : "warning"
-                                      }
-                                    >
-                                      {product.dataQualityStatus === "APPROVED"
-                                        ? product.isStorefrontVisible
-                                          ? "Approved · Storefront"
-                                          : "Approved · Internal"
-                                        : product.dataQualityStatus === "REJECTED"
-                                          ? "Rejected"
-                                          : "Needs review"}
-                                    </StatusBadge>
-                                    <StatusBadge variant={variantReady ? "success" : "warning"}>
-                                      {variantReady ? "Variant ready" : "Identity incomplete"}
-                                    </StatusBadge>
-                                  </div>
-                                  <div
-                                    className={[
-                                      "mt-1.5 text-xs leading-5",
-                                      variantReady ? "text-slate-600" : "font-medium text-amber-700"
-                                    ].join(" ")}
+                                <span className="ys-products-v2-product-name">{product.name}</span>
+                                <span className="ys-products-v2-product-sku">
+                                  SKU · {product.sku}
+                                </span>
+                                <ChevronRight
+                                  className="ys-products-v2-product-chevron h-4 w-4"
+                                  aria-hidden="true"
+                                />
+                              </button>
+                              <div className="ys-products-v2-product-bottom">
+                                <span
+                                  className="ys-products-v2-product-availability"
+                                  data-available={product.status === "ACTIVE"}
+                                >
+                                  <PackageCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                                  {getProductStatusLabel(product.status)}
+                                </span>
+                                <strong className="ys-products-v2-product-price">
+                                  {currencyFormatter.format(Number(product.sellingPrice))}
+                                </strong>
+                                {availabilityAction ? (
+                                  <button
+                                    aria-label={`Set ${product.name} to ${availabilityAction.nextStatus === "ACTIVE" ? "available" : "unavailable"}`}
+                                    className="ys-products-v2-availability-action"
+                                    disabled={statusBusy}
+                                    onClick={() => void handleAvailabilityToggle(product)}
+                                    type="button"
+                                    title={availabilityAction.tooltip}
                                   >
-                                    {identitySummary ||
-                                      "Brand, variant, and package size need catalog review."}
-                                  </div>
-                                  <div className="mt-2 grid gap-1 text-xs text-slate-500 lg:hidden">
-                                    <div className="flex items-start justify-between gap-3">
-                                      <span className="font-medium text-slate-700">SKU</span>
-                                      <span className="text-right break-words text-slate-600">
-                                        {product.sku}
-                                      </span>
+                                    {statusBusy ? (
+                                      <LoaderCircle
+                                        aria-hidden="true"
+                                        className="h-4 w-4 animate-spin"
+                                      />
+                                    ) : (
+                                      <ArrowDownUp aria-hidden="true" className="h-4 w-4" />
+                                    )}
+                                  </button>
+                                ) : null}
+                              </div>
+                            </article>
+                          );
+                        })}
+                      </div>
+                      <div className="ys-products-v2-desktop-table overflow-hidden">
+                        <table className="retail-mobile-data-table w-full table-fixed border-collapse text-left text-sm">
+                          <thead className="bg-slate-100 text-slate-700">
+                            <tr>
+                              <th className="w-[48%] px-2 py-2.5 lg:w-[32%] xl:w-[28%]">Product</th>
+                              <th className="hidden w-[12%] px-2 py-2.5 lg:table-cell">SKU</th>
+                              <th className="hidden w-[14%] px-2 py-2.5 xl:table-cell">Barcode</th>
+                              <th className="hidden w-[13%] px-2 py-2.5 lg:table-cell">Category</th>
+                              <th className="w-[12%] px-2 py-2.5 lg:w-[11%]">Status</th>
+                              <th className="hidden w-[10%] px-2 py-2.5 lg:table-cell">
+                                Selling price
+                              </th>
+                              <th className="w-[15rem] px-2 py-2.5 text-center lg:w-[15rem]">
+                                Action
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {products.map((product) => {
+                              const isSelected = selectedProductId === product.id;
+                              const isStatusPending = pendingAvailabilityProductIds.has(product.id);
+                              const availabilityAction = getAvailabilityAction(product.status);
+                              const variantReady = isProductVariantReady(product);
+                              const identitySummary = productIdentitySummary(product);
+
+                              return (
+                                <tr
+                                  aria-selected={isSelected}
+                                  className={[
+                                    "border-t border-slate-200 transition-colors",
+                                    "cursor-pointer focus-within:bg-emerald-50/70",
+                                    isSelected
+                                      ? "bg-emerald-50/70 ring-1 ring-inset ring-emerald-200"
+                                      : "bg-white hover:bg-emerald-50/40",
+                                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500"
+                                  ].join(" ")}
+                                  key={product.id}
+                                  onClick={() => toggleSelection(product.id)}
+                                  onKeyDown={(event) => {
+                                    if (event.key === "Enter" || event.key === " ") {
+                                      event.preventDefault();
+                                      toggleSelection(product.id);
+                                    }
+                                  }}
+                                  tabIndex={0}
+                                >
+                                  <td
+                                    data-label="Product"
+                                    className="px-2 py-2 align-top lg:py-2.5"
+                                  >
+                                    <div className="font-medium text-slate-950 xl:truncate">
+                                      {product.name}
                                     </div>
-                                    <div className="flex items-start justify-between gap-3">
-                                      <span className="font-medium text-slate-700">Barcode</span>
-                                      <span className="text-right break-words text-slate-600">
-                                        {product.barcode ?? "-"}
-                                      </span>
+                                    <div className="mt-0.5 max-h-10 overflow-hidden text-xs leading-5 text-slate-500">
+                                      {product.description ?? "No description"}
                                     </div>
-                                    <div className="flex items-start justify-between gap-3">
-                                      <span className="font-medium text-slate-700">Category</span>
-                                      <span className="text-right break-words text-slate-600">
-                                        {product.category.name}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-start justify-between gap-3">
-                                      <span className="font-medium text-slate-700">
-                                        Selling price
-                                      </span>
-                                      <span className="text-right tabular-nums text-slate-600">
-                                        PHP {Number(product.sellingPrice).toFixed(2)}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="hidden px-2 py-2 align-top break-words lg:table-cell">
-                                  {product.sku}
-                                </td>
-                                <td className="hidden px-2 py-2 align-top break-words xl:table-cell">
-                                  {product.barcode ?? "-"}
-                                </td>
-                                <td className="hidden px-2 py-2 align-top break-words lg:table-cell">
-                                  {product.category.name}
-                                </td>
-                                <td className="px-2 py-2 align-top lg:py-2.5">
-                                  <StatusBadge variant={getProductStatusVariant(product.status)}>
-                                    {getProductStatusLabel(product.status)}
-                                  </StatusBadge>
-                                </td>
-                                <td className="hidden px-2 py-2 align-top tabular-nums lg:table-cell">
-                                  PHP {Number(product.sellingPrice).toFixed(2)}
-                                </td>
-                                <td className="px-2 py-2 align-top text-center lg:py-2.5">
-                                  <div className="mx-auto inline-flex max-w-full flex-row flex-nowrap items-center justify-center gap-2 whitespace-nowrap">
-                                    <Tooltip content="Edit product">
-                                      <Button
-                                        size="icon"
-                                        type="button"
-                                        variant="secondary"
-                                        className="h-9 w-9 shrink-0"
-                                        disabled={isStatusPending}
-                                        aria-label={`Edit ${product.name}`}
-                                        onClick={(event) => {
-                                          event.stopPropagation();
-                                          setSelectedProductId(product.id);
-                                        }}
+                                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                      <StatusBadge
+                                        variant={
+                                          product.dataQualityStatus === "APPROVED"
+                                            ? "success"
+                                            : product.dataQualityStatus === "REJECTED"
+                                              ? "error"
+                                              : "warning"
+                                        }
                                       >
-                                        <PencilLine className="h-4 w-4" aria-hidden="true" />
-                                      </Button>
-                                    </Tooltip>
-                                    {availabilityAction ? (
-                                      <Tooltip content={availabilityAction.tooltip}>
+                                        {product.dataQualityStatus === "APPROVED"
+                                          ? product.isStorefrontVisible
+                                            ? "Approved · Storefront"
+                                            : "Approved · Internal"
+                                          : product.dataQualityStatus === "REJECTED"
+                                            ? "Rejected"
+                                            : "Needs review"}
+                                      </StatusBadge>
+                                      <StatusBadge variant={variantReady ? "success" : "warning"}>
+                                        {variantReady ? "Variant ready" : "Identity incomplete"}
+                                      </StatusBadge>
+                                    </div>
+                                    <div
+                                      className={[
+                                        "mt-1.5 text-xs leading-5",
+                                        variantReady
+                                          ? "text-slate-600"
+                                          : "font-medium text-amber-700"
+                                      ].join(" ")}
+                                    >
+                                      {identitySummary ||
+                                        "Brand, variant, and package size need catalog review."}
+                                    </div>
+                                    <div className="mt-2 grid gap-1 text-xs text-slate-500 lg:hidden">
+                                      <div className="flex items-start justify-between gap-3">
+                                        <span className="font-medium text-slate-700">SKU</span>
+                                        <span className="text-right break-words text-slate-600">
+                                          {product.sku}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-start justify-between gap-3">
+                                        <span className="font-medium text-slate-700">Barcode</span>
+                                        <span className="text-right break-words text-slate-600">
+                                          {product.barcode ?? "-"}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-start justify-between gap-3">
+                                        <span className="font-medium text-slate-700">Category</span>
+                                        <span className="text-right break-words text-slate-600">
+                                          {product.category.name}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-start justify-between gap-3">
+                                        <span className="font-medium text-slate-700">
+                                          Selling price
+                                        </span>
+                                        <span className="text-right tabular-nums text-slate-600">
+                                          PHP {Number(product.sellingPrice).toFixed(2)}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td
+                                    data-label="SKU"
+                                    className="hidden px-2 py-2 align-top break-words lg:table-cell"
+                                  >
+                                    {product.sku}
+                                  </td>
+                                  <td
+                                    data-label="Barcode"
+                                    className="hidden px-2 py-2 align-top break-words xl:table-cell"
+                                  >
+                                    {product.barcode ?? "-"}
+                                  </td>
+                                  <td
+                                    data-label="Category"
+                                    className="hidden px-2 py-2 align-top break-words lg:table-cell"
+                                  >
+                                    {product.category.name}
+                                  </td>
+                                  <td data-label="Status" className="px-2 py-2 align-top lg:py-2.5">
+                                    <StatusBadge variant={getProductStatusVariant(product.status)}>
+                                      {getProductStatusLabel(product.status)}
+                                    </StatusBadge>
+                                  </td>
+                                  <td
+                                    data-label="Selling price"
+                                    className="hidden px-2 py-2 align-top tabular-nums lg:table-cell"
+                                  >
+                                    PHP {Number(product.sellingPrice).toFixed(2)}
+                                  </td>
+                                  <td
+                                    data-label="Action"
+                                    className="px-2 py-2 align-top text-center lg:py-2.5"
+                                  >
+                                    <div className="mx-auto inline-flex max-w-full flex-row flex-nowrap items-center justify-center gap-2 whitespace-nowrap">
+                                      <Tooltip content="Edit product">
                                         <Button
-                                          aria-busy={isStatusPending}
-                                          aria-label={`Set ${product.name} to ${
-                                            availabilityAction.nextStatus === "ACTIVE"
-                                              ? "available"
-                                              : "unavailable"
-                                          }`}
-                                          className="h-9 shrink-0 min-w-[11rem] justify-center px-3 whitespace-nowrap"
-                                          disabled={isStatusPending}
-                                          size="sm"
+                                          size="icon"
                                           type="button"
                                           variant="secondary"
+                                          className="h-9 w-9 shrink-0"
+                                          disabled={isStatusPending}
+                                          aria-label={`Edit ${product.name}`}
                                           onClick={(event) => {
                                             event.stopPropagation();
-                                            void handleAvailabilityToggle(product);
+                                            setSelectedProductId(product.id);
                                           }}
                                         >
-                                          {isStatusPending ? (
-                                            <LoaderCircle
-                                              className="h-4 w-4 animate-spin"
-                                              aria-hidden="true"
-                                            />
-                                          ) : null}
-                                          {isStatusPending
-                                            ? availabilityAction.compactLoadingLabel
-                                            : availabilityAction.buttonLabel}
+                                          <PencilLine className="h-4 w-4" aria-hidden="true" />
                                         </Button>
                                       </Tooltip>
-                                    ) : null}
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                                      {availabilityAction ? (
+                                        <Tooltip content={availabilityAction.tooltip}>
+                                          <Button
+                                            aria-busy={isStatusPending}
+                                            aria-label={`Set ${product.name} to ${
+                                              availabilityAction.nextStatus === "ACTIVE"
+                                                ? "available"
+                                                : "unavailable"
+                                            }`}
+                                            className="h-9 shrink-0 min-w-[11rem] justify-center px-3 whitespace-nowrap"
+                                            disabled={isStatusPending}
+                                            size="sm"
+                                            type="button"
+                                            variant="secondary"
+                                            onClick={(event) => {
+                                              event.stopPropagation();
+                                              void handleAvailabilityToggle(product);
+                                            }}
+                                          >
+                                            {isStatusPending ? (
+                                              <LoaderCircle
+                                                className="h-4 w-4 animate-spin"
+                                                aria-hidden="true"
+                                              />
+                                            ) : null}
+                                            {isStatusPending
+                                              ? availabilityAction.compactLoadingLabel
+                                              : availabilityAction.buttonLabel}
+                                          </Button>
+                                        </Tooltip>
+                                      ) : null}
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                  </div>
-                ) : null}
+                  ) : null}
 
-                {showCatalogOverlay ? (
-                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/55 px-4 py-6 backdrop-blur-[1px]">
-                    <div className="w-full max-w-md">
-                      <LoadingState
-                        badge="Catalog"
-                        helper="Updating the table while keeping the current results visible."
-                        label={catalogLoadingLabel}
-                      />
+                  {showCatalogOverlay ? (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/55 px-4 py-6 backdrop-blur-[1px]">
+                      <div className="w-full max-w-md">
+                        <LoadingState
+                          badge="Catalog"
+                          helper="Updating the table while keeping the current results visible."
+                          label={catalogLoadingLabel}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  ) : null}
+                </div>
+
+                {paginationMeta ? (
+                  <AppPagination
+                    className="ys-products-v2-pagination"
+                    mobileCompact
+                    isLoading={isCatalogLoading}
+                    itemLabel="products"
+                    onPageChange={handlePageChange}
+                    onPageSizeChange={handlePageSizeChange}
+                    page={paginationMeta.page}
+                    pageSize={paginationMeta.pageSize}
+                    pageSizeOptions={PAGE_SIZE_OPTIONS}
+                    siblingCount={1}
+                    totalItems={paginationMeta.totalItems}
+                    totalPages={paginationMeta.totalPages}
+                  />
                 ) : null}
               </div>
+            </CardContent>
+          </Card>
 
-              {paginationMeta ? (
-                <AppPagination
-                  isLoading={isCatalogLoading}
-                  itemLabel="products"
-                  onPageChange={handlePageChange}
-                  onPageSizeChange={handlePageSizeChange}
-                  page={paginationMeta.page}
-                  pageSize={paginationMeta.pageSize}
-                  pageSizeOptions={PAGE_SIZE_OPTIONS}
-                  siblingCount={1}
-                  totalItems={paginationMeta.totalItems}
-                  totalPages={paginationMeta.totalPages}
-                />
-              ) : null}
-            </div>
-          </CardContent>
-        </Card>
-
-        <ProductDetailsDialog
-          categories={categories}
-          categoryLoading={categoriesLoading}
-          isOpen={Boolean(selectedProduct)}
-          onClose={clearSelection}
-          onSaved={() => void refreshCatalog()}
-          product={selectedProduct}
-        />
-      </section>
+          <ProductDetailsDialog
+            categories={categories}
+            categoryLoading={categoriesLoading}
+            isOpen={Boolean(selectedProduct)}
+            onClose={clearSelection}
+            onSaved={() => void refreshCatalog()}
+            product={selectedProduct}
+          />
+        </section>
+      </div>
     </>
   );
 }

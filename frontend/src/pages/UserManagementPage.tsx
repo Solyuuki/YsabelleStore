@@ -940,10 +940,10 @@ function ModerationDialog({
   const nextState = target?.nextStatus ?? "";
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent>
+      <DialogContent className="ys-moderation-dialog">
         <DialogHeader>
-          <DialogTitle>Confirm moderation action</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="ys-moderation-title">Confirm moderation action</DialogTitle>
+          <DialogDescription className="ys-moderation-description">
             {target?.kind === "account"
               ? `Change ${target.item.name} to ${nextState.toLowerCase()}.`
               : target
@@ -952,9 +952,10 @@ function ModerationDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="px-6 pb-2">
-          <label className="block space-y-2 text-sm font-medium text-slate-700">
+          <label className="ys-moderation-reason block space-y-2 text-sm font-medium text-slate-700">
             <span>Reason</span>
             <Textarea
+              className="ys-moderation-reason-input"
               disabled={saving}
               maxLength={500}
               onChange={(event) => onReasonChange(event.target.value)}
@@ -963,8 +964,9 @@ function ModerationDialog({
             />
           </label>
         </div>
-        <DialogFooter>
+        <DialogFooter className="ys-moderation-footer">
           <Button
+            className="ys-moderation-cancel"
             disabled={saving}
             onClick={() => onOpenChange(false)}
             type="button"
@@ -972,7 +974,12 @@ function ModerationDialog({
           >
             Cancel
           </Button>
-          <Button disabled={saving || reason.trim().length < 3} onClick={onSubmit} type="button">
+          <Button
+            className="ys-moderation-confirm"
+            disabled={saving || reason.trim().length < 3}
+            onClick={onSubmit}
+            type="button"
+          >
             {saving ? "Saving..." : "Confirm"}
           </Button>
         </DialogFooter>

@@ -47,6 +47,8 @@ test("all full-screen status variants share portal-aware appearance state", () =
   }
   assert.match(screen, /className="status-screen__system-illustration"/);
   assert.match(screen, /<StatusIllustration statusLabel=\{statusLabel\} variant=\{variant\} \/>/);
+  assert.doesNotMatch(screen, /BrandLogo|status-screen__brand-logo/);
+  assert.doesNotMatch(screen, /<header\b/);
 });
 
 test("programmatic status portal focus has no viewport frame while actions retain focus", () => {
@@ -69,6 +71,11 @@ test("dark status UI uses proportional galaxy artwork without changing light mod
 
   assert.match(screen, /bg-\[#F7F9FF\] text-\[#101426\]/);
   assert.match(screen, /<StorefrontGalaxyArtwork className="status-screen__cosmos-artwork" \/>/);
+  assert.match(css, /\.status-screen-main\s*\{[^}]*padding-block: clamp\(2rem, 6vh, 4rem\);/);
+  assert.doesNotMatch(
+    css,
+    /\.status-screen\[data-status-theme="dark"\] \.status-screen__brand-logo/
+  );
   assert.match(css, /\.status-screen\[data-status-theme="dark"\] \{/);
   assert.match(css, /background-image: var\(--storefront-galaxy-background\);/);
   assert.match(css, /background-size: auto;/);
@@ -104,7 +111,6 @@ test("dark status text, badges, notes and interactive controls meet WCAG AA", ()
   }
 
   for (const className of [
-    "status-screen__brand-logo",
     "status-screen__status-number",
     "status-screen__title",
     "status-screen__description",

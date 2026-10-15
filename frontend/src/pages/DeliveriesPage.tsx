@@ -2,15 +2,20 @@ import {
   Banknote,
   Box,
   CheckCircle2,
+  Copy,
+  ChevronDown,
   Clock3,
   CreditCard,
+  LockKeyhole,
   MapPin,
   MessageSquareText,
   PackageCheck,
   RefreshCw,
   Search,
+  SlidersHorizontal,
   Truck,
   UserRound,
+  X,
   XCircle
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -22,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -29,8 +35,8 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -43,6 +49,7 @@ import {
   confirmCodCollected,
   getDeliveryTicket,
   listDeliveryTickets,
+  saveDeliveryHandoffDraft,
   updateDeliveryStatus
 } from "@/services/deliveryApi";
 import type {
@@ -52,6 +59,7 @@ import type {
   DeliveryTicketView
 } from "@/types/delivery";
 import type { StorefrontDeliveryStatus, StorefrontPaymentMethod } from "@/types/storefront";
+import "@/styles/retail-deliveries-mobile-v2.css";
 
 const dateTimeFormatter = new Intl.DateTimeFormat("en-PH", {
   dateStyle: "medium",
@@ -61,6 +69,17 @@ const currencyFormatter = new Intl.NumberFormat("en-PH", {
   style: "currency",
   currency: "PHP"
 });
+
+const DELIVERY_DESKTOP_PAGE_SIZE = 20;
+const DELIVERY_MOBILE_PAGE_SIZE = 10;
+const DELIVERY_MOBILE_QUERY =
+  "(max-width: 767px), (max-height: 500px) and (orientation: landscape) and (max-width: 1024px)";
+
+function defaultDeliveryPageSize() {
+  return typeof window !== "undefined" && window.matchMedia(DELIVERY_MOBILE_QUERY).matches
+    ? DELIVERY_MOBILE_PAGE_SIZE
+    : DELIVERY_DESKTOP_PAGE_SIZE;
+}
 
 const DELIVERY_PROGRESS_STEPS: Array<{
   status: StorefrontDeliveryStatus;
@@ -177,7 +196,8 @@ export function DeliveriesPage() {
   });
   const [page, setPage] = useState(1);
   const [view, setView] = useState<DeliveryTicketView>("active");
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(defaultDeliveryPageSize);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [status, setStatus] = useState<StorefrontDeliveryStatus | "all">("all");
   const [paymentMethod, setPaymentMethod] = useState<StorefrontPaymentMethod | "all">("all");
   const [search, setSearch] = useState("");
@@ -189,6 +209,11 @@ export function DeliveriesPage() {
   const [courierProvider, setCourierProvider] = useState("");
   const [customCourierProvider, setCustomCourierProvider] = useState("");
   const [courierReference, setCourierReference] = useState("");
+  const [riderName, setRiderName] = useState("");
+  const [riderPhone, setRiderPhone] = useState("");
+  const [customerDeliveryNote, setCustomerDeliveryNote] = useState("");
+  const [handoffMessage, setHandoffMessage] = useState("");
+  const [riderCopyFeedback, setRiderCopyFeedback] = useState("");
   const [staffNote, setStaffNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -246,14 +271,39 @@ export function DeliveriesPage() {
     }
 
     setCourierReference(selected.courierReference ?? "");
+    setRiderName(selected.riderName ?? "");
+    setRiderPhone(selected.riderPhone ?? "");
+    setCustomerDeliveryNote(selected.customerDeliveryNote ?? "");
     setStaffNote(selected.deliveryNotes ?? "");
   }, [selected]);
 
+  useEffect(() => {
+    const media = window.matchMedia(DELIVERY_MOBILE_QUERY);
+    const onViewportChange = () => {
+      setPageSize(media.matches ? DELIVERY_MOBILE_PAGE_SIZE : DELIVERY_DESKTOP_PAGE_SIZE);
+      setPage(1);
+    };
+    media.addEventListener("change", onViewportChange);
+    return () => media.removeEventListener("change", onViewportChange);
+  }, []);
+
+  const activeFilterCount = Number(status !== "all") + Number(paymentMethod !== "all");
   const resolvedCourierProvider =
     courierProvider === "Other" ? customCourierProvider.trim() : courierProvider.trim();
+  const riderPhoneValid = /^(?:09\d{9}|\+639\d{9})$/.test(riderPhone.replace(/[\s()-]/g, ""));
+  const handoffInput = {
+    courierProvider: resolvedCourierProvider,
+    courierReference,
+    riderName,
+    riderPhone,
+    customerDeliveryNote,
+    note: staffNote
+  };
 
   async function openTicket(ticketId: string) {
     if (openingId) return;
+    setHandoffMessage("");
+    setRiderCopyFeedback("");
     setOpeningId(ticketId);
     setError("");
     try {
@@ -268,6 +318,33 @@ export function DeliveriesPage() {
   function applySearch() {
     setPage(1);
     setSearch(searchInput.trim());
+  }
+
+  async function copyRiderNumber(number: string) {
+    try {
+      await navigator.clipboard.writeText(number);
+      setRiderCopyFeedback("Rider number copied.");
+    } catch {
+      setRiderCopyFeedback("Copy unavailable. Select the number to copy it manually.");
+    }
+  }
+
+  async function saveHandoff() {
+    if (!selected || submitting) return;
+    setSubmitting(true);
+    setError("");
+    setHandoffMessage("");
+    try {
+      const updated = await saveDeliveryHandoffDraft(selected.id, handoffInput);
+      setSelected(updated);
+      setHandoffMessage(
+        "Dispatch draft saved. Contact details appear to customers after dispatch."
+      );
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Could not save dispatch details.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function runTransition(
@@ -286,6 +363,9 @@ export function DeliveriesPage() {
         targetStatus,
         courierProvider: resolvedCourierProvider || undefined,
         courierReference: courierReference.trim() || undefined,
+        ...(targetStatus === "OUT_FOR_DELIVERY"
+          ? { riderName, riderPhone, customerDeliveryNote }
+          : {}),
         note: staffNote.trim() || undefined
       });
       setSelected(updated);
@@ -313,7 +393,7 @@ export function DeliveriesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="ys-deliveries-page space-y-6">
       <PageHeader
         actions={
           <Button disabled={loading} onClick={() => void load()} type="button" variant="secondary">
@@ -329,15 +409,15 @@ export function DeliveriesPage() {
         title="Deliveries"
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="ys-delivery-metrics grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard icon={PackageCheck} label="Needs action" value={meta.counts.active} />
         <MetricCard icon={Box} label="Ready for delivery" value={meta.summary.READY_FOR_DELIVERY} />
         <MetricCard icon={Truck} label="On the way" value={meta.summary.OUT_FOR_DELIVERY} />
         <MetricCard icon={CheckCircle2} label="Delivered" value={meta.summary.DELIVERED} />
       </div>
 
-      <Card>
-        <CardHeader className="gap-1">
+      <Card className="ys-delivery-list-card">
+        <CardHeader className="ys-delivery-list-header gap-1">
           <CardTitle>
             {view === "history"
               ? "Ticket history"
@@ -353,8 +433,12 @@ export function DeliveriesPage() {
                 : "All retained delivery tickets with server-side pagination."}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div aria-label="Delivery ticket views" className="flex flex-wrap gap-2" role="group">
+        <CardContent className="ys-delivery-list-content space-y-4">
+          <div
+            aria-label="Delivery ticket views"
+            className="ys-delivery-view-tabs flex flex-wrap gap-2"
+            role="group"
+          >
             {(["active", "history", "all"] as const).map((nextView) => (
               <Button
                 aria-pressed={view === nextView}
@@ -383,61 +467,102 @@ export function DeliveriesPage() {
               </Button>
             ))}
           </div>
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_220px]">
+          <div className="ys-delivery-toolbar grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_220px]">
             <form
-              className="flex min-w-0 gap-2"
+              className="ys-delivery-search-form flex min-w-0 gap-2"
               onSubmit={(event) => {
                 event.preventDefault();
                 applySearch();
               }}
             >
               <div className="relative min-w-0 flex-1">
-                <Search
-                  aria-hidden="true"
-                  className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-                />
                 <Input
-                  className="pl-9"
+                  aria-label="Search by ticket, order, customer, or phone"
+                  className="px-3"
                   onChange={(event) => setSearchInput(event.target.value)}
-                  placeholder="Search ticket, order, customer, phone..."
+                  placeholder="Find ticket"
                   value={searchInput}
                 />
               </div>
-              <Button type="submit" variant="secondary">
-                Search
+              <Button
+                aria-label="Search delivery tickets"
+                className="ys-delivery-search-submit"
+                type="submit"
+                variant="secondary"
+              >
+                <Search className="ys-delivery-search-submit-icon h-4 w-4" aria-hidden="true" />
+                <span>Search</span>
               </Button>
             </form>
-
-            <Select
-              aria-label="Delivery status"
-              onChange={(event) => {
-                setPage(1);
-                setStatus(event.target.value as StorefrontDeliveryStatus | "all");
-              }}
-              value={status}
+            <button
+              aria-controls="ys-delivery-filter-fields"
+              aria-expanded={mobileFiltersOpen}
+              aria-label={mobileFiltersOpen ? "Hide delivery filters" : "Show delivery filters"}
+              className="ys-delivery-filter-toggle"
+              onClick={() => setMobileFiltersOpen((open) => !open)}
+              type="button"
             >
-              <option value="all">All delivery statuses</option>
-              <option value="ORDER_PLACED">Order placed</option>
-              <option value="PREPARING">Preparing</option>
-              <option value="READY_FOR_DELIVERY">Ready for delivery</option>
-              <option value="OUT_FOR_DELIVERY">On the way</option>
-              <option value="DELIVERED">Delivered</option>
-              <option value="DELIVERY_FAILED">Delivery failed</option>
-              <option value="CANCELLED">Cancelled</option>
-            </Select>
-
-            <Select
-              aria-label="Payment method"
-              onChange={(event) => {
-                setPage(1);
-                setPaymentMethod(event.target.value as StorefrontPaymentMethod | "all");
-              }}
-              value={paymentMethod}
+              <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+              <span>Filters</span>
+              {activeFilterCount > 0 ? (
+                <span className="ys-delivery-filter-count">{activeFilterCount}</span>
+              ) : null}
+              <ChevronDown className="ys-delivery-filter-chevron h-4 w-4" aria-hidden="true" />
+            </button>
+            <div
+              className="ys-delivery-filter-fields"
+              id="ys-delivery-filter-fields"
+              data-open={mobileFiltersOpen}
             >
-              <option value="all">All payment methods</option>
-              <option value="CASH_ON_DELIVERY">Cash on Delivery</option>
-              <option value="PAYMONGO">PayMongo</option>
-            </Select>
+              <label className="ys-delivery-filter-field">
+                <span>Delivery status</span>
+                <Select
+                  aria-label="Delivery status"
+                  onChange={(event) => {
+                    setPage(1);
+                    setStatus(event.target.value as StorefrontDeliveryStatus | "all");
+                  }}
+                  value={status}
+                >
+                  <option value="all">All delivery statuses</option>
+                  <option value="ORDER_PLACED">Order placed</option>
+                  <option value="PREPARING">Preparing</option>
+                  <option value="READY_FOR_DELIVERY">Ready for delivery</option>
+                  <option value="OUT_FOR_DELIVERY">On the way</option>
+                  <option value="DELIVERED">Delivered</option>
+                  <option value="DELIVERY_FAILED">Delivery failed</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </Select>
+              </label>
+              <label className="ys-delivery-filter-field">
+                <span>Payment method</span>
+                <Select
+                  aria-label="Payment method"
+                  onChange={(event) => {
+                    setPage(1);
+                    setPaymentMethod(event.target.value as StorefrontPaymentMethod | "all");
+                  }}
+                  value={paymentMethod}
+                >
+                  <option value="all">All payment methods</option>
+                  <option value="CASH_ON_DELIVERY">Cash on Delivery</option>
+                  <option value="PAYMONGO">PayMongo</option>
+                </Select>
+              </label>
+              {activeFilterCount > 0 ? (
+                <button
+                  className="ys-delivery-filter-reset"
+                  type="button"
+                  onClick={() => {
+                    setStatus("all");
+                    setPaymentMethod("all");
+                    setPage(1);
+                  }}
+                >
+                  Reset filters
+                </button>
+              ) : null}
+            </div>
           </div>
 
           {error ? (
@@ -449,8 +574,8 @@ export function DeliveriesPage() {
             </div>
           ) : null}
 
-          <div className="overflow-x-auto rounded-xl border border-slate-200">
-            <Table>
+          <div className="ys-delivery-list-table-wrap overflow-x-auto rounded-xl border border-slate-200">
+            <Table className="ys-delivery-ticket-table retail-mobile-data-table">
               <TableHeader className="bg-slate-50/80">
                 <TableRow>
                   <TableHead>Ticket / Order</TableHead>
@@ -482,16 +607,16 @@ export function DeliveriesPage() {
                 ) : (
                   tickets.map((ticket) => (
                     <TableRow
-                      className="hover:bg-slate-50/70 dark:hover:bg-slate-700/50"
+                      className="ys-delivery-ticket-row hover:bg-slate-50/70 dark:hover:bg-slate-700/50"
                       key={ticket.id}
                     >
-                      <TableCell>
+                      <TableCell data-label="Ticket / Order">
                         <div className="grid gap-0.5">
                           <strong className="text-slate-950">{ticket.deliveryTicketNumber}</strong>
                           <span className="text-xs text-slate-500">{ticket.orderNumber}</span>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell data-label="Customer">
                         <div className="grid gap-0.5">
                           <strong className="font-medium text-slate-900">
                             {ticket.customerName}
@@ -499,24 +624,35 @@ export function DeliveriesPage() {
                           <span className="text-xs text-slate-500">{ticket.customerPhone}</span>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell data-label="Payment">
                         <div className="grid gap-1">
                           <span>{paymentLabel(ticket.paymentMethod)}</span>
                           <span className="text-xs text-slate-500">{ticket.paymentStatus}</span>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <Badge variant={operationalStatusTone(ticket)}>
+                      <TableCell data-label="Status">
+                        <Badge
+                          className="ys-delivery-status-badge"
+                          data-status={ticket.deliveryStatus}
+                          data-tone={operationalStatusTone(ticket)}
+                          variant={operationalStatusTone(ticket)}
+                        >
                           {operationalStatusLabel(ticket)}
                         </Badge>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap text-xs text-slate-500 dark:text-slate-300">
+                      <TableCell
+                        data-label="Updated"
+                        className="whitespace-nowrap text-xs text-slate-500 dark:text-slate-300"
+                      >
                         {dateTimeFormatter.format(new Date(ticket.updatedAt))}
                       </TableCell>
-                      <TableCell className="text-right font-semibold text-slate-950 dark:text-slate-100">
+                      <TableCell
+                        data-label="Total"
+                        className="text-right font-semibold text-slate-950 dark:text-slate-100"
+                      >
                         {currencyFormatter.format(Number(ticket.totalAmount))}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell data-label="Action" className="text-right">
                         <Button
                           disabled={Boolean(openingId)}
                           onClick={() => void openTicket(ticket.id)}
@@ -535,6 +671,7 @@ export function DeliveriesPage() {
           </div>
 
           <AppPagination
+            className="ys-delivery-pagination"
             isLoading={loading}
             itemLabel="tickets"
             onPageChange={setPage}
@@ -557,10 +694,27 @@ export function DeliveriesPage() {
         }}
       >
         {selected ? (
-          <DialogContent className="max-h-[90vh] max-w-[900px] overflow-y-auto dark:text-slate-100">
-            <DialogHeader>
+          <DialogContent className="ys-delivery-ticket-dialog max-h-[90vh] max-w-[900px] overflow-y-auto dark:text-slate-100">
+            <DialogHeader className="ys-delivery-ticket-header">
+              <DialogClose asChild>
+                <Button
+                  aria-label="Close delivery ticket"
+                  className="ys-delivery-ticket-close"
+                  disabled={submitting}
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </Button>
+              </DialogClose>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant={operationalStatusTone(selected)}>
+                <Badge
+                  className="ys-delivery-status-badge"
+                  data-status={selected.deliveryStatus}
+                  data-tone={operationalStatusTone(selected)}
+                  variant={operationalStatusTone(selected)}
+                >
                   {operationalStatusLabel(selected)}
                 </Badge>
                 <Badge className="dark:border-slate-500 dark:bg-slate-700/60 dark:text-slate-100">
@@ -574,8 +728,8 @@ export function DeliveriesPage() {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="grid gap-5 px-6 pb-2">
-              <div className="grid gap-3 md:grid-cols-3">
+            <div className="ys-delivery-ticket-body grid min-w-0 gap-5 px-6 pb-2">
+              <div className="ys-delivery-ticket-facts grid min-w-0 gap-3 md:grid-cols-3">
                 <TicketFact
                   detail={selected.customerPhone}
                   icon={UserRound}
@@ -668,8 +822,9 @@ export function DeliveriesPage() {
                 <p className="mb-3 text-xs text-slate-500 dark:text-slate-300">
                   Recorded delivery updates, cancellation notes and payment confirmations.
                 </p>
-                <ScrollArea
-                  style={{ height: Math.min(224, Math.max(66, selected.timeline.length * 72)) }}
+                <div
+                  className="ys-delivery-timeline overflow-y-auto"
+                  style={{ maxHeight: Math.min(224, Math.max(66, selected.timeline.length * 72)) }}
                 >
                   <ol className="space-y-3 pr-3">
                     {selected.timeline.map((event) => (
@@ -692,17 +847,16 @@ export function DeliveriesPage() {
                       </li>
                     ))}
                   </ol>
-                </ScrollArea>
+                </div>
               </section>
 
               <section>
                 <h3 className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">
                   Order items
                 </h3>
-                <ScrollArea
-                  className="rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-800/40"
-                  style={{ height: Math.min(300, Math.max(92, selected.items.length * 46)) }}
-                  viewportClassName="pr-3"
+                <div
+                  className="ys-delivery-order-items overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-800/40"
+                  style={{ maxHeight: Math.min(300, Math.max(92, selected.items.length * 46)) }}
                 >
                   <div className="divide-y divide-slate-100 dark:divide-slate-600">
                     {selected.items.map((item) => (
@@ -719,14 +873,16 @@ export function DeliveriesPage() {
                       </div>
                     ))}
                   </div>
-                </ScrollArea>
+                </div>
               </section>
 
-              {!["DELIVERED", "CANCELLED"].includes(selected.deliveryStatus) ? (
+              {["ORDER_PLACED", "PREPARING", "READY_FOR_DELIVERY", "DELIVERY_FAILED"].includes(
+                selected.deliveryStatus
+              ) ? (
                 <section className="grid gap-4 rounded-xl border border-indigo-200 bg-indigo-50/40 p-4 dark:border-indigo-400/30 dark:bg-indigo-950/30">
                   <div>
                     <h3 className="text-sm font-semibold text-slate-950 dark:text-slate-100">
-                      Delivery operations
+                      Dispatch handoff
                     </h3>
                     <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-300">
                       Courier booking stays manual. Record enough information for an auditable
@@ -765,31 +921,147 @@ export function DeliveriesPage() {
                     </div>
 
                     <label className="grid content-start gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
-                      Rider / booking reference
+                      Booking reference (optional)
                       <Input
                         maxLength={120}
                         onChange={(event) => setCourierReference(event.target.value)}
-                        placeholder="e.g. rider mobile, booking ID, plate number"
+                        placeholder="Booking ID / plate / rider code"
                         value={courierReference}
                       />
-                      <span className="text-xs font-normal leading-5 text-slate-500 dark:text-slate-300">
-                        Add the rider phone number or app booking ID when available so the handoff
-                        can be verified.
+                      <span className="ys-delivery-rider-helper text-xs font-normal leading-5 text-slate-500 dark:text-slate-300">
+                        Booking ID is separate from rider phone.
                       </span>
                     </label>
                   </div>
+                  <div className="ys-delivery-handoff-fields grid gap-3 sm:grid-cols-2">
+                    <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Rider name (optional)
+                      <Input
+                        maxLength={120}
+                        value={riderName}
+                        placeholder="e.g. Juan Dela Cruz"
+                        onChange={(event) => setRiderName(event.target.value)}
+                      />
+                    </label>
+                    <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Rider phone number (required to dispatch)
+                      <Input
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        aria-required="true"
+                        maxLength={24}
+                        value={riderPhone}
+                        placeholder="0917 123 4567"
+                        onChange={(event) => setRiderPhone(event.target.value)}
+                      />
+                      {riderPhone.trim() && !riderPhoneValid ? (
+                        <span className="text-xs font-normal text-red-700 dark:text-red-300">
+                          Enter a valid Philippine mobile number.
+                        </span>
+                      ) : null}
+                    </label>
+                  </div>
                   <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
-                    Internal staff note
+                    Customer delivery note (visible after dispatch)
+                    <Textarea
+                      rows={2}
+                      maxLength={500}
+                      value={customerDeliveryNote}
+                      onChange={(event) => setCustomerDeliveryNote(event.target.value)}
+                      placeholder="Information for the customer during delivery."
+                    />
+                  </label>
+                  <label className="grid gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
+                    Internal delivery note
                     <Input
                       maxLength={255}
                       onChange={(event) => setStaffNote(event.target.value)}
-                      placeholder="Internal handoff note for owner/staff only"
+                      placeholder="Internal note for Owner and Staff"
                       value={staffNote}
                     />
                     <span className="text-xs font-normal leading-5 text-slate-500 dark:text-slate-300">
                       This operational note is not shown to the customer.
                     </span>
                   </label>
+                  {handoffMessage ? (
+                    <p className="text-xs text-emerald-700 dark:text-emerald-300" role="status">
+                      {handoffMessage}
+                    </p>
+                  ) : null}
+                </section>
+              ) : null}
+
+              {["OUT_FOR_DELIVERY", "DELIVERED"].includes(selected.deliveryStatus) ? (
+                <section aria-label="Rider handoff details" className="ys-delivery-handoff-summary">
+                  <div className="ys-delivery-handoff-summary__heading">
+                    <span aria-hidden="true" className="ys-delivery-handoff-summary__icon">
+                      <Truck size={18} />
+                    </span>
+                    <div>
+                      <h3>Rider handoff</h3>
+                      <p>Delivery coordination details</p>
+                    </div>
+                  </div>
+                  <div className="ys-delivery-handoff-summary__identity">
+                    <span aria-hidden="true" className="ys-delivery-handoff-summary__avatar">
+                      {(selected.riderName?.trim() || "Rider").charAt(0).toLocaleUpperCase()}
+                    </span>
+                    <div className="ys-delivery-handoff-summary__rider">
+                      <strong>{selected.riderName || "Delivery rider"}</strong>
+                      <span>{selected.courierProvider || "Courier"} · Delivery partner</span>
+                    </div>
+                  </div>
+                  {selected.riderPhone ? (
+                    <div className="ys-delivery-handoff-summary__contact">
+                      <div>
+                        <span>Contact number</span>
+                        <strong>{selected.riderPhone}</strong>
+                      </div>
+                      <button
+                        aria-label="Copy rider contact number"
+                        onClick={() => void copyRiderNumber(selected.riderPhone ?? "")}
+                        type="button"
+                      >
+                        <Copy aria-hidden="true" size={16} />
+                        Copy
+                      </button>
+                    </div>
+                  ) : null}
+                  {riderCopyFeedback ? (
+                    <p
+                      aria-live="polite"
+                      className="ys-delivery-handoff-summary__feedback"
+                      role="status"
+                    >
+                      {riderCopyFeedback}
+                    </p>
+                  ) : null}
+                  {selected.courierReference ? (
+                    <p className="ys-delivery-handoff-summary__reference">
+                      <span>Booking reference</span>
+                      <strong>{selected.courierReference}</strong>
+                    </p>
+                  ) : null}
+                  {selected.customerDeliveryNote ? (
+                    <div className="ys-delivery-handoff-summary__note">
+                      <div className="ys-delivery-handoff-summary__note-title">
+                        <MessageSquareText aria-hidden="true" size={16} />
+                        <strong>Customer delivery note</strong>
+                      </div>
+                      <p>{selected.customerDeliveryNote}</p>
+                    </div>
+                  ) : null}
+                  {selected.deliveryNotes ? (
+                    <div className="ys-delivery-handoff-summary__note ys-delivery-handoff-summary__note--internal">
+                      <div className="ys-delivery-handoff-summary__note-title">
+                        <LockKeyhole aria-hidden="true" size={16} />
+                        <strong>Internal delivery note</strong>
+                        <span>Owner &amp; Staff</span>
+                      </div>
+                      <p>{selected.deliveryNotes}</p>
+                    </div>
+                  ) : null}
                 </section>
               ) : null}
 
@@ -805,7 +1077,7 @@ export function DeliveriesPage() {
               ) : null}
             </div>
 
-            <DialogFooter className="flex-wrap">
+            <DialogFooter className="ys-delivery-ticket-footer flex-wrap">
               {selected.canConfirmCodCollected ? (
                 <Button disabled={submitting} onClick={() => void settleCod()} type="button">
                   <Banknote className="h-4 w-4" aria-hidden="true" />
@@ -832,9 +1104,21 @@ export function DeliveriesPage() {
                   Mark ready
                 </Button>
               ) : null}
+              {["ORDER_PLACED", "PREPARING", "READY_FOR_DELIVERY", "DELIVERY_FAILED"].includes(
+                selected.deliveryStatus
+              ) ? (
+                <Button
+                  disabled={submitting}
+                  onClick={() => void saveHandoff()}
+                  type="button"
+                  variant="secondary"
+                >
+                  Save dispatch draft
+                </Button>
+              ) : null}
               {selected.deliveryStatus === "READY_FOR_DELIVERY" ? (
                 <Button
-                  disabled={submitting || !resolvedCourierProvider}
+                  disabled={submitting || !resolvedCourierProvider || !riderPhoneValid}
                   onClick={() => void runTransition("OUT_FOR_DELIVERY")}
                   type="button"
                 >
@@ -887,8 +1171,8 @@ function StaffDeliveryProgress({ ticket }: { ticket: DeliveryTicket }) {
   const eventByStatus = new Map(ticket.timeline.map((event) => [event.status, event] as const));
 
   return (
-    <div className="overflow-x-auto pb-1">
-      <ol className="flex min-w-[650px] list-none px-1 pb-0 pt-1">
+    <div className="ys-delivery-progress-scroll overflow-x-auto pb-1">
+      <ol className="ys-delivery-progress-steps flex min-w-[650px] list-none px-1 pb-0 pt-1">
         {DELIVERY_PROGRESS_STEPS.map((step, index) => {
           const event = eventByStatus.get(step.status);
           const isCurrent = ticket.deliveryStatus === step.status;
@@ -942,8 +1226,8 @@ function MetricCard({
   value: number;
 }) {
   return (
-    <Card>
-      <CardContent className="flex items-center gap-4 pt-5">
+    <Card className="ys-delivery-metric">
+      <CardContent className="ys-delivery-metric-content flex items-center gap-4 pt-5">
         <span className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-50 text-indigo-700">
           <Icon className="h-5 w-5" aria-hidden="true" />
         </span>
@@ -976,8 +1260,12 @@ function TicketFact({
       </span>
       <div className="min-w-0">
         <p className="text-xs text-slate-500 dark:text-slate-300">{label}</p>
-        <p className="truncate text-sm font-semibold text-slate-950 dark:text-slate-50">{value}</p>
-        <p className="truncate text-xs text-slate-500 dark:text-slate-300">{detail}</p>
+        <p className="ys-delivery-fact-value truncate text-sm font-semibold text-slate-950 dark:text-slate-50">
+          {value}
+        </p>
+        <p className="ys-delivery-fact-detail truncate text-xs text-slate-500 dark:text-slate-300">
+          {detail}
+        </p>
       </div>
     </div>
   );

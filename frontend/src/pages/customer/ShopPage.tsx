@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Search, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown, Search, SlidersHorizontal } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -45,6 +45,11 @@ export function ShopPage({
         : "all";
   const pageParam = Math.max(1, Number(params.get("page")) || 1);
   const [search, setSearch] = useState(searchParam);
+  const [categoriesExpanded, setCategoriesExpanded] = useState(false);
+  const [availabilityOpen, setAvailabilityOpen] = useState(false);
+  const [availabilityOpensAbove, setAvailabilityOpensAbove] = useState(false);
+  const availabilityRef = useRef<HTMLDivElement>(null);
+  const availabilityTriggerRef = useRef<HTMLButtonElement>(null);
   const [categories, setCategories] = useState<StorefrontCategory[]>([]);
   const [products, setProducts] = useState<StorefrontProduct[]>([]);
   const [meta, setMeta] = useState<StorefrontPagination>({
@@ -78,6 +83,27 @@ export function ShopPage({
   useEffect(() => {
     setSearch(searchParam);
   }, [searchParam]);
+
+  useEffect(() => {
+    if (!availabilityOpen) return;
+
+    const closeWhenOutside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !availabilityRef.current?.contains(event.target)) {
+        setAvailabilityOpen(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setAvailabilityOpen(false);
+      availabilityTriggerRef.current?.focus();
+    };
+    document.addEventListener("pointerdown", closeWhenOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeWhenOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [availabilityOpen]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -205,8 +231,37 @@ export function ShopPage({
   }
 
   function applyAvailability(nextAvailability: AvailabilityFilter) {
+    setAvailabilityOpen(false);
     navigate(buildShopUrl({ search: search.trim(), availability: nextAvailability, page: 1 }));
   }
+
+  function toggleAvailability() {
+    if (availabilityOpen) {
+      setAvailabilityOpen(false);
+      return;
+    }
+
+    const triggerBounds = availabilityTriggerRef.current?.getBoundingClientRect();
+    const dockTop =
+      document.querySelector(".customer-mobile-dock")?.getBoundingClientRect().top ??
+      window.innerHeight;
+    const bottomLimit = Math.min(window.innerHeight, dockTop);
+    // Three 44px options plus padding and spacing require roughly 158px.
+    // Flip the menu above when the mobile dock leaves less room below.
+    setAvailabilityOpensAbove(
+      !!triggerBounds && bottomLimit - triggerBounds.bottom < 166 && triggerBounds.top > 166
+    );
+    setAvailabilityOpen(true);
+  }
+
+  const categoryNavigationClassName = [
+    "customer-filter-panel",
+    "shop-category-navigation",
+    categoryNavigationReveal.isVisible ? "is-visible" : "",
+    categoriesExpanded ? "is-expanded" : ""
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className="customer-page customer-shop-page">
@@ -276,7 +331,7 @@ export function ShopPage({
         <ShopCatalogBackdrop />
         <aside
           aria-label="Shop filters"
-          className={`customer-filter-panel shop-category-navigation ${categoryNavigationReveal.isVisible ? "is-visible" : ""}`}
+          className={categoryNavigationClassName}
           id="categories"
           ref={categoryNavigationReveal.ref}
         >
@@ -284,10 +339,23 @@ export function ShopPage({
             <SlidersHorizontal aria-hidden="true" size={18} />
             <h2>Browse</h2>
           </div>
+          <button
+            aria-controls="categories"
+            aria-expanded={categoriesExpanded}
+            className="shop-category-toggle"
+            onClick={() => setCategoriesExpanded((current) => !current)}
+            type="button"
+          >
+            <span className="shop-category-toggle__label">
+              {activeCategory?.name ?? "Categories"}
+            </span>
+            <ChevronDown aria-hidden="true" className="shop-category-toggle__chevron" size={18} />
+          </button>
           <CustomerLink
             className={!categorySlug ? "is-active" : ""}
             href={buildShopUrl({ page: 1 }, null)}
             navigate={navigate}
+            onClick={() => setCategoriesExpanded(false)}
             style={{ "--shop-navigation-index": 0 } as CSSProperties}
           >
             All categories
@@ -298,6 +366,7 @@ export function ShopPage({
               href={buildShopUrl({ page: 1 }, category.slug)}
               key={category.id}
               navigate={navigate}
+              onClick={() => setCategoriesExpanded(false)}
               style={{ "--shop-navigation-index": index + 1 } as CSSProperties}
             >
               <span>{category.name}</span>
@@ -329,17 +398,78 @@ export function ShopPage({
                 value={search}
               />
             </label>
-            <label className="customer-select">
-              <span className="sr-only">Availability</span>
-              <select
-                onChange={(event) => applyAvailability(event.target.value as AvailabilityFilter)}
-                value={availabilityParam}
+            <div
+              className={`customer-select customer-select--availability${
+                availabilityParam === "all" ? "" : " is-active"
+              }`}
+              ref={availabilityRef}
+            >
+              <label className="customer-select__desktop">
+                <span className="sr-only">Filter products by availability</span>
+                <select
+                  aria-label="Filter products by availability"
+                  onChange={(event) => applyAvailability(event.target.value as AvailabilityFilter)}
+                  value={availabilityParam}
+                >
+                  <option value="all">All availability</option>
+                  <option value="in-stock">In stock</option>
+                  <option value="out-of-stock">Out of stock</option>
+                </select>
+              </label>
+              <button
+                aria-controls="shop-availability-options"
+                aria-expanded={availabilityOpen}
+                aria-label={`Availability: ${
+                  availabilityParam === "all"
+                    ? "All availability"
+                    : availabilityParam === "in-stock"
+                      ? "In stock"
+                      : "Out of stock"
+                }. Choose filter`}
+                className="customer-select__mobile-trigger"
+                onClick={toggleAvailability}
+                ref={availabilityTriggerRef}
+                type="button"
               >
-                <option value="all">All availability</option>
-                <option value="in-stock">In stock</option>
-                <option value="out-of-stock">Out of stock</option>
-              </select>
-            </label>
+                <SlidersHorizontal aria-hidden="true" size={18} />
+                {availabilityParam !== "all" ? (
+                  <span aria-hidden="true" className="customer-select__active-dot" />
+                ) : null}
+              </button>
+              {availabilityOpen ? (
+                <div
+                  aria-label="Availability options"
+                  className={`customer-select__mobile-options${
+                    availabilityOpensAbove ? " is-above" : ""
+                  }`}
+                  id="shop-availability-options"
+                  role="group"
+                >
+                  {(
+                    [
+                      ["all", "All availability"],
+                      ["in-stock", "In stock"],
+                      ["out-of-stock", "Out of stock"]
+                    ] as const
+                  ).map(([value, label]) => (
+                    <button
+                      aria-pressed={availabilityParam === value}
+                      className={availabilityParam === value ? "is-selected" : ""}
+                      key={value}
+                      onClick={() => applyAvailability(value)}
+                      type="button"
+                    >
+                      <span>{label}</span>
+                      {availabilityParam === value ? (
+                        <span aria-hidden="true" className="customer-select__option-check">
+                          ✓
+                        </span>
+                      ) : null}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           </form>
           <div
             className={`customer-results-meta shop-motion-results-meta ${resultsMetaReveal.isVisible ? "is-visible" : ""}`}

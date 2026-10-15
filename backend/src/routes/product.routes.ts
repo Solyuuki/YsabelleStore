@@ -21,6 +21,7 @@ import {
   updateProductController
 } from "../controllers/productController.js";
 import {
+  downloadProductImportTemplateController,
   importGoogleDriveProductsController,
   importProductsController,
   previewGoogleDriveProductImportController,
@@ -33,6 +34,12 @@ import { productImageUpload, productImportUpload } from "../middleware/uploadMid
 export const productRouter = Router();
 
 productRouter.use(requireAuth);
+
+productRouter.get(
+  "/import/template",
+  requireRole("OWNER"),
+  downloadProductImportTemplateController
+);
 
 productRouter.post(
   "/import/preview",

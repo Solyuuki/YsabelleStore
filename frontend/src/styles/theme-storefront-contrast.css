@@ -265,6 +265,59 @@
   color: var(--store-contrast-ink);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 3%);
 }
+
+/* Account order history and Favorites share AppPagination. Its base controls
+   use white Tailwind surfaces; keep those only in light mode. */
+:root.dark .customer-app .customer-account-history-pagination :is(p, label) {
+  color: #d5e0f2;
+}
+:root.dark .customer-app .customer-account-history-pagination p > span {
+  color: #c9bdff;
+}
+:root.dark
+  .customer-app
+  .customer-account-history-pagination
+  nav
+  button:not([aria-current="page"]) {
+  border-color: #637596;
+  background: #283a55;
+  color: #eef3ff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 5%);
+}
+:root.dark
+  .customer-app
+  .customer-account-history-pagination
+  nav
+  button:not(:disabled):not([aria-current="page"]):hover {
+  border-color: #a299e5;
+  background: #394a6b;
+  color: #fff;
+}
+:root.dark .customer-app .customer-account-history-pagination nav button[aria-current="page"] {
+  border-color: #9c8cef;
+  background: linear-gradient(135deg, #315fc1, #5d45b8 60%, #833881);
+  color: #fff;
+  box-shadow: 0 5px 14px rgb(15 14 40 / 28%);
+  opacity: 1;
+}
+:root.dark
+  .customer-app
+  .customer-account-history-pagination
+  nav
+  button:disabled:not([aria-current="page"]) {
+  border-color: #53637d;
+  background: #223047;
+  color: #aebfd8;
+  opacity: 0.82;
+}
+:root.dark .customer-app .customer-account-history-pagination nav button:focus-visible {
+  outline: 2px solid #c3b6ff;
+  outline-offset: 2px;
+}
+:root.dark .customer-app .customer-account-history-pagination nav span[aria-hidden="true"] {
+  color: #b8c9e3;
+}
+
 :root.dark .customer-app #profile-panel .customer-account-inline-action-form,
 :root.dark
   .customer-app
@@ -667,6 +720,22 @@
 }
 :root.dark .customer-app .customer-success-card :is(p, small) {
   color: #b8c6d8;
+}
+
+/* Order Success delivery tracking: the light-mode slate ink (#58627a /
+   #737c92) had insufficient contrast on the dark #1b2638 panel.
+   Scope the fix to this text group in BOTH mobile and desktop layouts. */
+:root.dark .customer-app .customer-success-card .customer-success-pickup strong {
+  color: #eef3ff;
+}
+:root.dark .customer-app .customer-success-card .customer-success-pickup span {
+  color: #d5e0f2;
+}
+:root.dark .customer-app .customer-success-card .customer-success-pickup small {
+  color: #bfcfe7;
+}
+:root.dark .customer-app .customer-success-card .customer-success-pickup > svg {
+  color: #b6c5ff;
 }
 :root.dark .customer-app .customer-order-reference {
   border-color: #7685a5;
@@ -1137,6 +1206,282 @@
   .customer-account-order-v2
   :is(.customer-account-order-meta, li, small, p) {
   color: #b8c6d8;
+}
+
+/* Sprint 12: active delivery tracking dark surface and readable hierarchy.
+   The premium account styles below the base stylesheet use LIGHT tile colors
+   and dark text, which were invisible inside the dark active-order surface.
+   Restrict every override to orders-panel active tracking cards: archived
+   orders, light mode, payment state and status progression stay intact. */
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active {
+  background: #223149;
+  border-color: #64758f;
+  color: #e6edf9;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-order-topline {
+  border-bottom-color: #536782;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-order-topline
+  > div
+  > span {
+  color: #c1cee2;
+  font-size: 0.76rem;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-order-topline
+  > div
+  > strong {
+  color: #f2f5ff;
+  overflow-wrap: anywhere;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-order-topline
+  > .customer-delivery-status {
+  border-color: #897fde;
+  background: #38365c;
+  color: #eeeaff;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-status--delivered {
+  border-color: #528b77;
+  background: #1c4139;
+  color: #d0f5e6;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  :is(.customer-delivery-status--delivery_failed, .customer-delivery-status--cancelled) {
+  border-color: #aa6d80;
+  background: #462d3e;
+  color: #ffe0e9;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-status--awaiting-payment {
+  border-color: #b99b65;
+  background: #423627;
+  color: #ffe3a8;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-delivery-overview
+  > div {
+  border-color: #586b86;
+  background: #2b3b55;
+  box-shadow: inset 0 1px 0 rgb(222 232 255 / 4%);
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-delivery-overview
+  span {
+  color: #c6d3e7;
+  font-size: 0.72rem;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-delivery-overview
+  strong {
+  color: #f3f6ff;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  :is(.customer-account-delivery-address, .customer-account-delivery-courier) {
+  color: #cfdaec;
+  font-size: 0.79rem;
+  overflow-wrap: anywhere;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  :is(.customer-account-delivery-address, .customer-account-delivery-courier)
+  :is(svg, strong) {
+  color: #c3b9ff;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-progress {
+  border-top-color: #586b86;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper__connector {
+  background: #7989a4;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper__connector.is-complete {
+  background: linear-gradient(90deg, #7770ff, #afa4ff);
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper__marker {
+  border-color: #8999b4;
+  background: #30415c;
+  color: #f2f6ff;
+  box-shadow: none;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper
+  li.is-complete
+  .customer-delivery-stepper__marker {
+  border-color: #8179ff;
+  background: linear-gradient(135deg, #168cff, #625bff 58%, #9656e8);
+  color: #fff;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper__copy
+  strong {
+  color: #e1eafa;
+  font-size: 0.78rem;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper__copy
+  small {
+  color: #c2d0e5;
+  font-size: 0.72rem;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper
+  li.is-complete
+  .customer-delivery-stepper__copy
+  strong {
+  color: #e9edff;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper
+  li.is-current
+  .customer-delivery-stepper__copy
+  strong {
+  color: #cbbcff;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-delivery-stepper
+  li.is-current
+  .customer-delivery-stepper__copy
+  small {
+  color: #d5e1f6;
+}
+/* The confirmation/payment-gated states also live inside the active card. */
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-confirm-delivery {
+  border-color: #8279ce;
+  background: #303955;
+  color: #eff1ff;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-confirm-delivery
+  p {
+  color: #c8d6ec;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-payment-gate {
+  border-color: #ac8954;
+  background: #3a342d;
+  color: #ffe5bb;
+}
+:root.dark
+  .customer-app
+  .customer-account-page-v2
+  #orders-panel
+  .customer-account-order-v2--active
+  .customer-account-payment-gate
+  :is(strong, p, svg) {
+  color: #ffe5bb;
 }
 
 /* Recovery and login/register: dark-specific silk artwork, never pale lavender
@@ -2047,4 +2392,153 @@
   background: #492e42;
   border-color: #b07e9c;
   color: #ffe0ed;
+}
+
+/* Checkout dark canvas: reuse the approved Storefront/Cart galaxy, not the
+   old cover-scaled midnight-velvet shader. Keep its intrinsic proportions and
+   blend the long page to the same #101827 base as the shared storefront.
+   This is a route background only: form cards, topbar and nav are unchanged. */
+:root.dark .customer-app .customer-checkout-page {
+  position: relative;
+  isolation: isolate;
+  background-color: #101827 !important;
+  background-image:
+    linear-gradient(
+      to bottom,
+      #101827 0,
+      transparent 145px,
+      transparent calc(100% - 220px),
+      #101827 100%
+    ),
+    var(--storefront-galaxy-background) !important;
+  background-size: auto !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+  background-blend-mode: normal !important;
+}
+
+/* Checkout dark-mode completion: saved preferences and payment choices. */
+/* These controls were light-first despite the dark checkout form. Scope every
+   surface and state to the customer checkout so light mode remains unchanged. */
+:root.dark .customer-app .customer-checkout-page {
+  --checkout-choice-bg: #202e47;
+  --checkout-choice-border: #6f82a6;
+  --checkout-choice-ink: #f0f4ff;
+  --checkout-choice-body: #c4d2e8;
+  --checkout-choice-accent: #c8baff;
+}
+
+:root.dark
+  .customer-app
+  .customer-checkout-page
+  :is(.customer-profile-default-option, .customer-address-save-option) {
+  background: linear-gradient(135deg, #263550, #1d2b43);
+  border-color: var(--checkout-choice-border);
+  color: var(--checkout-choice-ink);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 5%);
+}
+
+:root.dark
+  .customer-app
+  .customer-checkout-page
+  :is(.customer-profile-default-option, .customer-address-save-option)
+  strong {
+  color: var(--checkout-choice-ink);
+}
+
+:root.dark
+  .customer-app
+  .customer-checkout-page
+  :is(.customer-profile-default-option, .customer-address-save-option)
+  small {
+  color: var(--checkout-choice-body);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-address-save-checkbox {
+  border-color: #94a7c8;
+  background: #16243a;
+  color: #ffffff;
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-address-save-checkbox[data-checked] {
+  border-color: #c5b8ff;
+  background: #6257b9;
+  color: #ffffff;
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-address-save-checkbox:focus-visible {
+  outline-color: #c9bdff;
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-payment-option {
+  background: linear-gradient(135deg, #24324a, #1d2b43);
+  border-color: var(--checkout-choice-border);
+  color: var(--checkout-choice-ink);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 4%);
+}
+
+:root.dark
+  .customer-app
+  .customer-checkout-page
+  .customer-payment-option:hover:not(.is-selected):not(:has(input:disabled)) {
+  background: #2e3e5b;
+  border-color: #a6b5d5;
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-payment-option:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-payment-option.is-selected {
+  background: linear-gradient(125deg, #39385f, #292f50);
+  border-color: #c0afff;
+  box-shadow:
+    0 0 0 1px rgb(192 175 255 / 16%),
+    inset 0 1px 0 rgb(245 240 255 / 9%);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-payment-option > span strong {
+  color: var(--checkout-choice-ink);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-payment-option > span small {
+  color: var(--checkout-choice-body);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-payment-option > svg {
+  color: var(--checkout-choice-accent);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-payment-option:has(input:focus-visible) {
+  outline: 3px solid #c9bdff;
+  outline-offset: 2px;
+}
+
+/* Complete the matching saved-contact and order-summary surfaces so there
+   are no bright inherited islands beside the corrected preference cards. */
+:root.dark .customer-app .customer-checkout-page .customer-checkout-saved-phone {
+  background: var(--checkout-choice-bg);
+  border-color: var(--checkout-choice-border);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-checkout-saved-phone__copy strong {
+  color: var(--checkout-choice-ink);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-checkout-saved-phone > svg {
+  color: var(--checkout-choice-accent);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-order-summary__payment {
+  background: #273551;
+  border-color: var(--checkout-choice-border);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-order-summary__payment strong {
+  color: var(--checkout-choice-ink);
+}
+
+:root.dark .customer-app .customer-checkout-page .customer-order-summary__payment span {
+  color: var(--checkout-choice-body);
 }

@@ -250,3 +250,299 @@
     transition: none;
   }
 }
+
+/* Sprint 12: retail staff login becomes phone-first. A desktop grid with a
+   25rem minimum-width form caused horizontal document scroll at 320–430px.
+   Keep tablet / workstation layouts untouched above 700px. */
+.ys-retail-welcome__mobile-intro {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .ys-retail-welcome {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 100svh;
+    height: auto;
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+
+  .ys-retail-welcome .welcome-shell {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 100svh;
+    flex: 1 1 auto;
+    gap: 0.65rem;
+    padding: calc(0.85rem + env(safe-area-inset-top)) max(0.8rem, env(safe-area-inset-right))
+      calc(0.8rem + env(safe-area-inset-bottom)) max(0.8rem, env(safe-area-inset-left));
+  }
+
+  .ys-retail-welcome .welcome-content {
+    display: grid;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    flex: 0 1 auto;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 0.85rem;
+  }
+
+  .ys-retail-welcome .ys-retail-welcome__hero {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
+
+  /* Security and appearance stay on the first row; heading starts beneath
+     them rather than competing for the same horizontal space. */
+  .ys-retail-welcome .ys-retail-security-pill {
+    min-height: 34px;
+    box-sizing: border-box;
+    max-width: 44%;
+    gap: 0.32rem;
+    padding: 0.4rem 0.55rem;
+    font-size: 0.7rem;
+    white-space: nowrap;
+  }
+
+  .ys-retail-welcome .ys-retail-theme-control {
+    top: calc(0.85rem + env(safe-area-inset-top));
+    right: max(0.8rem, env(safe-area-inset-right));
+    gap: 0.35rem;
+    padding: 0.25rem 0.45rem;
+  }
+
+  .ys-retail-welcome .ys-retail-theme-control__label {
+    display: none;
+  }
+
+  .ys-retail-welcome .ys-retail-theme-control__value {
+    min-width: 2.1rem;
+    font-size: 0.7rem;
+  }
+
+  .ys-retail-welcome .ys-retail-welcome__title {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: 1.55rem 0 0;
+    font-size: clamp(1.65rem, 7.6vw, 2.25rem);
+    line-height: 1.12;
+    letter-spacing: -0.052em;
+    text-wrap: nowrap;
+    white-space: nowrap;
+  }
+
+  .ys-retail-welcome .ys-retail-welcome__description {
+    display: none;
+  }
+
+  .ys-retail-welcome .ys-retail-welcome__mobile-intro {
+    display: block;
+    max-width: 100%;
+    margin: 0.25rem 0 0;
+    color: #516079;
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  :root.dark .ys-retail-welcome .ys-retail-welcome__mobile-intro {
+    color: #c5d3ed;
+  }
+
+  .ys-retail-welcome .ys-retail-welcome__feedback {
+    min-width: 0;
+    max-width: 100%;
+    margin-top: 0.55rem;
+  }
+
+  .ys-retail-welcome .ys-retail-welcome__feedback:empty {
+    display: none;
+  }
+
+  .ys-retail-welcome .ys-retail-welcome__feedback .ys-retail-welcome-note {
+    max-width: 100%;
+    margin: 0;
+    padding: 0.65rem 0.75rem;
+    overflow-wrap: anywhere;
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  .ys-retail-welcome .ys-retail-login-card {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    justify-self: stretch;
+    border-radius: 1rem;
+  }
+
+  .ys-retail-welcome .ys-retail-login-card > :first-child {
+    min-width: 0;
+    padding: 0.95rem 0.95rem 0.45rem;
+  }
+
+  .ys-retail-welcome .ys-retail-login-card > :nth-child(2) {
+    min-width: 0;
+    padding: 0.5rem 0.95rem 1rem;
+  }
+
+  .ys-retail-welcome .ys-retail-login-card :is(form, label, input) {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .ys-retail-welcome .ys-retail-login-card form {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .ys-retail-welcome .ys-retail-login-card input:not([type="checkbox"]) {
+    width: 100%;
+    min-height: 44px;
+    font-size: 0.875rem;
+  }
+
+  .ys-retail-welcome .ys-retail-login-card form > button,
+  .ys-retail-welcome .ys-retail-login-card > :nth-child(2) button:not([aria-label]) {
+    min-height: 44px;
+  }
+
+  .ys-retail-welcome .ys-retail-known-account {
+    min-width: 0;
+    padding: 0.75rem;
+  }
+
+  .ys-retail-welcome .ys-retail-known-account button {
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  .ys-retail-welcome .ys-retail-welcome-footer {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: auto;
+    padding-top: 0.35rem;
+    text-align: center;
+  }
+
+  .ys-retail-welcome .ys-retail-welcome-footer > p:first-child {
+    justify-self: center;
+    font-size: 0.68rem;
+  }
+}
+
+@media (max-width: 359px) {
+  .ys-retail-welcome .ys-retail-login-card > :first-child {
+    padding-inline: 0.8rem;
+  }
+
+  .ys-retail-welcome .ys-retail-login-card > :nth-child(2) {
+    padding-inline: 0.8rem;
+  }
+
+  .ys-retail-welcome .ys-retail-theme-control {
+    gap: 0.25rem;
+    padding-inline: 0.35rem;
+  }
+}
+
+/* Sprint 12: staff-login Known Accounts paginator.
+   The shared AppPagination intentionally defaults to a light surface; the
+   staff-login dark theme previously changed only the text, leaving light
+   text on a white bar. Scope this fix to Known Accounts (desktop + mobile). */
+:root.dark .ys-retail-welcome .ys-retail-known-accounts-pagination {
+  background: #22334d !important;
+  border-color: #536a88 !important;
+  color: #f2f6ff !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 4%);
+}
+
+:root.dark .ys-retail-welcome .ys-retail-known-accounts-pagination > p {
+  color: #d6e2f3 !important;
+  font-weight: 500;
+}
+
+:root.dark .ys-retail-welcome .ys-retail-known-accounts-pagination nav button {
+  background: #2a3c56 !important;
+  border-color: #627995 !important;
+  color: #f2f6ff !important;
+  box-shadow: none;
+}
+
+:root.dark .ys-retail-welcome .ys-retail-known-accounts-pagination nav button:not(:disabled):hover {
+  background: #3c5272 !important;
+  border-color: #a397f8 !important;
+  color: #fff !important;
+}
+
+:root.dark .ys-retail-welcome .ys-retail-known-accounts-pagination nav button:disabled {
+  background: #263750 !important;
+  border-color: #536782 !important;
+  color: #bdcee5 !important;
+  opacity: 1;
+}
+
+:root.dark .ys-retail-welcome .ys-retail-known-accounts-pagination nav button[aria-current="page"] {
+  background: #5146d9 !important;
+  border-color: #978df4 !important;
+  color: #fff !important;
+  font-weight: 800;
+  opacity: 1;
+}
+
+/* Maintain a compact, fully readable pager on 320px phones through tablet;
+   navigation handlers, page calculation and accessible labels stay shared. */
+@media (max-width: 1024px) {
+  .ys-retail-welcome .ys-retail-known-accounts-pagination {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    gap: 0.55rem;
+    padding: 0.65rem;
+  }
+  .ys-retail-welcome .ys-retail-known-accounts-pagination > p {
+    min-width: 0;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+  .ys-retail-welcome .ys-retail-known-accounts-pagination > div {
+    display: flex;
+    justify-content: flex-end;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .ys-retail-welcome .ys-retail-known-accounts-pagination nav,
+  .ys-retail-welcome .ys-retail-known-accounts-pagination nav > ul {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .ys-retail-welcome .ys-retail-known-accounts-pagination nav > ul {
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+  }
+  .ys-retail-welcome .ys-retail-known-accounts-pagination nav button {
+    min-width: 40px;
+    min-height: 40px;
+    padding-inline: 0.4rem;
+  }
+}
+
+@media (max-width: 359px) {
+  .ys-retail-welcome .ys-retail-known-accounts-pagination {
+    padding: 0.55rem;
+  }
+  .ys-retail-welcome .ys-retail-known-accounts-pagination nav > ul {
+    gap: 0.2rem;
+  }
+}

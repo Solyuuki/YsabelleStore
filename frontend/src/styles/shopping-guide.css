@@ -142,7 +142,10 @@
 }
 
 .ysabelle-guide .driver-popover-footer button {
+  box-sizing: border-box;
+  min-width: 0;
   min-height: 2.45rem;
+  white-space: nowrap;
   padding: 0.58rem 0.95rem !important;
   border-radius: 0.72rem !important;
   font-family: var(--font-sans) !important;
@@ -284,5 +287,117 @@
   .ysabelle-guide .driver-popover-next-btn:focus-visible,
   .ysabelle-guide .driver-popover-footer button:active:not(:disabled) {
     transform: none;
+  }
+}
+
+/* Sprint 12: true phone popover composition. Driver.js positions the guide
+   against the highlighted element; only the popover internals change.
+   Keep stage spotlight, scroll settle and step transition animations intact. */
+@media (max-width: 480px) {
+  .ysabelle-guide.driver-popover {
+    box-sizing: border-box;
+    width: min(21rem, calc(100vw - 1.5rem));
+    max-width: calc(100vw - 1.5rem);
+    min-width: 0;
+    padding: 0.95rem 0.95rem 0.9rem;
+    border-radius: 1rem;
+    overflow-wrap: break-word;
+  }
+
+  .ysabelle-guide .driver-popover-title {
+    box-sizing: border-box;
+    max-width: calc(100% - 3.4rem);
+    margin: 0;
+    padding: 0;
+    font-size: clamp(0.98rem, 4.5vw, 1.1rem);
+    line-height: 1.32;
+    text-wrap: pretty;
+    overflow-wrap: anywhere;
+  }
+
+  .ysabelle-guide .driver-popover-description {
+    box-sizing: border-box;
+    max-width: 100%;
+    margin-top: 0.45rem;
+    font-size: 0.8rem;
+    line-height: 1.48;
+    overflow-wrap: anywhere;
+  }
+
+  .ysabelle-guide .driver-popover-close-btn {
+    top: 0.65rem;
+    right: 0.65rem;
+    min-height: 40px;
+    min-width: 40px;
+    padding: 0.4rem !important;
+    font-size: 0.74rem;
+  }
+
+  /* Place the counter on its own line, with two equal-size actions below it.
+     Last step uses the same columns so "Start shopping" never gets squeezed. */
+  .ysabelle-guide .driver-popover-footer {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.55rem;
+    margin-top: 0.8rem;
+    padding-top: 0.7rem;
+  }
+
+  .ysabelle-guide .driver-popover-progress-text {
+    display: inline-flex;
+    width: max-content;
+    max-width: 100%;
+    min-height: 26px;
+    align-items: center;
+    margin: 0;
+    padding: 0.3rem 0.65rem;
+    border-radius: 0.6rem;
+    font-size: 0.72rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+
+  .ysabelle-guide .driver-popover-navigation-btns {
+    display: grid;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 0.55rem;
+    margin: 0;
+  }
+
+  .ysabelle-guide .driver-popover-navigation-btns > button {
+    display: flex;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0.55rem 0.5rem !important;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    text-align: center;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 359px) {
+  .ysabelle-guide.driver-popover {
+    width: calc(100vw - 1rem);
+    max-width: calc(100vw - 1rem);
+    padding-inline: 0.75rem;
+  }
+  .ysabelle-guide .driver-popover-navigation-btns {
+    gap: 0.4rem;
+  }
+  .ysabelle-guide .driver-popover-navigation-btns > button {
+    font-size: 0.77rem;
   }
 }

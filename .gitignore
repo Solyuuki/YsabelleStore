@@ -36,3 +36,6 @@ backend/*.traineddata
 
 # Generated persistent repository context
 .ysabelle-context/
+
+# Local Playwright QA captures (never commit browser screenshots)
+tools/mobile-qa/screenshots/

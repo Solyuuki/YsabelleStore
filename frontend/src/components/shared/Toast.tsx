@@ -54,8 +54,9 @@ export function Toast({ onDismiss, toast }: ToastProps) {
   return (
     <article
       aria-atomic="true"
+      data-toast-variant={toast.variant}
       className={cn(
-        "pointer-events-auto relative overflow-hidden rounded-md border shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-sm",
+        "ys-status-mobile-toast pointer-events-auto relative overflow-hidden rounded-md border shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-sm",
         variant.surfaceClassName,
         toast.closing ? "toast-exit" : "toast-enter"
       )}
@@ -65,23 +66,27 @@ export function Toast({ onDismiss, toast }: ToastProps) {
         className={cn("absolute inset-y-0 left-0 w-1", variant.accentClassName)}
         aria-hidden="true"
       />
-      <div className="flex items-start gap-3 px-4 py-3 pr-3">
+      <div className="ys-status-mobile-toast__body flex items-start gap-3 px-4 py-3 pr-3">
         <div
           className={cn(
-            "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/80",
+            "ys-status-mobile-toast__icon mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/80",
             variant.textClassName
           )}
           aria-hidden="true"
         >
           <Icon className="h-4 w-4" />
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-slate-950">{toast.title}</p>
-          <p className="mt-0.5 text-sm leading-5 text-slate-600">{toast.message}</p>
+        <div className="ys-status-mobile-toast__copy min-w-0 flex-1">
+          <p className="ys-status-mobile-toast__title text-sm font-semibold text-slate-950">
+            {toast.title}
+          </p>
+          <p className="ys-status-mobile-toast__message mt-0.5 text-sm leading-5 text-slate-600">
+            {toast.message}
+          </p>
         </div>
         <Button
           aria-label={`Dismiss ${toast.title}`}
-          className="mt-[-0.25rem] h-8 w-8 shrink-0 text-slate-500 hover:text-slate-950"
+          className="ys-status-mobile-toast__dismiss mt-[-0.25rem] h-8 w-8 shrink-0 text-slate-500 hover:text-slate-950"
           onClick={() => onDismiss(toast.id)}
           size="icon"
           type="button"

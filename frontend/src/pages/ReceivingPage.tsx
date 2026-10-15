@@ -4,6 +4,7 @@ import {
   Check,
   CheckCircle2,
   ChevronDown,
+  ChevronRight,
   Clock3,
   Inbox,
   LoaderCircle,
@@ -52,6 +53,7 @@ import {
   type RestockReceiptLineInput
 } from "@/services/restockApi";
 import { hasRestockReturnItems } from "@/utils/restockReturnExport";
+import "@/styles/retail-receiving-mobile-v2.css";
 import {
   isWholeUnitDraft,
   parseWholeUnitQuantity,
@@ -553,7 +555,7 @@ export function ReceivingPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="ys-receiving-v2 space-y-4">
       <PageHeader
         actions={
           <Button onClick={() => setReturnHistoryOpen(true)} type="button" variant="secondary">
@@ -574,42 +576,87 @@ export function ReceivingPage() {
         </Alert>
       ) : null}
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section
+        aria-label="Receiving overview"
+        className="ys-receiving-v2-summary grid gap-4 md:grid-cols-3"
+      >
         <QueueStatButton active={view === "ready"} onClick={() => changeView("ready")}>
-          <StatCard
-            detail={`${queue.readyTotal.toLocaleString()} restock ticket${queue.readyTotal === 1 ? "" : "s"} waiting`}
-            icon={Truck}
-            title="Awaiting delivery"
-            tone="info"
-            value={queue.readyTotal.toLocaleString()}
-          />
+          <div className="ys-receiving-v2-stat-mobile">
+            <span className="ys-receiving-v2-stat-icon">
+              <Truck aria-hidden="true" className="h-4 w-4" />
+            </span>
+            <span className="ys-receiving-v2-stat-copy">
+              <span className="ys-receiving-v2-stat-title">Awaiting delivery</span>
+              <strong className="ys-receiving-v2-stat-number">
+                {queue.readyTotal.toLocaleString()}
+              </strong>
+            </span>
+            <ChevronRight aria-hidden="true" className="ys-receiving-v2-stat-arrow h-4 w-4" />
+          </div>
+          <div className="ys-receiving-v2-stat-desktop">
+            <StatCard
+              detail={`${queue.readyTotal.toLocaleString()} restock ticket${queue.readyTotal === 1 ? "" : "s"} waiting`}
+              icon={Truck}
+              title="Awaiting delivery"
+              tone="info"
+              value={queue.readyTotal.toLocaleString()}
+            />
+          </div>
         </QueueStatButton>
         <QueueStatButton active={view === "partial"} onClick={() => changeView("partial")}>
-          <StatCard
-            detail={
-              queue.partialTotal > 0
-                ? `${queue.partialTotal.toLocaleString()} ticket${queue.partialTotal === 1 ? "" : "s"} need follow-up`
-                : "No incomplete deliveries"
-            }
-            icon={Clock3}
-            title="Partial deliveries"
-            tone="warning"
-            value={queue.partialTotal.toLocaleString()}
-          />
+          <div className="ys-receiving-v2-stat-mobile">
+            <span className="ys-receiving-v2-stat-icon">
+              <Clock3 aria-hidden="true" className="h-4 w-4" />
+            </span>
+            <span className="ys-receiving-v2-stat-copy">
+              <span className="ys-receiving-v2-stat-title">Partial deliveries</span>
+              <strong className="ys-receiving-v2-stat-number">
+                {queue.partialTotal.toLocaleString()}
+              </strong>
+            </span>
+            <ChevronRight aria-hidden="true" className="ys-receiving-v2-stat-arrow h-4 w-4" />
+          </div>
+          <div className="ys-receiving-v2-stat-desktop">
+            <StatCard
+              detail={
+                queue.partialTotal > 0
+                  ? `${queue.partialTotal.toLocaleString()} ticket${queue.partialTotal === 1 ? "" : "s"} need follow-up`
+                  : "No incomplete deliveries"
+              }
+              icon={Clock3}
+              title="Partial deliveries"
+              tone="warning"
+              value={queue.partialTotal.toLocaleString()}
+            />
+          </div>
         </QueueStatButton>
         <QueueStatButton active={view === "history"} onClick={() => changeView("history")}>
-          <StatCard
-            detail="Completed delivery tickets"
-            icon={CheckCircle2}
-            title="Received history"
-            tone="success"
-            value={queue.historyTotal.toLocaleString()}
-          />
+          <div className="ys-receiving-v2-stat-mobile">
+            <span className="ys-receiving-v2-stat-icon">
+              <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
+            </span>
+            <span className="ys-receiving-v2-stat-copy">
+              <span className="ys-receiving-v2-stat-title">Received history</span>
+              <strong className="ys-receiving-v2-stat-number">
+                {queue.historyTotal.toLocaleString()}
+              </strong>
+            </span>
+            <ChevronRight aria-hidden="true" className="ys-receiving-v2-stat-arrow h-4 w-4" />
+          </div>
+          <div className="ys-receiving-v2-stat-desktop">
+            <StatCard
+              detail="Completed delivery tickets"
+              icon={CheckCircle2}
+              title="Received history"
+              tone="success"
+              value={queue.historyTotal.toLocaleString()}
+            />
+          </div>
         </QueueStatButton>
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-2 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <section className="ys-receiving-v2-directory overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="ys-receiving-v2-directory-header flex flex-col gap-2 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-base font-semibold text-slate-950">
               {view === "ready"
@@ -656,32 +703,43 @@ export function ReceivingPage() {
         ) : null}
 
         {visibleOrders.length > 0 ? (
-          <div className="overflow-x-auto">
-            <Table aria-label={`${view} delivery tickets`} className="min-w-[900px]">
-              <TableHeader className="bg-slate-50/80">
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="min-w-[280px] px-5">Ticket</TableHead>
-                  <TableHead className="min-w-[160px]">Status</TableHead>
-                  <TableHead className="w-[110px] text-right">Products</TableHead>
-                  <TableHead className="w-[110px] text-right">Expected</TableHead>
-                  <TableHead className="min-w-[150px]">Approved</TableHead>
-                  <TableHead className="min-w-[170px] pr-5 text-right">
-                    {view === "history" ? "Accepted" : "Remaining"}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {visibleOrders.map((order) => (
-                  <ReceivingQueueRow key={order.id} onOpen={openTicket} order={order} />
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <>
+            <div aria-label="Receiving ticket list" className="ys-receiving-v2-mobile-list">
+              {visibleOrders.map((order) => (
+                <ReceivingMobileTicketCard key={order.id} onOpen={openTicket} order={order} />
+              ))}
+            </div>
+            <div className="ys-receiving-v2-desktop-table overflow-x-auto">
+              <Table
+                aria-label={`${view} delivery tickets`}
+                className="retail-mobile-data-table min-w-[900px]"
+              >
+                <TableHeader className="bg-slate-50/80">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="min-w-[280px] px-5">Ticket</TableHead>
+                    <TableHead className="min-w-[160px]">Status</TableHead>
+                    <TableHead className="w-[110px] text-right">Products</TableHead>
+                    <TableHead className="w-[110px] text-right">Expected</TableHead>
+                    <TableHead className="min-w-[150px]">Approved</TableHead>
+                    <TableHead className="min-w-[170px] pr-5 text-right">
+                      {view === "history" ? "Accepted" : "Remaining"}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {visibleOrders.map((order) => (
+                    <ReceivingQueueRow key={order.id} onOpen={openTicket} order={order} />
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </>
         ) : null}
 
         {visibleTotal > 0 ? (
           <AppPagination
-            className="m-4"
+            className="ys-receiving-v2-pagination m-4"
+            mobileCompact
             isLoading={loading}
             itemLabel="tickets"
             onPageChange={changeQueuePage}
@@ -700,13 +758,17 @@ export function ReceivingPage() {
         }}
         open={Boolean(selectedOrder)}
       >
-        <DialogContent className="ys-receiving-dialog max-h-[85vh] max-w-[960px] grid-rows-[auto_minmax(0,1fr)_auto] gap-0">
+        <DialogContent className="ys-receiving-dialog ys-receiving-v2-dialog max-h-[85vh] max-w-[960px] grid-rows-[auto_minmax(0,1fr)_auto] gap-0">
           {selectedOrder && selectedTotals ? (
             <>
-              <DialogHeader className="relative border-b border-slate-200 px-6 py-5 pr-16">
+              <DialogHeader className="ys-receiving-v2-dialog-header relative border-b border-slate-200 px-6 py-5 pr-16">
                 <div className="flex flex-wrap items-center gap-2">
                   <DialogTitle>{selectedOrder.orderNumber}</DialogTitle>
-                  <Badge variant={statusVariant(selectedOrder.status)}>
+                  <Badge
+                    className="ys-receiving-v2-status-badge"
+                    data-status={selectedOrder.status}
+                    variant={statusVariant(selectedOrder.status)}
+                  >
                     {statusLabel(selectedOrder.status)}
                   </Badge>
                 </div>
@@ -728,7 +790,7 @@ export function ReceivingPage() {
                 </Button>
               </DialogHeader>
 
-              <div className="min-h-0 overflow-y-auto px-6 py-5">
+              <div className="ys-receiving-v2-dialog-body min-h-0 overflow-y-auto px-6 py-5">
                 <div className="space-y-5">
                   {receiptError ? (
                     <Alert variant="destructive">
@@ -925,22 +987,36 @@ function ReceivingQueueRow({
       role="button"
       tabIndex={0}
     >
-      <TableCell className="min-w-[280px] px-5 py-3.5">
+      <TableCell data-label="Ticket" className="min-w-[280px] px-5 py-3.5">
         <span className="block truncate text-sm font-semibold text-slate-950">
           {order.orderNumber}
         </span>
       </TableCell>
-      <TableCell className="min-w-[160px] py-3.5">
-        <Badge variant={statusVariant(order.status)}>{statusLabel(order.status)}</Badge>
+      <TableCell data-label="Status" className="min-w-[160px] py-3.5">
+        <Badge
+          className="ys-receiving-v2-status-badge"
+          data-status={order.status}
+          variant={statusVariant(order.status)}
+        >
+          {statusLabel(order.status)}
+        </Badge>
       </TableCell>
-      <TableCell className="w-[110px] py-3.5 text-right font-medium tabular-nums text-slate-700">
+      <TableCell
+        data-label="Products"
+        className="w-[110px] py-3.5 text-right font-medium tabular-nums text-slate-700"
+      >
         {totals.products.toLocaleString()}
       </TableCell>
-      <TableCell className="w-[110px] py-3.5 text-right tabular-nums text-slate-600">
+      <TableCell
+        data-label="Expected"
+        className="w-[110px] py-3.5 text-right tabular-nums text-slate-600"
+      >
         {totals.units.toLocaleString()}
       </TableCell>
-      <TableCell className="min-w-[150px] py-3.5 text-slate-600">{approvedDate}</TableCell>
-      <TableCell className="min-w-[170px] py-3.5 pr-5 text-right">
+      <TableCell data-label="Approved" className="min-w-[150px] py-3.5 text-slate-600">
+        {approvedDate}
+      </TableCell>
+      <TableCell data-label="Remaining" className="min-w-[170px] py-3.5 pr-5 text-right">
         <p className="text-sm font-semibold tabular-nums text-slate-950">{quantityLabel}</p>
         {quantityDetail ? (
           <p className="mt-0.5 text-[11px] text-slate-500">{quantityDetail}</p>
@@ -962,7 +1038,7 @@ function QueueStatButton({
   return (
     <button
       aria-pressed={active}
-      className={`rounded-xl text-left outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
+      className={`ys-receiving-v2-stat-button rounded-xl text-left outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
         active ? "ring-2 ring-indigo-500 ring-offset-2" : "hover:shadow-md"
       }`}
       onClick={onClick}
@@ -973,17 +1049,89 @@ function QueueStatButton({
   );
 }
 
+function ReceivingMobileTicketCard({
+  onOpen,
+  order
+}: {
+  onOpen: (order: RestockOrder) => void;
+  order: RestockOrder;
+}) {
+  const totals = orderTotals(order);
+  const approvedDate = order.approvedAt ? dateFormatter.format(new Date(order.approvedAt)) : "—";
+  const quantityLabel = order.status === "RECEIVED" ? "Accepted" : "Remaining";
+  const quantity = order.status === "RECEIVED" ? totals.accepted : totals.remaining;
+
+  return (
+    <button
+      aria-label={`${queueActionLabel(order.status)}: ${order.orderNumber}`}
+      className="ys-receiving-v2-ticket-card"
+      onClick={() => onOpen(order)}
+      type="button"
+    >
+      <span className="ys-receiving-v2-ticket-heading">
+        <span className="ys-receiving-v2-ticket-number">{order.orderNumber}</span>
+        <Badge
+          className="ys-receiving-v2-status-badge"
+          data-status={order.status}
+          variant={statusVariant(order.status)}
+        >
+          {statusLabel(order.status)}
+        </Badge>
+      </span>
+      <span className="ys-receiving-v2-ticket-metrics">
+        <span>
+          <small>Products</small>
+          <strong>{totals.products.toLocaleString()}</strong>
+        </span>
+        <span>
+          <small>Expected</small>
+          <strong>{totals.units.toLocaleString()}</strong>
+        </span>
+        <span>
+          <small>{quantityLabel}</small>
+          <strong>{quantity.toLocaleString()}</strong>
+        </span>
+      </span>
+      <span className="ys-receiving-v2-ticket-footer">
+        <span>Approved {approvedDate}</span>
+        <span>
+          {queueActionLabel(order.status)}{" "}
+          <ChevronRight aria-hidden="true" className="h-3.5 w-3.5" />
+        </span>
+      </span>
+    </button>
+  );
+}
+
 function TicketItemsPreview({ order }: { order: RestockOrder }) {
   return (
-    <section>
-      <div className="mb-2 flex items-center justify-between gap-3">
+    <section className="ys-receiving-v2-items-section">
+      <div className="ys-receiving-v2-items-heading mb-2 flex items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-slate-950">Ticket items</h3>
           <p className="text-xs text-slate-500">Expected quantities from the approved restock.</p>
         </div>
         <Badge>{selectedLines(order).length.toLocaleString()} items</Badge>
       </div>
-      <div className="overflow-hidden rounded-lg border border-slate-200">
+      <div className="ys-receiving-v2-mobile-items">
+        {selectedLines(order).map((line) => (
+          <article className="ys-receiving-v2-mobile-item" key={line.id}>
+            <h4>{line.product.name}</h4>
+            <p className="ys-receiving-v2-mobile-sku">{line.product.sku}</p>
+            <div className="ys-receiving-v2-item-quantities">
+              <div>
+                <span>Expected</span>
+                <strong>{line.requestedQuantity.toLocaleString()}</strong>
+              </div>
+              <div>
+                <span>Remaining</span>
+                <strong>{remainingQuantity(line).toLocaleString()}</strong>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+      <div className="ys-receiving-v2-desktop-items overflow-hidden rounded-lg border border-slate-200">
         <div className="grid grid-cols-[minmax(0,1fr)_88px_88px] bg-slate-50 px-4 py-2 text-xs font-medium text-slate-500">
           <span>Product</span>
           <span className="text-right">Expected</span>

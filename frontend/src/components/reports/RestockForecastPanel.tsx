@@ -1,4 +1,4 @@
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { AlertTriangle, ChevronLeft, RefreshCw } from "lucide-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   Bar,
@@ -31,6 +31,8 @@ import {
   orderStatusLabel,
   riskLabel,
   sourceLabel,
+  stockAlertExplanation,
+  stockCoverage,
   stockStatusLabel,
   stockStatusVariant,
   usableStock
@@ -69,16 +71,25 @@ const reportMonthFormatter = new Intl.DateTimeFormat("en-PH", {
 function monthlyRecommendationAction(
   candidate: RestockPlanningCandidate
 ): MonthlyRecommendationAction {
-  if (candidate.recommendedQuantity > 0) return "RESTOCK";
+  if (
+    candidate.nextMonthRestock.estimatedRestock > 0 ||
+    ((candidate.forecastDecision?.riskLevel === "HIGH" ||
+      candidate.forecastDecision?.riskLevel === "CRITICAL") &&
+      candidate.recommendedQuantity > 0)
+  )
+    return "RESTOCK";
   if (candidate.expiryRiskQuantity > 0) return "EXPIRY_REVIEW";
   if (candidate.stockHealth.status === "OVERSTOCK") return "REDUCE_REPLENISHMENT";
   return "NO_ACTION";
 }
 
-function monthlyRecommendationLabel(action: MonthlyRecommendationAction) {
+function monthlyRecommendationLabel(
+  action: MonthlyRecommendationAction,
+  risk: RestockForecastRisk | null = null
+) {
   switch (action) {
     case "RESTOCK":
-      return "Restock";
+      return risk === "HIGH" || risk === "CRITICAL" ? "Urgent restock" : "Next restock";
     case "EXPIRY_REVIEW":
       return "Expiry review";
     case "REDUCE_REPLENISHMENT":
@@ -89,10 +100,13 @@ function monthlyRecommendationLabel(action: MonthlyRecommendationAction) {
   }
 }
 
-function monthlyRecommendationVariant(action: MonthlyRecommendationAction) {
+function monthlyRecommendationVariant(
+  action: MonthlyRecommendationAction,
+  risk: RestockForecastRisk | null = null
+) {
   switch (action) {
     case "RESTOCK":
-      return "warning" as const;
+      return risk === "HIGH" || risk === "CRITICAL" ? ("warning" as const) : ("info" as const);
     case "EXPIRY_REVIEW":
       return "danger" as const;
     case "REDUCE_REPLENISHMENT":
@@ -111,8 +125,11 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
   const [error, setError] = useState<string | null>(null);
   const [localRefreshVersion, setLocalRefreshVersion] = useState(0);
   const [watchlistPage, setWatchlistPage] = useState(1);
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
+  const [mobileChartMonth, setMobileChartMonth] = useState(0);
   const [chartView, setChartView] = useState<ChartView>("DEMAND");
   const detailTransitionRef = useRef<HTMLDivElement | null>(null);
+  const productListRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -172,6 +189,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
 
   useEffect(() => {
     setChartView("DEMAND");
+    setMobileChartMonth(0);
   }, [selectedProductId]);
 
   useLayoutEffect(() => {
@@ -217,6 +235,11 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
     ? (activeRestockByProduct.get(selected.product.id) ?? null)
     : null;
   const productDemandChart = useMemo(() => buildDemandChart(selected), [selected]);
+  const mobileForecastPoints = productDemandChart.filter((point) => point.forecast !== null);
+  const activeMobileForecastPoint =
+    mobileForecastPoints[
+      Math.min(mobileChartMonth, Math.max(0, mobileForecastPoints.length - 1))
+    ] ?? null;
   const nextMonthPreview = useMemo(
     () => buildNextMonthRestockPreview(selected, selectedActiveRestock),
     [selected, selectedActiveRestock]
@@ -265,21 +288,54 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
       products: items.length,
       reduce,
       restock,
-      units: items.reduce((sum, item) => sum + Math.max(0, item.recommendedQuantity), 0)
+      units: items.reduce((sum, item) => {
+        const urgent =
+          item.recommendedQuantity > 0 &&
+          (item.forecastDecision?.riskLevel === "HIGH" ||
+            item.forecastDecision?.riskLevel === "CRITICAL");
+        return (
+          sum +
+          Math.max(0, urgent ? item.recommendedQuantity : item.nextMonthRestock.estimatedRestock)
+        );
+      }, 0)
     };
   }, [items]);
 
   const selectedDemand = Math.ceil(
     selected?.forecastDecision?.currentMonthDemand ?? selected?.forecast?.currentMonthDemand ?? 0
   );
-  const selectedCoverageDays = selected?.stockHealth.coverageDays ?? null;
+  const selectedCoverage = stockCoverage(selected);
   const selectedRisk = selected?.forecastDecision?.riskLevel ?? null;
-  const selectedNeedsOrder = Boolean(selected && selected.recommendedQuantity > 0);
   const selectedHasProcessedOrder = Boolean(
-    !selectedNeedsOrder && selectedActiveRestock && selectedActiveRestock.totalRemaining > 0
+    selectedActiveRestock && selectedActiveRestock.totalRemaining > 0
+  );
+  const selectedNeedsOrder = Boolean(
+    selected &&
+    !selectedHasProcessedOrder &&
+    (nextMonthPreview?.estimatedRestock ||
+      ((selectedRisk === "HIGH" || selectedRisk === "CRITICAL") &&
+        selected.recommendedQuantity > 0))
   );
 
+  function openForecastProduct(productId: string) {
+    setSelectedProductId(productId);
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      setMobileDetailOpen(true);
+      window.requestAnimationFrame(() =>
+        detailTransitionRef.current?.scrollIntoView({ block: "start", behavior: "auto" })
+      );
+    }
+  }
+
+  function returnToProducts() {
+    setMobileDetailOpen(false);
+    window.requestAnimationFrame(() =>
+      productListRef.current?.scrollIntoView({ block: "start", behavior: "auto" })
+    );
+  }
+
   function handleWatchlistPageChange(nextPage: number) {
+    setMobileDetailOpen(false);
     const page = Math.min(Math.max(nextPage, 1), watchlistTotalPages);
     setWatchlistPage(page);
 
@@ -331,21 +387,26 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
   }
 
   return (
-    <Card>
+    <Card className="ys-report-v2-forecast" data-mobile-detail={mobileDetailOpen}>
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <CardTitle>{reportMonthLabel} inventory recommendation report</CardTitle>
+              <CardTitle>
+                <span className="ys-report-v2-full-title">
+                  {reportMonthLabel} inventory recommendation report
+                </span>
+                <span className="ys-report-v2-short-title">{reportMonthLabel} inventory plan</span>
+              </CardTitle>
               <Badge variant={summary.actionCount > 0 ? "warning" : "success"}>
                 {summary.actionCount > 0
-                  ? `${summary.actionCount.toLocaleString()} need action`
+                  ? `${summary.restock.toLocaleString()} planned · ${(summary.reduce + summary.expiry).toLocaleString()} reviews`
                   : "All clear"}
               </Badge>
               <Badge variant="info">Live month</Badge>
             </div>
-            <p className="mt-1 text-xs leading-5 text-slate-500">
-              Complete current-month view across all products. The report updates as sales, stock,
+            <p className="ys-report-v2-intro mt-1 text-xs leading-5 text-slate-500">
+              Live planning view for the next monthly restock. Estimates update as sales, stock,
               incoming supply, expiry exposure, and forecast guidance change.
             </p>
           </div>
@@ -363,12 +424,12 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="ys-report-v2-forecast-metrics grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <ForecastMetric label="Products analyzed" value={summary.products} />
-          <ForecastMetric label="Restock" value={summary.restock} />
+          <ForecastMetric label="Next restock" value={summary.restock} />
           <ForecastMetric label="Reduce" value={summary.reduce} />
           <ForecastMetric label="Expiry review" value={summary.expiry} />
-          <ForecastMetric label="Units to order" value={summary.units} />
+          <ForecastMetric label="Estimated units" value={summary.units} />
         </div>
 
         {summary.actionCount === 0 ? (
@@ -380,8 +441,11 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
           </div>
         ) : null}
 
-        <div className="grid gap-3 xl:grid-cols-[0.9fr_1.1fr]">
-          <div className="min-w-0 rounded-lg border border-slate-200 bg-white">
+        <div className="ys-report-v2-forecast-layout grid gap-3 xl:grid-cols-[0.9fr_1.1fr]">
+          <div
+            className="ys-report-v2-product-list min-w-0 rounded-lg border border-slate-200 bg-white"
+            ref={productListRef}
+          >
             <div className="border-b border-slate-200 px-4 py-3">
               <p className="text-sm font-semibold text-slate-950">Monthly product report</p>
               <p className="mt-1 text-xs text-slate-500">
@@ -391,7 +455,10 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
             </div>
             <div className="overflow-hidden">
               {items.length > 0 ? (
-                <Table aria-label="Forecast product watchlist">
+                <Table
+                  aria-label="Forecast product watchlist"
+                  className="ys-report-v2-watchlist-table"
+                >
                   <TableHeader className="bg-slate-50">
                     <TableRow>
                       <TableHead>Product</TableHead>
@@ -404,6 +471,13 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                     {visibleItems.map((item) => {
                       const selectedRow = item.product.id === selectedProductId;
                       const activeRestock = activeRestockByProduct.get(item.product.id) ?? null;
+                      const urgent =
+                        item.recommendedQuantity > 0 &&
+                        (item.forecastDecision?.riskLevel === "HIGH" ||
+                          item.forecastDecision?.riskLevel === "CRITICAL");
+                      const displayQuantity = urgent
+                        ? item.recommendedQuantity
+                        : item.nextMonthRestock.estimatedRestock;
                       return (
                         <TableRow
                           aria-label={`View forecast for ${item.product.name}`}
@@ -415,11 +489,11 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                               : "hover:bg-slate-50"
                           }`}
                           key={item.product.id}
-                          onClick={() => setSelectedProductId(item.product.id)}
+                          onClick={() => openForecastProduct(item.product.id)}
                           onKeyDown={(event) => {
                             if (event.key !== "Enter" && event.key !== " ") return;
                             event.preventDefault();
-                            setSelectedProductId(item.product.id);
+                            openForecastProduct(item.product.id);
                           }}
                           role="button"
                           tabIndex={0}
@@ -433,35 +507,53 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                             </span>
                           </TableCell>
                           <TableCell>
-                            <Badge
-                              title={item.rationale}
-                              variant={monthlyRecommendationVariant(
-                                monthlyRecommendationAction(item)
-                              )}
-                            >
-                              {monthlyRecommendationLabel(monthlyRecommendationAction(item))}
-                            </Badge>
+                            <span className="ys-report-v2-full-action">
+                              <Badge
+                                title={item.rationale}
+                                variant={monthlyRecommendationVariant(
+                                  monthlyRecommendationAction(item),
+                                  item.forecastDecision?.riskLevel
+                                )}
+                              >
+                                {monthlyRecommendationLabel(
+                                  monthlyRecommendationAction(item),
+                                  item.forecastDecision?.riskLevel
+                                )}
+                              </Badge>
+                            </span>
+                            <span className="ys-report-v2-short-action" title={item.rationale}>
+                              {monthlyRecommendationAction(item) === "REDUCE_REPLENISHMENT"
+                                ? "Reduce"
+                                : monthlyRecommendationAction(item) === "EXPIRY_REVIEW"
+                                  ? "Expiry"
+                                  : monthlyRecommendationLabel(
+                                      monthlyRecommendationAction(item),
+                                      item.forecastDecision?.riskLevel
+                                    )}
+                            </span>
                           </TableCell>
                           <TableCell className="text-right tabular-nums">
                             {formatNumber(item.sellableStock)}
                           </TableCell>
                           <TableCell className="text-right tabular-nums">
-                            {item.recommendedQuantity > 0 ? (
-                              <div>
-                                <span className="font-semibold text-amber-800">
-                                  {formatNumber(item.recommendedQuantity)}
-                                </span>
-                                <span className="block text-[11px] font-medium text-amber-700">
-                                  to order
-                                </span>
-                              </div>
-                            ) : activeRestock && activeRestock.totalRemaining > 0 ? (
+                            {activeRestock && activeRestock.totalRemaining > 0 ? (
                               <div title={`Included in ${activeRestock.latestOrderNumber}`}>
                                 <span className="font-semibold text-indigo-700">
                                   {formatNumber(activeRestock.totalRemaining)}
                                 </span>
                                 <span className="block text-[11px] font-medium text-indigo-600">
-                                  incoming
+                                  {activeRestock.latestStatus === "DRAFT"
+                                    ? "for review"
+                                    : "incoming"}
+                                </span>
+                              </div>
+                            ) : displayQuantity > 0 ? (
+                              <div>
+                                <span className="font-semibold text-amber-800">
+                                  {formatNumber(displayQuantity)}
+                                </span>
+                                <span className="block text-[11px] font-medium text-amber-700">
+                                  {urgent ? "urgent review" : "estimated"}
                                 </span>
                               </div>
                             ) : (
@@ -484,7 +576,8 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
             </div>
             {items.length > 0 ? (
               <AppPagination
-                className="rounded-none border-x-0 border-b-0"
+                mobileCompact
+                className="ys-report-v2-product-pager rounded-none border-x-0 border-b-0"
                 isLoading={loading}
                 itemLabel="products"
                 onPageChange={handleWatchlistPageChange}
@@ -497,9 +590,13 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
           </div>
 
           <div
-            className="min-w-0 rounded-lg border border-slate-200 bg-white"
+            className="ys-report-v2-product-detail min-w-0 rounded-lg border border-slate-200 bg-white"
             ref={detailTransitionRef}
           >
+            <button className="ys-report-v2-back" onClick={returnToProducts} type="button">
+              <ChevronLeft aria-hidden="true" className="h-4 w-4 shrink-0" />
+              <span>Back to products</span>
+            </button>
             <div
               className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 px-4 py-3"
               data-product-transition
@@ -525,7 +622,11 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-product-transition>
                 <ForecastMetric compact label="Usable stock" value={usableStock(selected)} />
                 <ForecastMetric compact label="Expected 30d" value={selectedDemand} />
-                <ForecastMetric compact label="Stock cover" value={coverageLabel(selected)} />
+                <ForecastMetric
+                  compact
+                  label={selectedCoverage.metricLabel}
+                  value={coverageLabel(selected)}
+                />
                 <ForecastMetric
                   compact
                   label="May run out"
@@ -537,7 +638,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                 <div data-product-transition>
                   <RecommendationCard
                     activeRestock={selectedActiveRestock}
-                    demand={selectedDemand}
+                    estimatedNextMonthQuantity={nextMonthPreview?.estimatedRestock ?? 0}
                     hasProcessedOrder={selectedHasProcessedOrder}
                     needsOrder={selectedNeedsOrder}
                     risk={selectedRisk}
@@ -566,7 +667,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                   </div>
                   <ChartViewSwitch view={chartView} onChange={setChartView} />
                 </div>
-                <div className="relative h-56 rounded-md border border-slate-200 bg-white p-2">
+                <div className="ys-report-v2-chart relative h-56 rounded-md border border-slate-200 bg-white p-2">
                   {chartView === "DEMAND" ? (
                     productDemandChart.length > 0 ? (
                       <DemandChart data={productDemandChart} />
@@ -589,6 +690,25 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                     />
                   )}
                 </div>
+                {chartView === "DEMAND" && mobileForecastPoints.length > 0 ? (
+                  <div className="ys-report-v2-month-picker" aria-label="Select forecast month">
+                    {mobileForecastPoints.slice(0, 6).map((point, index) => (
+                      <button
+                        aria-pressed={mobileChartMonth === index}
+                        key={point.period}
+                        onClick={() => setMobileChartMonth(index)}
+                        type="button"
+                      >
+                        {point.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+                <p className="ys-report-v2-chart-readout" aria-live="polite">
+                  {chartView === "DEMAND"
+                    ? `${activeMobileForecastPoint?.label ?? "Forecast"}: ${formatNumber(activeMobileForecastPoint?.forecast, 1)} units`
+                    : `Estimated restock: ${formatNumber(displayedPreview?.estimatedRestock)} units`}
+                </p>
               </div>
 
               {displayedPreview ? (
@@ -646,10 +766,10 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                 </div>
               ) : null}
 
-              {selected && selectedCoverageDays !== null ? (
+              {selected ? (
                 <p className="text-xs leading-5 text-slate-500" data-product-transition>
-                  Forecasts are estimates. Use this as ordering guidance together with supplier lead
-                  time and current store conditions.
+                  {selectedCoverage.detail} Check supplier lead time and current store conditions
+                  before ordering.
                 </p>
               ) : null}
             </div>
@@ -662,7 +782,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
 
 function RecommendationCard({
   activeRestock,
-  demand,
+  estimatedNextMonthQuantity,
   hasProcessedOrder,
   needsOrder,
   risk,
@@ -671,13 +791,18 @@ function RecommendationCard({
   activeRestock: ReturnType<typeof buildActiveRestockByProduct> extends Map<string, infer T>
     ? T | null
     : never;
-  demand: number;
+  estimatedNextMonthQuantity: number;
   hasProcessedOrder: boolean;
   needsOrder: boolean;
   risk: RestockForecastRisk | null;
   selected: RestockPlanningCandidate;
 }) {
-  const tone = needsOrder ? "amber" : hasProcessedOrder ? "indigo" : "emerald";
+  const [expandedMobileDetails, setExpandedMobileDetails] = useState(false);
+  useEffect(() => setExpandedMobileDetails(false), [selected.product.id]);
+  const urgent =
+    selected.recommendedQuantity > 0 &&
+    (selected.stockHealth.status === "OUT_OF_STOCK" || risk === "CRITICAL" || risk === "HIGH");
+  const tone = hasProcessedOrder ? "indigo" : needsOrder ? "amber" : "emerald";
   const classes = {
     amber: {
       box: "border-amber-200 bg-amber-50",
@@ -706,37 +831,48 @@ function RecommendationCard({
     <div
       className={`ys-restock-recommendation rounded-md border px-4 py-3 ${classes.box}`}
       data-tone={tone}
+      data-mobile-expanded={expandedMobileDetails}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p
             className={`ys-restock-recommendation-label text-xs font-semibold uppercase tracking-wide ${classes.label}`}
           >
-            {hasProcessedOrder ? "Restock batch" : "Recommended next step"}
+            {hasProcessedOrder ? "Restock batch" : urgent ? "Stock alert" : "Next monthly restock"}
           </p>
           <p
             className={`ys-restock-recommendation-title mt-1 text-lg font-semibold ${classes.title}`}
           >
-            {needsOrder
-              ? `Order ${formatNumber(selected.recommendedQuantity)} units`
-              : hasProcessedOrder && activeRestock
-                ? activeRestock.monthly
-                  ? `Included in ${formatBatchMonth(activeRestock.latestCreatedAt)} restock batch`
-                  : "Included in active restock ticket"
+            {hasProcessedOrder && activeRestock
+              ? activeRestock.monthly
+                ? `Included in ${formatBatchMonth(activeRestock.latestCreatedAt)} restock batch`
+                : "Included in active restock ticket"
+              : needsOrder
+                ? urgent
+                  ? `Review urgent stock shortage · ${formatNumber(selected.recommendedQuantity)} units`
+                  : `Estimated ${formatNumber(estimatedNextMonthQuantity)} units for next restock`
                 : "No order needed right now"}
           </p>
           <p className={`ys-restock-recommendation-body mt-1 text-sm leading-6 ${classes.body}`}>
-            {needsOrder
-              ? `Place the order by ${formatDate(selected.forecastDecision?.recommendedActionDate)}. Current usable stock covers about ${coverageLabel(selected)} at roughly ${formatNumber(demand)} units per month.`
-              : hasProcessedOrder && activeRestock
-                ? `${formatNumber(activeRestock.totalRemaining)} units are included in ${activeRestock.latestOrderNumber}, which is ${orderStatusLabel(activeRestock.latestStatus).toLowerCase()}. Incoming stock is already included in the plan, so no additional restock quantity is required.`
+            {hasProcessedOrder && activeRestock
+              ? activeRestock.latestStatus === "DRAFT"
+                ? `${formatNumber(activeRestock.totalRemaining)} units are saved in ${activeRestock.latestOrderNumber} for Owner review. A draft is not incoming stock and is not a purchase order.`
+                : `${formatNumber(activeRestock.totalRemaining)} units are included in ${activeRestock.latestOrderNumber}, which is ${orderStatusLabel(activeRestock.latestStatus).toLowerCase()}. Incoming stock is already included in the plan, so no additional restock quantity is required.`
+              : needsOrder
+                ? urgent
+                  ? stockAlertExplanation(selected)
+                  : `Scheduled for ${formatDate(selected.scheduledRestockAt)}. This is an estimate, not an order. No monthly restock action is required yet; quantities will be recalculated at cycle activation.`
                 : "Current usable stock is expected to cover demand. Keep monitoring this product for changes."}
           </p>
         </div>
-        <Badge variant={needsOrder ? "warning" : "success"}>
+        <Badge variant={hasProcessedOrder ? "info" : urgent ? "warning" : "info"}>
           {hasProcessedOrder && activeRestock
             ? orderStatusLabel(activeRestock.latestStatus)
-            : riskLabel(risk)}
+            : urgent
+              ? riskLabel(risk)
+              : needsOrder
+                ? `Next Restock · ${formatDate(selected.scheduledRestockAt)}`
+                : "Monitor"}
         </Badge>
       </div>
       <div
@@ -760,6 +896,14 @@ function RecommendationCard({
           </>
         ) : null}
       </div>
+      <button
+        aria-expanded={expandedMobileDetails}
+        className="ys-report-v2-details-toggle"
+        onClick={() => setExpandedMobileDetails((value) => !value)}
+        type="button"
+      >
+        {expandedMobileDetails ? "Less context" : "More context"}
+      </button>
     </div>
   );
 }
@@ -807,7 +951,13 @@ function DemandChart({ data }: { data: ReturnType<typeof buildDemandChart> }) {
     <ResponsiveContainer height="100%" width="100%">
       <LineChart data={data} margin={{ bottom: 4, left: 0, right: 8, top: 8 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="label" minTickGap={18} tick={{ fontSize: 11 }} />
+        <XAxis
+          dataKey="label"
+          interval="preserveStartEnd"
+          minTickGap={24}
+          padding={{ left: 8, right: 16 }}
+          tick={{ fontSize: 11 }}
+        />
         <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={38} />
         <Tooltip formatter={(value, name) => [formatNumber(Number(value), 1), String(name)]} />
         <Line
@@ -838,7 +988,13 @@ function RestockPreviewChart({ data }: { data: ReturnType<typeof buildRestockPre
     <ResponsiveContainer height="100%" width="100%">
       <BarChart data={data} margin={{ bottom: 4, left: 0, right: 8, top: 8 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+        <XAxis
+          dataKey="label"
+          interval="preserveStartEnd"
+          minTickGap={24}
+          padding={{ left: 8, right: 16 }}
+          tick={{ fontSize: 11 }}
+        />
         <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={38} />
         <Tooltip formatter={(value) => [formatNumber(Number(value)), "Restock units"]} />
         <Bar dataKey="restock" fill="#4f46e5" name="Restock units" radius={[4, 4, 0, 0]} />

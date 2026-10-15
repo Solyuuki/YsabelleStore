@@ -1,9 +1,10 @@
-import { ChevronLeft, LogOut } from "lucide-react";
+import { ChevronLeft, LogOut, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { appRoutes, type AppRoutePath } from "@/app/routes";
 import { SidebarNavItem } from "@/components/app/SidebarNavItem";
 import { YsabelleBrandMark } from "@/components/customer/YsabelleBrandMark";
+import { useAppearance } from "@/context/AppearanceContext";
 import { Button } from "@/components/ui/button";
 import { APP_VERSION_LABEL } from "@/config/appVersion";
 import { cn } from "@/lib/utils";
@@ -49,6 +50,7 @@ export function AppSidebar({
   user
 }: AppSidebarProps) {
   const isOwner = user?.role === "OWNER";
+  const { retailTheme, setRetailTheme } = useAppearance();
   const [badges, setBadges] = useState<NavigationBadgeSummary | null>(null);
   const mainItems = appRoutes.filter((item) => mainRoutes.includes(item.path));
   const visibleMainItems = mainItems.filter((item) =>
@@ -92,7 +94,7 @@ export function AppSidebar({
   return (
     <aside
       className={cn(
-        "relative flex h-full min-h-0 shrink-0 flex-col overflow-visible border-r border-violet-200/55 text-slate-700 shadow-[0_20px_48px_rgba(37,31,86,0.08)] transition-[width,background-color,border-color,box-shadow] duration-300 ease-out",
+        "retail-desktop-sidebar relative flex h-full min-h-0 shrink-0 flex-col overflow-visible border-r border-violet-200/55 text-slate-700 shadow-[0_20px_48px_rgba(37,31,86,0.08)] transition-[width,background-color,border-color,box-shadow] duration-300 ease-out",
         "bg-[rgba(248,247,255,0.92)]",
         collapsed ? "w-20" : "w-64"
       )}
@@ -161,7 +163,30 @@ export function AppSidebar({
 
       <div className="shrink-0 border-t border-violet-200/45 p-3">
         <div className="space-y-3">
-          <SectionLabel collapsed={collapsed} title="SYSTEM" />
+          <div
+            className={cn(
+              "flex min-h-10 items-center gap-2",
+              collapsed ? "justify-center" : "justify-between"
+            )}
+          >
+            <SectionLabel collapsed={collapsed} title="SYSTEM" />
+            {user?.role === "STAFF" ? (
+              <button
+                aria-label={`Switch to ${retailTheme === "dark" ? "light" : "dark"} mode`}
+                aria-pressed={retailTheme === "dark"}
+                className="ys-staff-sidebar-theme-toggle inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-violet-200/70 bg-white/80 text-slate-700 transition-colors duration-200 hover:border-violet-300 hover:bg-violet-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500"
+                onClick={() => setRetailTheme(retailTheme === "dark" ? "light" : "dark")}
+                title={`Switch to ${retailTheme === "dark" ? "light" : "dark"} mode`}
+                type="button"
+              >
+                {retailTheme === "dark" ? (
+                  <Sun aria-hidden="true" className="h-4 w-4" />
+                ) : (
+                  <Moon aria-hidden="true" className="h-4 w-4" />
+                )}
+              </button>
+            ) : null}
+          </div>
           {collapsed ? null : <FullCounterModeCard user={user} />}
 
           <SidebarNavItem collapsed={collapsed} icon={LogOut} label="Logout" onClick={onLogout} />

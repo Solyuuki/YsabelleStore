@@ -120,3 +120,106 @@ test("account hero does not duplicate the existing shop navigation", () => {
   assert.doesNotMatch(customerAccountPage, /customer-account-shop-button/);
   assert.doesNotMatch(customerAccountPage, />\s*Continue shopping\s*</);
 });
+
+test("dark account pagination keeps all page controls readable", () => {
+  const css = fs.readFileSync(
+    path.join(REPO_ROOT, "frontend", "src", "styles", "theme-storefront-contrast.css"),
+    "utf8"
+  );
+  const pager =
+    customerAccountPage.match(
+      /className="customer-account-history-pagination(?:\s*customer-account-favorites-pagination)?"/g
+    ) ?? [];
+  assert.equal(pager.length, 2, "Orders and Favorites must share the themed pager");
+  assert.match(
+    css,
+    /:root\.dark\s*\.customer-app\s*\.customer-account-history-pagination\s*:is\(p,\s*\s*label\)/
+  );
+  assert.match(
+    css,
+    /\.customer-account-history-pagination\s*nav\s*button:not\(\[aria-current="page"\]\)/
+  );
+  assert.match(css, /\.customer-account-history-pagination\s*nav\s*button\[aria-current="page"\]/);
+  assert.match(
+    css,
+    /\.customer-account-history-pagination\s*nav\s*button:disabled:not\(\[aria-current="page"\]\)/
+  );
+  assert.match(css, /\.customer-account-history-pagination\s*nav\s*button:focus-visible/);
+  assert.match(css, /button\[aria-current="page"\]\s*\{[^}]*opacity:\s*1;/);
+});
+
+test("order history always has a visible pager and limits cards to three per page", () => {
+  assert.match(customerAccountPage, /const historyPageSize = 3;/);
+  assert.match(
+    customerAccountPage,
+    /historicalOrders\.slice\(\(historyPage - 1\) \* historyPageSize, historyPage \* historyPageSize\)/
+  );
+  assert.match(
+    customerAccountPage,
+    /const historyTotalPages = Math\.max\(1, Math\.ceil\(historicalOrders\.length \/ historyPageSize\)\)/
+  );
+  assert.match(
+    customerAccountPage,
+    /if \(historyPage > historyTotalPages\) setHistoryPage\(historyTotalPages\)/
+  );
+
+  const historyPanel = customerAccountPage.split('className="customer-account-order-list-v2"')[1];
+  assert.ok(historyPanel, "Missing historical order list");
+  assert.match(historyPanel, /paginatedHistoricalOrders\.map\(\(order\) =>/);
+  assert.match(
+    historyPanel,
+    /<AppPagination[\s\S]*?itemLabel="orders"[\s\S]*?onPageChange=\{setHistoryPage\}/
+  );
+  assert.doesNotMatch(
+    historyPanel.split("</AppPagination>")[0],
+    /historicalOrders\.length > historyPageSize/
+  );
+
+  for (const [length, expected] of [
+    [1, 1],
+    [3, 1],
+    [4, 2],
+    [22, 8]
+  ]) {
+    assert.equal(Math.max(1, Math.ceil(length / 3)), expected);
+  }
+});
+
+test("mobile active delivery tracking stays inside phone width without horizontal timeline clipping", () => {
+  const breakpoint = premiumAccountCss.split(
+    "/* Sprint 12: fit live delivery details inside narrow phones."
+  )[1];
+  assert.ok(breakpoint, "Missing mobile delivery width repair");
+  assert.match(breakpoint, /@media\s*\(max-width:\s*720px\)/);
+  assert.match(
+    breakpoint,
+    /\.customer-account-order-v2--active\s*\{[^}]*min-width:\s*0;[^}]*max-width:\s*100%/
+  );
+  assert.match(
+    breakpoint,
+    /\.customer-account-delivery-overview\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*\s*minmax\(0,\s*\s*1fr\)\)/
+  );
+  assert.match(
+    breakpoint,
+    /\.customer-account-delivery-overview\s*>\s*div:first-child\s*\{\s*grid-column:\s*1\s*\/\s*-1;/
+  );
+  assert.match(breakpoint, /\.customer-delivery-progress\s*\{[^}]*overflow:\s*visible;/);
+  assert.match(
+    breakpoint,
+    /\.customer-delivery-stepper\s*\{[^}]*min-width:\s*0;[^}]*grid-template-columns:\s*minmax\(0,\s*\s*1fr\);/
+  );
+  assert.match(
+    breakpoint,
+    /\.customer-delivery-stepper\s*>\s*li\s*\{[^}]*grid-template-columns:\s*30px\s*minmax\(0,\s*\s*1fr\);/
+  );
+  assert.match(
+    breakpoint,
+    /\.customer-delivery-stepper__connector\s*\{[^}]*width:\s*2px;[^}]*height:\s*calc\(100%\s*-\s*27px\);/
+  );
+  assert.match(
+    breakpoint,
+    /\.customer-account-delivery-address,\s*\s*\.customer-account-delivery-courier\)\s*>\s*span\s*\{[^}]*min-width:\s*0;/
+  );
+  assert.match(breakpoint, /\.customer-account-history-pagination\s*\{[^}]*padding:\s*10px;/);
+  assert.doesNotMatch(breakpoint, /overflow-x:\s*(?:hidden|auto)/);
+});

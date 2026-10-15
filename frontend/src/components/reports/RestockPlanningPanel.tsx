@@ -1030,7 +1030,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 px-6 pb-2">
+          <div className="ys-report-v2-picker-body space-y-4 px-6 pb-2">
             <div className="flex flex-col gap-2 sm:flex-row">
               <Input
                 autoFocus
@@ -1119,7 +1119,7 @@ export function RestockPlanningPanel({ onOpenOrders, onOrdersChanged }: RestockP
             ) : null}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="ys-report-v2-picker-footer">
             <DialogClose asChild>
               <Button
                 className="ys-restock-product-picker__secondary-action"

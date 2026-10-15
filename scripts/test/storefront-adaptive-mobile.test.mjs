@@ -1,0 +1,1302 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+
+const read = (path) => readFileSync(new URL("../../" + path, import.meta.url), "utf8");
+
+test("mobile navigation uses existing storefront routes and cart/auth state", () => {
+  const layout = read("frontend/src/layouts/CustomerLayout.tsx");
+  const nav = read("frontend/src/components/customer/CustomerMobileNav.tsx");
+  const app = read("frontend/src/app/CustomerApp.tsx");
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+
+  assert.match(
+    layout,
+    /<CustomerMobileNav[\s\S]*?location=\{location\}[\s\S]*?navigate=\{navigate\}[\s\S]*?pathname=\{pathname\}/
+  );
+  assert.match(nav, /aria-label="Mobile storefront navigation"/);
+  assert.match(nav, /aria-current=\{active \? "page" : undefined\}/);
+  assert.match(nav, /useCustomerAuth\(\)/);
+  assert.match(nav, /useCart\(\)/);
+  for (const path of ['href: "/"', 'href: "/shop"', 'href: "/cart"']) {
+    assert.ok(nav.includes(path), "Missing route " + path);
+  }
+  assert.match(nav, /status === "authenticated" \? "\/account" : "\/login"/);
+  assert.match(nav, /itemCount > 99 \? "99\+" : itemCount/);
+  assert.match(css, /\.customer-mobile-dock,\s*\.shop-category-toggle\s*\{\s*display: none;/);
+  assert.match(css, /@media \(max-width: 1180px\)/);
+  assert.match(css, /@media \(max-width: 700px\) and \(orientation: portrait\)/);
+  assert.match(
+    css,
+    /@media \(max-width: 950px\) and \(max-height: 500px\) and \(orientation: landscape\)/
+  );
+  assert.match(css, /:root\.dark \.customer-app \.customer-mobile-dock/);
+  assert.match(css, /safe-area-inset-bottom/);
+  assert.match(css, /:focus-visible/);
+  assert.match(app, /import "@\/styles\/customer-adaptive-mobile\.css";/);
+  assert.ok(
+    app.indexOf('import "@/styles/customer-adaptive-mobile.css";') >
+      app.indexOf('import "@/styles/theme-storefront-contrast.css";'),
+    "Adaptive overrides must load after existing theme styles"
+  );
+});
+
+test("mobile categories form an adaptive grid instead of a sideways carousel", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const shop = read("frontend/src/pages/customer/ShopPage.tsx");
+  assert.match(css, /\.customer-home \.home-category-grid\s*\{\s*display: grid;/);
+  assert.match(css, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
+  assert.match(css, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(css, /scroll-snap-type: none/);
+  assert.match(css, /aspect-ratio: 4 \/ 3/);
+  assert.match(
+    css,
+    /\.customer-shop-page \.customer-filter-panel\.shop-category-navigation\s*\{\s*display: grid;/
+  );
+  assert.match(
+    css,
+    /\.customer-shop-page \.shop-category-navigation:not\(\.is-expanded\) > a\s*\{\s*display: none;/
+  );
+  assert.match(shop, /\[categoriesExpanded, setCategoriesExpanded\] = useState\(false\)/);
+  assert.match(shop, /aria-expanded=\{categoriesExpanded\}/);
+  assert.match(shop, /className="shop-category-toggle"/);
+  assert.match(shop, /setCategoriesExpanded\(\(current\) => !current\)/);
+  assert.match(css, /overflow-wrap: anywhere/);
+});
+
+test("expanded categories adapt to narrow width without stretching the shop", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const shop = read("frontend/src/pages/customer/ShopPage.tsx");
+  const qa = read("tools/mobile-qa/run.mjs");
+  const phone = css.split("@media (max-width: 700px) {")[1]?.split("/* On portrait phones")[0];
+  assert.ok(phone, "Expected phone category layout overrides");
+
+  assert.match(
+    phone,
+    /grid-template-columns: repeat\(auto-fit, minmax\(min\(100%, 14rem\), 1fr\)\)/
+  );
+  assert.match(phone, /grid-auto-rows: minmax\(44px, auto\)/);
+  assert.match(
+    phone,
+    /\.shop-category-navigation\.is-expanded\s*\{[^}]*max-height: min\(48dvh, 20rem\);[^}]*overflow-y: auto;/
+  );
+  assert.match(
+    phone,
+    /\.shop-category-navigation > \.shop-category-toggle\s*\{[^}]*position: sticky;[^}]*top: 0;/
+  );
+  assert.match(
+    phone,
+    /\.shop-category-navigation > a\s*\{[^}]*min-height: 44px;[^}]*align-self: start;/
+  );
+  assert.match(phone, /\.shop-category-navigation > a > small\s*\{[^}]*flex: none;/);
+  assert.equal(
+    shop.split("onClick={() => setCategoriesExpanded(false)}").length - 1,
+    2,
+    "Both All Categories and dynamic category links must close the mobile selector"
+  );
+
+  assert.match(qa, /async function checkShopCategories\(page, viewport\)/);
+  assert.match(qa, /viewport\.width <= 430 && geometry\.columns !== 1/);
+  assert.match(qa, /Expanded category panel takes too much vertical space/);
+  assert.match(qa, /Expanded category names or counts overflow horizontally/);
+  assert.match(qa, /Category picker did not collapse after choosing an option/);
+});
+
+test("mobile shop filters keep desktop native select and expose a bounded phone options panel", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const shop = read("frontend/src/pages/customer/ShopPage.tsx");
+  const phone = css.split("@media (max-width: 700px) {")[1]?.split("/* On portrait phones")[0];
+  assert.ok(phone, "Missing phone controls breakpoint");
+
+  assert.match(
+    phone,
+    /\.customer-shop-page \.shop-category-navigation:not\(\.is-expanded\) > a\s*\{\s*display: none;/
+  );
+  assert.match(
+    phone,
+    /\.customer-shop-page \.customer-filter-panel\.shop-category-navigation\s*\{[^}]*border: 0;/
+  );
+  assert.match(
+    phone,
+    /\.customer-shop-page \.customer-shop-toolbar\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\) 44px;[^}]*padding: 0;[^}]*border: 0;/
+  );
+  assert.match(
+    phone,
+    /\.customer-shop-page \.customer-select--availability\s*\{[^}]*width: 44px;[^}]*height: 44px;/
+  );
+  assert.match(
+    phone,
+    /\.customer-shop-page \.customer-select--availability \.customer-select__desktop\s*\{\s*display: none;/
+  );
+  assert.match(
+    phone,
+    /\.customer-shop-page \.customer-select__mobile-trigger\s*\{[^}]*display: grid;[^}]*min-width: 44px;/
+  );
+  assert.match(
+    phone,
+    /\.customer-shop-page \.customer-select__mobile-options\s*\{[^}]*right: 0;[^}]*display: grid;[^}]*width: min\(12rem, calc\(100vw - 32px\)\);/
+  );
+  assert.match(
+    phone,
+    /\.customer-shop-page \.customer-select__mobile-options > button\s*\{[^}]*min-height: 44px;/
+  );
+  assert.match(
+    phone,
+    /\.customer-shop-page \.customer-shop-search input\s*\{[^}]*background: transparent;[^}]*background-image: none;[^}]*box-shadow: none;/
+  );
+  assert.match(
+    phone,
+    /:root\.dark \.customer-app \.customer-shop-page \.customer-shop-search input\s*\{[^}]*background: transparent !important;[^}]*background-image: none !important;/
+  );
+  assert.match(
+    phone,
+    /\.customer-shop-page \.customer-results-meta\s*\{[^}]*padding-block: 0\.9rem 0\.7rem;/
+  );
+  assert.match(
+    phone,
+    /:root\.dark \.customer-app \.customer-shop-page \.customer-shop-search input/
+  );
+
+  assert.match(shop, /shop-category-toggle__label/);
+  assert.match(shop, /activeCategory\?\.name \?\? "Categories"/);
+  assert.match(shop, /customer-select--availability/);
+  assert.match(shop, /availabilityParam === "all" \? "" : " is-active"/);
+  assert.match(shop, /aria-label="Filter products by availability"/);
+  assert.match(
+    shop,
+    /onChange=\{\(event\) => applyAvailability\(event\.target\.value as AvailabilityFilter\)\}/
+  );
+  assert.match(shop, /<option value="in-stock">In stock<\/option>/);
+  assert.match(shop, /<option value="out-of-stock">Out of stock<\/option>/);
+  assert.match(shop, /customer-select__active-dot/);
+  assert.match(shop, /className="customer-select__desktop"/);
+  assert.match(shop, /aria-expanded=\{availabilityOpen\}/);
+  assert.match(shop, /function toggleAvailability\(\)/);
+  assert.match(shop, /availabilityOpensAbove \? " is-above" : ""/);
+  assert.match(
+    phone,
+    /\.customer-shop-page \.customer-select__mobile-options\.is-above\s*\{[^}]*top: auto;[^}]*bottom: calc\(100% \+ 6px\);/
+  );
+  assert.match(shop, /role="group"/);
+  assert.match(shop, /aria-pressed=\{availabilityParam === value\}/);
+  assert.match(shop, /setAvailabilityOpen\(false\)/);
+  assert.match(shop, /document\.addEventListener\("pointerdown", closeWhenOutside\)/);
+  assert.match(shop, /document\.addEventListener\("keydown", closeOnEscape\)/);
+  const qa = read("tools/mobile-qa/run.mjs");
+  assert.match(qa, /async function checkShopAvailability\(page, viewport\)/);
+  assert.match(qa, /Availability menu extends beyond the mobile viewport/);
+  assert.match(qa, /Availability menu is clipped by the screen edge or bottom dock/);
+  assert.match(qa, /Search input has a separate rectangular background or shadow/);
+  assert.match(qa, /await region\.waitFor\(\{ state: "hidden" \}\)/);
+});
+
+test("compact catalog product controls and rail remain accessible in portrait", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const home = read("frontend/src/components/customer/HomeProductRail.tsx");
+  const card = read("frontend/src/components/customer/ProductCard.tsx");
+  assert.match(
+    css,
+    /\.customer-app \.customer-product-card__purchase-row\s*\{[^}]*grid-template-columns: minmax\(0, 1\.35fr\) minmax\(0, 1fr\);/
+  );
+  assert.match(
+    css,
+    /\.customer-home \.home-product-rail__item\s*\{\s*flex: 0 0 calc\(\(100% - var\(--home-product-rail-gap\)\) \/ 2\);/
+  );
+  assert.match(css, /\.customer-shop-page \.shop-product-grid,/);
+  assert.match(home, /aria-label=\{`Previous \$\{label\}`\}/);
+  assert.match(home, /aria-label=\{`Next \$\{label\}`\}/);
+  assert.match(card, /label=\{`Quantity for \$\{product\.name\}`\}/);
+  assert.match(card, /disabled=\{!isReady\}/);
+});
+
+test("phone portrait uses one sizing system and never enables horizontal product rails", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const portrait = css
+    .split("/* Consistent phone scale: portrait")[1]
+    ?.split("/* A wide portrait phone/foldable")[0];
+  assert.ok(portrait, "Missing portrait sizing contract");
+  assert.match(portrait, /@media \(max-width: 700px\) and \(orientation: portrait\)/);
+  const tokens = read("frontend/src/styles/customer-mobile-tokens.css");
+  assert.match(tokens, /--store-phone-gutter: clamp\(12px, 4vw, 16px\)/);
+  assert.match(tokens, /--store-phone-card-gap: clamp\(8px, 2\.5vw, 12px\)/);
+  assert.match(tokens, /--store-phone-section-gap: clamp\(20px, 6vw, 30px\)/);
+  assert.match(portrait, /width: calc\(100% - 2 \* var\(--store-phone-gutter\)\)/);
+  assert.match(
+    portrait,
+    /\.customer-home \.home-product-rail__viewport\s*\{[^}]*overflow: visible;/
+  );
+  assert.match(portrait, /\.customer-home \.home-product-rail__track\s*\{\s*display: grid;/);
+  assert.match(portrait, /\.customer-home \.home-product-rail__control,[\s\S]*?display: none;/);
+  assert.match(portrait, /scroll-snap-type: none;/);
+  assert.match(portrait, /aspect-ratio: 4 \/ 3;/);
+  assert.match(portrait, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(portrait, /\.customer-shop-page\s*\{\s*overflow-x: clip;/);
+  assert.match(
+    portrait,
+    /\.customer-home \.home-next-step h2\s*\{[^}]*font-size: clamp\(1\.55rem, 6vw, 2\.1rem\)/
+  );
+  assert.match(
+    portrait,
+    /\.customer-home \.home-next-step__visual\s*\{[^}]*height: clamp\(11rem, 48vw, 15rem\)/
+  );
+  assert.doesNotMatch(portrait, /overflow-x:\s*auto/);
+});
+
+test("mobile component sizes reflow at phone and wide-portrait breakpoints", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  assert.match(
+    css,
+    /@media \(min-width: 600px\) and \(max-width: 700px\) and \(orientation: portrait\)/
+  );
+  assert.match(css, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
+  assert.match(css, /@media \(max-width: 359px\) and \(orientation: portrait\)/);
+  assert.match(
+    css,
+    /\.customer-app \.customer-product-card__actions \.customer-quantity\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\) minmax\(18px, 0\.85fr\) minmax\(0, 1fr\);/
+  );
+  assert.match(
+    css,
+    /\.customer-app \.customer-product-card__cart-button\s*\{[^}]*font-size: clamp/
+  );
+});
+
+test("the five-slot mobile dock has a centered accessible expandable More menu", () => {
+  const nav = read("frontend/src/components/customer/CustomerMobileNav.tsx");
+  const header = read("frontend/src/components/customer/CustomerHeader.tsx");
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+
+  assert.match(nav, /links\.slice\(0,\s*\s*2\)\.map\(renderLink\)/);
+  assert.match(nav, /links\.slice\(2,\s*3\)\.map\(renderLink\)/);
+  assert.match(nav, /<DialogPrimitive\.Root\s*onOpenChange=\{setMoreOpen\}\s*open=\{moreOpen\}>/);
+  assert.match(nav, /<DialogPrimitive\.Trigger\s*asChild>/);
+  assert.match(nav, /aria-expanded=\{moreOpen\}/);
+  assert.match(
+    nav,
+    /aria-label=\{moreOpen\s*\?\s*"Close\s*more\s*options"\s*:\s*"Open\s*more\s*options"\}/
+  );
+  assert.match(nav, /<DialogPrimitive\.Overlay\s*className="customer-mobile-more__overlay"\s*\/>/);
+  assert.match(nav, /<DialogPrimitive\.Content\s+className="customer-mobile-more__sheet"/);
+  assert.match(nav, /<DialogPrimitive\.Title/);
+  assert.match(nav, /<DialogPrimitive\.Description/);
+  assert.match(nav, /<DialogPrimitive\.Close\s*asChild>/);
+  for (const href of ['href="/about"', 'href="/support"']) {
+    assert.ok(nav.includes(href), "Missing More destination " + href);
+  }
+  assert.match(nav, /onStartGuide\(\)/);
+  assert.match(nav, /setMoreOpen\(false\)/);
+
+  assert.match(css, /grid-template-columns:\s*repeat\(5,\s*\s*minmax\(0,\s*\s*1fr\)\)/);
+  assert.match(
+    css,
+    /\.customer-app\s*\.customer-menu-button,\s*[\s\S]*?\.customer-app\s*\.customer-cart-link\s*\{\s*display:\s*none;/
+  );
+  assert.match(
+    css,
+    /\.customer-mobile-dock__more-icon\s*\{[^}]*width:\s*44px;[^}]*height:\s*44px;/
+  );
+  assert.match(css, /\.customer-mobile-more__sheet\s*\{[^}]*position:\s*fixed;/);
+  assert.match(css, /max-height:\s*min\(68dvh,\s*\s*380px\)/);
+  assert.match(css, /max-width:\s*380px/);
+  assert.match(css, /border-radius:\s*1\.15rem/);
+  assert.match(css, /--store-mobile-floating-gap,\s*\s*8px/);
+  assert.match(css, /safe-area-inset-bottom/);
+
+  // The legacy duplicate mobile panel is gone; the desktop links remain.
+  assert.doesNotMatch(header, /customer-menu-button|customer-mobile-panel|menuOpen/);
+  assert.match(header, /aria-label="Customer\s*navigation"/);
+  assert.match(css, /@media\s*\(max-width:\s*1180px\)/);
+});
+
+test("320px portrait constrains the actual header and navbar, not just scrollbar paint", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+
+  assert.match(css, /html\[data-appearance-scope="storefront"\] body/);
+  assert.match(css, /html\[data-appearance-scope="storefront"\] #root/);
+  assert.match(
+    css,
+    /\.customer-app \.customer-header__bar\s*\{[^}]*width: calc\(100% - 2 \* var\(--store-phone-gutter, 12px\)\)/
+  );
+  assert.match(css, /grid-template-columns: minmax\(0, 1fr\) auto/);
+  assert.match(
+    css,
+    /\.customer-app\.ys-material-canvas > \.customer-mobile-dock\s*\{[^}]*box-sizing: border-box;/
+  );
+  assert.match(
+    css,
+    /\.customer-app\.ys-material-canvas > \.customer-mobile-dock\s*\{[^}]*grid-template-columns: repeat\(5, minmax\(0, 1fr\)\)/
+  );
+});
+
+test("mobile sizing primitives and floating sheet are centralized for browser QA", () => {
+  const app = read("frontend/src/app/CustomerApp.tsx");
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const tokens = read("frontend/src/styles/customer-mobile-tokens.css");
+  const packageJson = JSON.parse(read("package.json"));
+  const qaScript = read("tools/mobile-qa/run.mjs");
+
+  assert.match(
+    app,
+    /import\s*"@\/styles\/customer-mobile-tokens\.css";\s*import\s*"@\/styles\/customer-adaptive-mobile\.css";/
+  );
+  assert.match(tokens, /--store-mobile-touch-target:\s*44px/);
+  assert.match(tokens, /--store-mobile-dock-clearance:\s*76px/);
+  assert.match(tokens, /--store-mobile-floating-gap:\s*8px/);
+  assert.match(css, /\.customer-mobile-more__sheet\s*\{[^}]*right:\s*12px;[^}]*left:\s*12px;/);
+  assert.match(css, /border-bottom:\s*0;/); // existing dock, not the floating card
+  const sheetCss = css
+    .split(".customer-mobile-more__sheet {")[1]
+    ?.split(".customer-mobile-more__header {")[0];
+  assert.ok(sheetCss);
+  assert.match(sheetCss, /border:\s*1px\s*solid\s*#bcc6e1/);
+  assert.doesNotMatch(sheetCss, /border-bottom:\s*0/);
+  assert.match(css, /@media\s*\(max-width:\s*1180px\)/);
+
+  assert.equal(packageJson.scripts["qa:mobile"], "node tools/mobile-qa/run.mjs");
+  assert.match(qaScript, /const\s*VIEWPORTS\s*=\s*\[/);
+  for (const width of [320, 360, 375, 390, 430, 640, 768, 1280]) {
+    assert.match(qaScript, new RegExp(`width: ${width}\\b`));
+  }
+  assert.match(qaScript, /document\.documentElement\.scrollWidth/);
+  assert.match(qaScript, /getByRole\("dialog"\)/);
+  assert.match(qaScript, /dockTop\s*-\s*6/);
+});
+
+test("floating More geometry follows the measured dock height, not a fixed pixel guess", () => {
+  const nav = read("frontend/src/components/customer/CustomerMobileNav.tsx");
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+
+  assert.match(nav, /const dockRef = useRef<HTMLElement>\(null\)/);
+  assert.match(nav, /ref=\{dockRef\}/);
+  assert.match(nav, /getComputedStyle\(dock\)\.position !== "fixed"/);
+  assert.match(nav, /window\.innerHeight - dock\.getBoundingClientRect\(\)\.top/);
+  assert.match(nav, /new ResizeObserver\(measure\)/);
+  assert.match(nav, /window\.addEventListener\("resize", measure\)/);
+  assert.match(nav, /--store-mobile-measured-dock-height/);
+
+  const sheetCss = css
+    .split(".customer-mobile-more__sheet {")[1]
+    ?.split("/* Floating More panel keeps physical separation")[0];
+  assert.ok(sheetCss);
+  assert.match(sheetCss, /var\(--store-mobile-measured-dock-height,/);
+  assert.match(sheetCss, /var\(--store-mobile-floating-gap, 8px\)/);
+  assert.doesNotMatch(sheetCss, /border-bottom: 0/);
+});
+
+test("mobile browser QA bypasses first-visit splash in isolation and waits for route content", () => {
+  const qaScript = read("tools/mobile-qa/run.mjs");
+
+  assert.match(qaScript, /await context\.addInitScript\(\(\) => \{/);
+  assert.match(
+    qaScript,
+    /window\.sessionStorage\.setItem\("ysabelle-store-entrance-entered", "true"\)/
+  );
+  assert.match(qaScript, /\.customer-app\.ys-material-canvas/);
+  assert.match(qaScript, /route === "\/" \? "\.customer-home" : "\.customer-shop-page"/);
+  assert.match(qaScript, /panelBottom=/);
+  assert.match(qaScript, /dockTop=/);
+});
+
+test("browser QA permits only clipped carousel items outside viewport on non-portrait screens", () => {
+  const qa = read("tools/mobile-qa/run.mjs");
+
+  assert.match(qa, /const portraitPhone = width <= 700 && height > width/);
+  assert.match(qa, /function isContainedInHorizontalRail\(element\)/);
+  assert.match(qa, /if \(portraitPhone\) return false;/);
+  assert.match(qa, /element\.closest\("\.home-product-rail__viewport"\)/);
+  assert.match(qa, /\["auto", "scroll"\]\.includes\(railStyle\.overflowX\)/);
+  assert.match(qa, /rail\.scrollWidth > rail\.clientWidth \+ 2/);
+  assert.match(qa, /railBounds\.left >= -1/);
+  assert.match(qa, /railBounds\.right <= width \+ 1/);
+  assert.match(qa, /if \(isContainedInHorizontalRail\(element\)\) continue;/);
+  assert.match(qa, /horizontalRailsInPortrait/);
+  assert.match(qa, /Document overflow:/);
+  assert.match(qa, /Horizontal product rails in portrait:/);
+  assert.match(qa, /Elements outside viewport:/);
+});
+
+test("phone category cards share consistent height, title space, and action", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const home = read("frontend/src/pages/customer/CustomerHomePage.tsx");
+  const presentation = read("frontend/src/utils/storefrontCategoryPresentation.ts");
+  const qa = read("tools/mobile-qa/run.mjs");
+
+  assert.match(home, /getCustomerCategoryDescription\(category\.description\)/);
+  assert.match(home, /className="home-category-card__description"/);
+  assert.match(home, /className="home-category-card__mobile-cta"/);
+  assert.match(home, /Browse products/);
+  assert.match(
+    presentation,
+    /export function getCustomerCategoryDescription\(description: string \| null\)/
+  );
+  assert.match(presentation, /reviewed category for source\[- \]mapped\|source\[- \]mapped SARIM/i);
+  assert.match(presentation, /return "Explore this aisle"/);
+
+  const portrait = css
+    .split("/* Consistent phone scale: portrait")[1]
+    ?.split("/* A wide portrait phone/foldable")[0];
+  assert.ok(portrait, "Missing phone portrait category CSS");
+  assert.match(
+    portrait,
+    /\.customer-home \.home-category-grid > \.home-reveal--card\s*\{[^}]*height: 100%;/
+  );
+  assert.match(
+    portrait,
+    /\.customer-home \.home-category-card__visual\s*\{[^}]*aspect-ratio: 4 \/ 3;/
+  );
+  assert.match(
+    portrait,
+    /\.customer-home \.home-category-card__body\s*\{[^}]*min-height: clamp\(88px, 25vw, 96px\);/
+  );
+  assert.match(
+    portrait,
+    /\.customer-home \.home-category-card__body strong\s*\{[^}]*-webkit-line-clamp: 3;/
+  );
+  assert.match(portrait, /\.customer-home \.home-category-card__description\s*\{\s*display: none;/);
+  assert.match(
+    portrait,
+    /\.customer-home \.home-category-card__mobile-cta\s*\{\s*display: inline-flex;/
+  );
+  assert.match(css, /:root\.dark \.customer-app \.home-category-card__mobile-cta/);
+
+  assert.match(qa, /\.home-category-grid \.home-category-card/);
+  assert.match(qa, /unevenCardHeights/);
+  assert.match(qa, /unevenImageHeights/);
+  assert.match(qa, /card\.offsetHeight/);
+  assert.match(qa, /\?\.offsetHeight \?\? 0/);
+  assert.match(qa, /missingBrowsingActions/);
+  assert.match(qa, /visibleDescriptions/);
+  assert.match(qa, /Category cards have inconsistent heights/);
+});
+
+test("mobile global search occupies one header row until explicitly opened", () => {
+  const header = read("frontend/src/components/customer/CustomerHeader.tsx");
+  const search = read("frontend/src/components/customer/GlobalStorefrontSearch.tsx");
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+
+  assert.match(header, /\[mobileSearchOpen, setMobileSearchOpen\] = useState\(false\)/);
+  assert.match(header, /customer-mobile-search-trigger/);
+  assert.match(header, /aria-expanded=\{mobileSearchOpen\}/);
+  assert.match(header, /aria-controls="customer-global-search"/);
+  assert.match(header, /is-mobile-open/);
+  assert.match(header, /setMobileSearchOpen\(false\)/);
+  assert.match(header, /document\.addEventListener\("keydown", dismissOnEscape, true\)/);
+  assert.match(header, /document\.removeEventListener\("keydown", dismissOnEscape, true\)/);
+  assert.match(header, /mobileSearchTriggerRef\.current\?\.focus\(\)/);
+  assert.match(header, /autoFocus=\{mobileSearchOpen\}/);
+  assert.match(header, /if \(!mobileSearchOpen\) return;/);
+  assert.match(header, /target\.closest\("\.customer-mobile-search-trigger"\)/);
+  assert.match(search, /autoFocus = false/);
+  assert.match(search, /if \(autoFocus && enabled\) inputRef\.current\?\.focus\(\)/);
+
+  assert.match(css, /\.customer-mobile-search-trigger\s*\{\s*display: none;/);
+  assert.match(css, /@media \(max-width: 700px\)/);
+  assert.match(
+    css,
+    /\.customer-app \.customer-header__search-region\s*\{[^}]*position: absolute;[^}]*display: none;/
+  );
+  assert.match(
+    css,
+    /\.customer-app \.customer-header__search-region\.is-mobile-open:not\(\.is-hidden\)/
+  );
+  assert.match(
+    css,
+    /\.customer-app \.customer-header__search-region\.is-hidden\s*\{\s*display: none;/
+  );
+  assert.match(
+    css,
+    /\.customer-global-search__popup\s*\{[^}]*max-height: min\(19rem, calc\(100dvh - 12rem\)\)/
+  );
+  assert.match(css, /\.customer-global-search__list,[\s\S]*?overscroll-behavior-y: contain;/);
+});
+
+test("browser QA covers compact search suggestions without covering mobile dock", () => {
+  const qa = read("tools/mobile-qa/run.mjs");
+  assert.match(qa, /async function checkCompactSearch\(page, viewport\)/);
+  assert.match(qa, /headerBounds\.height > 110/);
+  assert.match(qa, /Search suggestions too tall/);
+  assert.match(qa, /Search suggestions cover the fixed bottom navigation/);
+  assert.match(qa, /Global search must be collapsed by default on mobile/);
+  assert.match(
+    qa,
+    /route === "\/" && viewport\.width <= 700 && viewport\.height > viewport\.width/
+  );
+  assert.match(qa, /await checkCompactSearch\(page, viewport\)/);
+  assert.match(qa, /page\.keyboard\.press\("Escape"\)/);
+});
+
+test("phone cart scales to multiple products without giant images or stacked quantity", () => {
+  const css = read("frontend/src/styles/customer-cart-premium.css");
+  const page = read("frontend/src/pages/customer/CartPage.tsx");
+  const qa = read("tools/mobile-qa/run.mjs");
+
+  const phone = css.split("/* Sprint 12 mobile cart density.")[1];
+  assert.ok(phone, "Compact cart mobile override is missing");
+  assert.match(phone, /@media \(max-width: 700px\)/);
+  assert.match(
+    phone,
+    /\.customer-cart-item\s*\{[^}]*grid-template-columns: clamp\(76px, 23vw, 100px\) minmax\(0, 1fr\);[^}]*grid-template-rows: auto auto;/
+  );
+  assert.match(
+    phone,
+    /\.customer-cart-item > \.customer-product-visual\s*\{[^}]*grid-column: 1;[^}]*grid-row: 1;[^}]*min-height: 0;[^}]*max-height: 100px;/
+  );
+  assert.match(phone, /\.customer-cart-item__info\s*\{[^}]*grid-column: 2;[^}]*grid-row: 1;/);
+  assert.match(
+    phone,
+    /\.customer-cart-item__quantity\s*\{[^}]*grid-column: 1 \/ -1;[^}]*grid-row: 2;[^}]*grid-template-columns: minmax\(0, 1fr\) max-content;/
+  );
+  assert.match(phone, /\.customer-cart-item__quantity \.customer-quantity\s*\{[^}]*height: 44px;/);
+  assert.match(phone, /\.customer-cart-item__info button\s*\{[^}]*min-height: 44px;/);
+  assert.match(
+    phone,
+    /\.customer-cart-item__quantity > strong\s*\{[^}]*font-variant-numeric: tabular-nums;/
+  );
+
+  assert.match(page, /const CART_PAGE_SIZE = 5;/);
+  assert.match(page, /items\.slice\(start, start \+ CART_PAGE_SIZE\)/);
+  assert.match(page, /items\.length > CART_PAGE_SIZE/);
+  assert.match(page, /className="customer-cart-summary-stack"/);
+  assert.match(page, /Remove \$\{product\.name\} from cart/);
+  assert.match(page, /onChange=\{\(value\) => updateQuantity\(product\.id, value\)\}/);
+  assert.match(page, /formatCurrency\(Number\(product\.sellingPrice\) \* quantity\)/);
+  assert.match(page, /formatCurrency\(subtotal\)/);
+
+  assert.match(qa, /async function checkMobileCart\(page, viewport\)/);
+  assert.match(qa, /Not enough in-stock products to verify a multi-item cart/);
+  assert.match(qa, /Cart line is oversized, clipped, or has unusable actions/);
+  assert.match(qa, /Remove cart item did not update list/);
+  assert.match(qa, /await checkMobileCart\(page, viewport\)/);
+});
+
+test("mobile review ratings fit six filters in a two-row grid without a scroll rail", () => {
+  const detail = read("frontend/src/pages/customer/ProductDetailPage.tsx");
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const qa = read("tools/mobile-qa/run.mjs");
+
+  assert.match(
+    detail,
+    /const\s*reviewFilters\s*=\s*\[null,\s*\s*5,\s*\s*4,\s*\s*3,\s*\s*2,\s*\s*1\]\s*as\s*const;/
+  );
+  assert.match(
+    detail,
+    /aria-label=\{\s*rating\s*===\s*null\s*\?\s*`All\s*reviews\s*\(\$\{count\}\)`\s*:\s*`\$\{rating\}-star\s*reviews\s*\(\$\{count\}\)`\s*\}/
+  );
+  assert.match(detail, /aria-pressed=\{ratingFilter\s*===\s*rating\}/);
+  assert.match(detail, /onClick=\{\(\)\s*=>\s*onFilterChange\(rating\)\}/);
+  assert.match(detail, /customer-review-filter__label-full/);
+  assert.match(detail, /customer-review-filter__label-compact/);
+  assert.match(
+    css,
+    /\.customer-product-page\s*\.customer-review-filter__label-compact\s*\{\s*display:\s*none;/
+  );
+
+  const phone = css.split("/* Product detail reviews: desktop keeps")[1];
+  assert.ok(phone, "Missing scoped mobile review-filter rules");
+  assert.match(phone, /@media\s*\(max-width:\s*520px\)/);
+  assert.match(phone, /grid-template-columns:\s*repeat\(3,\s*\s*minmax\(0,\s*\s*1fr\)\);/);
+  assert.match(
+    phone,
+    /\.customer-product-page\s*\.customer-review-filters\s*\{[^}]*overflow:\s*visible;/
+  );
+  assert.match(
+    phone,
+    /\.customer-product-page\s*\.customer-review-filters\s*>\s*button\s*\{[^}]*min-height:\s*44px;/
+  );
+  assert.match(
+    phone,
+    /\.customer-product-page\s*\.customer-review-filter__label-full\s*\{\s*display:\s*none;/
+  );
+  assert.match(
+    phone,
+    /\.customer-product-page\s*\.customer-review-filter__label-compact\s*\{\s*display:\s*inline;/
+  );
+
+  assert.match(
+    qa,
+    /Mobile\s*rating\s*filters\s*do\s*not\s*fit\s*the\s*two-row,\s*\s*three-column\s*touch\s*grid/
+  );
+  assert.match(qa, /state\.reviewFilterGeometry\.rows\s*!==\s*2/);
+  assert.match(qa, /reviewFilters\.scrollWidth\s*>\s*reviewFilters\.clientWidth\s*\+\s*2/);
+  assert.match(qa, /getByRole\("button",\s*\s*\{\s*name:\s*\/5-star\s*reviews\/\s*\}\)/);
+  assert.match(qa, /getByRole\("button",\s*\s*\{\s*name:\s*\/All\s*reviews\/\s*\}\)/);
+});
+
+test("phone recommendation carousel stays compact while page scrolling works without bars", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const related = read("frontend/src/pages/customer/ProductDetailPage.tsx");
+  const qa = read("tools/mobile-qa/run.mjs");
+  const styles = css.split(
+    "/* Compact related-products carousel remains a phone portrait layout."
+  )[1];
+  assert.ok(styles, "Missing scoped phone carousel CSS");
+
+  assert.match(styles, /@media\s*\(max-width:\s*700px\)\s*and\s*\(orientation:\s*portrait\)/);
+  assert.match(css, /html\[data-appearance-scope="storefront"\][\s\S]*?scrollbar-width:\s*none;/);
+  assert.match(css, /html\[data-appearance-scope="storefront"\]::-webkit-scrollbar/);
+  assert.doesNotMatch(styles, /(?:html|body)[^{]*\{[^}]*overflow(?:-y)?:\s*hidden/);
+  assert.match(
+    styles,
+    /\.customer-related-products__rail-shell\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*minmax\(0,\s*\s*1fr\)\s*44px\s*44px\s*minmax\(0,\s*\s*1fr\);/
+  );
+  assert.match(
+    styles,
+    /\.customer-related-products__arrow\s*\{[^}]*position:\s*static;[^}]*display:\s*grid;[^}]*width:\s*44px;[^}]*height:\s*44px;/
+  );
+  assert.match(
+    styles,
+    /\.customer-related-products__arrow--previous\s*\{[^}]*grid-column:\s*2;[^}]*grid-row:\s*2;/
+  );
+  assert.match(
+    styles,
+    /\.customer-related-products__arrow--next\s*\{[^}]*grid-column:\s*3;[^}]*grid-row:\s*2;/
+  );
+  assert.match(
+    styles,
+    /\.customer-related-products__viewport\s*\{[^}]*grid-column:\s*1\s*\/\s*-1;[^}]*grid-row:\s*1;[^}]*overflow-x:\s*auto;[^}]*scroll-snap-type:\s*x\s*mandatory;/
+  );
+  assert.match(
+    styles,
+    /\.customer-related-products__viewport\s*>\s*\.customer-product-card\s*\{[^}]*flex:\s*0\s*0\s*calc\(\(100%\s*-\s*var\(--store-phone-card-gap,\s*\s*8px\)\)\s*\/\s*2\);/
+  );
+  assert.match(styles, /\.customer-product-visual\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*3;/);
+  assert.match(
+    styles,
+    /\.customer-product-card__purchase-row\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*\s*1\.4fr\)\s*minmax\(0,\s*\s*1fr\);/
+  );
+  assert.match(styles, /\.customer-product-card__cart-button\s*\{[^}]*min-height:\s*44px;/);
+  assert.match(styles, /\.customer-product-card__add-mobile\s*\{\s*display:\s*inline;/);
+
+  assert.match(related, /className="customer-related-products__viewport"\s*ref=\{railRef\}/);
+  assert.match(related, /behavior:\s*"smooth"/);
+  assert.match(
+    qa,
+    /Related-product\s*carousel\s*cards\s*are\s*oversized,\s*\s*clipped\s*or\s*not\s*swipeable/
+  );
+  assert.match(
+    qa,
+    /Related-product\s*arrows\s*overlap\s*cards\s*or\s*fall\s*outside\s*their\s*navigation\s*row/
+  );
+  assert.match(qa, /arrow\.top\s*>=\s*relatedBounds\.bottom\s*\+\s*1/);
+  assert.match(qa, /arrow\.width\s*>=\s*43\s*&&\s*arrow\.height\s*>=\s*43/);
+  assert.match(qa, /getComputedStyle\(button\)\.position\s*===\s*"static"/);
+  assert.match(qa, /Mobile\s*storefront\s*still\s*shows\s*a\s*persistent\s*document\s*scrollbar/);
+  assert.match(qa, /state\.relatedLayout\.count\s*>=\s*2/);
+});
+
+test("mobile product detail keeps sizes readable and explains verified-review eligibility", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const sizes = read("frontend/src/components/customer/ProductSizeSelector.tsx");
+  const detail = read("frontend/src/pages/customer/ProductDetailPage.tsx");
+  const service = read("backend/src/services/storefrontService.ts");
+
+  assert.match(
+    css,
+    /\.customer-product-page \.customer-product-visual\.customer-product-visual--large\s*\{[^}]*height: clamp\(260px, 82vw, 340px\);[^}]*min-height: 0;/
+  );
+  assert.match(
+    css,
+    /\.customer-product-page \.customer-product-size-selector__rail-shell\s*\{[^}]*display: block;/
+  );
+  assert.match(
+    css,
+    /\.customer-product-page \.customer-product-size-selector__arrow\s*\{\s*display: none;/
+  );
+  assert.match(
+    css,
+    /\.customer-product-page \.customer-product-size-option\s*\{[^}]*flex: 0 0 calc\(\(100% - 0\.55rem\) \/ 2\);/
+  );
+  assert.match(
+    css,
+    /\.customer-product-page \.customer-product-size-option__copy strong\s*\{[^}]*white-space: normal;/
+  );
+  assert.match(
+    css,
+    /\.customer-product-page \.customer-product-size-option\s*\{[^}]*grid-template-rows: 100px minmax\(0, auto\);/
+  );
+  assert.match(
+    css,
+    /\.customer-product-page \.customer-product-size-option__visual\s*\{[^}]*height: 100%;[^}]*overflow: hidden;/
+  );
+  assert.match(
+    css,
+    /\.customer-product-page \.customer-product-size-option__image > img\s*\{[^}]*object-fit: contain;/
+  );
+  assert.match(
+    css,
+    /\.customer-product-page \.customer-product-size-option__image\[data-image-resolution="low"\] > img\s*\{[^}]*max-height: min\(90%, var\(--catalog-image-natural-height\)\);[^}]*object-fit: contain;/
+  );
+  assert.match(sizes, /customer-product-size-selector__swipe-hint/);
+  assert.doesNotMatch(sizes, /title=\{variant\.name\}/);
+
+  assert.match(detail, /reviewContextLoading/);
+  assert.match(detail, /"Purchase required"/);
+  assert.match(detail, /Signed in · Purchase not verified/);
+  assert.match(detail, /Check order history/);
+  assert.match(detail, /Retry verification/);
+  assert.match(detail, /writeReviewDraft\(productId, \{ rating: star, comment: reviewComment \}\)/);
+  assert.match(detail, /authStatus === "authenticated" && !reviewContext\?\.eligible/);
+  assert.match(service, /status: CustomerOrderStatus\.COMPLETED,/);
+  assert.match(service, /items: \{ some: \{ productId \} \}/);
+  assert.match(service, /code: "CUSTOMER_REVIEW_PURCHASE_REQUIRED"/);
+
+  const qa = read("tools/mobile-qa/run.mjs");
+  assert.match(qa, /async function checkMobileProductDetail\(page, viewport\)/);
+  assert.match(qa, /Mobile detail image has incorrect height/);
+  assert.match(qa, /Pack-size controls have obstructive tooltips or clipped labels/);
+  assert.match(qa, /Pack-size product thumbnails are clipped or too short for full images/);
+  assert.match(qa, /imageBounds\.bottom > frame\.bottom \+ 1/);
+  assert.match(qa, /Product detail review form is missing/);
+});
+
+test("small-phone product cards retain semantics with compact badges and Add", () => {
+  const card = read("frontend/src/components/customer/ProductCard.tsx");
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+
+  assert.match(card, /customer-product-badge__label-full/);
+  assert.match(card, /customer-product-badge__label-mobile/);
+  assert.match(card, /resolvedBadge\.tone === "trending"/);
+  assert.match(card, /resolvedBadge\.tone === "best-seller"/);
+  assert.match(card, /customer-product-card__review-count/);
+  assert.match(card, /customer-product-card__add-full/);
+  assert.match(card, /customer-product-card__add-mobile/);
+  assert.match(card, /Add \$\{selectedQuantity\} \$\{product\.name\} to cart/);
+  assert.match(card, /addItem\(product, selectedQuantity\)/);
+  assert.match(card, /toggleFavorite\(product\.id\)/);
+  assert.match(card, /onChange=\{handleQuantityChange\}/);
+  assert.match(card, /disabled=\{!isReady\}/);
+
+  const portrait = css
+    .split("/* Consistent phone scale: portrait")[1]
+    ?.split("/* A wide portrait phone/foldable")[0];
+  assert.ok(portrait, "Missing portrait product rules");
+  assert.match(
+    css,
+    /\.customer-product-badge__label-mobile,[\s\S]*?\.customer-product-card__add-mobile,[\s\S]*?\.customer-shop-page \.customer-select__mobile-trigger,[\s\S]*?\.customer-shop-page \.customer-select__mobile-options\s*\{\s*display: none;/
+  );
+  assert.match(
+    portrait,
+    /\.customer-app \.customer-product-badge\s*\{[^}]*max-width: calc\(100% - 60px\);/
+  );
+  assert.match(
+    portrait,
+    /\.customer-app \.customer-product-badge__label-full\s*\{\s*display: none;/
+  );
+  assert.match(
+    portrait,
+    /\.customer-app \.customer-product-badge__label-mobile\s*\{\s*display: block;/
+  );
+  assert.match(
+    portrait,
+    /\.customer-app \.customer-product-card__favorite\s*\{[^}]*width: 44px;[^}]*height: 44px;/
+  );
+  assert.match(
+    portrait,
+    /\.customer-app \.customer-product-card__favorite::before,[\s\S]*?\.customer-app \.customer-product-card__favorite::after\s*\{[^}]*display: none;[^}]*content: none;/
+  );
+  assert.match(
+    portrait,
+    /\.customer-app \.customer-product-card h3\s*\{[^}]*-webkit-line-clamp: 2;/
+  );
+  assert.match(
+    portrait,
+    /\.customer-app \.customer-product-card__rating \.customer-product-card__review-count\s*\{\s*display: none;/
+  );
+  assert.match(
+    portrait,
+    /\.customer-app \.customer-product-card__actions \.customer-quantity\s*\{[^}]*height: 44px;/
+  );
+  assert.match(
+    portrait,
+    /\.customer-app \.customer-product-card__cart-button\s*\{[^}]*width: 100%;/
+  );
+  assert.match(portrait, /\.customer-app \.customer-product-card__add-full\s*\{\s*display: none;/);
+  assert.match(
+    portrait,
+    /\.customer-app \.customer-product-card__add-mobile\s*\{\s*display: inline;/
+  );
+  assert.match(
+    portrait,
+    /:root\.dark \.customer-app \.customer-product-card__favorite\s*\{[^}]*background: #26344c;/
+  );
+  assert.match(
+    portrait,
+    /:root\.dark \.customer-app \.customer-product-card__favorite\[aria-pressed="true"\]\s*\{[^}]*background: linear-gradient\(/
+  );
+});
+
+test("mobile Favorite control uses one 44px circle just like desktop", () => {
+  const mobile = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const desktop = read("frontend/src/styles/customer-home-premium.css");
+  const contrast = read("frontend/src/styles/theme-storefront-contrast.css");
+  const card = read("frontend/src/components/customer/ProductCard.tsx");
+
+  const portrait = mobile
+    .split("/* Consistent phone scale: portrait")[1]
+    ?.split("/* A wide portrait phone/foldable")[0];
+  assert.ok(portrait, "Missing portrait product controls");
+  assert.match(
+    desktop,
+    /\.customer-product-card__favorite\s*\{[^}]*width: 44px;[^}]*height: 44px;/
+  );
+  assert.match(
+    portrait,
+    /\.customer-app \.customer-product-card__favorite\s*\{[^}]*width: 44px;[^}]*height: 44px;[^}]*border: 1px solid #d7ddea;[^}]*border-radius: 50%;/
+  );
+  assert.match(
+    portrait,
+    /\.customer-app \.customer-product-card__favorite::before,[\s\S]*?\.customer-app \.customer-product-card__favorite::after\s*\{[^}]*content: none;/
+  );
+  assert.doesNotMatch(portrait, /\.customer-product-card__favorite::before\s*\{[^}]*inset:/);
+  assert.match(
+    portrait,
+    /\.customer-app \.customer-product-card__favorite\[aria-pressed="true"\]\s*\{[^}]*color: #fff;/
+  );
+  assert.match(
+    portrait,
+    /:root\.dark \.customer-app \.customer-product-card__favorite\s*\{[^}]*background: #26344c;[^}]*color: #e1e9ff;/
+  );
+  assert.match(
+    portrait,
+    /:root\.dark \.customer-app \.customer-product-card__favorite\[aria-pressed="true"\]\s*\{[^}]*color: #fff;/
+  );
+  assert.match(
+    contrast,
+    /:root\.dark \.customer-app \.customer-product-card__favorite\[aria-pressed="true"\]/
+  );
+  assert.match(card, /aria-pressed=\{isFavorite\}/);
+  assert.match(card, /aria-label=\{/);
+  assert.match(card, /toggleFavorite\(product\.id\)/);
+  assert.match(card, /<Heart aria-hidden="true" fill=\{isFavorite \? "currentColor" : "none"\}/);
+});
+
+test("browser QA checks actual product badge collision and reachable mobile cart controls", () => {
+  const qa = read("tools/mobile-qa/run.mjs");
+
+  assert.match(qa, /const productCards = portraitPhone/);
+  assert.match(qa, /\.customer-product-badge__label-mobile/);
+  assert.match(qa, /badgeBounds\.right > favoriteBounds\.left - 1/);
+  assert.match(qa, /getComputedStyle\(title\)\.webkitLineClamp !== "2"/);
+  assert.match(qa, /favoriteBounds|bounds\.width < 43 \|\| bounds\.height < 43/);
+  assert.match(qa, /if \(add && !add\.disabled\)/);
+  assert.match(qa, /bounds\.width > 97 \|\| bounds\.height > 48 \|\| bounds\.height < 43/);
+  assert.match(qa, /Overlapping product badge and favorite/);
+  assert.match(qa, /Clipped or hidden mobile badge label/);
+  assert.match(qa, /Favorite touch target below 44px/);
+  assert.match(qa, /Cart action outside compact 44px sizing/);
+  assert.match(qa, /Quantity controls below 24px wide or 44px tall/);
+  assert.match(qa, /Mobile review counts still visible/);
+  assert.match(qa, /Product titles not clamped to two lines/);
+  assert.match(qa, /\.customer-product-card"\)\.first\(\)\.waitFor/);
+});
+
+test("checkout confirmation keeps readable mobile spacing without changing payment consent", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const policyCss = read("frontend/src/styles/customer-order-policy.css");
+  const checkout = read("frontend/src/pages/customer/CheckoutPage.tsx");
+  const qa = read("tools/mobile-qa/run.mjs");
+  const block = css.split("/* Sprint 12: breathe between checkout explanation")[1];
+  assert.ok(block, "Missing checkout confirmation phone-spacing override");
+
+  assert.match(block, /@media\s*\(max-width:\s*700px\)/);
+  assert.match(
+    block,
+    /\.customer-checkout-summary\s*\{[^}]*padding:\s*clamp\(1rem,\s*\s*4vw,\s*\s*1\.3rem\);/
+  );
+  assert.match(
+    block,
+    /\.customer-checkout-summary\s*>\s*\.customer-checkout-policy-group\s*\{[^}]*gap:\s*1rem;/
+  );
+  assert.match(
+    block,
+    /\.customer-checkout-policy-group\s*>\s*\.customer-order-summary__helper\s*\{[^}]*line-height:\s*1\.65\s*!important;/
+  );
+  assert.match(
+    policyCss,
+    /\.customer-checkout-summary\s*>\s*\.customer-checkout-policy-group\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*minmax\(0,\s*\s*1fr\);[^}]*gap:\s*1rem;/
+  );
+  assert.match(
+    policyCss,
+    /\.customer-checkout-policy-group\s*>\s*\.customer-order-summary__helper\s*\{[^}]*margin:\s*0\s*!important;[^}]*padding:\s*0\s*!important;/
+  );
+  assert.match(
+    policyCss,
+    /\.customer-checkout-policy-group\s*>\s*\.customer-order-policy__trigger\s*\{[^}]*display:\s*inline-flex;/
+  );
+  assert.doesNotMatch(block, /\.customer-checkout-summary\s*>\s*\.customer-order-policy__trigger/);
+  assert.match(
+    block,
+    /\.customer-checkout-summary\s*>\s*\.customer-order-agreement\s*\{[^}]*margin-top:\s*1rem;[^}]*padding:\s*1rem\s*0\.9rem;/
+  );
+  assert.match(
+    block,
+    /\.customer-checkout-summary\s*>\s*\.customer-order-summary__action\s*\{[^}]*min-height:\s*48px;[^}]*margin-top:\s*1\.15rem;/
+  );
+
+  const group = checkout.indexOf('className="customer-checkout-policy-group"');
+  const helper = checkout.indexOf('className="customer-order-summary__helper"', group);
+  const policy = checkout.indexOf("<CustomerOrderPolicyInfo />", helper);
+  const groupClose = checkout.indexOf("</div>", policy);
+  const consent = checkout.indexOf('className="customer-order-agreement"', groupClose);
+  const payment = checkout.indexOf("customer-order-summary__action", consent);
+  assert.ok(
+    group >= 0 &&
+      group < helper &&
+      helper < policy &&
+      policy < groupClose &&
+      groupClose < consent &&
+      consent < payment
+  );
+  assert.match(qa, /async\s*function\s*checkCheckoutPolicySpacing\(page,\s*\s*viewport\)/);
+  assert.match(qa, /Checkout\s*delivery\s*text\s*and\s*policy\s*button\s*gap\s*is\s*too\s*small/);
+  assert.match(checkout, /checked=\{orderPolicyAccepted\}/);
+  assert.match(checkout, /required\s+type="checkbox"/);
+  assert.match(checkout, /Continue\s*to\s*PayMongo/);
+});
+
+test("checkout content uses wider readable form sections without changing navigation", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const checkout = read("frontend/src/pages/customer/CheckoutPage.tsx");
+  const qa = read("tools/mobile-qa/run.mjs");
+  const marker = css.indexOf(
+    "/* Sprint 12 checkout content breathing room — portrait phones only."
+  );
+  const mediaStart = css.indexOf("@media (max-width: 700px) and (orientation: portrait)", marker);
+  const firstBrace = css.indexOf("{", mediaStart);
+  let nesting = 0;
+  let mediaEnd = -1;
+  for (let index = firstBrace; index < css.length; index++) {
+    if (css[index] === "{") nesting++;
+    if (css[index] === "}") {
+      nesting--;
+      if (nesting === 0) {
+        mediaEnd = index;
+        break;
+      }
+    }
+  }
+  const phone = mediaStart >= 0 && mediaEnd > mediaStart ? css.slice(mediaStart, mediaEnd + 1) : "";
+  assert.ok(phone, "Missing phone-only checkout refinements");
+
+  assert.match(phone, /@media\s*\(max-width:\s*700px\)\s*and\s*\(orientation:\s*portrait\)/);
+  assert.match(
+    phone,
+    /\.customer-checkout-page\s*>\s*\.customer-container\s*\{[^}]*width:\s*calc\(100%\s*-\s*2\s*\*\s*clamp\(12px,\s*\s*3\.5vw,\s*\s*16px\)\);/
+  );
+  assert.match(
+    phone,
+    /\.customer-checkout-page\s*\.customer-checkout-form\s*>\s*section\s*\{[^}]*padding:\s*clamp\(14px,\s*\s*4vw,\s*\s*16px\);/
+  );
+  assert.match(
+    phone,
+    /\.customer-checkout-page\s*\.customer-form-grid,\s*[\s\S]*?grid-template-columns:\s*minmax\(0,\s*\s*1fr\);/
+  );
+  assert.match(
+    phone,
+    /\.customer-checkout-page\s*\.customer-form-grid\s*:is\(input:not\(\[type="checkbox"\]\),\s*\s*select\),\s*[\s\S]*?min-height:\s*48px;[^}]*font-size:\s*16px;/
+  );
+  assert.match(
+    phone,
+    /\.customer-checkout-page\s*\.customer-payment-option\s*\{[^}]*min-height:\s*72px;[^}]*grid-template-columns:\s*20px\s*minmax\(0,\s*\s*1fr\)\s*auto;/
+  );
+  assert.match(
+    phone,
+    /\.customer-checkout-page\s*:is\(\.customer-profile-default-option,\s*\s*\.customer-address-save-option\)\s*\{[^}]*min-height:\s*44px;[^}]*border:\s*0;[^}]*background:\s*transparent;/
+  );
+  assert.match(
+    css,
+    /:root\.dark\s*\.customer-app\s*\.customer-checkout-page\s*:is\(\.customer-profile-default-option,\s*\s*\.customer-address-save-option\)\s*\{[^}]*background:\s*transparent;/
+  );
+  assert.match(
+    phone,
+    /\.customer-checkout-page\s*\.customer-checkout-summary\s*\{[^}]*padding:\s*clamp\(14px,\s*\s*4vw,\s*\s*16px\);/
+  );
+  assert.match(
+    phone,
+    /\.customer-checkout-page\s*\.customer-checkout-policy-group\s*>\s*\.customer-order-summary__helper\s*\{[^}]*font-size:\s*0\.78rem\s*!important;/
+  );
+
+  assert.doesNotMatch(
+    phone,
+    /\.customer-header__bar|\.customer-mobile-dock|\.customer-header__actions/
+  );
+  assert.match(
+    checkout,
+    /<form\s*className="customer-checkout-layout"\s*noValidate\s*onSubmit=\{submit\}>/
+  );
+  assert.match(checkout, /className="customer-payment-options"/);
+  assert.match(checkout, /checked=\{paymentMethod\s*===\s*"PAYMONGO"\}/);
+  assert.match(checkout, /checked=\{paymentMethod\s*===\s*"CASH_ON_DELIVERY"\}/);
+  assert.match(checkout, /checked=\{orderPolicyAccepted\}/);
+  assert.match(checkout, /<CustomerOrderPolicyInfo\s*\/>/);
+  assert.match(checkout, /formatCurrency\(subtotal\)/);
+  assert.match(checkout, /Continue\s*to\s*PayMongo/);
+  assert.match(checkout, /Place\s*COD\s*order/);
+
+  assert.match(qa, /async\s*function\s*checkCheckoutContentDensity\(page,\s*\s*viewport\)/);
+  assert.match(qa, /Checkout\s*content\s*remains\s*cramped\s*or\s*overflows/);
+  assert.match(
+    qa,
+    /issues\.push\(\.\.\.\(await\s*checkCheckoutContentDensity\(page,\s*\s*viewport\)\)\)/
+  );
+  assert.match(qa, /metrics\.inputHeight\s*<\s*47\s*\|\|\s*metrics\.inputFontSize\s*<\s*16/);
+});
+
+test("order success delivery tracking stays readable in light and dark on phone and desktop", () => {
+  const base = read("frontend/src/styles/customer.css");
+  const dark = read("frontend/src/styles/theme-storefront-contrast.css");
+  const page = read("frontend/src/pages/customer/OrderSuccessPage.tsx");
+  const qa = read("tools/mobile-qa/run.mjs");
+
+  assert.match(page, /className="customer-success-pickup"/);
+  assert.match(page, /Delivery tracking starts here/);
+  assert.match(page, /Open My Account to follow Preparing/);
+  assert.match(page, /Courier booking is coordinated by store staff/);
+
+  assert.match(
+    base,
+    /\.customer-success-pickup span\s*\{[^}]*font-size: 0\.78rem;[^}]*line-height: 1\.55;/
+  );
+  assert.match(
+    base,
+    /\.customer-success-pickup small\s*\{[^}]*font-size: 0\.74rem;[^}]*line-height: 1\.55;/
+  );
+
+  const foregrounds = {};
+  for (const tag of ["strong", "span", "small"]) {
+    const selector = new RegExp(
+      ":root\\.dark \\.customer-app \\.customer-success-card \\.customer-success-pickup " +
+        tag +
+        "\\s*\\{\\s*color: (#[a-f0-9]{6});",
+      "i"
+    );
+    const color = dark.match(selector)?.[1];
+    assert.ok(color, "Missing dark delivery tracking " + tag + " text color");
+    foregrounds[tag] = color;
+  }
+
+  function luminance(hex) {
+    const channels = hex
+      .slice(1)
+      .match(/../g)
+      .map((value) => {
+        const srgb = parseInt(value, 16) / 255;
+        return srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
+      });
+    return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+  }
+  const background = luminance("#1b2638");
+  for (const [tag, color] of Object.entries(foregrounds)) {
+    const light = Math.max(luminance(color), background);
+    const darkSide = Math.min(luminance(color), background);
+    assert.ok(
+      (light + 0.05) / (darkSide + 0.05) >= 7,
+      "Insufficient dark delivery tracking " + tag + " contrast: " + color
+    );
+  }
+
+  assert.match(qa, /async function checkDeliveryTrackingContrast\(page, viewport\)/);
+  assert.match(qa, /Delivery tracking text contrast is insufficient/);
+});
+
+test("dark active delivery tracking has no white tiles or invisible text", () => {
+  const css = read("frontend/src/styles/theme-storefront-contrast.css");
+  const premium = read("frontend/src/styles/customer-account-premium.css");
+  const account = read("frontend/src/pages/customer/CustomerAccountPage.tsx");
+  const qa = read("tools/mobile-qa/run.mjs");
+  const prefix =
+    ":root.dark .customer-app .customer-account-page-v2 #orders-panel .customer-account-order-v2--active";
+  const normalizedCss = css.replace(/\s+/g, " ");
+  const rule = (selector) => {
+    const start = normalizedCss.indexOf(prefix + " " + selector + " {");
+    assert.ok(start >= 0, "Missing active order dark selector " + selector);
+    const end = normalizedCss.indexOf("}", start);
+    assert.ok(end > start, "Invalid active order rule " + selector);
+    return normalizedCss.slice(start, end + 1);
+  };
+
+  // Base styles are intentionally light; dark must override their nested
+  // surfaces rather than only setting the outer active-order background.
+  assert.match(
+    premium,
+    /\.customer-account-delivery-overview\s*>\s*div\s*\{[^}]*background:\s*#fafbfe;/
+  );
+  assert.match(rule(".customer-account-delivery-overview > div"), /background:\s*#2b3b55;/);
+  assert.match(rule(".customer-account-order-topline > div > strong"), /color:\s*#f2f5ff;/);
+  assert.match(
+    rule(":is(.customer-account-delivery-address, .customer-account-delivery-courier)"),
+    /color:\s*#cfdaec;/
+  );
+  assert.match(rule(".customer-delivery-stepper__marker"), /background:\s*#30415c;/);
+  assert.match(rule(".customer-delivery-stepper__copy strong"), /color:\s*#e1eafa;/);
+  assert.match(rule(".customer-delivery-stepper__copy small"), /color:\s*#c2d0e5;/);
+  assert.match(
+    rule(".customer-delivery-stepper li.is-current .customer-delivery-stepper__copy strong"),
+    /color:\s*#cbbcff;/
+  );
+  assert.match(rule(".customer-account-confirm-delivery"), /background:\s*#303955;/);
+  assert.match(rule(".customer-account-payment-gate"), /background:\s*#3a342d;/);
+
+  const luminance = (hex) => {
+    const channels = hex
+      .slice(1)
+      .match(/../g)
+      .map((part) => {
+        const value = parseInt(part, 16) / 255;
+        return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+      });
+    return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+  };
+  const contrast = (foreground, background) => {
+    const a = luminance(foreground);
+    const b = luminance(background);
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  };
+  for (const [foreground, background] of [
+    ["#f2f5ff", "#223149"], // order number
+    ["#c1cee2", "#223149"], // delivery ticket
+    ["#c6d3e7", "#2b3b55"], // tile label
+    ["#f3f6ff", "#2b3b55"], // tile value
+    ["#cfdaec", "#223149"], // address
+    ["#e1eafa", "#223149"], // pending timeline label
+    ["#c2d0e5", "#223149"], // pending timeline note
+    ["#f2f6ff", "#30415c"], // numbered pending step
+    ["#eeeaff", "#38365c"] // order status
+  ]) {
+    assert.ok(
+      contrast(foreground, background) >= 7,
+      "Active dark delivery text should have >=7:1 contrast: " + foreground
+    );
+  }
+  assert.match(
+    account,
+    /className="customer-account-order-v2\s*customer-account-order-v2--active"/
+  );
+  assert.match(account, /className="customer-account-delivery-overview"/);
+  assert.match(account, /<DeliveryProgress\s*order=\{order\}\s*\/>/);
+  assert.match(qa, /async\s*function\s*checkActiveDeliveryDarkContrast\(page,\s*\s*viewport\)/);
+  assert.match(
+    qa,
+    /Delivery\s*tracking\s*dark\s*summary\s*tiles\s*reverted\s*to\s*light-mode\s*surfaces/
+  );
+  assert.match(qa, /Delivery\s*tracking\s*order\s*text\s*contrast\s*is\s*insufficient/);
+});
+
+test("mobile Account button opens five actions and removes the redundant rail", () => {
+  const css = read("frontend/src/styles/customer-adaptive-mobile.css");
+  const nav = read("frontend/src/components/customer/CustomerMobileNav.tsx");
+  const account = read("frontend/src/pages/customer/CustomerAccountPage.tsx");
+  const app = read("frontend/src/app/CustomerApp.tsx");
+  const qa = read("tools/mobile-qa/run.mjs");
+
+  assert.match(
+    css,
+    /@media \(max-width: 1180px\)\s*\{[\s\S]*?\.customer-app \.customer-account-page-v2 \.customer-account-rail\s*\{\s*display: none;/
+  );
+  assert.match(
+    css,
+    /\.customer-mobile-account__popover\s*\{[^}]*position: fixed;[^}]*z-index: 215;[^}]*bottom: calc\(var\(--store-mobile-measured-dock-height, 76px\) \+ 12px\);/
+  );
+  assert.match(css, /:root\.dark \.customer-mobile-account__popover/);
+  assert.match(css, /\.customer-mobile-account__view\[aria-current="page"\]/);
+
+  assert.match(nav, /aria-haspopup="dialog"/);
+  assert.match(nav, /aria-expanded=\{accountOpen\}/);
+  assert.match(nav, /role="dialog"/);
+  assert.match(nav, /document\.addEventListener\("pointerdown", dismissOutside, true\)/);
+  assert.match(nav, /document\.addEventListener\("keydown", dismissEscape\)/);
+  for (const view of ["orders", "favorites", "profile", "security"]) {
+    assert.ok(nav.includes('view: "' + view + '"'), "Missing account option " + view);
+  }
+  assert.match(nav, /navigate\(`\/account\?view=\$\{view\}`\)/);
+  assert.match(nav, /await logout\(\)/);
+  assert.match(nav, /createPortal\(/);
+
+  assert.match(account, /const \[activeTab, setActiveTab\] = useState<AccountTab>\("orders"\)/);
+  assert.match(
+    account,
+    /new URL\(location, window\.location\.origin\)\.searchParams\.get\("view"\)/
+  );
+  assert.match(app, /<CustomerAccountPage location=\{location\} navigate=\{navigate\}/);
+
+  const accountTablist = account
+    .split('aria-label="Account views" role="tablist"')[1]
+    ?.split("</nav>")[0];
+  assert.ok(accountTablist, "Desktop account tablist missing");
+  for (const view of ["orders", "favorites", "profile", "security"]) {
+    assert.ok(accountTablist.includes('onClick={() => setActiveTab("' + view + '")}'));
+  }
+  assert.match(qa, /async function checkMobileAccountTabs\(page, viewport\)/);
+  assert.match(qa, /Account rail still occupies mobile space/);
+});
+
+test("Favorites card density and pagination stay bounded with removal", () => {
+  const page = read("frontend/src/pages/customer/CustomerAccountPage.tsx");
+  const style = read("frontend/src/styles/customer-commerce-premium.css");
+  const qa = read("tools/mobile-qa/run.mjs");
+  const scoped = style.split("/* Sprint 12 Favorites: bounded product density")[1];
+  assert.ok(scoped, "Favorites-only product sizing styles are missing");
+
+  assert.match(page, /const\s*\[favoritesPage,\s*\s*setFavoritesPage\]\s*=\s*useState\(1\);/);
+  assert.match(page, /const\s*favoritesPageSize\s*=\s*8;/);
+  assert.match(
+    page,
+    /Math\.max\(1,\s*\s*Math\.ceil\(favoriteProducts\.length\s*\/\s*favoritesPageSize\)\)/
+  );
+  assert.match(
+    page,
+    /favoriteProducts\.slice\(\s*\(favoritesPage\s*-\s*1\)\s*\*\s*favoritesPageSize,\s*\s*favoritesPage\s*\*\s*favoritesPageSize\s*\)/
+  );
+  assert.match(
+    page,
+    /if\s*\(favoritesPage\s*>\s*favoritesTotalPages\)\s*setFavoritesPage\(favoritesTotalPages\);/
+  );
+  assert.match(page, /paginatedFavoriteProducts\.map\(\(product\)\s*=>/);
+  assert.match(page, /favoriteProducts\.length\s*>\s*favoritesPageSize\s*\?\s*\(/);
+  assert.match(
+    page,
+    /className="customer-account-history-pagination\s*customer-account-favorites-pagination"/
+  );
+  assert.match(page, /itemLabel="favorites"/);
+  assert.match(page, /onPageChange=\{setFavoritesPage\}/);
+  assert.match(page, /pageSize=\{favoritesPageSize\}/);
+  assert.match(page, /totalItems=\{favoriteProducts\.length\}/);
+
+  assert.match(
+    scoped,
+    /\.customer-app\s*#favorites-panel\s*\.customer-account-favorites-grid\s*\{[^}]*grid-template-columns:\s*repeat\(4,\s*\s*minmax\(0,\s*\s*1fr\)\);/
+  );
+  assert.match(
+    scoped,
+    /\.customer-app\s*#favorites-panel\s*\.customer-account-favorites-grid\s*\.customer-product-visual\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*3;/
+  );
+  assert.match(scoped, /@media\s*\(min-width:\s*641px\)\s*and\s*\(max-width:\s*1050px\)/);
+  assert.match(
+    scoped,
+    /@media\s*\(max-width:\s*640px\)\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*\s*minmax\(0,\s*\s*1fr\)\);/
+  );
+  assert.match(
+    scoped,
+    /\.customer-account-favorites-grid\s*\.customer-product-card__actions\s*\.customer-quantity\s*>\s*button,\s*[\s\S]*?min-height:\s*44px;/
+  );
+  assert.match(qa, /async\s*function\s*checkFavoritesCardDensity\(page,\s*\s*viewport\)/);
+  assert.match(qa, /Favorites\s*cards\s*are\s*oversized\s*or\s*overflowing/);
+  assert.match(qa, /await\s*checkFavoritesCardDensity\(page,\s*\s*viewport\)/);
+});
+
+test("Active order contrast QA models the actual Account tree and diagnoses missing dark styles", () => {
+  const qa = read("tools/mobile-qa/run.mjs");
+  const contrast = read("frontend/src/styles/theme-storefront-contrast.css");
+  assert.match(
+    qa,
+    /fixture\.className\s*=\s*"customer-account-page-v2\s*ys-glass-flow-background"/
+  );
+  assert.match(qa, /<main\s*class="customer-account-content-v2">/);
+  assert.match(qa, /<section\s*id="orders-panel"\s*role="tabpanel"/);
+  assert.match(qa, /selectorMatches:\s*!!card\?\.matches\(darkSelector\)/);
+  assert.match(qa, /documentDark:\s*root\.classList\.contains\("dark"\)/);
+  assert.match(qa, /check\.ratio\s*<\s*4\.5/);
+  assert.match(
+    contrast,
+    /:root\.dark\s*\.customer-app\s*\.customer-account-page-v2\s*#orders-panel\s*\.customer-account-order-v2--active\s*\.customer-account-delivery-overview\s*>\s*div\s*\{[^}]*background:\s*#2b3b55;/
+  );
+});

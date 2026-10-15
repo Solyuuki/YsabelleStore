@@ -220,7 +220,7 @@ export function HistoricalSalesPage() {
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto rounded-md border border-slate-200">
-                <Table>
+                <Table className="retail-mobile-data-table">
                   <TableHeader className="bg-slate-50">
                     <TableRow>
                       <TableHead>Product</TableHead>
@@ -233,16 +233,23 @@ export function HistoricalSalesPage() {
                   <TableBody>
                     {eligibility.items.map((item) => (
                       <TableRow key={item.productId}>
-                        <TableCell>
+                        <TableCell data-label="Product">
                           <p className="font-medium">{item.productName}</p>
                           <p className="text-xs text-slate-500">{item.productId}</p>
                         </TableCell>
-                        <TableCell className="text-right">{item.observationCount}</TableCell>
-                        <TableCell className="text-right">{item.missingMonths.length}</TableCell>
-                        <TableCell>
+                        <TableCell data-label="Observations" className="text-right">
+                          {item.observationCount}
+                        </TableCell>
+                        <TableCell data-label="Missing months" className="text-right">
+                          {item.missingMonths.length}
+                        </TableCell>
+                        <TableCell data-label="Status">
                           <EligibilityBadge status={item.status} />
                         </TableCell>
-                        <TableCell className="max-w-md text-sm text-slate-600">
+                        <TableCell
+                          data-label="Assessment"
+                          className="max-w-md text-sm text-slate-600"
+                        >
                           {item.reason}
                         </TableCell>
                       </TableRow>
@@ -277,7 +284,7 @@ export function HistoricalSalesPage() {
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto rounded-md border border-slate-200">
-                <Table>
+                <Table className="retail-mobile-data-table">
                   <TableHeader className="bg-slate-50">
                     <TableRow>
                       <TableHead>Batch</TableHead>
@@ -293,24 +300,32 @@ export function HistoricalSalesPage() {
                   <TableBody>
                     {history.items.map((batch) => (
                       <TableRow key={batch.id}>
-                        <TableCell>
+                        <TableCell data-label="Batch">
                           <p className="font-medium">{batch.batchCode}</p>
                           <p className="max-w-48 truncate text-xs text-slate-500">
                             {batch.originalFileName}
                           </p>
                         </TableCell>
-                        <TableCell>
+                        <TableCell data-label="Imported">
                           <p>{formatDate(batch.createdAt)}</p>
                           <p className="text-xs text-slate-500">{batch.importedBy.name}</p>
                         </TableCell>
-                        <TableCell className="text-xs">{friendly(batch.importMode)}</TableCell>
-                        <TableCell className="text-right">{batch.totalRows}</TableCell>
-                        <TableCell className="text-right">{batch.importedRows}</TableCell>
-                        <TableCell className="text-right">{batch.skippedRows}</TableCell>
-                        <TableCell>
+                        <TableCell data-label="Mode" className="text-xs">
+                          {friendly(batch.importMode)}
+                        </TableCell>
+                        <TableCell data-label="Rows" className="text-right">
+                          {batch.totalRows}
+                        </TableCell>
+                        <TableCell data-label="Written" className="text-right">
+                          {batch.importedRows}
+                        </TableCell>
+                        <TableCell data-label="Skipped" className="text-right">
+                          {batch.skippedRows}
+                        </TableCell>
+                        <TableCell data-label="Status">
                           <BatchBadge status={batch.status} />
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell data-label="Actions" className="text-right">
                           <Button
                             onClick={() => setSelectedBatchId(batch.id)}
                             size="sm"

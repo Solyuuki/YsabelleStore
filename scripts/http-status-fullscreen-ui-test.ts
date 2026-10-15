@@ -21,7 +21,10 @@ const internalRoutesSource = source("src/utils/internalAuthRoutes.ts");
 assert.match(statusScreenSource, /createPortal/);
 assert.match(statusScreenSource, /data-status-overlay-lock-count/);
 assert.match(statusScreenSource, /data-status-variant/);
-assert.match(statusScreenSource, /BrandLogo/);
+// Status screens must contain only their failure-state illustration,
+// status code, message and recovery actions; never the storefront logo.
+assert.doesNotMatch(statusScreenSource, /BrandLogo|status-screen__brand-logo/);
+assert.doesNotMatch(statusScreenSource, /variant !== "system"/);
 assert.match(statusScreenSource, /StatusIllustration/);
 assert.match(statusScreenSource, /status-screen-main/);
 assert.match(statusScreenSource, /variant === "auth"/);
