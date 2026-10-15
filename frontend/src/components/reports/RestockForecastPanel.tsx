@@ -74,7 +74,8 @@ function monthlyRecommendationAction(
     ((candidate.forecastDecision?.riskLevel === "HIGH" ||
       candidate.forecastDecision?.riskLevel === "CRITICAL") &&
       candidate.recommendedQuantity > 0)
-  ) return "RESTOCK";
+  )
+    return "RESTOCK";
   if (candidate.expiryRiskQuantity > 0) return "EXPIRY_REVIEW";
   if (candidate.stockHealth.status === "OVERSTOCK") return "REDUCE_REPLENISHMENT";
   return "NO_ACTION";
@@ -290,7 +291,10 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
           item.recommendedQuantity > 0 &&
           (item.forecastDecision?.riskLevel === "HIGH" ||
             item.forecastDecision?.riskLevel === "CRITICAL");
-        return sum + Math.max(0, urgent ? item.recommendedQuantity : item.nextMonthRestock.estimatedRestock);
+        return (
+          sum +
+          Math.max(0, urgent ? item.recommendedQuantity : item.nextMonthRestock.estimatedRestock)
+        );
       }, 0)
     };
   }, [items]);
@@ -536,7 +540,9 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                                   {formatNumber(activeRestock.totalRemaining)}
                                 </span>
                                 <span className="block text-[11px] font-medium text-indigo-600">
-                                  {activeRestock.latestStatus === "DRAFT" ? "for review" : "incoming"}
+                                  {activeRestock.latestStatus === "DRAFT"
+                                    ? "for review"
+                                    : "incoming"}
                                 </span>
                               </div>
                             ) : displayQuantity > 0 ? (
@@ -792,9 +798,7 @@ function RecommendationCard({
   useEffect(() => setExpandedMobileDetails(false), [selected.product.id]);
   const urgent =
     selected.recommendedQuantity > 0 &&
-    (selected.stockHealth.status === "OUT_OF_STOCK" ||
-      risk === "CRITICAL" ||
-      risk === "HIGH");
+    (selected.stockHealth.status === "OUT_OF_STOCK" || risk === "CRITICAL" || risk === "HIGH");
   const tone = hasProcessedOrder ? "indigo" : needsOrder ? "amber" : "emerald";
   const classes = {
     amber: {
