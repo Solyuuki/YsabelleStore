@@ -20,3 +20,41 @@ export function monthlyRestockCycle(now = new Date()) {
 export function nextMonthlyRestockDate(now = new Date()) {
   return monthlyRestockCycle(now).nextRestockAt;
 }
+
+export type NextMonthRestockProjectionInput = {
+  currentDemand: number;
+  expectedNextDemand: number;
+  sellableStock: number;
+  incomingStock: number;
+  expiryRiskQuantity: number;
+  targetStockLevel: number;
+  reorderLevel: number;
+};
+
+/** One canonical quantity projection for the API, Dashboard, and Reports UI. */
+export function estimateNextMonthRestock(input: NextMonthRestockProjectionInput) {
+  const safe = (value: number) => (Number.isFinite(value) ? Math.max(0, value) : 0);
+  const currentDemand = Math.ceil(safe(input.currentDemand));
+  const expectedDemand = Math.ceil(safe(input.expectedNextDemand));
+  const usableStock = Math.max(
+    0,
+    safe(input.sellableStock) + safe(input.incomingStock) - safe(input.expiryRiskQuantity)
+  );
+  const projectedOpeningStock = Math.max(0, usableStock - currentDemand);
+  const targetStockLevel = safe(input.targetStockLevel);
+  const reorderLevel = safe(input.reorderLevel);
+  const demandGap = Math.max(
+    0,
+    Math.ceil(targetStockLevel + expectedDemand - projectedOpeningStock)
+  );
+  const reorderGap =
+    reorderLevel > 0 && projectedOpeningStock <= reorderLevel
+      ? Math.max(0, Math.ceil(reorderLevel + 1 - projectedOpeningStock))
+      : 0;
+
+  return {
+    estimatedRestock: Math.max(demandGap, reorderGap),
+    expectedDemand,
+    projectedOpeningStock
+  };
+}
