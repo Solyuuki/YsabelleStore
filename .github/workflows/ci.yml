@@ -92,7 +92,7 @@ jobs:
       JWT_SECRET: ci-only-secret
       CUSTOMER_OAUTH_TRANSACTION_KEY: ci-only-oauth-transaction-key-32-bytes-minimum
       FRONTEND_URL: http://localhost:5173
-      YSABELLE_BRANCH: ${{ github.head_ref || github.ref_name }}
+      YSABELLE_BRANCH: ${{ github.event_name == 'push' && github.event.created && 'branch-creation' || github.head_ref || github.ref_name }}
       YSABELLE_BASE_REF: ${{ github.base_ref }}
       YSABELLE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       YSABELLE_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
