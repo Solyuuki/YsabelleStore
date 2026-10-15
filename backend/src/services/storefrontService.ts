@@ -15,7 +15,8 @@ import { getEffectiveMonthlySeries } from "../modules/forecasting/effective-sale
 import {
   buildProductSizeFamilyKey,
   extractCanonicalProductSize,
-  normalizeProductIdentity
+  normalizeProductIdentity,
+  verifiedProductSizeFamilyId
 } from "../utils/catalogIdentity.js";
 import { HttpError } from "../utils/httpError.js";
 import type {
@@ -166,6 +167,17 @@ function packagingLabel(unit: StorefrontProductRecord["unit"]) {
 }
 
 function isSameSizeVariantFamily(left: StorefrontProductRecord, right: StorefrontProductRecord) {
+  if (left.familyId && right.familyId) return left.familyId === right.familyId;
+
+  if (left.familyId || right.familyId) {
+    const verifiedId = verifiedProductSizeFamilyId(left);
+    return (
+      Boolean(verifiedId) &&
+      verifiedId === verifiedProductSizeFamilyId(right) &&
+      verifiedId === (left.familyId ?? right.familyId)
+    );
+  }
+
   return buildProductSizeFamilyKey(left) === buildProductSizeFamilyKey(right);
 }
 
@@ -188,7 +200,12 @@ async function listStorefrontSizeVariants(product: StorefrontProductRecord) {
     await prisma.product.findMany({
       include: storefrontProductInclude,
       orderBy: [{ name: "asc" }, { id: "asc" }],
-      where: storefrontProductWhere({ categoryId: product.categoryId })
+      where: storefrontProductWhere({
+        categoryId: product.categoryId,
+        ...(product.familyId
+          ? { OR: [{ familyId: product.familyId }, { familyId: null }] }
+          : {})
+      })
     })
   )
     .map((candidate) => {
@@ -196,11 +213,8 @@ async function listStorefrontSizeVariants(product: StorefrontProductRecord) {
       if (!size || !isSameSizeVariantFamily(product, candidate)) return null;
 
       const packageConfiguration = isPackageConfiguration(candidate.unit);
-      const compatibleDimension =
-        size.dimension === selectedSize.dimension ||
-        packageConfiguration ||
-        isPackageConfiguration(product.unit);
-      if (!compatibleDimension) return null;
+      // PACK/BOX are sale-unit labels, not proof that weight/volume/count match.
+      if (size.dimension !== selectedSize.dimension) return null;
 
       const availableStock = getSellableStockQuantity(candidate.inventoryBatches);
       return {

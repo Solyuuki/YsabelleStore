@@ -711,6 +711,7 @@ model Product {
   imageUrl                  String?                     @map("image_url") @db.VarChar(2048)
   brand                     String?                     @db.VarChar(120)
   variant                   String?                     @db.VarChar(120)
+  familyId                  String?                     @map("family_id") @db.VarChar(191)
   sizeValue                 Decimal?                    @map("size_value") @db.Decimal(10, 3)
   sizeUnit                  ProductSizeUnit?            @map("size_unit")
   unit                      ProductUnit                 @default(PIECE)
@@ -728,6 +729,7 @@ model Product {
   createdAt                 DateTime                    @default(now()) @map("created_at")
   updatedAt                 DateTime                    @updatedAt @map("updated_at")
   category                  Category                    @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  family                    ProductFamily?              @relation(fields: [familyId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   activeImageAsset          ProductImageAsset?          @relation("ActiveProductImage", fields: [activeImageAssetId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   imageAssets               ProductImageAsset[]         @relation("ProductImageAssets")
   barcodes                  ProductBarcode[]
@@ -754,11 +756,39 @@ model Product {
   restockOrderLines         RestockOrderLine[]
 
   @@index([categoryId, status], map: "idx_products_category_status")
+  @@index([familyId, status], map: "idx_products_family_status")
   @@index([name], map: "idx_products_name")
   @@index([status, createdAt], map: "idx_products_status_created")
   @@index([isStorefrontVisible, dataQualityStatus, status], map: "idx_products_storefront_quality")
   @@index([recordSource, dataQualityStatus], map: "idx_products_source_quality")
   @@map("products")
+}
+
+model ProductFamily {
+  id            String               @id @default(cuid()) @db.VarChar(191)
+  brand         String               @db.VarChar(120)
+  canonicalName String               @map("canonical_name") @db.VarChar(160)
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+  products      Product[]
+  aliases       ProductFamilyAlias[]
+
+  @@index([brand, canonicalName], map: "idx_product_families_identity")
+  @@map("product_families")
+}
+
+model ProductFamilyAlias {
+  id              String        @id @default(cuid()) @db.VarChar(191)
+  familyId        String        @map("family_id") @db.VarChar(191)
+  alias           String        @db.VarChar(160)
+  normalizedAlias String        @map("normalized_alias") @db.VarChar(160)
+  sourceReference String?       @map("source_reference") @db.VarChar(191)
+  createdAt       DateTime      @default(now()) @map("created_at")
+  family          ProductFamily @relation(fields: [familyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([familyId, normalizedAlias], map: "uq_product_family_alias_identity")
+  @@index([normalizedAlias], map: "idx_product_family_alias_lookup")
+  @@map("product_family_aliases")
 }
 
 model ProductBarcode {

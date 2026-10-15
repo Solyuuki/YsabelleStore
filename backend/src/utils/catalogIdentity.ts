@@ -45,19 +45,52 @@ type CatalogIdentityProduct = {
 
 const SIZE_FAMILY_TOKEN_PATTERN = /\b\d+(?:\.\d+)?\s*(?:ml|l|g|kg|pcs?)\b/gi;
 
+// These identities have been verified against the actual product line, not guessed
+// from similar brand/variant strings. Keep aliases scoped by brand and full line name.
+const VERIFIED_SIZE_FAMILIES = [
+  {
+    id: "ysfam-gardenia-enriched-white",
+    brand: "gardenia",
+    variants: ["classic enriched white", "enriched white"],
+    names: ["gardenia classic enriched white bread", "gardenia enriched white bread"]
+  }
+] as const;
+
+
 export function normalizeSizeFamilyName(value: string) {
   return normalizeProductIdentity(
     normalizeCanonicalProductName(value).replace(SIZE_FAMILY_TOKEN_PATTERN, " ")
   );
 }
 
-export function buildProductSizeFamilyKey(product: CatalogIdentityProduct) {
+export function verifiedProductSizeFamilyId(product: CatalogIdentityProduct): string | null {
   const brand = product.brand ? normalizeProductIdentity(product.brand) : "";
   const variant = product.variant ? normalizeProductIdentity(product.variant) : "";
+  const name = normalizeSizeFamilyName(product.name);
 
-  if (brand && variant) return `brand:${brand}|variant:${variant}`;
+  for (const family of VERIFIED_SIZE_FAMILIES) {
+    if (
+      brand === family.brand &&
+      family.variants.some((alias) => alias === variant) &&
+      family.names.some((alias) => alias === name)
+    ) {
+      return family.id;
+    }
+  }
+  return null;
+}
 
+export function buildProductSizeFamilyKey(product: CatalogIdentityProduct) {
+  const verifiedFamilyId = verifiedProductSizeFamilyId(product);
+  if (verifiedFamilyId) return `verified:${verifiedFamilyId}`;
+
+  const brand = product.brand ? normalizeProductIdentity(product.brand) : "";
+  const variant = product.variant ? normalizeProductIdentity(product.variant) : "";
   const familyName = normalizeSizeFamilyName(product.name);
+
+  // Matching a generic variant (e.g. "Original") without a product line creates
+  // false positives. Unknown naming differences remain separate until verified.
+  if (brand && variant) return `brand:${brand}|line:${familyName}|variant:${variant}`;
   return `brand:${brand || "unknown"}|name:${familyName}`;
 }
 
