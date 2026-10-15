@@ -96,13 +96,13 @@ test("image recovery requires exact canonical baseline, verified latest candidat
   const { parseCatalogImageRecoveryArgs, inspectCatalogImageRecovery } =
     await import("../catalog-image-restore-approved.mjs");
   const canonical = "sarima-p048-2933697c7efd";
-  const cli = [
-    "--sku", "SARIMA-P048", "--image-id", id,
-    "--expected-active-id", canonical
-  ];
+  const cli = ["--sku", "SARIMA-P048", "--image-id", id, "--expected-active-id", canonical];
   assert.equal(parseCatalogImageRecoveryArgs(cli).apply, false);
   assert.throws(() => parseCatalogImageRecoveryArgs([...cli, "--apply"]));
-  assert.equal(parseCatalogImageRecoveryArgs([...cli, "--apply", "--backup-confirmed"]).apply, true);
+  assert.equal(
+    parseCatalogImageRecoveryArgs([...cli, "--apply", "--backup-confirmed"]).apply,
+    true
+  );
   assert.throws(() => parseCatalogImageRecoveryArgs([...cli, "--bogus"]));
   const product = { id: "happy", sku: "SARIMA-P048", activeImageAssetId: canonical };
   const candidate = {
@@ -118,16 +118,34 @@ test("image recovery requires exact canonical baseline, verified latest candidat
     cardStorageKey: `candidates/${id}/processed/card.webp`,
     pdpStorageKey: `candidates/${id}/processed/pdp.webp`
   };
-  assert.throws(() => inspectCatalogImageRecovery({
-    product, candidate, newestApproved: candidate,
-    expectedActiveId: "wrong-active", imageId: id, canonicalId: canonical
-  }));
-  assert.throws(() => inspectCatalogImageRecovery({
-    product, candidate: { ...candidate, supersededAt: new Date() },
-    newestApproved: candidate, expectedActiveId: canonical, imageId: id, canonicalId: canonical
-  }));
-  assert.throws(() => inspectCatalogImageRecovery({
-    product, candidate, newestApproved: { id: "newer" },
-    expectedActiveId: canonical, imageId: id, canonicalId: canonical
-  }));
+  assert.throws(() =>
+    inspectCatalogImageRecovery({
+      product,
+      candidate,
+      newestApproved: candidate,
+      expectedActiveId: "wrong-active",
+      imageId: id,
+      canonicalId: canonical
+    })
+  );
+  assert.throws(() =>
+    inspectCatalogImageRecovery({
+      product,
+      candidate: { ...candidate, supersededAt: new Date() },
+      newestApproved: candidate,
+      expectedActiveId: canonical,
+      imageId: id,
+      canonicalId: canonical
+    })
+  );
+  assert.throws(() =>
+    inspectCatalogImageRecovery({
+      product,
+      candidate,
+      newestApproved: { id: "newer" },
+      expectedActiveId: canonical,
+      imageId: id,
+      canonicalId: canonical
+    })
+  );
 });

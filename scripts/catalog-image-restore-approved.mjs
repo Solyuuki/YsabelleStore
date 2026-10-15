@@ -14,8 +14,12 @@ import { resolveRuntimeRoot } from "./canonical-asset-materializer.mjs";
 
 export function parseCatalogImageRecoveryArgs(argv) {
   const permitted = new Set([
-    "--sku", "--product-id", "--image-id", "--expected-active-id",
-    "--apply", "--backup-confirmed"
+    "--sku",
+    "--product-id",
+    "--image-id",
+    "--expected-active-id",
+    "--apply",
+    "--backup-confirmed"
   ]);
   const values = {};
   for (let index = 0; index < argv.length; index += 1) {
@@ -55,7 +59,14 @@ export function parseCatalogImageRecoveryArgs(argv) {
   };
 }
 
-export function inspectCatalogImageRecovery({ product, candidate, newestApproved, expectedActiveId, imageId, canonicalId }) {
+export function inspectCatalogImageRecovery({
+  product,
+  candidate,
+  newestApproved,
+  expectedActiveId,
+  imageId,
+  canonicalId
+}) {
   if (!product || !candidate || !newestApproved) {
     throw new Error("Product or approved image candidate was not found.");
   }
@@ -63,7 +74,9 @@ export function inspectCatalogImageRecovery({ product, candidate, newestApproved
     throw new Error("Active product image changed; aborting stale recovery.");
   }
   if (canonicalId !== expectedActiveId) {
-    throw new Error("The expected active image is not the reviewed canonical image; refusing overwrite.");
+    throw new Error(
+      "The expected active image is not the reviewed canonical image; refusing overwrite."
+    );
   }
   if (candidate.id !== imageId || candidate.productId !== product.id) {
     throw new Error("Candidate does not belong to the selected product.");
@@ -113,14 +126,17 @@ async function main() {
   const args = parseCatalogImageRecoveryArgs(process.argv.slice(2));
   const prisma = new PrismaClient();
   try {
-    const state = JSON.parse(readFileSync(join("database", "prisma", "state", "canonical-state.json"), "utf8"));
+    const state = JSON.parse(
+      readFileSync(join("database", "prisma", "state", "canonical-state.json"), "utf8")
+    );
     const release = JSON.parse(readFileSync(state.canonicalReleasePath, "utf8"));
     const product = await prisma.product.findUnique({
       where: args.sku ? { sku: args.sku } : { id: args.productId }
     });
     if (!product) throw new Error("Product not found.");
-    const canonicalId = release.products.find((item) => item.productId === product.id)
-      ?.catalogImage?.activeImageAssetId ?? null;
+    const canonicalId =
+      release.products.find((item) => item.productId === product.id)?.catalogImage
+        ?.activeImageAssetId ?? null;
     const [candidate, newestApproved] = await Promise.all([
       prisma.productImageAsset.findUnique({ where: { id: args.imageId } }),
       prisma.productImageAsset.findFirst({
@@ -151,14 +167,24 @@ async function main() {
       const current = await tx.product.findUniqueOrThrow({
         where: { id: plan.productId }
       });
-      const activeCandidate = await tx.productImageAsset.findUniqueOrThrow({
-        where: { id: plan.restoredImageId }
-      });
-      // Validate the same asset again before any database mutation.
+      const [activeCandidate, latestAtCommit] = await Promise.all([
+        tx.productImageAsset.findUniqueOrThrow({ where: { id: plan.restoredImageId } }),
+        tx.productImageAsset.findFirst({
+          where: {
+            productId: plan.productId,
+            qualityStatus: "APPROVED",
+            processingStatus: "READY",
+            rejectedAt: null,
+            approvedAt: { not: null }
+          },
+          orderBy: [{ approvedAt: "desc" }, { createdAt: "desc" }]
+        })
+      ]);
+      // Validate the same asset and latest approval again before any database mutation.
       inspectCatalogImageRecovery({
         product: current,
         candidate: activeCandidate,
-        newestApproved,
+        newestApproved: latestAtCommit,
         expectedActiveId: plan.expectedActiveId,
         imageId: plan.restoredImageId,
         canonicalId
