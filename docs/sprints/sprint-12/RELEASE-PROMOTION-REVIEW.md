@@ -16,35 +16,35 @@ improvements, and privacy-aware rider delivery handoff.
 
 ## Verified release identity
 
-| Field | Value |
-| --- | --- |
-| Active sprint | 12 |
-| App display version | v0.2.0 (independent of sprint number) |
-| npm workspace version | 0.1.0 |
-| Canonical release | `g2-s12-c5-a2` |
-| Schema / catalog / media versions | 12 / 5 / 2 |
-| Reviewed canonical source catalog | 50 products, 200 media variants |
-| Pre-promotion CI | [6/6 passed](https://github.com/Solyuuki/YsabelleStore/actions/runs/38697541211) |
-| PR-specific checks | Must pass on current PR head and reviewed integration result |
+| Field                             | Value                                                                            |
+| --------------------------------- | -------------------------------------------------------------------------------- |
+| Active sprint                     | 12                                                                               |
+| App display version               | v0.2.0 (independent of sprint number)                                            |
+| npm workspace version             | 0.1.0                                                                            |
+| Canonical release                 | `g2-s12-c5-a2`                                                                   |
+| Schema / catalog / media versions | 12 / 5 / 2                                                                       |
+| Reviewed canonical source catalog | 50 products, 200 media variants                                                  |
+| Pre-promotion CI                  | [6/6 passed](https://github.com/Solyuuki/YsabelleStore/actions/runs/38697541211) |
+| PR-specific checks                | Must pass on current PR head and reviewed integration result                     |
 
 ## New and improved
 
-| Newly added | Updated / improved |
-| --- | --- |
-| `dev:mob` and mobile QA preview | Storefront, checkout, account and product-details layouts |
-| Mobile camera barcode scanner | POS, inventory, receiving, dashboard and reporting density |
-| Product-family entities and verified Gardenia size membership | Catalog import identity checks and size selection |
-| Image audit, guarded recovery and reviewed media proposal/export | Owner-edited catalog preservation and PDP freshness |
-| Role-aware rider handoff with privacy boundary | Delivery presentation and mobile notification/status UX |
+| Newly added                                                      | Updated / improved                                         |
+| ---------------------------------------------------------------- | ---------------------------------------------------------- |
+| `dev:mob` and mobile QA preview                                  | Storefront, checkout, account and product-details layouts  |
+| Mobile camera barcode scanner                                    | POS, inventory, receiving, dashboard and reporting density |
+| Product-family entities and verified Gardenia size membership    | Catalog import identity checks and size selection          |
+| Image audit, guarded recovery and reviewed media proposal/export | Owner-edited catalog preservation and PDP freshness        |
+| Role-aware rider handoff with privacy boundary                   | Delivery presentation and mobile notification/status UX    |
 
 ## Local accounts
 
-| Role | Local synthetic account | Boundaries |
-| --- | --- | --- |
-| OWNER | `owner@ysabellestore.local` | Local fixture only |
-| STAFF | `staff@ysabellestore.local` | Local fixture only |
+| Role     | Local synthetic account                        | Boundaries                        |
+| -------- | ---------------------------------------------- | --------------------------------- |
+| OWNER    | `owner@ysabellestore.local`                    | Local fixture only                |
+| STAFF    | `staff@ysabellestore.local`                    | Local fixture only                |
 | CUSTOMER | Register against an isolated local QA database | No shared production user fixture |
-| GUEST | Not authenticated | Browsing only where supported |
+| GUEST    | Not authenticated                              | Browsing only where supported     |
 
 Do not use development fixture credentials or populated test databases on a
 public server. OAuth, PayMongo, email and Gmail credentials are environment-specific
@@ -75,7 +75,7 @@ npm run dev:web
 
 Default local URLs: web `http://localhost:5173`, API
 `http://localhost:3001`, mobile preview `http://localhost:5174/mobile-preview.html`.
-For a newly empty *disposable* QA DB, follow the documented explicit initial
+For a newly empty _disposable_ QA DB, follow the documented explicit initial
 canonical convergence procedure. Do not run `state:pull:sync --force` on live data.
 
 ```powershell
