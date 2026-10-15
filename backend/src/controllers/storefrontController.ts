@@ -121,6 +121,7 @@ export const getStorefrontProductController: RequestHandler = async (request, re
       code: "INVALID_STOREFRONT_PRODUCT_ID"
     });
     const product = await getStorefrontProduct(params.id);
+    response.setHeader("Cache-Control", "private, no-store");
     response.json(
       createSuccessResponse("Storefront product loaded.", {
         ...product,

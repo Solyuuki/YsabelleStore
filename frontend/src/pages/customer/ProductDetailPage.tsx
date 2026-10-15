@@ -125,6 +125,34 @@ export function ProductDetailPage({
     return () => controller.abort();
   }, [productId]);
 
+  // Another tab can approve an image while this PDP remains mounted.
+  // Revalidate on focus without resetting quantity or flashing the product layout.
+  useEffect(() => {
+    const controller = new AbortController();
+    let requestVersion = 0;
+
+    async function refreshVisibleProduct() {
+      if (document.visibilityState === "hidden" || productRef.current?.id !== productId) return;
+      const version = ++requestVersion;
+      try {
+        const latest = await fetchStorefrontProduct(productId, controller.signal);
+        if (controller.signal.aborted || version !== requestVersion) return;
+        productRef.current = latest;
+        setProduct(latest);
+      } catch {
+        // Keep the last usable product detail when a background refresh fails.
+      }
+    }
+
+    window.addEventListener("focus", refreshVisibleProduct);
+    document.addEventListener("visibilitychange", refreshVisibleProduct);
+    return () => {
+      controller.abort();
+      window.removeEventListener("focus", refreshVisibleProduct);
+      document.removeEventListener("visibilitychange", refreshVisibleProduct);
+    };
+  }, [productId]);
+
   const displayedProductId = product?.id ?? null;
 
   useEffect(() => {

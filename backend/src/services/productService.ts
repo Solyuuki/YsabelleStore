@@ -814,13 +814,7 @@ export async function updateProduct(
         where: { id: existingProduct.id }
       });
 
-      if (
-        normalized.dataQualityStatus !== undefined ||
-        normalized.isStorefrontVisible !== undefined ||
-        normalized.name !== undefined ||
-        normalized.categoryId !== undefined ||
-        barcodeUpdateRequested
-      ) {
+      if (Object.keys(data).length > 0 || barcodeUpdateRequested) {
         await transaction.catalogAuditLog.create({
           data: {
             action: "MANUAL_PRODUCT_UPDATE",
