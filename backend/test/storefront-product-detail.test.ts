@@ -275,19 +275,40 @@ test("verified Gardenia family links 400g/600g but excludes unrelated bread", as
 
     await prisma.product.update({
       where: { id: classic.id },
-      data: { brand: "Gardenia", variant: "Classic Enriched White", sizeUnit: "GRAM", sizeValue: "400", unit: "PACK" }
+      data: {
+        brand: "Gardenia",
+        variant: "Classic Enriched White",
+        sizeUnit: "GRAM",
+        sizeValue: "400",
+        unit: "PACK"
+      }
     });
     await prisma.product.update({
       where: { id: enriched.id },
-      data: { brand: "Gardenia", variant: "Enriched White", sizeUnit: "GRAM", sizeValue: "600", unit: "PACK" }
+      data: {
+        brand: "Gardenia",
+        variant: "Enriched White",
+        sizeUnit: "GRAM",
+        sizeValue: "600",
+        unit: "PACK"
+      }
     });
     await prisma.product.update({
       where: { id: unrelated.id },
-      data: { brand: "Gardenia", variant: "Enriched White", sizeUnit: "GRAM", sizeValue: "600", unit: "PACK" }
+      data: {
+        brand: "Gardenia",
+        variant: "Enriched White",
+        sizeUnit: "GRAM",
+        sizeValue: "600",
+        unit: "PACK"
+      }
     });
 
     const detail = await getStorefrontProduct(classic.id);
-    assert.deepEqual(detail.sizeVariants.map((variant) => variant.id), [classic.id, enriched.id]);
+    assert.deepEqual(
+      detail.sizeVariants.map((variant) => variant.id),
+      [classic.id, enriched.id]
+    );
     assert.equal(detail.sizeVariants.some((variant) => variant.id === unrelated.id), false);
   } finally {
     await scope.cleanup();

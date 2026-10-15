@@ -18,6 +18,7 @@
     "0012_pos_checkout_idempotency": "368f0785ec927b1eee07cbffdeed4fb6793324156a32b8bfa12cd0d594b614ae",
     "0013_restock_target_policy_approval": "826dcf0bec716044194ad871efc4197b7a70d8beefc3363a2290dfdccae429f7",
     "0014_canonical_schema_marker_alignment": "4b7d794dfd22b71b5fc4bd107c21ac74bfe5b8d49182c08face0b3d455027afa",
-    "0015_rider_handoff_customer_note": "30f6d33c755585f030ede98a7e548d36db71a0f227668923a54f9d802ac233e0"
+    "0015_rider_handoff_customer_note": "30f6d33c755585f030ede98a7e548d36db71a0f227668923a54f9d802ac233e0",
+    "0016_verified_product_families": "d8fa6de8d4e2b53b9aa66f8c04ae4457ea423253e779d157360076b10b012338"
   }
 }
