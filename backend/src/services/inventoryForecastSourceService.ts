@@ -46,12 +46,17 @@ export async function loadActiveInventoryForecasts(
       sourceProductId: { in: uniqueProductIds }
     }
   });
+  // A prior month's active cache may remain READY while the new model refreshes.
+  // Never treat an expired forecast point as current replenishment demand.
+  const manilaNow = new Date(Date.now() + 8 * 60 * 60 * 1000);
+  const currentMonth = manilaNow.toISOString().slice(0, 7);
   const forecastMonth = batch.forecastStartMonth.toISOString().slice(0, 7);
+  const firstUsableMonth = currentMonth > forecastMonth ? currentMonth : forecastMonth;
 
   for (const row of rows) {
     const detail = row.detailPayload as unknown as ProductForecastDetail;
     const points = detail.forecast
-      .filter((point) => point.period >= forecastMonth)
+      .filter((point) => point.period.slice(0, 7) >= firstUsableMonth)
       .map((point) => ({
         lowerConfidence: point.lowerConfidence,
         period: point.period,

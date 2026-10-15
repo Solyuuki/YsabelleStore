@@ -125,6 +125,7 @@ export type DashboardOperations = {
   generatedAt: string;
   restock: {
     actionableProducts: number;
+    scheduledRestockAt: string;
     actions: DashboardRestockAction[];
     restockProducts: number;
     otherReviewProducts: number;
