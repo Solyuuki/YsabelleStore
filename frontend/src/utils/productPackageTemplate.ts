@@ -96,10 +96,7 @@ export function createProductTemplateZip(entries: ZipEntry[]): Uint8Array {
 export async function downloadProductPackageTemplate(): Promise<void> {
   // The canonical header comes from the backend validator; category options
   // come from the current database rather than the storefront taxonomy.
-  const [header, categories] = await Promise.all([
-    downloadProductImportTemplate(),
-    fetchCategories()
-  ]);
+  const [header, categories] = await Promise.all([downloadProductImportTemplate(), fetchCategories()]);
   if (!header.trim() || !header.includes("initialStock") || !header.includes("sku")) {
     throw new Error("The current product import schema could not be loaded.");
   }
@@ -147,9 +144,11 @@ export async function downloadProductPackageTemplate(): Promise<void> {
     { name: "images/", bytes: new Uint8Array(), isDirectory: true },
     { name: "README-FIRST.txt", bytes: encoder.encode(readme) }
   ]);
-  const url = URL.createObjectURL(new Blob([zip.buffer as ArrayBuffer], {
-    type: "application/zip"
-  }));
+  const url = URL.createObjectURL(
+    new Blob([zip.buffer as ArrayBuffer], {
+      type: "application/zip"
+    })
+  );
   try {
     const anchor = document.createElement("a");
     anchor.href = url;
