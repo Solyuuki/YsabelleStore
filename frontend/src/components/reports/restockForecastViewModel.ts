@@ -15,6 +15,7 @@ export const RISK_PRIORITY: Record<RestockForecastRisk, number> = {
 };
 
 export const ACTIVE_RESTOCK_STATUSES = [
+  "DRAFT",
   "APPROVED",
   "AWAITING_DELIVERY",
   "PARTIALLY_RECEIVED"
@@ -85,7 +86,8 @@ export function formatDate(value: string | null | undefined) {
   return new Intl.DateTimeFormat("en-PH", {
     day: "numeric",
     month: "short",
-    year: "numeric"
+    year: "numeric",
+    timeZone: "Asia/Manila"
   }).format(date);
 }
 
@@ -255,13 +257,15 @@ export function coverageLabel(candidate: RestockPlanningCandidate | null) {
 }
 
 function nextMonthDate(candidate: RestockPlanningCandidate | null) {
-  const forecastPeriod = candidate?.forecast?.points[0]?.period;
-  if (forecastPeriod) {
-    const forecastDate = new Date(forecastPeriod);
-    if (!Number.isNaN(forecastDate.getTime())) return forecastDate;
+  // The backend date is midnight Manila; shift it for UTC-based month labels.
+  const activation = candidate?.scheduledRestockAt;
+  if (activation) {
+    const date = new Date(activation);
+    if (Number.isFinite(date.getTime())) {
+      return new Date(date.getTime() + 8 * 60 * 60 * 1000);
+    }
   }
-
-  const fallback = new Date();
+  const fallback = new Date(Date.now() + 8 * 60 * 60 * 1000);
   return new Date(Date.UTC(fallback.getUTCFullYear(), fallback.getUTCMonth() + 1, 1));
 }
 
@@ -272,10 +276,14 @@ export function buildNextMonthRestockPreview(
   if (!candidate) return null;
 
   const previewDate = nextMonthDate(candidate);
+  const nextPeriod = previewDate.toISOString().slice(0, 7);
+  const nextMonthForecast = candidate.forecast?.points.find(
+    (point) => point.period.slice(0, 7) === nextPeriod
+  );
   const expectedDemand = Math.max(
     0,
     Math.ceil(
-      candidate.forecast?.points[0]?.predictedQuantity ??
+      nextMonthForecast?.predictedQuantity ??
         candidate.forecastDecision?.currentMonthDemand ??
         candidate.forecast?.currentMonthDemand ??
         0
@@ -303,7 +311,7 @@ export function buildNextMonthRestockPreview(
   const activeIncoming = Math.max(
     0,
     Math.ceil(candidate.incomingStock),
-    Math.ceil(activeRestock?.totalRemaining ?? 0)
+    Math.ceil(activeRestock?.latestStatus === "DRAFT" ? 0 : (activeRestock?.totalRemaining ?? 0))
   );
 
   return {
@@ -418,6 +426,7 @@ export function buildActiveRestockByProduct(orders: RestockOrder[]) {
 
   for (const order of orders) {
     const monthly = order.notes?.includes("[AutomatedRestockMonth:") ?? false;
+    if (order.status === "DRAFT" && !monthly) continue;
     const automated = monthly || (order.notes?.includes("[AutomatedRestock:") ?? false);
 
     for (const line of order.lines) {

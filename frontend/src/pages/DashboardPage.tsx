@@ -415,6 +415,9 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
   const reportMonth = operations
     ? reportMonthFormatter.format(new Date(operations.generatedAt))
     : "Current month";
+  const nextRestockMonth = operations
+    ? reportMonthFormatter.format(new Date(operations.restock.scheduledRestockAt))
+    : "Next month";
   const highPriorityCount = operations
     ? operations.restock.risk.CRITICAL + operations.restock.risk.HIGH
     : 0;
@@ -443,7 +446,7 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
               }`}
             >
               {operations.restock.actionableProducts > 0
-                ? `${operations.restock.actionableProducts} to review`
+                ? `${operations.restock.actionableProducts} projected / review`
                 : "All clear"}
             </span>
           ) : null}
@@ -458,7 +461,7 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
           <>
             <div className="ys-dashboard-report-stats grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <MonthlyReportStat
-                label="Products requiring action"
+                label="Products in plan / review"
                 value={operations.restock.actionableProducts}
               />
               <MonthlyReportStat
@@ -484,15 +487,15 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
                       Monthly restock plan
                     </div>
                     <h3 className="mt-1 text-base font-semibold tracking-tight text-slate-950">
-                      {reportMonth} · Restock plan
+                      {nextRestockMonth} · Next restock preview
                     </h3>
                     <p className="ys-dashboard-monthly-batch-description mt-1 max-w-3xl text-xs leading-5 text-slate-600">
-                      Live recommendation batch covering products to replenish and other inventory
-                      concerns. Review every product and quantity before making a purchase decision.
+                      Estimated next-month replenishment and independent stock/expiry alerts.
+                      Scheduled purchases wait for monthly activation and Owner approval.
                     </p>
                   </div>
                   <span className="ys-dashboard-monthly-batch__badge rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">
-                    For review
+                    Next restock preview
                   </span>
                 </div>
                 <div className="ys-dashboard-plan-stats mt-4 grid gap-3 sm:grid-cols-3">
@@ -514,7 +517,7 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
                 </div>
                 <div className="ys-dashboard-plan-footer mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-violet-100 pt-3">
                   <p className="text-xs leading-5 text-slate-600">
-                    Recommendation preview only · No purchase ticket is created by this card.
+                    Future-month preview only · No monthly purchase action is required before activation. Existing drafts and critical stock alerts are separate.
                   </p>
                   <Button onClick={() => onNavigate("/reports")} size="sm" type="button">
                     <ClipboardList aria-hidden="true" className="h-4 w-4" />

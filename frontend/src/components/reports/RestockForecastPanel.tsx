@@ -78,7 +78,7 @@ function monthlyRecommendationAction(
 function monthlyRecommendationLabel(action: MonthlyRecommendationAction) {
   switch (action) {
     case "RESTOCK":
-      return "Restock";
+      return "Next restock";
     case "EXPIRY_REVIEW":
       return "Expiry review";
     case "REDUCE_REPLENISHMENT":
@@ -283,9 +283,11 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
   );
   const selectedCoverageDays = selected?.stockHealth.coverageDays ?? null;
   const selectedRisk = selected?.forecastDecision?.riskLevel ?? null;
-  const selectedNeedsOrder = Boolean(selected && selected.recommendedQuantity > 0);
   const selectedHasProcessedOrder = Boolean(
-    !selectedNeedsOrder && selectedActiveRestock && selectedActiveRestock.totalRemaining > 0
+    selectedActiveRestock && selectedActiveRestock.totalRemaining > 0
+  );
+  const selectedNeedsOrder = Boolean(
+    selected && selected.recommendedQuantity > 0 && !selectedHasProcessedOrder
   );
 
   function openForecastProduct(productId: string) {
@@ -371,13 +373,13 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
               </CardTitle>
               <Badge variant={summary.actionCount > 0 ? "warning" : "success"}>
                 {summary.actionCount > 0
-                  ? `${summary.actionCount.toLocaleString()} need action`
+                  ? `${summary.restock.toLocaleString()} planned · ${(summary.reduce + summary.expiry).toLocaleString()} reviews`
                   : "All clear"}
               </Badge>
               <Badge variant="info">Live month</Badge>
             </div>
             <p className="ys-report-v2-intro mt-1 text-xs leading-5 text-slate-500">
-              Complete current-month view across all products. The report updates as sales, stock,
+              Live planning view for the next monthly restock. Estimates update as sales, stock,
               incoming supply, expiry exposure, and forecast guidance change.
             </p>
           </div>
@@ -397,10 +399,10 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
       <CardContent className="space-y-4">
         <div className="ys-report-v2-forecast-metrics grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <ForecastMetric label="Products analyzed" value={summary.products} />
-          <ForecastMetric label="Restock" value={summary.restock} />
+          <ForecastMetric label="Next restock" value={summary.restock} />
           <ForecastMetric label="Reduce" value={summary.reduce} />
           <ForecastMetric label="Expiry review" value={summary.expiry} />
-          <ForecastMetric label="Units to order" value={summary.units} />
+          <ForecastMetric label="Estimated units" value={summary.units} />
         </div>
 
         {summary.actionCount === 0 ? (
@@ -750,7 +752,9 @@ function RecommendationCard({
 }) {
   const [expandedMobileDetails, setExpandedMobileDetails] = useState(false);
   useEffect(() => setExpandedMobileDetails(false), [selected.product.id]);
-  const tone = needsOrder ? "amber" : hasProcessedOrder ? "indigo" : "emerald";
+  const urgent =
+    selected.stockHealth.status === "OUT_OF_STOCK" || risk === "CRITICAL" || risk === "HIGH";
+  const tone = hasProcessedOrder ? "indigo" : needsOrder ? "amber" : "emerald";
   const classes = {
     amber: {
       box: "border-amber-200 bg-amber-50",
@@ -786,31 +790,41 @@ function RecommendationCard({
           <p
             className={`ys-restock-recommendation-label text-xs font-semibold uppercase tracking-wide ${classes.label}`}
           >
-            {hasProcessedOrder ? "Restock batch" : "Recommended next step"}
+            {hasProcessedOrder ? "Restock batch" : urgent ? "Stock alert" : "Next monthly restock"}
           </p>
           <p
             className={`ys-restock-recommendation-title mt-1 text-lg font-semibold ${classes.title}`}
           >
-            {needsOrder
-              ? `Order ${formatNumber(selected.recommendedQuantity)} units`
-              : hasProcessedOrder && activeRestock
-                ? activeRestock.monthly
-                  ? `Included in ${formatBatchMonth(activeRestock.latestCreatedAt)} restock batch`
-                  : "Included in active restock ticket"
+            {hasProcessedOrder && activeRestock
+              ? activeRestock.monthly
+                ? `Included in ${formatBatchMonth(activeRestock.latestCreatedAt)} restock batch`
+                : "Included in active restock ticket"
+              : needsOrder
+                ? urgent
+                  ? `Review urgent stock shortage · ${formatNumber(selected.recommendedQuantity)} units`
+                  : `Estimated ${formatNumber(selected.recommendedQuantity)} units for next restock`
                 : "No order needed right now"}
           </p>
           <p className={`ys-restock-recommendation-body mt-1 text-sm leading-6 ${classes.body}`}>
-            {needsOrder
-              ? `Place the order by ${formatDate(selected.forecastDecision?.recommendedActionDate)}. Current usable stock covers about ${coverageLabel(selected)} at roughly ${formatNumber(demand)} units per month.`
-              : hasProcessedOrder && activeRestock
-                ? `${formatNumber(activeRestock.totalRemaining)} units are included in ${activeRestock.latestOrderNumber}, which is ${orderStatusLabel(activeRestock.latestStatus).toLowerCase()}. Incoming stock is already included in the plan, so no additional restock quantity is required.`
+            {hasProcessedOrder && activeRestock
+              ? activeRestock.latestStatus === "DRAFT"
+                ? `${formatNumber(activeRestock.totalRemaining)} units are saved in ${activeRestock.latestOrderNumber} for Owner review. A draft is not incoming stock and is not a purchase order.`
+                : `${formatNumber(activeRestock.totalRemaining)} units are included in ${activeRestock.latestOrderNumber}, which is ${orderStatusLabel(activeRestock.latestStatus).toLowerCase()}. Incoming stock is already included in the plan, so no additional restock quantity is required.`
+              : needsOrder
+                ? urgent
+                  ? `Stockout risk needs prompt Owner review. Current usable stock covers about ${coverageLabel(selected)} at roughly ${formatNumber(demand)} units per month. Manual emergency procurement remains available.`
+                  : `Scheduled for ${formatDate(selected.scheduledRestockAt)}. This is an estimate, not an order. No monthly restock action is required yet; quantities will be recalculated at cycle activation.`
                 : "Current usable stock is expected to cover demand. Keep monitoring this product for changes."}
           </p>
         </div>
-        <Badge variant={needsOrder ? "warning" : "success"}>
+        <Badge variant={hasProcessedOrder ? "info" : urgent ? "warning" : "info"}>
           {hasProcessedOrder && activeRestock
             ? orderStatusLabel(activeRestock.latestStatus)
-            : riskLabel(risk)}
+            : urgent
+              ? riskLabel(risk)
+              : needsOrder
+                ? `Next Restock · ${formatDate(selected.scheduledRestockAt)}`
+                : "Monitor"}
         </Badge>
       </div>
       <div

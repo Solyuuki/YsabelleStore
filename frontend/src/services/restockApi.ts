@@ -71,6 +71,7 @@ export type RestockPlanningCandidate = {
   rationale: string;
   recommendationId: string | null;
   recommendationSource: Exclude<RestockRecommendationSource, "MANUAL">;
+  scheduledRestockAt: string;
   recommendedQuantity: number;
   sellableStock: number;
   stockHealth: AutomaticStockHealth;
