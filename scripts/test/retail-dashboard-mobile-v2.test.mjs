@@ -111,11 +111,11 @@ test("Performance day chart stays informative when activity is zero or phone lab
   assert.match(pulse, /Daily\s*POS\s*history\s*is\s*not\s*available\s*for\s*this\s*date/);
 });
 
-test("Monthly inventory displays four summary stats and an actionable but compact restock plan", () => {
+test("Monthly inventory displays four stats and a compact next-month restock preview", () => {
   assert.match(dashboard, /ys-dashboard-inventory-recommendation/);
   assert.match(dashboard, /ys-dashboard-report-stats\s*grid\s*gap-3/);
   for (const label of [
-    "Products requiring action",
+    "Products in plan / review",
     "Suggested units",
     "High / critical",
     "Open restock orders",
@@ -126,7 +126,7 @@ test("Monthly inventory displays four summary stats and an actionable but compac
   assert.match(dashboard, /ys-dashboard-plan-stats\s*mt-4\s*grid\s*gap-3/);
   assert.match(dashboard, /ys-dashboard-plan-footer\s*mt-4\s*flex/);
   assert.match(dashboard, /onClick=\{\(\)\s*=>\s*onNavigate\("\/reports"\)\}/);
-  assert.match(dashboard, /No\s*purchase\s*ticket\s*is\s*created\s*by\s*this\s*card/);
+  assert.match(dashboard, /Future-month\s*preview\s*only/);
   assert.match(
     mobile,
     /\.ys-dashboard-report-stats\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*\s*minmax\(0,\s*\s*1fr\)\);/
