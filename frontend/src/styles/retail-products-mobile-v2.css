@@ -500,6 +500,34 @@
     padding: 0;
     font-size: 0.75rem;
   }
+  /* Keep Guide next to the title; Template and Close stay at the right edge. */
+  [role="dialog"].ys-product-package-modal .ys-products-v2-import-heading button {
+    position: static;
+    min-width: 32px;
+    min-height: 32px;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+  [role="dialog"].ys-product-package-modal .ys-products-v2-import-actions {
+    top: 0.65rem;
+    right: 0.65rem;
+    gap: 0.25rem;
+  }
+  [role="dialog"].ys-product-package-modal .ys-products-v2-import-actions .ys-products-v2-template-download {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    padding: 0;
+  }
+  [role="dialog"].ys-product-package-modal .ys-products-v2-template-label {
+    display: none;
+  }
+  [role="dialog"].ys-product-package-modal .ys-products-v2-import-close {
+    position: static;
+    width: 40px;
+    height: 40px;
+  }
   [role="dialog"].ys-product-package-modal .ys-products-v2-guide-text {
     display: none;
   }
