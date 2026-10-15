@@ -1,0 +1,39 @@
+name: Sprint 13 one-time Railway formatter
+
+on:
+  push:
+    branches:
+      - sprint/v0.13/sprint-13
+    paths:
+      - .github/workflows/sprint13-one-time-prettier.yml
+
+permissions:
+  contents: write
+
+jobs:
+  normalize-railway-static-server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: sprint/v0.13/sprint-13
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Apply repository Prettier config to Railway web server
+        run: npx prettier --write deployment/railway/static-server.mjs
+      - name: Commit exact formatting
+        shell: bash
+        run: |
+          if git diff --quiet -- deployment/railway/static-server.mjs; then
+            echo "Already formatted"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deployment/railway/static-server.mjs
+          HUSKY=0 git commit -m "style(deploy): normalize Railway static-server formatting"
+          HUSKY=0 git push origin HEAD:sprint/v0.13/sprint-13
