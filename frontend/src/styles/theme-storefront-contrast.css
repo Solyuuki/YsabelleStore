@@ -2545,89 +2545,63 @@
 
 /* Sprint 13: storefront home empty states and privacy notice dark-mode parity.
    Keep the light theme unchanged and preserve the existing layouts. */
-:root.dark[data-appearance-scope="storefront"] .customer-app .customer-home .home-compact-state {
+:root.dark .customer-app .customer-home .home-compact-state {
   background: #24334a;
   border-color: #60718e;
   box-shadow: 0 12px 28px rgb(2 8 23 / 18%), inset 0 1px 0 rgb(255 255 255 / 5%);
 }
 
-:root.dark[data-appearance-scope="storefront"]
-  .customer-app
-  .customer-home
-  .home-compact-state
-  strong {
+:root.dark .customer-app .customer-home .home-compact-state strong {
   color: #f0f4ff;
 }
 
-:root.dark[data-appearance-scope="storefront"] .customer-app .customer-home .home-compact-state p {
+:root.dark .customer-app .customer-home .home-compact-state p {
   color: #cbd7e9;
 }
 
-:root.dark[data-appearance-scope="storefront"]
-  .customer-app
-  .customer-home
-  .home-compact-state__icon {
+:root.dark .customer-app .customer-home .home-compact-state__icon {
   background: #353454;
   color: #c9bcff;
 }
 
-:root.dark[data-appearance-scope="storefront"]
-  .customer-app
-  .customer-home
-  .home-compact-state
-  button {
+:root.dark .customer-app .customer-home .home-compact-state button {
   background: #303e58;
   border-color: #71819f;
   color: #e9e2ff;
 }
 
-:root.dark[data-appearance-scope="storefront"]
-  .customer-app
-  .customer-home
-  .home-compact-state
-  button:hover {
+:root.dark .customer-app .customer-home .home-compact-state button:hover {
   background: #405170;
 }
 
-:root.dark[data-appearance-scope="storefront"] .customer-app .customer-privacy-notice {
+:root.dark .customer-app .customer-privacy-notice {
   background: #1d293f;
   border-color: #667995;
 }
 
-:root.dark[data-appearance-scope="storefront"] .customer-app .customer-privacy-notice__eyebrow {
+:root.dark .customer-app .customer-privacy-notice__eyebrow {
   color: #c9baff;
 }
 
-:root.dark[data-appearance-scope="storefront"]
-  .customer-app
-  .customer-privacy-notice__copy
-  > strong {
+:root.dark .customer-app .customer-privacy-notice__copy > strong {
   color: #f0f4ff;
 }
 
-:root.dark[data-appearance-scope="storefront"]
-  .customer-app
-  .customer-privacy-notice__copy
-  > p:not(.customer-privacy-notice__eyebrow) {
+:root.dark .customer-app .customer-privacy-notice__copy > p:not(.customer-privacy-notice__eyebrow) {
   color: #cbd7e9;
 }
 
-:root.dark[data-appearance-scope="storefront"]
-  .customer-app
-  .customer-privacy-notice__links
-  :is(a, button) {
+:root.dark .customer-app .customer-privacy-notice__links :is(a, button) {
   color: #d8cbff;
 }
 
-:root.dark[data-appearance-scope="storefront"] .customer-app .customer-privacy-notice__dismiss {
+:root.dark .customer-app .customer-privacy-notice__dismiss {
   background: #35445f;
   border-color: #70809b;
   color: #e8efff;
 }
 
-:root.dark[data-appearance-scope="storefront"]
-  .customer-app
-  .customer-privacy-notice__dismiss:hover {
+:root.dark .customer-app .customer-privacy-notice__dismiss:hover {
   background: #455674;
   color: #fff;
 }
