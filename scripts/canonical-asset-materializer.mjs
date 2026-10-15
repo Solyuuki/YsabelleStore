@@ -13,7 +13,7 @@ import {
   writeFileSync
 } from "node:fs";
 import { homedir, tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { gunzipSync } from "node:zlib";
 
@@ -350,6 +350,11 @@ export function materializeAssetPayload({ state, distribution, plan, runtimeRoot
 export function resolveRuntimeRoot(env = process.env) {
   if (env.YSABELLE_CATALOG_IMAGE_ROOT?.trim())
     return resolve(env.YSABELLE_CATALOG_IMAGE_ROOT.trim());
+  // Match the backend's absolute configured runtime storage, when supplied.
+  if (env.CATALOG_IMAGE_STORAGE_ROOT?.trim() &&
+      isAbsolute(env.CATALOG_IMAGE_STORAGE_ROOT.trim())) {
+    return resolve(env.CATALOG_IMAGE_STORAGE_ROOT.trim());
+  }
   if (process.platform === "win32") {
     const b = env.LOCALAPPDATA?.trim() || env.APPDATA?.trim();
     if (b) return join(b, "YsabelleStore", "catalog-images");

@@ -5,6 +5,11 @@ import { join } from "node:path";
 import test from "node:test";
 
 import {
+  describeImagePublicationState,
+  parseImagePublicationArgs
+} from "../catalog-image-publication-proposal.mjs";
+
+import {
   classifyRuntimeImageOverride,
   isProtectedImageColumn,
   isRuntimeImageAssetId
@@ -52,4 +57,31 @@ test("image protection requires approved READY asset and every storage file", ()
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("approved runtime image proposal reports an inactive newest candidate", () => {
+  const result = describeImagePublicationState({
+    product: {
+      id: "happy-cotton",
+      sku: "SARIMA-P048",
+      activeImageAssetId: "sarima-p048-2933697c7efd",
+      imageUrl: "/api/storefront/product-images/sarima-p048-2933697c7efd/card"
+    },
+    latest: {
+      id,
+      qualityStatus: "APPROVED",
+      processingStatus: "READY",
+      approvedAt: new Date()
+    },
+    canonicalId: "sarima-p048-2933697c7efd"
+  });
+  assert.equal(result.possibleRollback, true);
+  assert.equal(result.activeIsCanonical, true);
+  assert.equal(result.latestCandidateApproved, true);
+});
+
+test("publication refuses ambiguous selectors and an export inside source", () => {
+  assert.throws(() => parseImagePublicationArgs([]));
+  assert.throws(() => parseImagePublicationArgs(["--sku", "SKU", "--product-id", "id"]));
+  assert.throws(() => parseImagePublicationArgs(["--sku", "SKU", "--output", "./export"]));
 });

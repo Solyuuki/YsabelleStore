@@ -54,3 +54,27 @@ subject to the existing pinned 50-product and four-variant distribution rules.
 Never treat an Owner upload/approval as implicit Git publication. The deployed
 runtime continues serving Owner-approved uploads even if no new canonical
 asset bundle has been published yet.
+
+## Read-only image diagnosis and optional publication review proposal
+
+On the authorized machine with the same MySQL and persistent image root as
+the backend, execute from the repository root:
+
+```powershell
+node --env-file=.env scripts/catalog-image-publication-proposal.mjs --sku SARIMA-P048
+```
+
+The audit reports live product image ID, most recent upload, canonical pinned
+image ID, expected PDP URL, and possible rollback. No database mutations.
+
+To export all four approved media variants for **manual Git publication review**:
+
+```powershell
+node --env-file=.env scripts/catalog-image-publication-proposal.mjs --sku SARIMA-P048 --output "$HOME\Downloads\YSABELLE-P048-PUBLICATION-REVIEW"
+```
+
+The output is a **proposal, not a release**. It is deliberately outside Git
+and cannot bypass canonical versioning or frozen asset integrity controls.
+It contains original and optimized image bytes plus a review manifest with
+checksums and Git blob identities; a verified release publisher must still
+promote the full canonical bundle with proper approvals.
