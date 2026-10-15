@@ -69,7 +69,12 @@ const reportMonthFormatter = new Intl.DateTimeFormat("en-PH", {
 function monthlyRecommendationAction(
   candidate: RestockPlanningCandidate
 ): MonthlyRecommendationAction {
-  if (candidate.recommendedQuantity > 0) return "RESTOCK";
+  if (
+    candidate.nextMonthRestock.estimatedRestock > 0 ||
+    ((candidate.forecastDecision?.riskLevel === "HIGH" ||
+      candidate.forecastDecision?.riskLevel === "CRITICAL") &&
+      candidate.recommendedQuantity > 0)
+  ) return "RESTOCK";
   if (candidate.expiryRiskQuantity > 0) return "EXPIRY_REVIEW";
   if (candidate.stockHealth.status === "OVERSTOCK") return "REDUCE_REPLENISHMENT";
   return "NO_ACTION";
@@ -280,7 +285,12 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
       products: items.length,
       reduce,
       restock,
-      units: items.reduce((sum, item) => sum + Math.max(0, item.recommendedQuantity), 0)
+      units: items.reduce((sum, item) => {
+        const urgent =
+          item.forecastDecision?.riskLevel === "HIGH" ||
+          item.forecastDecision?.riskLevel === "CRITICAL";
+        return sum + Math.max(0, urgent ? item.recommendedQuantity : item.nextMonthRestock.estimatedRestock);
+      }, 0)
     };
   }, [items]);
 
@@ -293,7 +303,11 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
     selectedActiveRestock && selectedActiveRestock.totalRemaining > 0
   );
   const selectedNeedsOrder = Boolean(
-    selected && selected.recommendedQuantity > 0 && !selectedHasProcessedOrder
+    selected &&
+    !selectedHasProcessedOrder &&
+    (nextMonthPreview?.estimatedRestock ||
+      ((selectedRisk === "HIGH" || selectedRisk === "CRITICAL") &&
+        selected.recommendedQuantity > 0))
   );
 
   function openForecastProduct(productId: string) {
@@ -450,6 +464,12 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                     {visibleItems.map((item) => {
                       const selectedRow = item.product.id === selectedProductId;
                       const activeRestock = activeRestockByProduct.get(item.product.id) ?? null;
+                      const urgent =
+                        item.forecastDecision?.riskLevel === "HIGH" ||
+                        item.forecastDecision?.riskLevel === "CRITICAL";
+                      const displayQuantity = urgent
+                        ? item.recommendedQuantity
+                        : item.nextMonthRestock.estimatedRestock;
                       return (
                         <TableRow
                           aria-label={`View forecast for ${item.product.name}`}
@@ -508,22 +528,22 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                             {formatNumber(item.sellableStock)}
                           </TableCell>
                           <TableCell className="text-right tabular-nums">
-                            {item.recommendedQuantity > 0 ? (
-                              <div>
-                                <span className="font-semibold text-amber-800">
-                                  {formatNumber(item.recommendedQuantity)}
-                                </span>
-                                <span className="block text-[11px] font-medium text-amber-700">
-                                  to order
-                                </span>
-                              </div>
-                            ) : activeRestock && activeRestock.totalRemaining > 0 ? (
+                            {activeRestock && activeRestock.totalRemaining > 0 ? (
                               <div title={`Included in ${activeRestock.latestOrderNumber}`}>
                                 <span className="font-semibold text-indigo-700">
                                   {formatNumber(activeRestock.totalRemaining)}
                                 </span>
                                 <span className="block text-[11px] font-medium text-indigo-600">
-                                  incoming
+                                  {activeRestock.latestStatus === "DRAFT" ? "for review" : "incoming"}
+                                </span>
+                              </div>
+                            ) : displayQuantity > 0 ? (
+                              <div>
+                                <span className="font-semibold text-amber-800">
+                                  {formatNumber(displayQuantity)}
+                                </span>
+                                <span className="block text-[11px] font-medium text-amber-700">
+                                  {urgent ? "urgent review" : "estimated"}
                                 </span>
                               </div>
                             ) : (
@@ -605,6 +625,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                   <RecommendationCard
                     activeRestock={selectedActiveRestock}
                     demand={selectedDemand}
+                    estimatedNextMonthQuantity={nextMonthPreview?.estimatedRestock ?? 0}
                     hasProcessedOrder={selectedHasProcessedOrder}
                     needsOrder={selectedNeedsOrder}
                     risk={selectedRisk}
@@ -749,6 +770,7 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
 function RecommendationCard({
   activeRestock,
   demand,
+  estimatedNextMonthQuantity,
   hasProcessedOrder,
   needsOrder,
   risk,
@@ -758,6 +780,7 @@ function RecommendationCard({
     ? T | null
     : never;
   demand: number;
+  estimatedNextMonthQuantity: number;
   hasProcessedOrder: boolean;
   needsOrder: boolean;
   risk: RestockForecastRisk | null;
@@ -815,7 +838,7 @@ function RecommendationCard({
               : needsOrder
                 ? urgent
                   ? `Review urgent stock shortage · ${formatNumber(selected.recommendedQuantity)} units`
-                  : `Estimated ${formatNumber(selected.recommendedQuantity)} units for next restock`
+                  : `Estimated ${formatNumber(estimatedNextMonthQuantity)} units for next restock`
                 : "No order needed right now"}
           </p>
           <p className={`ys-restock-recommendation-body mt-1 text-sm leading-6 ${classes.body}`}>

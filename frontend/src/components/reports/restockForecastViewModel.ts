@@ -276,36 +276,7 @@ export function buildNextMonthRestockPreview(
   if (!candidate) return null;
 
   const previewDate = nextMonthDate(candidate);
-  const nextPeriod = previewDate.toISOString().slice(0, 7);
-  const nextMonthForecast = candidate.forecast?.points.find(
-    (point) => point.period.slice(0, 7) === nextPeriod
-  );
-  const expectedDemand = Math.max(
-    0,
-    Math.ceil(
-      nextMonthForecast?.predictedQuantity ??
-        candidate.forecastDecision?.currentMonthDemand ??
-        candidate.forecast?.currentMonthDemand ??
-        0
-    )
-  );
-  const currentDemand = Math.max(
-    0,
-    Math.ceil(
-      candidate.forecastDecision?.currentMonthDemand ?? candidate.forecast?.currentMonthDemand ?? 0
-    )
-  );
-  const projectedOpeningStock = Math.max(0, usableStock(candidate) - currentDemand);
-  const targetStockLevel = Math.max(0, candidate.product.targetStockLevel);
-  const reorderLevel = Math.max(0, candidate.product.reorderLevel);
-  const demandGap = Math.max(
-    0,
-    Math.ceil(targetStockLevel + expectedDemand - projectedOpeningStock)
-  );
-  const reorderGap =
-    reorderLevel > 0 && projectedOpeningStock <= reorderLevel
-      ? Math.max(0, Math.ceil(reorderLevel + 1 - projectedOpeningStock))
-      : 0;
+  const { estimatedRestock, expectedDemand, projectedOpeningStock } = candidate.nextMonthRestock;
   const monthIndex = previewDate.getUTCMonth();
   const year = previewDate.getUTCFullYear();
   const activeIncoming = Math.max(
@@ -317,7 +288,7 @@ export function buildNextMonthRestockPreview(
   return {
     batchNumber: `RO-${MONTH_ABBREVIATIONS[monthIndex]}-${year}`,
     currentCycleQuantity: activeIncoming,
-    estimatedRestock: Math.max(demandGap, reorderGap),
+    estimatedRestock,
     expectedDemand,
     monthLabel: new Intl.DateTimeFormat("en-PH", {
       month: "long",
