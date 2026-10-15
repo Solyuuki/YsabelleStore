@@ -2601,24 +2601,21 @@
 :root.dark[data-appearance-scope="storefront"]
   .customer-app
   .customer-privacy-notice__copy
-  >
-  strong {
+  > strong {
   color: #f0f4ff;
 }
 
 :root.dark[data-appearance-scope="storefront"]
   .customer-app
   .customer-privacy-notice__copy
-  >
-  p:not(.customer-privacy-notice__eyebrow) {
+  > p:not(.customer-privacy-notice__eyebrow) {
   color: #cbd7e9;
 }
 
 :root.dark[data-appearance-scope="storefront"]
   .customer-app
   .customer-privacy-notice__links
-  :is(a,
-  button) {
+  :is(a, button) {
   color: #d8cbff;
 }
 
