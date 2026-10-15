@@ -323,3 +323,21 @@ When feature work starts, use this sequence:
 - [ ] Build, lint, and tests were run when available
 - [ ] No unrelated changes are included
 - [ ] Reviewer approval is complete
+
+## Branch-creation CI checks
+
+A newly created sprint branch can initially point to the exact same commit as
+`main`, before that branch has its new active-sprint configuration and documents.
+A push event whose `created` flag is true therefore verifies the **source
+commit snapshot** under the neutral `branch-creation` context. It does not
+pretend that the new sprint has already been activated.
+
+Every subsequent branch push and every pull request uses the actual source
+branch name as `YSABELLE_BRANCH`; strict sprint/version matching and all
+standard repository quality gates remain enabled. The creation event still
+runs the ordinary quality jobs rather than bypassing CI.
+
+To activate a sprint, commit the new `config/guardrails.json` and required
+`docs/sprints/sprint-N/` files together as the first content-bearing commit.
+Do not treat a green branch-creation check as release approval, and never merge
+unfinished sprint work solely to change the protected `main` status badge.
