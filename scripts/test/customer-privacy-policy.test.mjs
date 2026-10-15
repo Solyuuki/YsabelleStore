@@ -74,7 +74,9 @@ test("privacy UI is responsive, material-aware, and reduced-motion safe", () => 
 });
 
 test("phone privacy notice is in-flow before content, not over the fixed mobile dock", () => {
-  const noticePosition = layout.indexOf("<PrivacyNotice navigate={navigate} pathname={pathname} />");
+  const noticePosition = layout.indexOf(
+    "<PrivacyNotice navigate={navigate} pathname={pathname} />"
+  );
   const mainPosition = layout.indexOf('<main id="customer-main">');
 
   assert.ok(noticePosition >= 0 && noticePosition < mainPosition);
