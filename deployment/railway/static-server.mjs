@@ -30,11 +30,7 @@ if (!Number.isInteger(port) || port < 1 || port > 65535) {
 
 function safePath(pathname) {
   const decoded = decodeURIComponent(pathname);
-  if (
-    decoded.includes("\0") ||
-    decoded.includes("\\") ||
-    decoded.split("/").includes("..")
-  ) {
+  if (decoded.includes("\0") || decoded.includes("\\") || decoded.split("/").includes("..")) {
     return null;
   }
   const absolute = path.resolve(publicDirectory, "." + decoded);
