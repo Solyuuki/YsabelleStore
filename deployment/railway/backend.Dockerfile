@@ -1,6 +1,10 @@
 # Sprint 13 Railway API with Python forecasting.
 # Build context must remain the monorepo root.
 FROM node:22-bookworm-slim AS build
+# Prisma's native engine detection requires openssl during client generation.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends openssl \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY . .
 RUN npm ci --ignore-scripts
@@ -9,7 +13,7 @@ RUN npm run build --workspace=@ysabellestore/backend
 
 FROM node:22-bookworm-slim
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends python3 python3-venv libgomp1 \
+    && apt-get install -y --no-install-recommends python3 python3-venv libgomp1 openssl \
     && rm -rf /var/lib/apt/lists/*
 COPY forecasting-service/requirements.txt /tmp/forecast-requirements.txt
 COPY catalog-image-engine/requirements.txt /tmp/catalog-image-requirements.txt
