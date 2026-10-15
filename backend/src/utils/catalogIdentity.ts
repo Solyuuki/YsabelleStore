@@ -56,7 +56,6 @@ const VERIFIED_SIZE_FAMILIES = [
   }
 ] as const;
 
-
 export function normalizeSizeFamilyName(value: string) {
   return normalizeProductIdentity(
     normalizeCanonicalProductName(value).replace(SIZE_FAMILY_TOKEN_PATTERN, " ")

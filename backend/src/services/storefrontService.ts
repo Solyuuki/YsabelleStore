@@ -202,9 +202,7 @@ async function listStorefrontSizeVariants(product: StorefrontProductRecord) {
       orderBy: [{ name: "asc" }, { id: "asc" }],
       where: storefrontProductWhere({
         categoryId: product.categoryId,
-        ...(product.familyId
-          ? { OR: [{ familyId: product.familyId }, { familyId: null }] }
-          : {})
+        ...(product.familyId ? { OR: [{ familyId: product.familyId }, { familyId: null }] } : {})
       })
     })
   )

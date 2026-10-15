@@ -309,7 +309,10 @@ test("verified Gardenia family links 400g/600g but excludes unrelated bread", as
       detail.sizeVariants.map((variant) => variant.id),
       [classic.id, enriched.id]
     );
-    assert.equal(detail.sizeVariants.some((variant) => variant.id === unrelated.id), false);
+    assert.equal(
+      detail.sizeVariants.some((variant) => variant.id === unrelated.id),
+      false
+    );
   } finally {
     await scope.cleanup();
   }
