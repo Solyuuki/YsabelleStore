@@ -78,3 +78,30 @@ and cannot bypass canonical versioning or frozen asset integrity controls.
 It contains original and optimized image bytes plus a review manifest with
 checksums and Git blob identities; a verified release publisher must still
 promote the full canonical bundle with proper approvals.
+
+## Guarded recovery of an already rolled-back Owner image
+
+A historic canonical sync can already have restored the old image ID before
+runtime-image preservation code was installed. Ordinary Git pull cannot infer
+that the newest approved image should be reactivated automatically.
+
+First back up the live MySQL and persistent image directory independently.
+Then inspect the explicit candidate using the read-only preview:
+
+```powershell
+npm run catalog:image:recover -- --sku SARIMA-P048 --image-id 8e93d6af-804d-49f9-be26-0bb6a8f96d72 --expected-active-id sarima-p048-2933697c7efd
+```
+
+The preview performs ownership, canonical-baseline, approval, supersession and
+local file checks; it **does not mutate the database**. After the operator
+reviews the result, and only after independent backups exist:
+
+```powershell
+npm run catalog:image:recover -- --sku SARIMA-P048 --image-id 8e93d6af-804d-49f9-be26-0bb6a8f96d72 --expected-active-id sarima-p048-2933697c7efd --apply --backup-confirmed
+```
+
+The write uses compare-and-swap on the active asset ID and appends a catalog
+audit event. It does not modify SKU, barcode, stock, price, or canonical Git
+sources. Any changed active ID, missing file, rejected/superseded candidate,
+or ownership mismatch fails closed. The recovered UUID-backed image is then
+protected by subsequent normal canonical sync operations.

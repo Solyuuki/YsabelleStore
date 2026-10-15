@@ -91,3 +91,43 @@ test("publication refuses ambiguous selectors and an export inside source", () =
   assert.throws(() => parseImagePublicationArgs(["--sku", "SKU", "--product-id", "id"]));
   assert.throws(() => parseImagePublicationArgs(["--sku", "SKU", "--output", "./export"]));
 });
+
+test("image recovery requires exact canonical baseline, verified latest candidate, and backups for applying", async () => {
+  const { parseCatalogImageRecoveryArgs, inspectCatalogImageRecovery } =
+    await import("../catalog-image-restore-approved.mjs");
+  const canonical = "sarima-p048-2933697c7efd";
+  const cli = [
+    "--sku", "SARIMA-P048", "--image-id", id,
+    "--expected-active-id", canonical
+  ];
+  assert.equal(parseCatalogImageRecoveryArgs(cli).apply, false);
+  assert.throws(() => parseCatalogImageRecoveryArgs([...cli, "--apply"]));
+  assert.equal(parseCatalogImageRecoveryArgs([...cli, "--apply", "--backup-confirmed"]).apply, true);
+  assert.throws(() => parseCatalogImageRecoveryArgs([...cli, "--bogus"]));
+  const product = { id: "happy", sku: "SARIMA-P048", activeImageAssetId: canonical };
+  const candidate = {
+    id,
+    productId: "happy",
+    qualityStatus: "APPROVED",
+    processingStatus: "READY",
+    approvedAt: new Date(),
+    rejectedAt: null,
+    supersededAt: null,
+    originalStorageKey: `candidates/${id}/original.jpg`,
+    processedStorageKey: `candidates/${id}/processed/processed.webp`,
+    cardStorageKey: `candidates/${id}/processed/card.webp`,
+    pdpStorageKey: `candidates/${id}/processed/pdp.webp`
+  };
+  assert.throws(() => inspectCatalogImageRecovery({
+    product, candidate, newestApproved: candidate,
+    expectedActiveId: "wrong-active", imageId: id, canonicalId: canonical
+  }));
+  assert.throws(() => inspectCatalogImageRecovery({
+    product, candidate: { ...candidate, supersededAt: new Date() },
+    newestApproved: candidate, expectedActiveId: canonical, imageId: id, canonicalId: canonical
+  }));
+  assert.throws(() => inspectCatalogImageRecovery({
+    product, candidate, newestApproved: { id: "newer" },
+    expectedActiveId: canonical, imageId: id, canonicalId: canonical
+  }));
+});
