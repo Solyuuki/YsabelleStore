@@ -73,6 +73,22 @@ test("privacy UI is responsive, material-aware, and reduced-motion safe", () => 
   assert.match(privacyCss, /@media \(prefers-reduced-motion: reduce\)/);
 });
 
+test("phone privacy notice is in-flow before content, not over the fixed mobile dock", () => {
+  const noticePosition = layout.indexOf("<PrivacyNotice navigate={navigate} pathname={pathname} />");
+  const mainPosition = layout.indexOf('<main id="customer-main">');
+
+  assert.ok(noticePosition >= 0 && noticePosition < mainPosition);
+  const phoneCss = privacyCss
+    .split("@media (max-width: 720px) {")[1]
+    ?.split("@media (max-width: 520px) {")[0];
+  assert.ok(phoneCss, "Missing phone privacy notice breakpoint");
+  assert.match(
+    phoneCss,
+    /\.customer-app\.ys-material-canvas \.customer-privacy-notice\s*\{[^}]*position: relative;[^}]*bottom: auto;/
+  );
+  assert.match(phoneCss, /\.customer-privacy-notice\s*\{[^}]*width: min\(/);
+});
+
 test("mobile More links to the existing Privacy & Cookies page and closes its sheet", () => {
   assert.match(
     mobileNav,
