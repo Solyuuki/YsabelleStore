@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { monthlyRestockCycle, nextMonthlyRestockDate } from "../src/services/restockMonthlyCyclePolicy.js";
+import {
+  monthlyRestockCycle,
+  nextMonthlyRestockDate
+} from "../src/services/restockMonthlyCyclePolicy.js";
 import { buildOperationalRestockForecast } from "../src/services/restockDemandForecastService.js";
 import { buildRestockForecastDecision } from "../src/services/restockForecastDecisionService.js";
 
@@ -14,7 +17,10 @@ test("October 15 is preview-only and targets November 1 Manila", () => {
 });
 
 test("Manila month rollover activates the new cycle at midnight", () => {
-  assert.equal(nextMonthlyRestockDate(new Date("2026-10-31T15:59:59.000Z")), "2026-10-31T16:00:00.000Z");
+  assert.equal(
+    nextMonthlyRestockDate(new Date("2026-10-31T15:59:59.000Z")),
+    "2026-10-31T16:00:00.000Z"
+  );
   const november = monthlyRestockCycle(new Date("2026-10-31T16:00:00.000Z"));
   assert.equal(november.currentMonth, "2026-11");
   assert.equal(november.nextRestockAt, "2026-11-30T16:00:00.000Z");

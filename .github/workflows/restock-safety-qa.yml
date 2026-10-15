@@ -73,14 +73,5 @@ jobs:
         run: npx tsx --test --test-concurrency=1 backend/test/restock-monthly-cycle.test.ts backend/test/restock-operational-forecast.test.ts backend/test/restock-phase11-decision.test.ts backend/test/restock-phase7-9-contract.test.ts backend/test/restock-owner-policy.test.ts backend/test/restock-draft-removal.test.ts backend/test/dashboard-monthly-restock-summary.test.ts
       - name: Monthly automation and Owner warning UI contracts
         run: node --test scripts/test/restock-monthly-cycle-contract.test.mjs scripts/test/restock-forecast-automation-source.test.mjs scripts/test/restock-owner-warning-ui.test.mjs scripts/test/restock-owner-warning-scroll.test.mjs scripts/test/restock-draft-removal-ui.test.mjs
-      - name: Temporary formatting diagnostics
-        run: |
-          npx prettier --write backend/src/services/restockAutomationService.ts backend/test/restock-monthly-cycle.test.ts frontend/src/pages/DashboardPage.tsx
-          for f in backend/src/services/restockAutomationService.ts backend/test/restock-monthly-cycle.test.ts frontend/src/pages/DashboardPage.tsx; do
-            echo "FORMAT_BEGIN:$f"
-            base64 -w0 "$f"
-            echo
-            echo "FORMAT_END:$f"
-          done
       - name: Backend compile
         run: npm run build --workspace backend

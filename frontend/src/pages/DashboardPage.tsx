@@ -517,7 +517,8 @@ function RestockActionsCard({ error, loading, onNavigate, operations }: OwnerOpe
                 </div>
                 <div className="ys-dashboard-plan-footer mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-violet-100 pt-3">
                   <p className="text-xs leading-5 text-slate-600">
-                    Future-month preview only · No monthly purchase action is required before activation. Existing drafts and critical stock alerts are separate.
+                    Future-month preview only · No monthly purchase action is required before
+                    activation. Existing drafts and critical stock alerts are separate.
                   </p>
                   <Button onClick={() => onNavigate("/reports")} size="sm" type="button">
                     <ClipboardList aria-hidden="true" className="h-4 w-4" />
