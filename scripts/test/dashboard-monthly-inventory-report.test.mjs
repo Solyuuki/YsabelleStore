@@ -12,9 +12,9 @@ const [dashboardPage, restockForecastPanel] = await Promise.all([
 
 test("dashboard shows a compact whole-batch summary, never one featured product", () => {
   assert.match(dashboardPage, /Monthly inventory recommendation/);
-  assert.match(dashboardPage, /Products requiring action/);
+  assert.match(dashboardPage, /Products in plan \/ review/);
   assert.match(dashboardPage, /Monthly restock plan/);
-  assert.match(dashboardPage, /\{reportMonth\} · Restock plan/);
+  assert.match(dashboardPage, /\{nextRestockMonth\} · Next restock preview/);
   assert.match(dashboardPage, /label="To restock"/);
   assert.match(dashboardPage, /label="Suggested units"/);
   assert.match(dashboardPage, /label="Other reviews"/);
@@ -22,8 +22,9 @@ test("dashboard shows a compact whole-batch summary, never one featured product"
   assert.match(dashboardPage, /operations\.restock\.otherReviewProducts/);
   assert.match(dashboardPage, /Review full restock plan/);
   assert.match(dashboardPage, /onNavigate\("\/reports"\)/);
-  assert.match(dashboardPage, /Live recommendation batch/);
-  assert.match(dashboardPage, /Recommendation preview only/);
+  assert.match(dashboardPage, /Estimated next-month replenishment/);
+  assert.match(dashboardPage, /Future-month preview only/);
+  assert.doesNotMatch(dashboardPage, /Products requiring action/);
   assert.doesNotMatch(dashboardPage, /Highest priority this month|topPriority|monthlyActionLabel/);
   assert.doesNotMatch(dashboardPage, /operations\.restock\.actions\.map/);
 });
