@@ -30,6 +30,7 @@ test("active inventory forecast source reads the persisted forecast batch by can
   assert.match(inventoryForecastSource, /status: "READY"/);
   assert.match(inventoryForecastSource, /forecastProductResult\.findMany/);
   assert.match(inventoryForecastSource, /sourceProductId: \{ in: uniqueProductIds \}/);
+  assert.match(inventoryForecastSource, /forecastMonth !== currentMonth/);
 });
 
 test("POS fallback remains based on completed operational sales and does not masquerade as SARIMA", () => {

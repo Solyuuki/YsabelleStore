@@ -15,7 +15,7 @@
 - Atomic primary-key claim and compare-and-swap leasing protect concurrent workers. Interrupted cycles can retry after the lease expires.
 - Created and no-action cycles remain recorded. Existing RO-MMM-YYYY uniqueness and frozen snapshot checks remain unchanged.
 - Do not count unapproved drafts as incoming stock.
-- The forecast read path excludes superseded monthly forecast points while fresh generation runs.
+- The forecast read path rejects prior-month SARIMA batches after Manila month rollover and safely uses the completed-POS fallback until a current-month model is ready.
 
 ## Verification and gate
 
