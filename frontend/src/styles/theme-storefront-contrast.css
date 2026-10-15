@@ -2587,7 +2587,7 @@
   color: #f0f4ff;
 }
 
-:root.dark .customer-app .customer-privacy-notice__copy > p:not(.customer-privacy-notice__eyebrow) {
+:root.dark .customer-app .customer-privacy-notice__copy p:not(.customer-privacy-notice__eyebrow) {
   color: #cbd7e9;
 }
 
