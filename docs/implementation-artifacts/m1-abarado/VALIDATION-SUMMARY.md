@@ -174,3 +174,9 @@ CI #1693 passed on implementation head `6f148cb3b8fcc76e32608e254e1e71ab67511e51
 Branch: `sprint/v0.11/sprint-11`. CI evidence: https://github.com/Solyuuki/YsabelleStore/actions/runs/37739767192
 
 Result: independent Dark Mode asset/contrast contract suite PASSED; frontend, backend, Electron workspace validations PASSED. Repository `npm run format:check` FAILED, so root lint, code verification, canonical Phase 6 rehearsals and artifact gates beyond that step are NOT confirmed. Manual Light/Dark visual regression and accessibility QA remain PENDING. About Experience source files unchanged. Release decision: NOT YET APPROVED.
+
+## Sprint 12 Activation Aggregate Verification
+
+| Date       | Branch                           | Command             | Result | Evidence                                                                                                                                                |
+| ---------- | -------------------------------- | ------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-12 | m1/v0.12/docs/activate-sprint-12 | npm run verify:code | Passed | PR #54 CI run 38197033098 at 1a3adfc6848074494e6a138cfd4a3724a6d63da8; aggregate step passed. Full CI blocked only by pending artifact status evidence. |
