@@ -8,6 +8,7 @@ import {
 import { prisma } from "../database/prismaClient.js";
 import { getForecastSummary } from "../modules/forecasting/forecast.service.js";
 import { listRestockPlanningCandidates } from "./restockPlanningService.js";
+import { nextMonthlyRestockDate } from "./restockMonthlyCyclePolicy.js";
 import { summarizeMonthlyRestockActions } from "./dashboardMonthlyRestockSummary.js";
 import {
   buildRecommenderAssistant,
@@ -107,6 +108,7 @@ export type DashboardOperations = {
   generatedAt: string;
   restock: {
     actionableProducts: number;
+    scheduledRestockAt: string;
     actions: DashboardRestockAction[];
     restockProducts: number;
     otherReviewProducts: number;
@@ -440,6 +442,7 @@ export async function getDashboardOperations(now = new Date()): Promise<Dashboar
     generatedAt: now.toISOString(),
     restock: {
       actionableProducts: actions.length,
+      scheduledRestockAt: nextMonthlyRestockDate(now),
       actions: visibleActions,
       restockProducts: monthlyBatchSummary.restockProducts,
       otherReviewProducts: monthlyBatchSummary.otherReviewProducts,

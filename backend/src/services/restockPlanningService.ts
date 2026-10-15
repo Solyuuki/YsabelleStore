@@ -13,6 +13,7 @@ import {
 } from "./restockDemandForecastService.js";
 import { loadActiveInventoryForecasts } from "./inventoryForecastSourceService.js";
 import { buildRestockForecastDecision } from "./restockForecastDecisionService.js";
+import { nextMonthlyRestockDate } from "./restockMonthlyCyclePolicy.js";
 import { getIncomingRestockStock } from "./restockService.js";
 import { activeReservationsByProduct } from "./stockReservationService.js";
 import { classifyStockHealth } from "./stockHealthService.js";
@@ -252,6 +253,7 @@ export async function listRestockPlanningCandidates(
       recommendationId,
       recommendationSource,
       recommendedQuantity,
+      scheduledRestockAt: nextMonthlyRestockDate(now),
       sellableStock: availableForNewOrders,
       stockHealth
     };

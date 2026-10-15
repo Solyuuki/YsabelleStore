@@ -1,11 +1,11 @@
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
+import { nextMonthlyRestockDate } from "./restockMonthlyCyclePolicy.js";
 
 const DAYS_PER_MONTH = 30;
 const RECENT_COMPLETED_MONTHS = 3;
 const HISTORY_MONTHS = 6;
-const PLANNING_LEAD_DAYS = 14;
 const MILLISECONDS_PER_DAY = 86_400_000;
 
 export type RestockDemandSource = "CURRENT_MONTH_POS" | "RECENT_POS_SALES" | "NO_POS_HISTORY";
@@ -144,17 +144,14 @@ function riskFor(stockoutDate: string | null, suggestedQuantity: number, now: Da
 
 function actionDateFor(
   riskLevel: RestockDemandRisk,
-  stockoutDate: string | null,
+  _stockoutDate: string | null,
   suggestedQuantity: number,
   now: Date
 ) {
   if (suggestedQuantity <= 0 || riskLevel === "LOW") return null;
-  if (riskLevel === "CRITICAL" || riskLevel === "HIGH" || !stockoutDate) {
-    return now.toISOString();
-  }
-  const stockout = new Date(stockoutDate);
-  const recommended = new Date(stockout.getTime() - PLANNING_LEAD_DAYS * MILLISECONDS_PER_DAY);
-  return (recommended.getTime() <= now.getTime() ? now : recommended).toISOString();
+  if (riskLevel === "CRITICAL" || riskLevel === "HIGH") return now.toISOString();
+  // An unprojectable stockout (including zero demand) is NOT "order today".
+  return nextMonthlyRestockDate(now);
 }
 
 export function buildOperationalRestockForecast(
