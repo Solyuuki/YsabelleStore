@@ -622,7 +622,11 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-product-transition>
                 <ForecastMetric compact label="Usable stock" value={usableStock(selected)} />
                 <ForecastMetric compact label="Expected 30d" value={selectedDemand} />
-                <ForecastMetric compact label={selectedCoverage.metricLabel} value={coverageLabel(selected)} />
+                <ForecastMetric
+                  compact
+                  label={selectedCoverage.metricLabel}
+                  value={coverageLabel(selected)}
+                />
                 <ForecastMetric
                   compact
                   label="May run out"

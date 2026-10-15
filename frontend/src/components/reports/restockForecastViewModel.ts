@@ -270,14 +270,11 @@ export type StockCoverage = {
 /** Historical coverage and forecast-based estimates must not share a label. */
 export function stockCoverage(candidate: RestockPlanningCandidate | null): StockCoverage {
   const coverageDays = candidate?.stockHealth.coverageDays;
-  if (
-    coverageDays !== null &&
-    coverageDays !== undefined &&
-    Number.isFinite(coverageDays)
-  ) {
+  if (coverageDays !== null && coverageDays !== undefined && Number.isFinite(coverageDays)) {
     return {
       basis: "HISTORICAL",
-      detail: "Coverage is based on recent completed POS sales. Forecast risk is assessed separately.",
+      detail:
+        "Coverage is based on recent completed POS sales. Forecast risk is assessed separately.",
       label: `${Math.max(0, Math.round(coverageDays))} days`,
       metricLabel: "Historical cover"
     };
@@ -293,7 +290,8 @@ export function stockCoverage(candidate: RestockPlanningCandidate | null): Stock
     const estimatedDays = Math.round((usableStock(candidate) / forecastDemand) * 30);
     return {
       basis: "FORECAST",
-      detail: "Approximate coverage based on the 30-day demand forecast, not completed POS sales history.",
+      detail:
+        "Approximate coverage based on the 30-day demand forecast, not completed POS sales history.",
       label: `~${Math.max(0, estimatedDays)} days`,
       metricLabel: "Forecast cover"
     };
