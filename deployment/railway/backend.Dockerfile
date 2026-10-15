@@ -12,8 +12,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 python3-venv libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 COPY forecasting-service/requirements.txt /tmp/forecast-requirements.txt
+COPY catalog-image-engine/requirements.txt /tmp/catalog-image-requirements.txt
 RUN python3 -m venv /opt/ysabelle-python \
-    && /opt/ysabelle-python/bin/python -m pip install --no-cache-dir -r /tmp/forecast-requirements.txt
+    && /opt/ysabelle-python/bin/python -m pip install --no-cache-dir -r /tmp/forecast-requirements.txt -r /tmp/catalog-image-requirements.txt
 
 WORKDIR /app
 COPY --from=build /app /app
