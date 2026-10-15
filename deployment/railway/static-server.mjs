@@ -4,7 +4,10 @@ import { createServer } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const publicDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "public");
+const publicDirectory = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "public"
+);
 const mimeTypes = {
   ".avif": "image/avif",
   ".css": "text/css; charset=utf-8",
@@ -38,7 +41,10 @@ function safePath(pathname) {
     return null;
   }
   const absolute = path.resolve(publicDirectory, "." + decoded);
-  if (absolute !== publicDirectory && !absolute.startsWith(publicDirectory + path.sep)) {
+  if (
+    absolute !== publicDirectory &&
+    !absolute.startsWith(publicDirectory + path.sep)
+  ) {
     return null;
   }
   return absolute;
@@ -94,7 +100,8 @@ async function serve(request, response) {
     return;
   }
 
-  const type = mimeTypes[path.extname(target).toLowerCase()] || "application/octet-stream";
+  const type =
+    mimeTypes[path.extname(target).toLowerCase()] || "application/octet-stream";
   response.writeHead(200, {
     "Content-Type": type,
     "Content-Length": details.size,
