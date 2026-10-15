@@ -1,5 +1,6 @@
 import {
   CheckCircle2,
+  Download,
   FileArchive,
   FolderSearch2,
   HardDrive,
@@ -26,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { formatFileSize } from "@/utils/importFormatting";
+import { downloadProductPackageTemplate } from "@/utils/productPackageTemplate";
 import {
   importGoogleDriveProductPackage,
   importLocalProductPackage,
@@ -72,6 +74,8 @@ export function ProductPackageImportDialog({
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
+  const [templateError, setTemplateError] = useState<string | null>(null);
   const sessionRef = useRef(0);
 
   const isBusy = phase === "scanning" || phase === "importing";
@@ -112,12 +116,29 @@ export function ProductPackageImportDialog({
     setError(null);
     setIsDragging(false);
     setShowGuide(false);
+    setIsDownloadingTemplate(false);
+    setTemplateError(null);
     if (inputRef.current) inputRef.current.value = "";
   }, [isOpen]);
 
   function close() {
     if (isBusy) return;
     onClose();
+  }
+
+  async function handleTemplateDownload() {
+    if (isDownloadingTemplate || isBusy) return;
+    setIsDownloadingTemplate(true);
+    setTemplateError(null);
+    try {
+      await downloadProductPackageTemplate();
+    } catch (downloadError) {
+      setTemplateError(
+        downloadError instanceof Error ? downloadError.message : "Template download failed."
+      );
+    } finally {
+      setIsDownloadingTemplate(false);
+    }
   }
 
   function validatePackageFile(candidate: File) {
@@ -249,19 +270,38 @@ export function ProductPackageImportDialog({
           triggerRef?.current?.focus();
         }}
       >
-        <DialogHeader className="ys-products-v2-import-header relative border-b border-slate-200 px-6 py-6 pr-14">
-          <DialogClose asChild>
+        <DialogHeader className="ys-products-v2-import-header relative border-b border-slate-200 px-6 py-6 pr-44">
+          <div className="ys-products-v2-import-actions absolute right-4 top-4 flex items-center gap-2">
             <Button
-              aria-label="Close product package import"
-              className="ys-products-v2-import-close absolute right-4 top-4"
-              disabled={isBusy}
-              size="icon"
+              aria-label="Download product import template"
+              className="ys-products-v2-template-download h-9 gap-1.5 px-3 text-xs"
+              disabled={isBusy || isDownloadingTemplate}
+              onClick={() => void handleTemplateDownload()}
+              size="sm"
+              title="Download blank ZIP template with live categories"
               type="button"
-              variant="ghost"
+              variant="secondary"
             >
-              <X className="h-4 w-4" aria-hidden="true" />
+              {isDownloadingTemplate ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <Download className="h-4 w-4" aria-hidden="true" />
+              )}
+              <span className="ys-products-v2-template-label">Template</span>
             </Button>
-          </DialogClose>
+            <DialogClose asChild>
+              <Button
+                aria-label="Close product package import"
+                className="ys-products-v2-import-close h-9 w-9 shrink-0"
+                disabled={isBusy}
+                size="icon"
+                type="button"
+                variant="ghost"
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            </DialogClose>
+          </div>
           <div className="space-y-2">
             <div className="ys-products-v2-import-heading flex items-center gap-3">
               <DialogTitle>Import products</DialogTitle>
@@ -297,6 +337,12 @@ export function ProductPackageImportDialog({
 
         <div className="ys-products-v2-import-body flex-1 overflow-y-auto px-6 py-5">
           <div className="space-y-5">
+            {templateError ? (
+              <Alert role="alert" variant="destructive">
+                <AlertTitle>Template download unavailable</AlertTitle>
+                <AlertDescription>{templateError}</AlertDescription>
+              </Alert>
+            ) : null}
             {showGuide ? (
               <section
                 className="rounded-2xl border border-violet-200 bg-violet-50/70 p-5"
@@ -345,7 +391,8 @@ export function ProductPackageImportDialog({
                     <p className="mt-2 leading-6">Supported: JPG, JPEG, PNG, and WebP.</p>
                     <p className="mt-2 leading-6">
                       Name each image using the product SKU or product name so the system can match
-                      it.
+                      it. The Template button downloads a blank ZIP with live category slugs and
+                      the same CSV column format as the backend importer.
                     </p>
                   </div>
                 </div>
@@ -362,8 +409,9 @@ export function ProductPackageImportDialog({
                 </div>
 
                 <p className="mt-3 text-xs leading-5 text-slate-500">
-                  Nested folders are supported. The package is scanned and validated first; nothing
-                  is written to the catalog until you confirm the import.
+                  The downloaded template is intentionally blank. Fill products.csv, optionally add
+                  exact-product photos to images/, and re-ZIP before uploading. Nested folders are
+                  supported. Nothing is written to the catalog until you confirm the import.
                 </p>
               </section>
             ) : null}
