@@ -2548,7 +2548,9 @@
 :root.dark .customer-app .customer-home .home-compact-state {
   background: #24334a;
   border-color: #60718e;
-  box-shadow: 0 12px 28px rgb(2 8 23 / 18%), inset 0 1px 0 rgb(255 255 255 / 5%);
+  box-shadow:
+    0 12px 28px rgb(2 8 23 / 18%),
+    inset 0 1px 0 rgb(255 255 255 / 5%);
 }
 
 :root.dark .customer-app .customer-home .home-compact-state strong {
