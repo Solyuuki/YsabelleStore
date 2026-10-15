@@ -391,8 +391,8 @@ export function ProductPackageImportDialog({
                     <p className="mt-2 leading-6">Supported: JPG, JPEG, PNG, and WebP.</p>
                     <p className="mt-2 leading-6">
                       Name each image using the product SKU or product name so the system can match
-                      it. The Template button downloads a blank ZIP with live category slugs and
-                      the same CSV column format as the backend importer.
+                      it. The Template button downloads a blank ZIP with live category slugs and the
+                      same CSV column format as the backend importer.
                     </p>
                   </div>
                 </div>
