@@ -2,13 +2,7 @@
 // A read-only live audit with an optional operator-controlled media export.
 // This command deliberately never mutates MySQL, Git, or a canonical manifest.
 import { createHash } from "node:crypto";
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-   writeFileSync
-} from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { extname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PrismaClient } from "@prisma/client";
@@ -43,7 +37,9 @@ export function parseImagePublicationArgs(argv) {
     const absolute = resolve(output);
     const rel = relative(root, absolute);
     if (!rel || (!rel.startsWith("..") && !isAbsolute(rel))) {
-      throw new Error("Export outside the Git working tree; do not publish unreviewed runtime files.");
+      throw new Error(
+        "Export outside the Git working tree; do not publish unreviewed runtime files."
+      );
     }
     if (existsSync(absolute)) throw new Error("Export folder already exists; choose a new folder.");
   }
@@ -94,9 +90,7 @@ export function describeImagePublicationState({ product, latest, canonicalId }) 
     latestCandidateApproved: Boolean(latestApprovedId),
     activeMatchesLatest: activeId === latestId,
     activeIsCanonical: Boolean(canonicalId && activeId === canonicalId),
-    expectedPdpUrl: activeId
-      ? `/api/storefront/product-images/${activeId}/pdp`
-      : null,
+    expectedPdpUrl: activeId ? `/api/storefront/product-images/${activeId}/pdp` : null,
     possibleRollback: Boolean(latestApprovedId && activeId !== latestApprovedId)
   };
 }
@@ -167,7 +161,10 @@ async function main() {
       const key = product.activeImageAsset[field];
       copyFileSync(resolve(sourceRoot, key), join(args.output, files[role].fileName));
     }
-    writeFileSync(join(args.output, "image-publication-proposal.json"), JSON.stringify(manifest, null, 2) + "\n");
+    writeFileSync(
+      join(args.output, "image-publication-proposal.json"),
+      JSON.stringify(manifest, null, 2) + "\n"
+    );
     console.log("CATALOG_IMAGE_PUBLICATION_PROPOSAL=READY_REVIEW_REQUIRED");
     console.log("EXPORTED_TO=" + args.output);
   } finally {

@@ -351,8 +351,7 @@ export function resolveRuntimeRoot(env = process.env) {
   if (env.YSABELLE_CATALOG_IMAGE_ROOT?.trim())
     return resolve(env.YSABELLE_CATALOG_IMAGE_ROOT.trim());
   // Match the backend's absolute configured runtime storage, when supplied.
-  if (env.CATALOG_IMAGE_STORAGE_ROOT?.trim() &&
-      isAbsolute(env.CATALOG_IMAGE_STORAGE_ROOT.trim())) {
+  if (env.CATALOG_IMAGE_STORAGE_ROOT?.trim() && isAbsolute(env.CATALOG_IMAGE_STORAGE_ROOT.trim())) {
     return resolve(env.CATALOG_IMAGE_STORAGE_ROOT.trim());
   }
   if (process.platform === "win32") {

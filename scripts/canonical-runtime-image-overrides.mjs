@@ -3,7 +3,8 @@ import { relative, resolve, isAbsolute } from "node:path";
 
 import { resolveRuntimeRoot } from "./canonical-asset-materializer.mjs";
 
-const RUNTIME_ASSET_ID = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
+const RUNTIME_ASSET_ID =
+  /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
 const IMAGE_FIELDS = ["active_image_asset_id", "image_url"];
 
 export function isRuntimeImageAssetId(id) {
@@ -60,7 +61,9 @@ export async function collectRuntimeImageOverrides(prisma, subset, root = resolv
       "a.approved_at,a.superseded_at,a.original_storage_key,a.processed_storage_key," +
       "a.card_storage_key,a.pdp_storage_key " +
       "FROM products p LEFT JOIN product_image_assets a ON a.id=p.active_image_asset_id " +
-      "WHERE p.id IN (" + ids.map(() => "?").join(",") + ")",
+      "WHERE p.id IN (" +
+      ids.map(() => "?").join(",") +
+      ")",
     ...ids
   );
   const expected = new Map(products.map((product) => [String(product.id), product]));
@@ -81,7 +84,9 @@ export async function collectOwnerEditedProductIds(prisma, subset) {
   const rows = await prisma.$queryRawUnsafe(
     "SELECT DISTINCT canonical_product_id AS id FROM catalog_audit_logs " +
       "WHERE action='MANUAL_PRODUCT_UPDATE' AND automated=0 " +
-      "AND canonical_product_id IN (" + ids.map(() => "?").join(",") + ")",
+      "AND canonical_product_id IN (" +
+      ids.map(() => "?").join(",") +
+      ")",
     ...ids
   );
   return new Set(rows.map((row) => String(row.id)));

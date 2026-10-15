@@ -25,9 +25,7 @@ test("canonical IDs stay canonical; real owner upload UUIDs are runtime-owned", 
 test("image protection requires approved READY asset and every storage file", () => {
   const root = mkdtempSync(join(tmpdir(), "ysabelle-image-protection-"));
   const keys = ["original.jpg", "processed.webp", "card.webp", "pdp.webp"];
-  const storage = Object.fromEntries(
-    keys.map((name) => [name, `candidates/${id}/${name}`])
-  );
+  const storage = Object.fromEntries(keys.map((name) => [name, `candidates/${id}/${name}`]));
   const row = {
     id: "product-happy-cotton",
     active_image_asset_id: id,
@@ -50,10 +48,18 @@ test("image protection requires approved READY asset and every storage file", ()
       imageId: id,
       imageUrl: row.image_url
     });
-    assert.equal(isProtectedImageColumn("products", "image_url", row.id, new Map([[row.id, true]])), true);
-    assert.equal(isProtectedImageColumn("products", "name", row.id, new Map([[row.id, true]])), false);
+    assert.equal(
+      isProtectedImageColumn("products", "image_url", row.id, new Map([[row.id, true]])),
+      true
+    );
+    assert.equal(
+      isProtectedImageColumn("products", "name", row.id, new Map([[row.id, true]])),
+      false
+    );
     assert.throws(() => classifyRuntimeImageOverride({ ...row, quality_status: "REJECTED" }, root));
-    assert.throws(() => classifyRuntimeImageOverride({ ...row, pdp_storage_key: "../../escape" }, root));
+    assert.throws(() =>
+      classifyRuntimeImageOverride({ ...row, pdp_storage_key: "../../escape" }, root)
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
