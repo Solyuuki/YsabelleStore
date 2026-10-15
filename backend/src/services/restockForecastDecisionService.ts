@@ -135,12 +135,16 @@ export function buildRestockForecastDecision(
       targetStockLevel + currentMonthDemand + expiryRiskQuantity - sellableStock - incomingStock
     )
   );
-  const riskLevel = riskFor(
+  const baseRisk = riskFor(
     daysUntilStockout,
     projectedEndingStock,
     reorderLevel,
     suggestedQuantity
   );
+  const stockoutBeforeCycle =
+    stockoutDate !== null &&
+    new Date(stockoutDate).getTime() < new Date(nextMonthlyRestockDate(now)).getTime();
+  const riskLevel = baseRisk === "MEDIUM" && stockoutBeforeCycle ? "HIGH" : baseRisk;
   const recommendedActionDate = actionDateFor(riskLevel, stockoutDate, suggestedQuantity, now);
 
   return {

@@ -75,10 +75,13 @@ function monthlyRecommendationAction(
   return "NO_ACTION";
 }
 
-function monthlyRecommendationLabel(action: MonthlyRecommendationAction) {
+function monthlyRecommendationLabel(
+  action: MonthlyRecommendationAction,
+  risk: RestockForecastRisk | null = null
+) {
   switch (action) {
     case "RESTOCK":
-      return "Next restock";
+      return risk === "HIGH" || risk === "CRITICAL" ? "Urgent restock" : "Next restock";
     case "EXPIRY_REVIEW":
       return "Expiry review";
     case "REDUCE_REPLENISHMENT":
@@ -89,10 +92,13 @@ function monthlyRecommendationLabel(action: MonthlyRecommendationAction) {
   }
 }
 
-function monthlyRecommendationVariant(action: MonthlyRecommendationAction) {
+function monthlyRecommendationVariant(
+  action: MonthlyRecommendationAction,
+  risk: RestockForecastRisk | null = null
+) {
   switch (action) {
     case "RESTOCK":
-      return "warning" as const;
+      return risk === "HIGH" || risk === "CRITICAL" ? ("warning" as const) : ("info" as const);
     case "EXPIRY_REVIEW":
       return "danger" as const;
     case "REDUCE_REPLENISHMENT":
@@ -477,10 +483,14 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                               <Badge
                                 title={item.rationale}
                                 variant={monthlyRecommendationVariant(
-                                  monthlyRecommendationAction(item)
+                                  monthlyRecommendationAction(item),
+                                  item.forecastDecision?.riskLevel
                                 )}
                               >
-                                {monthlyRecommendationLabel(monthlyRecommendationAction(item))}
+                                {monthlyRecommendationLabel(
+                                  monthlyRecommendationAction(item),
+                                  item.forecastDecision?.riskLevel
+                                )}
                               </Badge>
                             </span>
                             <span className="ys-report-v2-short-action" title={item.rationale}>
@@ -488,7 +498,10 @@ export function RestockForecastPanel({ refreshVersion = 0 }: { refreshVersion?: 
                                 ? "Reduce"
                                 : monthlyRecommendationAction(item) === "EXPIRY_REVIEW"
                                   ? "Expiry"
-                                  : monthlyRecommendationLabel(monthlyRecommendationAction(item))}
+                                  : monthlyRecommendationLabel(
+                                      monthlyRecommendationAction(item),
+                                      item.forecastDecision?.riskLevel
+                                    )}
                             </span>
                           </TableCell>
                           <TableCell className="text-right tabular-nums">

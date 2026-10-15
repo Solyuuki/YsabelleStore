@@ -181,7 +181,11 @@ export function buildOperationalRestockForecast(
       ? Math.max(0, Math.ceil(reorderLevel + 1 - sellableStock - incomingStock))
       : 0;
   const suggestedQuantity = Math.max(demandAndTargetGap, reorderGap);
-  const riskLevel = riskFor(projectedStockout, suggestedQuantity, now);
+  const baseRisk = riskFor(projectedStockout, suggestedQuantity, now);
+  const stockoutBeforeCycle =
+    projectedStockout !== null &&
+    new Date(projectedStockout).getTime() < new Date(nextMonthlyRestockDate(now)).getTime();
+  const riskLevel = baseRisk === "MEDIUM" && stockoutBeforeCycle ? "HIGH" : baseRisk;
   const recommendedActionDate = actionDateFor(riskLevel, projectedStockout, suggestedQuantity, now);
   const reason =
     suggestedQuantity <= 0

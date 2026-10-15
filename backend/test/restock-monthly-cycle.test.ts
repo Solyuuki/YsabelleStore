@@ -78,3 +78,33 @@ test("true urgent stockout still receives an immediate alert", () => {
   assert.equal(urgent.riskLevel, "CRITICAL");
   assert.equal(urgent.recommendedActionDate, now.toISOString());
 });
+
+test("a projected stockout before next activation bypasses monthly waiting", () => {
+  const now = new Date("2026-10-02T08:00:00.000Z");
+  const forecast = buildOperationalRestockForecast({
+    expiryRiskQuantity: 0,
+    historicalSeries: [{ period: "2026-10", quantitySold: 30 }],
+    incomingStock: 0,
+    now,
+    reorderLevel: 0,
+    sellableStock: 20,
+    targetStockLevel: 0
+  });
+  assert.equal(forecast.suggestedQuantity, 10);
+  assert.equal(forecast.riskLevel, "HIGH");
+  assert.equal(forecast.recommendedActionDate, now.toISOString());
+
+  const sarima = buildRestockForecastDecision({
+    expiryRiskQuantity: 0,
+    forecast: [
+      { period: "2026-11-01", predictedQuantity: 30, lowerConfidence: null, upperConfidence: null }
+    ],
+    incomingStock: 0,
+    now,
+    reorderLevel: 0,
+    sellableStock: 20,
+    targetStockLevel: 0
+  });
+  assert.equal(sarima.riskLevel, "HIGH");
+  assert.equal(sarima.recommendedActionDate, now.toISOString());
+});
