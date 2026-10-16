@@ -154,12 +154,11 @@ export async function isPendingCustomerWebOAuthState(
     }
   });
 
-  return Boolean(
-    transaction &&
-      transaction.provider === provider &&
-      transaction.transport === "WEB" &&
-      transaction.consumedAt === null &&
-      transaction.expiresAt.getTime() > now.getTime()
+  return (
+    transaction?.provider === provider &&
+    transaction.transport === "WEB" &&
+    transaction.consumedAt === null &&
+    transaction.expiresAt.getTime() > now.getTime()
   );
 }
 
