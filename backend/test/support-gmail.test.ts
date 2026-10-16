@@ -816,6 +816,8 @@ test("lifecycle email selects a parent from the same Gmail thread", async () => 
 });
 
 test("Gmail HTTP errors use an allowlisted reason without raw details", async () => {
+  const tokenBody = JSON.stringify({ access_token: "example-token", expires_in: 3600 });
+  const rejectedBody = JSON.stringify({ error: { errors: [{ reason: "invalidArgument" }] } });
   const client = createSupportGmailClient({
     clientId: "client-id",
     clientSecret: "secret",
@@ -824,15 +826,9 @@ test("Gmail HTTP errors use an allowlisted reason without raw details", async ()
     fromName: "Ysabelle Store Customer Support",
     fetchImpl: async (input) => {
       if (String(input) === "https://oauth2.googleapis.com/token") {
-        return new Response(
-          JSON.stringify({ access_token: "example-token", expires_in: 3600 }),
-          { status: 200 }
-        );
+        return new Response(tokenBody, { status: 200 });
       }
-      return new Response(
-        JSON.stringify({ error: { errors: [{ reason: "invalidArgument" }] } }),
-        { status: 400 }
-      );
+      return new Response(rejectedBody, { status: 400 });
     }
   });
   await assert.rejects(
