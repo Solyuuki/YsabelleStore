@@ -2617,30 +2617,48 @@
   box-shadow: 0 -10px 26px rgb(3 9 24 / 24%);
   backdrop-filter: none;
 }
-:is(:root.dark, :root[data-about-chrome-theme="dark"]) .customer-app .customer-privacy-notice__icon {
+:is(:root.dark, :root[data-about-chrome-theme="dark"])
+  .customer-app
+  .customer-privacy-notice__icon {
   background: #343657;
   border-color: #8171be;
   color: #ddd3ff;
   box-shadow: none;
 }
-:is(:root.dark, :root[data-about-chrome-theme="dark"]) .customer-app .customer-privacy-notice__eyebrow {
+:is(:root.dark, :root[data-about-chrome-theme="dark"])
+  .customer-app
+  .customer-privacy-notice__eyebrow {
   color: #cfc2ff;
 }
-:is(:root.dark, :root[data-about-chrome-theme="dark"]) .customer-app .customer-privacy-notice__copy > strong {
+:is(:root.dark, :root[data-about-chrome-theme="dark"])
+  .customer-app
+  .customer-privacy-notice__copy
+  >
+  strong {
   color: #f0f4ff;
 }
-:is(:root.dark, :root[data-about-chrome-theme="dark"]) .customer-app .customer-privacy-notice__copy p:not(.customer-privacy-notice__eyebrow) {
+:is(:root.dark, :root[data-about-chrome-theme="dark"])
+  .customer-app
+  .customer-privacy-notice__copy
+  p:not(.customer-privacy-notice__eyebrow) {
   color: #cbd7e9;
 }
-:is(:root.dark, :root[data-about-chrome-theme="dark"]) .customer-app .customer-privacy-notice__links :is(a, button) {
+:is(:root.dark, :root[data-about-chrome-theme="dark"])
+  .customer-app
+  .customer-privacy-notice__links
+  :is(a, button) {
   color: #ded2ff;
 }
-:is(:root.dark, :root[data-about-chrome-theme="dark"]) .customer-app .customer-privacy-notice__dismiss {
+:is(:root.dark, :root[data-about-chrome-theme="dark"])
+  .customer-app
+  .customer-privacy-notice__dismiss {
   background: #2a3850;
   border-color: #617493;
   color: #eaf0ff;
 }
-:is(:root.dark, :root[data-about-chrome-theme="dark"]) .customer-app .customer-privacy-notice__dismiss:hover {
+:is(:root.dark, :root[data-about-chrome-theme="dark"])
+  .customer-app
+  .customer-privacy-notice__dismiss:hover {
   background: #3a4b66;
   color: #ffffff;
 }
@@ -2659,7 +2677,10 @@
 :root.dark .customer-app .customer-auth-page--register .customer-mobile-auth__heading strong {
   color: #f1f5ff;
 }
-:root.dark .customer-app .customer-auth-page--register :is(.customer-mobile-auth__meta, .customer-mobile-auth__hint, .customer-mobile-auth__countdown) {
+:root.dark
+  .customer-app
+  .customer-auth-page--register
+  :is(.customer-mobile-auth__meta, .customer-mobile-auth__hint, .customer-mobile-auth__countdown) {
   color: #bfcee5;
 }
 :root.dark .customer-app .customer-auth-page--register .customer-mobile-auth__icon {
@@ -2668,20 +2689,41 @@
   color: #d9cdff;
   box-shadow: none;
 }
-:root.dark .customer-app .customer-auth-page--register .customer-mobile-auth .customer-auth-field > span:first-child {
+:root.dark
+  .customer-app
+  .customer-auth-page--register
+  .customer-mobile-auth
+  .customer-auth-field
+  >
+  span:first-child {
   color: #e7efff;
 }
-:root.dark .customer-app .customer-auth-page--register .customer-mobile-auth .customer-auth-field input {
+:root.dark
+  .customer-app
+  .customer-auth-page--register
+  .customer-mobile-auth
+  .customer-auth-field
+  input {
   background: #142139;
   border-color: #667d9d;
   color: #f1f5ff;
   box-shadow: none;
 }
-:root.dark .customer-app .customer-auth-page--register .customer-mobile-auth .customer-auth-field input::placeholder {
+:root.dark
+  .customer-app
+  .customer-auth-page--register
+  .customer-mobile-auth
+  .customer-auth-field
+  input::placeholder {
   color: #b8c9e2;
   opacity: 1;
 }
-:root.dark .customer-app .customer-auth-page--register .customer-mobile-auth .customer-auth-field input:focus-visible {
+:root.dark
+  .customer-app
+  .customer-auth-page--register
+  .customer-mobile-auth
+  .customer-auth-field
+  input:focus-visible {
   outline: 2px solid #c2b2ff;
   outline-offset: 2px;
 }
@@ -2691,10 +2733,18 @@
   color: #ffffff;
   text-shadow: 0 1px 1px rgb(8 14 31 / 35%);
 }
-:root.dark .customer-app .customer-auth-page--register .customer-mobile-auth :is(.customer-mobile-auth__secondary, .customer-mobile-auth__back) {
+:root.dark
+  .customer-app
+  .customer-auth-page--register
+  .customer-mobile-auth
+  :is(.customer-mobile-auth__secondary, .customer-mobile-auth__back) {
   color: #d3c5ff;
 }
-:root.dark .customer-app .customer-auth-page--register .customer-mobile-auth :is(.customer-mobile-auth__secondary, .customer-mobile-auth__back):hover:not(:disabled) {
+:root.dark
+  .customer-app
+  .customer-auth-page--register
+  .customer-mobile-auth
+  :is(.customer-mobile-auth__secondary, .customer-mobile-auth__back):hover:not(:disabled) {
   color: #ffffff;
 }
 :root.dark .customer-app .customer-auth-page--register .customer-mobile-auth .customer-auth-alert {
