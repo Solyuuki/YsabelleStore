@@ -38,7 +38,7 @@ const envSchema = z.object({
   PAYMONGO_SECRET_KEY: optionalNonEmptyString,
   PAYMONGO_WEBHOOK_SECRET: optionalNonEmptyString,
   RESEND_API_KEY: z.string().min(1).optional(),
-  CUSTOMER_EMAIL_PROVIDER: z.enum(["resend", "gmail_smtp"]).default("resend"),
+  CUSTOMER_EMAIL_PROVIDER: z.enum(["resend", "gmail_smtp", "gmail_api"]).default("resend"),
   SMTP_USER: optionalEmail,
   SMTP_PASSWORD: optionalNonEmptyString,
   CUSTOMER_RECOVERY_FROM_EMAIL: z.string().email().optional(),
