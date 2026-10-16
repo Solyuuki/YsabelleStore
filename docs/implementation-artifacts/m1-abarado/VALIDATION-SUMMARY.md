@@ -185,4 +185,4 @@ Result: independent Dark Mode asset/contrast contract suite PASSED; frontend, ba
 
 | Date       | Branch                                  | Command             | Result | Notes                                         |
 | ---------- | --------------------------------------- | ------------------- | ------ | --------------------------------------------- |
-| 2026-10-16 | m1/v0.13/fix-support-email-thread-retry | npm run verify:code | Passed | CI 38892562190; exact code head 2ca1c6a71af3. |
+| 2026-10-16 | m1/v0.13/fix/support-email-thread-retry | npm run verify:code | Passed | CI 38892562190; exact code head 2ca1c6a71af3. |

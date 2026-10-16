@@ -233,7 +233,7 @@ Automated coverage verifies the canonical 50 identity manifest against the relea
 
 ## Sprint 13 Gmail Support Retry Verification (2026-10-16)
 
-Branch: `m1/v0.13/fix-support-email-thread-retry`
+Branch: `m1/v0.13/fix/support-email-thread-retry`
 
 The aggregate code verifier passed in CI run 38892562190 on implementation commit
 `2ca1c6a71af3`. The subsequent status verification failed because these

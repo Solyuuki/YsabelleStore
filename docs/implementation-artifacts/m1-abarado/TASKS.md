@@ -138,7 +138,7 @@ Status: code implemented on `sprint/v0.11/sprint-11`; automated theme contracts 
 ## Sprint 13 Gmail Support Retry (2026-10-16)
 
 - Task ID: YSB-M1-SUPPORT-EMAIL-013
-- Branch: `m1/v0.13/fix-support-email-thread-retry`
+- Branch: `m1/v0.13/fix/support-email-thread-retry`
 - Scope: Restrict Gmail reply parent selection to the canonical ticket thread, log safe
   provider error codes, and report unsuccessful retries accurately.
 - Changed modules: `backend/src/services/supportGmailService.ts`,

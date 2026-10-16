@@ -117,7 +117,7 @@ Validation: CI run 37739767192 — frontend/backend/Electron workspace validatio
 
 ## Sprint 13 Gmail Support Retry Progress (2026-10-16)
 
-- Branch: `m1/v0.13/fix-support-email-thread-retry`
+- Branch: `m1/v0.13/fix/support-email-thread-retry`
 - Task: YSB-M1-SUPPORT-EMAIL-013
 - Implementation: Thread-aware Gmail parent selection, sanitized delivery failure
   diagnostics, reliable retry response, and targeted regression tests.
