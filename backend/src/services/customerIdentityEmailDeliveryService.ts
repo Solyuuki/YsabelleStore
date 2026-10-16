@@ -36,6 +36,9 @@ type DevelopmentSmtpMessage = {
 
 type CustomerIdentityEmailDeliveryConfig = {
   apiKey?: string;
+  emailProvider?: "resend" | "gmail_smtp";
+  smtpUser?: string;
+  smtpAppPassword?: string;
   developmentSmtpAppPassword?: string;
   developmentSmtpUser?: string;
   fetchImpl?: typeof fetch;
@@ -294,6 +297,9 @@ async function isDevelopmentSenderRestriction(
 
 export function createCustomerIdentityEmailDelivery({
   apiKey = env.RESEND_API_KEY,
+  emailProvider = env.CUSTOMER_EMAIL_PROVIDER,
+  smtpUser = env.SMTP_USER,
+  smtpAppPassword = env.SMTP_PASSWORD,
   developmentSmtpAppPassword = env.CUSTOMER_DEV_GMAIL_SMTP_APP_PASSWORD,
   developmentSmtpUser = env.CUSTOMER_DEV_GMAIL_SMTP_USER,
   fetchImpl = fetch,
@@ -308,20 +314,25 @@ export function createCustomerIdentityEmailDelivery({
   }): Promise<void> => {
     if (nodeEnv === "test") return;
 
-    const smtpUser = developmentSmtpUser?.trim();
-    const smtpAppPassword = developmentSmtpAppPassword?.replace(/\s+/g, "").trim();
-    if (nodeEnv === "development" && (smtpUser || smtpAppPassword)) {
-      if (!smtpUser || !smtpAppPassword) throw new CustomerIdentityEmailDeliveryError();
+    const gmailUser = (smtpUser || developmentSmtpUser)?.trim();
+    const gmailAppPassword = (smtpAppPassword || developmentSmtpAppPassword)
+      ?.replace(/\s+/g, "")
+      .trim();
+    const useGmailSmtp =
+      emailProvider === "gmail_smtp" ||
+      (nodeEnv === "development" && Boolean(gmailUser || gmailAppPassword));
+    if (useGmailSmtp) {
+      if (!gmailUser || !gmailAppPassword) throw new CustomerIdentityEmailDeliveryError();
       const { html, subject, text } = emailCopy(input.purpose, input.verificationCode);
       try {
         await smtpSendImpl({
-          appPassword: smtpAppPassword,
-          from: formatFromAddress(smtpUser),
+          appPassword: gmailAppPassword,
+          from: formatFromAddress(gmailUser),
           html,
           subject,
           text,
           to: input.to,
-          user: smtpUser
+          user: gmailUser
         });
         return;
       } catch {
