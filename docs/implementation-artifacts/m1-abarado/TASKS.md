@@ -134,3 +134,15 @@ Scope: independent Storefront top-bar and Retail Settings preferences; semantic 
 Evidence: `frontend/src/context/AppearanceContext.tsx`, `frontend/src/styles/theme-storefront.css`, `frontend/src/styles/theme-storefront-contrast.css`, `frontend/src/styles/theme-retail.css`, `frontend/public/textures/ys-dark-*.svg`, `frontend/public/media/ys-dark-delivery-closing.svg`, `scripts/test/appearance-theme.test.mjs`, `scripts/test/appearance-contrast.test.mjs`, `.github/workflows/ci.yml`.
 
 Status: code implemented on `sprint/v0.11/sprint-11`; automated theme contracts and three workspace builds passed in CI run 37739767192; root formatting gate failed. Real rendered Light/Dark screenshot comparison, accessibility testing of every interactive state, and full repository verification remain pending. Do not mark release-ready. The approved About scenes and original Light Mode images remain unchanged.
+
+## Sprint 13 Gmail Support Retry (2026-10-16)
+
+- Task ID: YSB-M1-SUPPORT-EMAIL-013
+- Branch: `m1/v0.13/fix-support-email-thread-retry`
+- Scope: Restrict Gmail reply parent selection to the canonical ticket thread, log safe
+  provider error codes, and report unsuccessful retries accurately.
+- Changed modules: `backend/src/services/supportGmailService.ts`,
+  `backend/src/controllers/staffSupportController.ts`, and `backend/test/support-gmail.test.ts`.
+- Evidence: CI run 38892562190 executed `npm run verify:code` successfully on code head `2ca1c6a71af3`.
+- Status: Automated code verification passed; implementation-artifact documentation is
+  being completed. Manual Gmail delivery and retry QA remain pending.
