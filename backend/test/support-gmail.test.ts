@@ -742,3 +742,31 @@ test("Gmail resolution NO reopens ticket without a final resolved email", async 
     await scope.cleanup();
   }
 });
+
+test("Gmail OAuth errors report safe provider codes without exposing Google response details", async () => {
+  const client = createSupportGmailClient({
+    clientId: "client-id",
+    clientSecret: "secret",
+    refreshToken: "refresh-token",
+    supportEmail: "ysabellestore.support@gmail.com",
+    fromName: "Ysabelle Store Customer Support",
+    fetchImpl: async () =>
+      new Response(
+        JSON.stringify({
+          error: "invalid_grant",
+          error_description: "Sensitive provider diagnostics: refresh-token"
+        }),
+        { status: 400 }
+      )
+  });
+
+  await assert.rejects(
+    () => client.listInboxMessages(),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.match(error.message, /invalid_grant; HTTP 400/);
+      assert.doesNotMatch(error.message, /refresh-token|Sensitive provider diagnostics/);
+      return true;
+    }
+  );
+});
