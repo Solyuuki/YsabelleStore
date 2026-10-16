@@ -392,7 +392,8 @@ test("production Gmail API fails closed on expired OAuth grants without leaking 
   });
 
   await assert.rejects(
-    () => send({ to: "customer@example.com", verificationCode: "123456", purpose: "authentication" }),
+    () =>
+      send({ to: "customer@example.com", verificationCode: "123456", purpose: "authentication" }),
     (error: unknown) => {
       assert.ok(error instanceof module.CustomerIdentityEmailDeliveryError);
       assert.doesNotMatch(error.message, /sensitive|123456|invalid_grant/);
