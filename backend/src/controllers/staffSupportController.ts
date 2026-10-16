@@ -129,8 +129,17 @@ export const retryStaffSupportEmailController: RequestHandler = async (request, 
       code: "INVALID_SUPPORT_MESSAGE_ID"
     });
     const ticket = await retryStaffSupportEmail(params.ticketId, params.messageId);
-    const delivered = ticket.messages.some((message) => message.id === params.messageId && message.deliveryStatus === "SENT");
-    response.json(createSuccessResponse(delivered ? "Support email sent." : "Support email retry failed; please review the delivery status.", ticket));
+    const delivered = ticket.messages.some(
+      (message) => message.id === params.messageId && message.deliveryStatus === "SENT"
+    );
+    response.json(
+      createSuccessResponse(
+        delivered
+          ? "Support email sent."
+          : "Support email retry failed; please review the delivery status.",
+        ticket
+      )
+    );
   } catch (error) {
     next(error);
   }
