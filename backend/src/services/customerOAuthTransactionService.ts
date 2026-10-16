@@ -146,7 +146,12 @@ export async function isPendingCustomerWebOAuthState(
 
   const transaction = await prisma.customerOAuthTransaction.findUnique({
     where: { stateHash: hashHex(state) },
-    select: { provider: true, transport: true, consumedAt: true, expiresAt: true }
+    select: {
+      provider: true,
+      transport: true,
+      consumedAt: true,
+      expiresAt: true
+    }
   });
 
   return Boolean(
