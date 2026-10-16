@@ -260,7 +260,10 @@ test("production Gmail SMTP delivers OTP and recovery codes without calling Rese
     purpose: "password_recovery"
   });
 
-  assert.deepEqual(sent.map((message) => message.to), ["otp@example.com", "recovery@example.com"]);
+  assert.deepEqual(
+    sent.map((message) => message.to),
+    ["otp@example.com", "recovery@example.com"]
+  );
   assert.ok(sent.every((message) => message.user === "ysabellestore.support@gmail.com"));
   assert.equal(sent[0]?.from, "Ysabelle Store <ysabellestore.support@gmail.com>");
   assert.match(sent[0]?.text ?? "", /123456/);
