@@ -52,6 +52,16 @@ test("barcode decoding works across browsers and closes camera tracks on exit", 
   assert.equal(lock.packages.frontend.dependencies["@zxing/browser"], "0.1.5");
   assert.equal(lock.packages["node_modules/@zxing/library"].version, "0.21.3");
   assert.match(scanner, /BrowserMultiFormatReader\(HINTS, \{/);
+  assert.match(scanner, /navigator\.mediaDevices\.getUserMedia\(constraints\)/);
+  assert.match(scanner, /reader\.decodeFromStream\(stream, video,/);
+  assert.doesNotMatch(scanner, /reader\.decodeFromConstraints\(/);
+  assert.match(scanner, /CAMERA_PERMISSION_TIMEOUT_MS/);
+  assert.match(scanner, /CAMERA_SCANNER_TIMEOUT_MS/);
+  assert.match(scanner, /withCameraStartupTimeout/);
+  assert.match(scanner, /onLateResult\(result\)/);
+  assert.match(scanner, /stopCameraStream\(localStream\)/);
+  assert.match(scanner, /Retry camera/);
+  assert.match(scanner, /setRetryAttempt\(\(attempt\) => attempt \+ 1\)/);
   for (const format of ["EAN_13", "EAN_8", "UPC_A", "UPC_E", "CODE_128", "CODE_39", "ITF"]) {
     assert.ok(scanner.includes("BarcodeFormat." + format), "Missing barcode format " + format);
   }
