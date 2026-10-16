@@ -616,7 +616,34 @@ export function createSupportGmailClient(input: SupportGmailConfiguration): Supp
       response = await requestWithToken(token);
     }
 
-    if (!response.ok) throw new Error(`Support Gmail request failed (HTTP ${response.status}).`);
+    if (!response.ok) {
+      let reason = "unknown";
+      try {
+        const payload = (await response.json()) as {
+          error?: { errors?: Array<{ reason?: unknown }> };
+        };
+        const providerReason = payload.error?.errors?.[0]?.reason;
+        const safeReasons = [
+          "invalidArgument",
+          "failedPrecondition",
+          "insufficientPermissions",
+          "rateLimitExceeded",
+          "userRateLimitExceeded",
+          "quotaExceeded",
+          "notFound",
+          "badRequest",
+          "forbidden",
+          "domainPolicy",
+          "authError"
+        ];
+        if (typeof providerReason === "string" && safeReasons.includes(providerReason)) {
+          reason = providerReason;
+        }
+      } catch {
+        // Never log Google's raw error description or response body.
+      }
+      throw new Error(`Support Gmail request failed (HTTP ${response.status}; ${reason}).`);
+    }
     return (await response.json()) as T;
   }
 
@@ -784,7 +811,10 @@ async function deliverSupportMessageEmail(
           where: {
             ticketId: message.ticketId,
             id: { not: message.id },
-            gmailMessageId: { not: null }
+            gmailMessageId: { not: null },
+            ...(message.ticket.gmailThreadId
+              ? { gmailThreadId: message.ticket.gmailThreadId }
+              : {})
           }
         })
       : null;
@@ -800,7 +830,18 @@ async function deliverSupportMessageEmail(
       replyToGmailMessageId: previousGmailMessage?.gmailMessageId ?? null,
       kind: options.kind
     });
-  } catch {
+  } catch (error) {
+    const safeError =
+      error instanceof Error &&
+      (error.message.startsWith("Support Gmail authentication failed (") ||
+        error.message.startsWith("Support Gmail request failed ("));
+    const diagnostic = safeError
+      ? error.message
+      : error instanceof Error &&
+          error.message === "Cannot send a threaded support reply without its parent Message-ID."
+        ? "thread_parent_unavailable"
+        : "unknown";
+    console.error(`[support-gmail] ${options.kind} delivery failed: ${diagnostic}`);
     const operations: Prisma.PrismaPromise<unknown>[] = [
       prisma.supportMessage.update({
         data: {
