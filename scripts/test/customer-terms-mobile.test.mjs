@@ -16,7 +16,10 @@ test("public terms route is available without customer authentication", () => {
   assert.match(app, /TermsOfServicePage navigate=\{navigate\}/);
   assert.match(footer, /href="\/terms"/);
   assert.match(app, /import "@\/styles\/customer-terms.css"/);
-  assert.match(read("frontend/src/components/customer/PrivacyNotice.tsx"), /pathname !== "\/terms"/);
+  assert.match(
+    read("frontend/src/components/customer/PrivacyNotice.tsx"),
+    /pathname !== "\/terms"/
+  );
 });
 
 test("terms reuse Privacy Policy layout, legal reading surfaces, and dark tokens", () => {
@@ -47,5 +50,8 @@ test("phone merchandising labels cannot be hidden by the decorative handoff or r
   assert.match(mobileCss, /home-merchandising--trending/);
   assert.match(mobileCss, /home-section-heading__eyebrow\s*\{[^}]*padding-block: 0\.12rem;/);
   assert.match(mobileCss, /home-section-heading__title\s*\{[^}]*line-height: 1\.18;/);
-  assert.match(mobileCss, /@media \(max-width: 700px\) and \(prefers-reduced-motion: no-preference\)/);
+  assert.match(
+    mobileCss,
+    /@media \(max-width: 700px\) and \(prefers-reduced-motion: no-preference\)/
+  );
 });
