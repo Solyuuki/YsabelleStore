@@ -584,6 +584,7 @@ export async function updateProduct(
     Pick<
       CreateProductInput,
       | "name"
+      | "sku"
       | "barcode"
       | "categoryId"
       | "unit"
