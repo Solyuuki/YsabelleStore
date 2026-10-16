@@ -4,6 +4,8 @@ import { connect as connectTls, type TLSSocket } from "node:tls";
 import { env } from "../config/env.js";
 
 const RESEND_EMAIL_ENDPOINT = "https://api.resend.com/emails";
+const GMAIL_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
+const GMAIL_SEND_ENDPOINT = "https://gmail.googleapis.com/gmail/v1/users/me/messages/send";
 const DEVELOPMENT_RESEND_FROM_EMAIL = "onboarding@resend.dev";
 const CUSTOMER_IDENTITY_FROM_NAME = "Ysabelle Store";
 const GMAIL_SMTP_HOST = "smtp.gmail.com";
@@ -36,7 +38,11 @@ type DevelopmentSmtpMessage = {
 
 type CustomerIdentityEmailDeliveryConfig = {
   apiKey?: string;
-  emailProvider?: "resend" | "gmail_smtp";
+  emailProvider?: "resend" | "gmail_smtp" | "gmail_api";
+  gmailClientId?: string;
+  gmailClientSecret?: string;
+  gmailRefreshToken?: string;
+  gmailSenderEmail?: string;
   smtpUser?: string;
   smtpAppPassword?: string;
   developmentSmtpAppPassword?: string;
@@ -298,6 +304,10 @@ async function isDevelopmentSenderRestriction(
 export function createCustomerIdentityEmailDelivery({
   apiKey = env.RESEND_API_KEY,
   emailProvider = env.CUSTOMER_EMAIL_PROVIDER,
+  gmailClientId = env.GOOGLE_OAUTH_CLIENT_ID,
+  gmailClientSecret = env.GOOGLE_OAUTH_CLIENT_SECRET,
+  gmailRefreshToken = env.GOOGLE_GMAIL_REFRESH_TOKEN,
+  gmailSenderEmail = env.CUSTOMER_SUPPORT_EMAIL,
   smtpUser = env.SMTP_USER,
   smtpAppPassword = env.SMTP_PASSWORD,
   developmentSmtpAppPassword = env.CUSTOMER_DEV_GMAIL_SMTP_APP_PASSWORD,
@@ -334,6 +344,27 @@ export function createCustomerIdentityEmailDelivery({
           to: input.to,
           user: gmailUser
         });
+        return;
+      } catch {
+        throw new CustomerIdentityEmailDeliveryError();
+      }
+    }
+
+    if (emailProvider === "gmail_api") {
+      if (!gmailClientId || !gmailClientSecret || !gmailRefreshToken || !gmailSenderEmail) {
+        throw new CustomerIdentityEmailDeliveryError();
+      }
+      try {
+        await sendGmailApiIdentityEmail(
+          {
+            clientId: gmailClientId,
+            clientSecret: gmailClientSecret,
+            refreshToken: gmailRefreshToken,
+            senderEmail: gmailSenderEmail,
+            ...input
+          },
+          fetchImpl
+        );
         return;
       } catch {
         throw new CustomerIdentityEmailDeliveryError();
