@@ -130,15 +130,12 @@ test("verified email OTP explains suspension or ban without issuing a customer s
     const before = await prisma.customerSession.count({
       where: { customerAccountId: registered.customer.id }
     });
-    await assert.rejects(
-      verifyCustomerEmailAuth({ email, verificationCode }, now),
-      (error) => {
-        assert.ok(error instanceof HttpError);
-        assert.equal(error.statusCode, 403);
-        assert.equal(error.code, `CUSTOMER_ACCOUNT_${status}`);
-        return true;
-      }
-    );
+    await assert.rejects(verifyCustomerEmailAuth({ email, verificationCode }, now), (error) => {
+      assert.ok(error instanceof HttpError);
+      assert.equal(error.statusCode, 403);
+      assert.equal(error.code, `CUSTOMER_ACCOUNT_${status}`);
+      return true;
+    });
     const after = await prisma.customerSession.count({
       where: { customerAccountId: registered.customer.id }
     });

@@ -230,9 +230,8 @@ test("suspension and ban notices require valid credentials or a verified session
       loginCustomer({ identifier: registered.customer.email, password: "CustomerPass123!" }),
       (error) => expectHttpError(error, expected)
     );
-    await assert.rejects(
-      getCustomerFromSessionToken(registered.sessionToken),
-      (error) => expectHttpError(error, expected)
+    await assert.rejects(getCustomerFromSessionToken(registered.sessionToken), (error) =>
+      expectHttpError(error, expected)
     );
   }
 });

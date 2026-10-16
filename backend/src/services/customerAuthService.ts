@@ -233,10 +233,7 @@ export async function getCustomerFromSessionToken(
     where: { tokenHash: hashCustomerSessionToken(sessionToken) }
   });
 
-  if (
-    !session ||
-    session.expiresAt.getTime() <= now.getTime()
-  ) {
+  if (!session || session.expiresAt.getTime() <= now.getTime()) {
     throw invalidSession();
   }
 

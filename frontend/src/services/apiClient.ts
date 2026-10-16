@@ -156,9 +156,7 @@ export class ApiClient {
           : null;
       const restriction = customerRestrictionFromCode(errorCode);
       if (restriction && eventContext.path.startsWith("/api/customer-auth/")) {
-        window.dispatchEvent(
-          new CustomEvent(CUSTOMER_RESTRICTION_EVENT, { detail: restriction })
-        );
+        window.dispatchEvent(new CustomEvent(CUSTOMER_RESTRICTION_EVENT, { detail: restriction }));
       }
 
       dispatchHttpError({
