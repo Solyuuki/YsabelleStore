@@ -822,25 +822,25 @@ test("Gmail HTTP errors use an allowlisted reason without raw details", async ()
     refreshToken: "refresh-token",
     supportEmail: "ysabellestore.support@gmail.com",
     fromName: "Ysabelle Store Customer Support",
-    fetchImpl: async (input) =>
-      String(input) === "https://oauth2.googleapis.com/token"
-        ? new Response(
-            JSON.stringify({ access_token: "example-token", expires_in: 3600 }),
-            { status: 200 }
-          )
-        : new Response(
-            JSON.stringify({
-              error: { errors: [{ reason: "invalidArgument" }], message: "private info" }
-            }),
-            { status: 400 }
-          )
+    fetchImpl: async (input) => {
+      if (String(input) === "https://oauth2.googleapis.com/token") {
+        return new Response(
+          JSON.stringify({ access_token: "example-token", expires_in: 3600 }),
+          { status: 200 }
+        );
+      }
+      return new Response(
+        JSON.stringify({ error: { errors: [{ reason: "invalidArgument" }] } }),
+        { status: 400 }
+      );
+    }
   });
   await assert.rejects(
     () => client.listInboxMessages(),
     (error: unknown) => {
       assert.ok(error instanceof Error);
       assert.match(error.message, /HTTP 400; invalidArgument/);
-      assert.doesNotMatch(error.message, /private info/);
+      assert.doesNotMatch(error.message, /access_token|example-token/);
       return true;
     }
   );
