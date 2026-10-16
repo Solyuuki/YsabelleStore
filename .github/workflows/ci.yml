@@ -225,5 +225,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Inspect Prettier diff for email tests (temporary)
+        if: matrix.workspace == 'backend'
+        run: |
+          npx prettier backend/test/customer-email-delivery.test.ts --write
+          git --no-pager diff -- backend/test/customer-email-delivery.test.ts
+
       - name: Build workspace
         run: npm run build --workspace ${{ matrix.workspace }}
