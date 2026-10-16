@@ -4,6 +4,8 @@ import { connect as connectTls, type TLSSocket } from "node:tls";
 import { env } from "../config/env.js";
 
 const RESEND_EMAIL_ENDPOINT = "https://api.resend.com/emails";
+const GMAIL_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
+const GMAIL_SEND_ENDPOINT = "https://gmail.googleapis.com/gmail/v1/users/me/messages/send";
 const DEVELOPMENT_RESEND_FROM_EMAIL = "onboarding@resend.dev";
 const CUSTOMER_IDENTITY_FROM_NAME = "Ysabelle Store";
 const GMAIL_SMTP_HOST = "smtp.gmail.com";
@@ -36,6 +38,13 @@ type DevelopmentSmtpMessage = {
 
 type CustomerIdentityEmailDeliveryConfig = {
   apiKey?: string;
+  emailProvider?: "resend" | "gmail_smtp" | "gmail_api";
+  gmailClientId?: string;
+  gmailClientSecret?: string;
+  gmailRefreshToken?: string;
+  gmailSenderEmail?: string;
+  smtpUser?: string;
+  smtpAppPassword?: string;
   developmentSmtpAppPassword?: string;
   developmentSmtpUser?: string;
   fetchImpl?: typeof fetch;
@@ -248,6 +257,79 @@ async function sendGmailSmtpMessage(message: DevelopmentSmtpMessage): Promise<vo
   }
 }
 
+async function sendGmailApiIdentityEmail(
+  input: {
+    clientId: string;
+    clientSecret: string;
+    refreshToken: string;
+    senderEmail: string;
+    to: string;
+    verificationCode: string;
+    purpose: CustomerIdentityEmailPurpose;
+  },
+  fetchImpl: typeof fetch
+): Promise<void> {
+  if (/[\r\n]/.test(input.to) || /[\r\n]/.test(input.senderEmail)) {
+    throw new CustomerIdentityEmailDeliveryError();
+  }
+
+  const tokenResponse = await fetchImpl(GMAIL_TOKEN_ENDPOINT, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: input.clientId,
+      client_secret: input.clientSecret,
+      refresh_token: input.refreshToken,
+      grant_type: "refresh_token"
+    }),
+    signal: AbortSignal.timeout(15_000)
+  });
+  if (!tokenResponse.ok) throw new CustomerIdentityEmailDeliveryError();
+
+  const tokenPayload = (await tokenResponse.json()) as { access_token?: unknown };
+  if (typeof tokenPayload.access_token !== "string" || !tokenPayload.access_token.trim()) {
+    throw new CustomerIdentityEmailDeliveryError();
+  }
+
+  const { html, subject, text } = emailCopy(input.purpose, input.verificationCode);
+  const boundary = "ysabelle-store-identity";
+  function mimePart(value: string) {
+    const encoded = Buffer.from(value, "utf8").toString("base64");
+    return (encoded.match(/.{1,76}/g) ?? []).join("\r\n");
+  }
+  const raw = [
+    `From: ${formatFromAddress(input.senderEmail)}`,
+    `To: ${input.to}`,
+    `Subject: ${subject}`,
+    "MIME-Version: 1.0",
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    "",
+    `--${boundary}`,
+    "Content-Type: text/plain; charset=UTF-8",
+    "Content-Transfer-Encoding: base64",
+    "",
+    mimePart(text),
+    `--${boundary}`,
+    "Content-Type: text/html; charset=UTF-8",
+    "Content-Transfer-Encoding: base64",
+    "",
+    mimePart(html),
+    `--${boundary}--`,
+    ""
+  ].join("\r\n");
+
+  const sendResponse = await fetchImpl(GMAIL_SEND_ENDPOINT, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${tokenPayload.access_token}`,
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({ raw: Buffer.from(raw, "utf8").toString("base64url") }),
+    signal: AbortSignal.timeout(15_000)
+  });
+  if (!sendResponse.ok) throw new CustomerIdentityEmailDeliveryError();
+}
+
 async function sendEmailRequest(
   input: {
     apiKey: string;
@@ -294,6 +376,13 @@ async function isDevelopmentSenderRestriction(
 
 export function createCustomerIdentityEmailDelivery({
   apiKey = env.RESEND_API_KEY,
+  emailProvider = env.CUSTOMER_EMAIL_PROVIDER,
+  gmailClientId = env.GOOGLE_OAUTH_CLIENT_ID,
+  gmailClientSecret = env.GOOGLE_OAUTH_CLIENT_SECRET,
+  gmailRefreshToken = env.GOOGLE_GMAIL_REFRESH_TOKEN,
+  gmailSenderEmail = env.CUSTOMER_SUPPORT_EMAIL,
+  smtpUser = env.SMTP_USER,
+  smtpAppPassword = env.SMTP_PASSWORD,
   developmentSmtpAppPassword = env.CUSTOMER_DEV_GMAIL_SMTP_APP_PASSWORD,
   developmentSmtpUser = env.CUSTOMER_DEV_GMAIL_SMTP_USER,
   fetchImpl = fetch,
@@ -308,21 +397,47 @@ export function createCustomerIdentityEmailDelivery({
   }): Promise<void> => {
     if (nodeEnv === "test") return;
 
-    const smtpUser = developmentSmtpUser?.trim();
-    const smtpAppPassword = developmentSmtpAppPassword?.replace(/\s+/g, "").trim();
-    if (nodeEnv === "development" && (smtpUser || smtpAppPassword)) {
-      if (!smtpUser || !smtpAppPassword) throw new CustomerIdentityEmailDeliveryError();
+    const gmailUser = (smtpUser || developmentSmtpUser)?.trim();
+    const gmailAppPassword = (smtpAppPassword || developmentSmtpAppPassword)
+      ?.replace(/\s+/g, "")
+      .trim();
+    const useGmailSmtp =
+      emailProvider === "gmail_smtp" ||
+      (nodeEnv === "development" && Boolean(gmailUser || gmailAppPassword));
+    if (useGmailSmtp) {
+      if (!gmailUser || !gmailAppPassword) throw new CustomerIdentityEmailDeliveryError();
       const { html, subject, text } = emailCopy(input.purpose, input.verificationCode);
       try {
         await smtpSendImpl({
-          appPassword: smtpAppPassword,
-          from: formatFromAddress(smtpUser),
+          appPassword: gmailAppPassword,
+          from: formatFromAddress(gmailUser),
           html,
           subject,
           text,
           to: input.to,
-          user: smtpUser
+          user: gmailUser
         });
+        return;
+      } catch {
+        throw new CustomerIdentityEmailDeliveryError();
+      }
+    }
+
+    if (emailProvider === "gmail_api") {
+      if (!gmailClientId || !gmailClientSecret || !gmailRefreshToken || !gmailSenderEmail) {
+        throw new CustomerIdentityEmailDeliveryError();
+      }
+      try {
+        await sendGmailApiIdentityEmail(
+          {
+            clientId: gmailClientId,
+            clientSecret: gmailClientSecret,
+            refreshToken: gmailRefreshToken,
+            senderEmail: gmailSenderEmail,
+            ...input
+          },
+          fetchImpl
+        );
         return;
       } catch {
         throw new CustomerIdentityEmailDeliveryError();

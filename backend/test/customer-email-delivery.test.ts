@@ -14,6 +14,13 @@ type DevelopmentSmtpMessage = {
 type DeliveryModule = {
   createCustomerIdentityEmailDelivery?: (config: {
     apiKey?: string;
+    emailProvider?: "resend" | "gmail_smtp" | "gmail_api";
+    gmailClientId?: string;
+    gmailClientSecret?: string;
+    gmailRefreshToken?: string;
+    gmailSenderEmail?: string;
+    smtpUser?: string;
+    smtpAppPassword?: string;
     developmentSmtpAppPassword?: string;
     developmentSmtpUser?: string;
     fetchImpl: typeof fetch;
@@ -225,4 +232,176 @@ test("development Gmail SMTP sends password recovery codes through the shared id
   assert.equal(smtpMessages[0]?.subject, "Your Ysabelle Store password recovery code");
   assert.match(smtpMessages[0]?.text ?? "", /246810/);
   assert.match(smtpMessages[0]?.html ?? "", /246810/);
+});
+
+test("production Gmail SMTP delivers OTP and recovery codes without calling Resend", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+
+  const sent: DevelopmentSmtpMessage[] = [];
+  const send = module.createCustomerIdentityEmailDelivery({
+    nodeEnv: "production",
+    emailProvider: "gmail_smtp",
+    apiKey: "re_unused_key",
+    smtpUser: "ysabellestore.support@gmail.com",
+    smtpAppPassword: "app-password",
+    smtpSendImpl: async (message) => {
+      sent.push(message);
+    },
+    fetchImpl: async () => {
+      throw new Error("Resend must not be used when production Gmail SMTP is selected.");
+    }
+  });
+
+  await send({ to: "otp@example.com", verificationCode: "123456", purpose: "authentication" });
+  await send({
+    to: "recovery@example.com",
+    verificationCode: "654321",
+    purpose: "password_recovery"
+  });
+
+  assert.deepEqual(
+    sent.map((message) => message.to),
+    ["otp@example.com", "recovery@example.com"]
+  );
+  assert.ok(sent.every((message) => message.user === "ysabellestore.support@gmail.com"));
+  assert.equal(sent[0]?.from, "Ysabelle Store <ysabellestore.support@gmail.com>");
+  assert.match(sent[0]?.text ?? "", /123456/);
+  assert.match(sent[1]?.text ?? "", /654321/);
+});
+
+test("production Gmail SMTP rejects missing credentials", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+  let resendCalled = false;
+  const send = module.createCustomerIdentityEmailDelivery({
+    nodeEnv: "production",
+    emailProvider: "gmail_smtp",
+    apiKey: "re_unused_key",
+    smtpUser: "",
+    smtpAppPassword: "",
+    developmentSmtpUser: "",
+    developmentSmtpAppPassword: "",
+    fetchImpl: async () => {
+      resendCalled = true;
+      return new Response("{}", { status: 200 });
+    }
+  });
+
+  await assert.rejects(
+    () => send({ to: "otp@example.com", verificationCode: "123456", purpose: "authentication" }),
+    (error: unknown) => error instanceof module.CustomerIdentityEmailDeliveryError
+  );
+  assert.equal(resendCalled, false);
+});
+
+test("production Gmail SMTP hides secrets on failure", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+  let resendCalled = false;
+  const send = module.createCustomerIdentityEmailDelivery({
+    nodeEnv: "production",
+    emailProvider: "gmail_smtp",
+    smtpUser: "sender@gmail.com",
+    smtpAppPassword: "super-secret-app-password",
+    smtpSendImpl: async () => {
+      throw new Error("super-secret-app-password 123456 provider error");
+    },
+    fetchImpl: async () => {
+      resendCalled = true;
+      return new Response("{}", { status: 200 });
+    }
+  });
+
+  await assert.rejects(
+    () => send({ to: "otp@example.com", verificationCode: "123456", purpose: "authentication" }),
+    (error: unknown) => {
+      assert.ok(error instanceof module.CustomerIdentityEmailDeliveryError);
+      assert.equal(error.message.includes("super-secret"), false);
+      assert.equal(error.message.includes("123456"), false);
+      return true;
+    }
+  );
+  assert.equal(resendCalled, false);
+});
+
+test("production Gmail API delivers OTP and recovery codes over HTTPS", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+  const requests: Array<{ url: string; init?: RequestInit }> = [];
+  const send = module.createCustomerIdentityEmailDelivery({
+    nodeEnv: "production",
+    emailProvider: "gmail_api",
+    gmailClientId: "google-client",
+    gmailClientSecret: "google-secret",
+    gmailRefreshToken: "refresh-token",
+    gmailSenderEmail: "ysabellestore.support@gmail.com",
+    fetchImpl: async (url, init) => {
+      requests.push({ url: String(url), init });
+      if (String(url) === "https://oauth2.googleapis.com/token") {
+        return new Response(JSON.stringify({ access_token: "short-lived-access-token" }), {
+          status: 200
+        });
+      }
+      if (String(url) === "https://gmail.googleapis.com/gmail/v1/users/me/messages/send") {
+        return new Response(JSON.stringify({ id: "sent" }), { status: 200 });
+      }
+      throw new Error("Unexpected request");
+    }
+  });
+
+  await send({ to: "customer@example.com", verificationCode: "123456", purpose: "authentication" });
+  await send({
+    to: "recovery@example.com",
+    verificationCode: "654321",
+    purpose: "password_recovery"
+  });
+
+  const sends = requests.filter((request) => request.url.endsWith("/messages/send"));
+  assert.equal(sends.length, 2);
+  assert.equal(requests.filter((request) => request.url.endsWith("/token")).length, 2);
+  assert.ok(requests.every((request) => !request.url.includes("resend.com")));
+  const rawEmails = sends.map((request) => {
+    const payload = JSON.parse(String(request.init?.body)) as { raw: string };
+    return Buffer.from(payload.raw, "base64url").toString("utf8");
+  });
+  assert.match(rawEmails[0] ?? "", /To: customer@example.com/);
+  assert.match(rawEmails[0] ?? "", /From: Ysabelle Store <ysabellestore.support@gmail.com>/);
+  assert.match(rawEmails[0] ?? "", /Subject: Your Ysabelle Store sign-in code/);
+  assert.match(rawEmails[1] ?? "", /Subject: Your Ysabelle Store password recovery code/);
+  const decodeText = (raw: string) => {
+    const encoded = raw.split("Content-Transfer-Encoding: base64")[1]?.split("--")[0]?.trim();
+    return Buffer.from(encoded ?? "", "base64").toString("utf8");
+  };
+  assert.match(decodeText(rawEmails[0] ?? ""), /123456/);
+  assert.match(decodeText(rawEmails[1] ?? ""), /654321/);
+});
+
+test("production Gmail API hides secrets on expired grant", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+  let sendCalled = false;
+  const send = module.createCustomerIdentityEmailDelivery({
+    nodeEnv: "production",
+    emailProvider: "gmail_api",
+    gmailClientId: "google-client",
+    gmailClientSecret: "sensitive-client-secret",
+    gmailRefreshToken: "sensitive-refresh-token",
+    gmailSenderEmail: "ysabellestore.support@gmail.com",
+    fetchImpl: async (url) => {
+      if (String(url).endsWith("/messages/send")) sendCalled = true;
+      return new Response("invalid_grant sensitive-refresh-token", { status: 400 });
+    }
+  });
+
+  await assert.rejects(
+    () =>
+      send({ to: "customer@example.com", verificationCode: "123456", purpose: "authentication" }),
+    (error: unknown) => {
+      assert.ok(error instanceof module.CustomerIdentityEmailDeliveryError);
+      assert.doesNotMatch(error.message, /sensitive|123456|invalid_grant/);
+      return true;
+    }
+  );
+  assert.equal(sendCalled, false);
 });

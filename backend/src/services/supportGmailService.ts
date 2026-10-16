@@ -530,7 +530,27 @@ export function createSupportGmailClient(input: SupportGmailConfiguration): Supp
       throw new Error("Support Gmail authentication failed.");
     }
 
-    if (!response.ok) throw new Error("Support Gmail authentication failed.");
+    if (!response.ok) {
+      let providerCode = "unknown";
+      try {
+        const payload = (await response.json()) as { error?: unknown };
+        const safeCodes = [
+          "invalid_grant",
+          "invalid_client",
+          "unauthorized_client",
+          "invalid_scope",
+          "access_denied"
+        ];
+        if (typeof payload.error === "string" && safeCodes.includes(payload.error)) {
+          providerCode = payload.error;
+        }
+      } catch {
+        // Do not log provider payloads, tokens, or other credentials.
+      }
+      throw new Error(
+        `Support Gmail authentication failed (${providerCode}; HTTP ${response.status}).`
+      );
+    }
 
     const payload = (await response.json()) as {
       access_token?: unknown;
@@ -596,7 +616,7 @@ export function createSupportGmailClient(input: SupportGmailConfiguration): Supp
       response = await requestWithToken(token);
     }
 
-    if (!response.ok) throw new Error("Support Gmail request failed.");
+    if (!response.ok) throw new Error(`Support Gmail request failed (HTTP ${response.status}).`);
     return (await response.json()) as T;
   }
 
@@ -1091,8 +1111,17 @@ async function reconcileSupportGmailInbox() {
     if (result.imported > 0) {
       console.info(`[support-gmail] Imported ${result.imported} customer email reply/replies.`);
     }
-  } catch {
-    console.error("[support-gmail] Gmail synchronization failed.");
+  } catch (error) {
+    const reason =
+      error instanceof Error &&
+      /^Support Gmail (?:authentication|request) failed(?: \([A-Za-z0-9_; ]+\))?\.$/.test(
+        error.message
+      )
+        ? error.message
+        : error instanceof Prisma.PrismaClientKnownRequestError
+          ? `Database error ${error.code}.`
+          : "Unknown error.";
+    console.error(`[support-gmail] Gmail synchronization failed: ${reason}`);
   }
 }
 
