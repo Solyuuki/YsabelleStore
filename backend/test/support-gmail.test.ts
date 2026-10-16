@@ -763,30 +763,45 @@ test("lifecycle email selects a parent from the same Gmail thread", async () => 
     });
     await prisma.supportMessage.create({
       data: {
-        ticketId: ticket.id, senderType: "SYSTEM", channel: "EMAIL",
+        ticketId: ticket.id,
+        senderType: "SYSTEM",
+        channel: "EMAIL",
         senderName: "Ysabelle Store Auto Acknowledgement",
-        body: "Received", deliveryStatus: "SENT",
-        gmailMessageId: parentId, gmailThreadId: threadId
+        body: "Received",
+        deliveryStatus: "SENT",
+        gmailMessageId: parentId,
+        gmailThreadId: threadId
       }
     });
     await prisma.supportMessage.create({
       data: {
-        ticketId: ticket.id, senderType: "CUSTOMER", channel: "EMAIL",
-        senderName: "Customer", body: "Another thread",
+        ticketId: ticket.id,
+        senderType: "CUSTOMER",
+        channel: "EMAIL",
+        senderName: "Customer",
+        body: "Another thread",
         deliveryStatus: "NOT_APPLICABLE",
-        gmailMessageId: `other-${randomUUID()}`, gmailThreadId: `other-thread-${randomUUID()}`
+        gmailMessageId: `other-${randomUUID()}`,
+        gmailThreadId: `other-thread-${randomUUID()}`
       }
     });
     const notice = await prisma.supportMessage.create({
       data: {
-        ticketId: ticket.id, senderType: "SYSTEM", channel: "EMAIL",
+        ticketId: ticket.id,
+        senderType: "SYSTEM",
+        channel: "EMAIL",
         senderName: SUPPORT_LIFECYCLE_SENDER_NAME,
-        body: "This support conversation is now closed.", deliveryStatus: "PENDING"
+        body: "This support conversation is now closed.",
+        deliveryStatus: "PENDING"
       }
     });
     const client: SupportGmailClient = {
-      async getMessage() { throw new Error("Unexpected"); },
-      async listInboxMessages() { return []; },
+      async getMessage() {
+        throw new Error("Unexpected");
+      },
+      async listInboxMessages() {
+        return [];
+      },
       async sendSupportReply(input) {
         assert.equal(input.threadId, threadId);
         assert.equal(input.replyToGmailMessageId, parentId);
@@ -802,20 +817,33 @@ test("lifecycle email selects a parent from the same Gmail thread", async () => 
 
 test("Gmail HTTP errors use an allowlisted reason without raw details", async () => {
   const client = createSupportGmailClient({
-    clientId: "client-id", clientSecret: "secret", refreshToken: "refresh-token",
+    clientId: "client-id",
+    clientSecret: "secret",
+    refreshToken: "refresh-token",
     supportEmail: "ysabellestore.support@gmail.com",
     fromName: "Ysabelle Store Customer Support",
     fetchImpl: async (input) =>
       String(input) === "https://oauth2.googleapis.com/token"
-        ? new Response(JSON.stringify({ access_token: "example-token", expires_in: 3600 }), { status: 200 })
-        : new Response(JSON.stringify({ error: { errors: [{ reason: "invalidArgument" }], message: "private info" } }), { status: 400 })
+        ? new Response(
+            JSON.stringify({ access_token: "example-token", expires_in: 3600 }),
+            { status: 200 }
+          )
+        : new Response(
+            JSON.stringify({
+              error: { errors: [{ reason: "invalidArgument" }], message: "private info" }
+            }),
+            { status: 400 }
+          )
   });
-  await assert.rejects(() => client.listInboxMessages(), (error: unknown) => {
-    assert.ok(error instanceof Error);
-    assert.match(error.message, /HTTP 400; invalidArgument/);
-    assert.doesNotMatch(error.message, /private info/);
-    return true;
-  });
+  await assert.rejects(
+    () => client.listInboxMessages(),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.match(error.message, /HTTP 400; invalidArgument/);
+      assert.doesNotMatch(error.message, /private info/);
+      return true;
+    }
+  );
 });
 
 test("Gmail OAuth errors report safe provider codes without exposing Google response details", async () => {
