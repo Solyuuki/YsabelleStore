@@ -145,7 +145,7 @@ function CustomerAppRoutes({
   const rawPathname = locationUrl.pathname.replace(/\/$/, "") || "/";
   const pathname =
     window.location.protocol === "file:" && rawPathname.endsWith("/index.html") ? "/" : rawPathname;
-  const { status, restriction, clearRestriction } = useCustomerAuth();
+  const { status, restriction, clearRestriction, logout } = useCustomerAuth();
   const redirect = restriction
     ? null
     : resolveCustomerAuthRedirect(pathname, status, locationUrl.search);
@@ -166,6 +166,20 @@ function CustomerAppRoutes({
     return scheduleAboutExperiencePreload();
   }, [pathname]);
 
+  const leaveRestrictedAccount = (path: "/support" | "/login") => {
+    // Moderation revokes the existing session, but the HttpOnly cookie must also
+    // be cleared before the public support form can be used as a guest.
+    void logout()
+      .then(() => {
+        clearRestriction();
+        navigate(path);
+      })
+      .catch(() => {
+        // Keep the status gate visible if the server could not clear the cookie.
+        // The customer can retry the action when the connection recovers.
+      });
+  };
+
   if (restriction) {
     return (
       <StatusScreen
@@ -174,17 +188,11 @@ function CustomerAppRoutes({
         eyebrow="Customer account"
         primaryAction={{
           label: "Contact customer support",
-          onClick: () => {
-            clearRestriction();
-            navigate("/support");
-          }
+          onClick: () => leaveRestrictedAccount("/support")
         }}
         secondaryAction={{
           label: "Back to sign in",
-          onClick: () => {
-            clearRestriction();
-            navigate("/login");
-          }
+          onClick: () => leaveRestrictedAccount("/login")
         }}
         statusLabel="403"
         title={restriction === "BANNED" ? "Account banned" : "Account suspended"}

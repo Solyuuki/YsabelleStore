@@ -33,7 +33,8 @@ test("account restriction reuses the responsive system status screen", () => {
   assert.match(app, /Account suspended/);
   assert.match(app, /Account banned/);
   assert.match(app, /Contact customer support/);
-  assert.match(app, /navigate\("\/support"\)/);
+  assert.match(app, /leaveRestrictedAccount\("\/support"\)/);
   assert.match(app, /Back to sign in/);
-  assert.match(app, /navigate\("\/login"\)/);
+  assert.match(app, /void logout\(\)/);
+  assert.match(app, /leaveRestrictedAccount\("\/login"\)/);
 });
