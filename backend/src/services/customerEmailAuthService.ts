@@ -40,7 +40,16 @@ function quickSignDisplayName(email: string): string {
 
 export async function requestCustomerEmailAuth(input: { email: string }, now = new Date()) {
   const customer = await prisma.customerAccount.findUnique({ where: { email: input.email } });
-  if (customer && customer.status !== "ACTIVE") return;
+  if (customer && customer.status !== "ACTIVE") {
+    console.info(
+      JSON.stringify({
+        event: "customer_otp_request_skipped",
+        purpose: "authentication",
+        reason: "inactive_account"
+      })
+    );
+    return;
+  }
 
   const activeChallenge = await prisma.customerEmailAuthChallenge.findFirst({
     where: {
@@ -54,6 +63,13 @@ export async function requestCustomerEmailAuth(input: { email: string }, now = n
     activeChallenge &&
     activeChallenge.createdAt.getTime() + CUSTOMER_EMAIL_AUTH_RESEND_COOLDOWN_MS > now.getTime()
   ) {
+    console.info(
+      JSON.stringify({
+        event: "customer_otp_request_skipped",
+        purpose: "authentication",
+        reason: "cooldown"
+      })
+    );
     return;
   }
 

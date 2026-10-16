@@ -356,10 +356,15 @@ test("production Gmail API delivers OTP and recovery codes over HTTPS", async ()
     verificationCode: "654321",
     purpose: "password_recovery"
   });
+  await send({
+    to: "recovery@example.com",
+    verificationCode: "567890",
+    purpose: "password_recovery"
+  });
 
   const sends = requests.filter((request) => request.url.endsWith("/messages/send"));
-  assert.equal(sends.length, 2);
-  assert.equal(requests.filter((request) => request.url.endsWith("/token")).length, 2);
+  assert.equal(sends.length, 3);
+  assert.equal(requests.filter((request) => request.url.endsWith("/token")).length, 3);
   assert.ok(requests.every((request) => !request.url.includes("resend.com")));
   const rawEmails = sends.map((request) => {
     const payload = JSON.parse(String(request.init?.body)) as { raw: string };
@@ -369,12 +374,17 @@ test("production Gmail API delivers OTP and recovery codes over HTTPS", async ()
   assert.match(rawEmails[0] ?? "", /From: Ysabelle Store <ysabellestore.support@gmail.com>/);
   assert.match(rawEmails[0] ?? "", /Subject: Your Ysabelle Store sign-in code/);
   assert.match(rawEmails[1] ?? "", /Subject: Your Ysabelle Store password recovery code/);
+  assert.match(rawEmails[2] ?? "", /Subject: Your Ysabelle Store password recovery code/);
+  const subject = (raw: string) => raw.match(/^Subject: (.+)$/m)?.[1];
+  assert.notEqual(subject(rawEmails[1] ?? ""), subject(rawEmails[2] ?? ""));
+  assert.doesNotMatch(subject(rawEmails[2] ?? "") ?? "", /567890/);
   const decodeText = (raw: string) => {
     const encoded = raw.split("Content-Transfer-Encoding: base64")[1]?.split("--")[0]?.trim();
     return Buffer.from(encoded ?? "", "base64").toString("utf8");
   };
   assert.match(decodeText(rawEmails[0] ?? ""), /123456/);
   assert.match(decodeText(rawEmails[1] ?? ""), /654321/);
+  assert.match(decodeText(rawEmails[2] ?? ""), /567890/);
 });
 
 test("production Gmail API hides secrets on expired grant", async () => {

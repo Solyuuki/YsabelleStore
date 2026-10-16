@@ -9,6 +9,7 @@ import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import { inspectProductImageUpload } from "../modules/catalog-image/imageUploadPolicy.js";
 import { runCatalogImageEngine } from "../modules/catalog-image/catalogImageEngineRunner.js";
+import { describePackageImageQualityFailure } from "./productPackageImageDiagnostics.js";
 import {
   approveProductImageCandidate,
   createProductImageCandidate
@@ -672,7 +673,7 @@ async function validateMatchedImages(
         row.errors.push({
           code: "PRODUCT_PACKAGE_IMAGE_QUALITY_FAILED",
           field: "image",
-          message: "Matched product image did not pass the catalog image quality gate.",
+          message: describePackageImageQualityFailure(result),
           rowNumber: row.rowNumber,
           value: match.image.relativePath
         });

@@ -125,7 +125,16 @@ export async function requestCustomerEmailRegistrationVerification(
   const existingCustomer = await prisma.customerAccount.findUnique({
     where: { email: input.email }
   });
-  if (existingCustomer) return;
+  if (existingCustomer) {
+    console.info(
+      JSON.stringify({
+        event: "customer_otp_request_skipped",
+        purpose: "registration",
+        reason: "existing_account"
+      })
+    );
+    return;
+  }
 
   const registrationIntentHash = hashCustomerRegistrationIntent(input.registrationIntentToken);
   const activeChallenge = await prisma.customerEmailRegistrationChallenge.findFirst({
@@ -142,6 +151,13 @@ export async function requestCustomerEmailRegistrationVerification(
     activeChallenge.createdAt.getTime() + CUSTOMER_EMAIL_REGISTRATION_RESEND_COOLDOWN_MS >
       now.getTime()
   ) {
+    console.info(
+      JSON.stringify({
+        event: "customer_otp_request_skipped",
+        purpose: "registration",
+        reason: "cooldown"
+      })
+    );
     return;
   }
 

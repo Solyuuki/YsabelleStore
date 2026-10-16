@@ -135,7 +135,17 @@ export async function requestCustomerPasswordRecovery(
   now = new Date()
 ): Promise<void> {
   const customer = await findActiveCustomerByIdentifier(input.identifier);
-  if (!customer) return;
+  if (!customer) {
+    // Internal-only diagnostic: never expose account existence in HTTP responses.
+    console.info(
+      JSON.stringify({
+        event: "customer_otp_request_skipped",
+        purpose: "password_recovery",
+        reason: "no_eligible_account"
+      })
+    );
+    return;
+  }
 
   const otp = createCustomerRecoveryOtpMaterial(recoveryOtpSecret(), now);
 

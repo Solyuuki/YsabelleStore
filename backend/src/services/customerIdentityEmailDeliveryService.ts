@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { once } from "node:events";
 import { connect as connectTls, type TLSSocket } from "node:tls";
 
@@ -297,6 +298,9 @@ async function sendGmailApiIdentityEmail(
   }
 
   const { html, subject, text } = emailCopy(input.purpose, input.verificationCode);
+  // Gmail groups same-subject messages into conversations. Give every OTP
+  // delivery a non-secret request identifier so resends are individually visible.
+  const distinctSubject = `${subject} [${randomBytes(4).toString("hex")}]`;
   const boundary = "ysabelle-store-identity";
   function mimePart(value: string) {
     const encoded = Buffer.from(value, "utf8").toString("base64");
@@ -305,7 +309,7 @@ async function sendGmailApiIdentityEmail(
   const raw = [
     `From: ${formatFromAddress(input.senderEmail)}`,
     `To: ${input.to}`,
-    `Subject: ${subject}`,
+    `Subject: ${distinctSubject}`,
     "MIME-Version: 1.0",
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
     "",
