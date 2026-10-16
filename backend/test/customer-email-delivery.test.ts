@@ -366,14 +366,12 @@ test("production Gmail API delivers OTP and recovery codes over HTTPS", async ()
   assert.match(rawEmails[0] ?? "", /From: Ysabelle Store <ysabellestore.support@gmail.com>/);
   assert.match(rawEmails[0] ?? "", /Subject: Your Ysabelle Store sign-in code/);
   assert.match(rawEmails[1] ?? "", /Subject: Your Ysabelle Store password recovery code/);
-  assert.match(
-    Buffer.from(rawEmails[0]?.split("Content-Transfer-Encoding: base64")[1]?.split("--")[0]?.trim() ?? "", "base64").toString("utf8"),
-    /123456/
-  );
-  assert.match(
-    Buffer.from(rawEmails[1]?.split("Content-Transfer-Encoding: base64")[1]?.split("--")[0]?.trim() ?? "", "base64").toString("utf8"),
-    /654321/
-  );
+  const decodeText = (raw: string) => {
+    const encoded = raw.split("Content-Transfer-Encoding: base64")[1]?.split("--")[0]?.trim();
+    return Buffer.from(encoded ?? "", "base64").toString("utf8");
+  };
+  assert.match(decodeText(rawEmails[0] ?? ""), /123456/);
+  assert.match(decodeText(rawEmails[1] ?? ""), /654321/);
 });
 
 test("production Gmail API fails closed on expired OAuth grants without leaking secrets", async () => {
