@@ -257,6 +257,77 @@ async function sendGmailSmtpMessage(message: DevelopmentSmtpMessage): Promise<vo
   }
 }
 
+async function sendGmailApiIdentityEmail(
+  input: {
+    clientId: string;
+    clientSecret: string;
+    refreshToken: string;
+    senderEmail: string;
+    to: string;
+    verificationCode: string;
+    purpose: CustomerIdentityEmailPurpose;
+  },
+  fetchImpl: typeof fetch
+): Promise<void> {
+  if (/[\r\n]/.test(input.to) || /[\r\n]/.test(input.senderEmail)) {
+    throw new CustomerIdentityEmailDeliveryError();
+  }
+
+  const tokenResponse = await fetchImpl(GMAIL_TOKEN_ENDPOINT, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: input.clientId,
+      client_secret: input.clientSecret,
+      refresh_token: input.refreshToken,
+      grant_type: "refresh_token"
+    }),
+    signal: AbortSignal.timeout(15_000)
+  });
+  if (!tokenResponse.ok) throw new CustomerIdentityEmailDeliveryError();
+
+  const tokenPayload = (await tokenResponse.json()) as { access_token?: unknown };
+  if (typeof tokenPayload.access_token !== "string" || !tokenPayload.access_token.trim()) {
+    throw new CustomerIdentityEmailDeliveryError();
+  }
+
+  const { html, subject, text } = emailCopy(input.purpose, input.verificationCode);
+  const boundary = "ysabelle-store-identity";
+  const mimePart = (value: string) =>
+    Buffer.from(value, "utf8").toString("base64").replace(/.{1,76}/g, "async function sendEmailRequest(\r\n").trimEnd();
+  const raw = [
+    `From: ${formatFromAddress(input.senderEmail)}`,
+    `To: ${input.to}`,
+    `Subject: ${subject}`,
+    "MIME-Version: 1.0",
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    "",
+    `--${boundary}`,
+    "Content-Type: text/plain; charset=UTF-8",
+    "Content-Transfer-Encoding: base64",
+    "",
+    mimePart(text),
+    `--${boundary}`,
+    "Content-Type: text/html; charset=UTF-8",
+    "Content-Transfer-Encoding: base64",
+    "",
+    mimePart(html),
+    `--${boundary}--`,
+    ""
+  ].join("\r\n");
+
+  const sendResponse = await fetchImpl(GMAIL_SEND_ENDPOINT, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${tokenPayload.access_token}`,
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({ raw: Buffer.from(raw, "utf8").toString("base64url") }),
+    signal: AbortSignal.timeout(15_000)
+  });
+  if (!sendResponse.ok) throw new CustomerIdentityEmailDeliveryError();
+}
+
 async function sendEmailRequest(
   input: {
     apiKey: string;
