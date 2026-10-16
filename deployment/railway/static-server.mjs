@@ -1,6 +1,7 @@
 import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
-import { createServer } from "node:http";
+import { createServer, request as httpRequest } from "node:http";
+import { request as httpsRequest } from "node:https";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -24,6 +25,97 @@ const mimeTypes = {
   ".woff2": "font/woff2"
 };
 const port = Number(process.env.PORT || 8080);
+const apiProxyTarget = process.env.API_PROXY_TARGET
+  ? new URL(process.env.API_PROXY_TARGET)
+  : null;
+
+if (
+  apiProxyTarget &&
+  (!["http:", "https:"].includes(apiProxyTarget.protocol) ||
+    apiProxyTarget.username ||
+    apiProxyTarget.password ||
+    apiProxyTarget.search ||
+    apiProxyTarget.hash ||
+    !["/", ""].includes(apiProxyTarget.pathname))
+) {
+  throw new Error("API_PROXY_TARGET must be an HTTP(S) origin without credentials or a path.");
+}
+
+const hopByHopHeaders = new Set([
+  "connection",
+  "keep-alive",
+  "proxy-authenticate",
+  "proxy-authorization",
+  "proxy-connection",
+  "te",
+  "trailer",
+  "transfer-encoding",
+  "upgrade"
+]);
+
+function proxyApi(request, response) {
+  if (!apiProxyTarget) {
+    response.writeHead(503, { "Cache-Control": "no-store" });
+    response.end("API proxy is not configured.");
+    return;
+  }
+
+  let requested;
+  try {
+    requested = new URL(request.url || "/", "http://localhost");
+    if (
+      requested.origin !== "http://localhost" ||
+      !(requested.pathname === "/api" || requested.pathname.startsWith("/api/"))
+    ) {
+      throw new Error("Invalid API request target.");
+    }
+  } catch {
+    response.writeHead(400);
+    response.end();
+    return;
+  }
+
+  const target = new URL(apiProxyTarget.origin);
+  target.pathname = requested.pathname;
+  target.search = requested.search;
+
+  const headers = { ...request.headers };
+  for (const name of Object.keys(headers)) {
+    if (
+      hopByHopHeaders.has(name) ||
+      name === "host" ||
+      name.startsWith("x-forwarded-") ||
+      name === "x-ysabelle-first-party-proxy"
+    ) {
+      delete headers[name];
+    }
+  }
+  headers.host = apiProxyTarget.host;
+  headers["x-ysabelle-first-party-proxy"] = "1";
+
+  const send = target.protocol === "https:" ? httpsRequest : httpRequest;
+  const upstream = send(target, { method: request.method, headers }, (upstreamResponse) => {
+    if (response.headersSent) return;
+    const responseHeaders = { ...upstreamResponse.headers };
+    for (const name of hopByHopHeaders) delete responseHeaders[name];
+    responseHeaders["cache-control"] = "no-store";
+    response.writeHead(upstreamResponse.statusCode || 502, responseHeaders);
+    upstreamResponse.pipe(response);
+  });
+
+  upstream.setTimeout(30_000, () => upstream.destroy(new Error("API proxy timed out")));
+  upstream.on("error", () => {
+    if (response.headersSent) {
+      response.destroy();
+      return;
+    }
+    response.writeHead(502, { "Cache-Control": "no-store" });
+    response.end("The backend service is temporarily unavailable.");
+  });
+  request.on("aborted", () => upstream.destroy());
+  request.pipe(upstream);
+}
+
 if (!Number.isInteger(port) || port < 1 || port > 65535) {
   throw new Error("Invalid PORT for Railway static server.");
 }
@@ -43,6 +135,10 @@ function safePath(pathname) {
 async function serve(request, response) {
   response.setHeader("X-Content-Type-Options", "nosniff");
   response.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  if (request.url?.startsWith("/api/") || request.url?.startsWith("/api?") || request.url === "/api") {
+    proxyApi(request, response);
+    return;
+  }
   if (request.method !== "GET" && request.method !== "HEAD") {
     response.writeHead(405, { Allow: "GET, HEAD" });
     response.end();

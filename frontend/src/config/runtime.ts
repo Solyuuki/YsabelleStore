@@ -9,7 +9,10 @@ apiBaseUrl.pathname = apiBaseUrl.pathname.replace(/\/+$/, "") || "/";
 export const frontendRuntimeConfig = Object.freeze({
   // In mobile preview, use the LAN Vite origin so the browser never calls its own localhost.
   apiBaseUrl:
-    import.meta.env?.DEV &&
+    import.meta.env?.VITE_RAILWAY_FIRST_PARTY_API === "1" &&
+    typeof window !== "undefined"
+      ? window.location.origin
+      : import.meta.env?.DEV &&
     import.meta.env?.VITE_MOBILE_PREVIEW === "1" &&
     typeof window !== "undefined"
       ? window.location.origin

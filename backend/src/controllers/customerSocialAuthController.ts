@@ -11,6 +11,7 @@ import {
   startCustomerWebOAuth
 } from "../services/customerOAuthService.js";
 import { getConfiguredCustomerOAuthProvider } from "../services/customerOAuthProviderService.js";
+import { isPendingCustomerWebOAuthState } from "../services/customerOAuthTransactionService.js";
 import { completeCustomerSocialLink } from "../services/customerSocialAuthService.js";
 import { createSuccessResponse } from "../utils/apiResponse.js";
 import { setCustomerSessionCookie } from "../utils/customerAuthCookie.js";
@@ -135,6 +136,33 @@ export const completeCustomerSocialAuth: RequestHandler = async (request, respon
   const state = readQueryString(request, "state");
   const code = readQueryString(request, "code");
   const providerError = readQueryString(request, "error");
+  // Google redirects to the already registered backend callback. On Railway the
+  // browser should complete WEB OAuth via the frontend's first-party /api proxy
+  // so both OAuth binding and session cookies remain on the storefront host.
+  // Never relay Electron flows or an unknown/consumed state.
+  const requiresFirstPartyRelay =
+    env.NODE_ENV === "production" &&
+    new URL(env.FRONTEND_URL).origin !== new URL(publicBackendUrl()).origin &&
+    request.get("x-ysabelle-first-party-proxy") !== "1";
+
+  if (
+    requiresFirstPartyRelay &&
+    (await isPendingCustomerWebOAuthState(provider, state))
+  ) {
+    const parameters = new URLSearchParams({ state });
+    if (code) parameters.set("code", code);
+    if (providerError) parameters.set("error", providerError);
+    response.setHeader("Referrer-Policy", "no-referrer");
+    response.setHeader("Cache-Control", "no-store");
+    response.redirect(
+      302,
+      customerFrontendUrl(
+        `/api/customer-auth/social/${provider.toLowerCase()}/callback?${parameters.toString()}`
+      )
+    );
+    return;
+  }
+
   const browserBinding = readCustomerOAuthBindingCookie(request, provider) ?? "";
 
   if (providerError) {

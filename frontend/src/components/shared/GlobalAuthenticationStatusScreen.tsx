@@ -63,6 +63,12 @@ function shouldPresentUnauthorized(detail: HttpErrorEventDetail, pathname: strin
     return false;
   }
 
+  // A signed-out customer's initial /me probe is not an expired session.
+  // The customer route guard handles /account and /checkout redirection.
+  if (detail.path === "/api/customer-auth/me" && !detail.hadAuthorization) {
+    return false;
+  }
+
   if (detail.hadAuthorization) {
     return true;
   }

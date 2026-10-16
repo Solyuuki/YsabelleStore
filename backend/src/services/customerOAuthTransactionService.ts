@@ -132,6 +132,32 @@ export async function createCustomerOAuthTransaction(
   };
 }
 
+/**
+ * Inspect only whether a valid, unconsumed WEB state should be relayed to the
+ * first-party browser host. No token, verifier or customer data leaves this check.
+ * Electron states are never relayed.
+ */
+export async function isPendingCustomerWebOAuthState(
+  provider: CustomerSocialProvider,
+  state: string,
+  now = new Date()
+): Promise<boolean> {
+  if (!state) return false;
+
+  const transaction = await prisma.customerOAuthTransaction.findUnique({
+    where: { stateHash: hashHex(state) },
+    select: { provider: true, transport: true, consumedAt: true, expiresAt: true }
+  });
+
+  return Boolean(
+    transaction &&
+      transaction.provider === provider &&
+      transaction.transport === "WEB" &&
+      transaction.consumedAt === null &&
+      transaction.expiresAt.getTime() > now.getTime()
+  );
+}
+
 export async function consumeCustomerOAuthTransaction(
   input: {
     provider: CustomerSocialProvider;
