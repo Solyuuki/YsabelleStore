@@ -32,3 +32,10 @@
 ## Sprint Completion Statement
 
 The backend foundation required for Sprint 1 is present and builds. Sprint 3 now shifts M2 toward forecasting and reports foundations.
+
+## Sprint 13 Gmail Delivery Progress — 2026-10-16
+
+- Work branch: `m2/v0.13/fix/gmail-production-delivery` (PR #59 into `sprint/v0.13/sprint-13`).
+- Implemented: explicit `gmail_api` HTTPS delivery for OTP and password recovery; optional Gmail SMTP; sanitized Gmail support synchronization diagnostics; regression tests.
+- Verified: backend tests, formatting, lint, typecheck, build, and aggregate read-only `npm run verify:code` passed in CI run 38877454839.
+- Pending: final status gate, merge, production provider activation, OAuth grant verification, and real recipient QA. Existing customer-facing delivery should not be declared fixed until verified.
