@@ -4,6 +4,7 @@ import { env } from "../config/env.js";
 import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import { createCustomerSession, toSafeCustomer } from "./customerAuthService.js";
+import { customerAccountRestriction } from "./customerAccountRestriction.js";
 import { sendCustomerIdentityVerificationEmail } from "./customerIdentityEmailDeliveryService.js";
 
 export const CUSTOMER_EMAIL_AUTH_OTP_LIFETIME_MS = 10 * 60 * 1000;
@@ -40,7 +41,9 @@ function quickSignDisplayName(email: string): string {
 
 export async function requestCustomerEmailAuth(input: { email: string }, now = new Date()) {
   const customer = await prisma.customerAccount.findUnique({ where: { email: input.email } });
-  if (customer && customer.status !== "ACTIVE") {
+  // An email owner can verify their identity before being told the account is
+  // restricted. Do not disclose the restriction to unauthenticated requests.
+  if (customer?.status === "INACTIVE") {
     console.info(
       JSON.stringify({
         event: "customer_otp_request_skipped",
@@ -153,7 +156,9 @@ export async function verifyCustomerEmailAuth(
       : await transaction.customerAccount.findUnique({ where: { email: input.email } });
 
     if (customer) {
-      if (customer.status !== "ACTIVE" || customer.email !== input.email) throw invalidCode();
+      if (customer.email !== input.email) throw invalidCode();
+      if (customer.status === "INACTIVE") throw invalidCode();
+      if (customerAccountRestriction(customer.status)) return customer;
       return customer.emailVerifiedAt
         ? customer
         : transaction.customerAccount.update({
@@ -176,6 +181,9 @@ export async function verifyCustomerEmailAuth(
       }
     });
   });
+
+  const restriction = customerAccountRestriction(verifiedCustomer.status);
+  if (restriction) throw restriction;
 
   const session = await createCustomerSession(verifiedCustomer.id, now);
   return { customer: toSafeCustomer(verifiedCustomer), ...session };

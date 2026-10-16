@@ -3,6 +3,8 @@ import { createHmac, randomUUID } from "node:crypto";
 import test from "node:test";
 
 import { env } from "../src/config/env.js";
+import { registerCustomer } from "../src/services/customerAuthService.js";
+import { HttpError } from "../src/utils/httpError.js";
 import { prisma } from "../src/database/prismaClient.js";
 import {
   requestCustomerEmailAuth,
@@ -93,6 +95,59 @@ test("verified new email Quick Sign creates a minimal verified account and sessi
     where: { id: challengeId }
   });
   assert.equal(consumedChallenge?.consumedAt?.getTime(), now.getTime());
+});
+
+test("verified email OTP explains suspension or ban without issuing a customer session", async () => {
+  for (const status of ["SUSPENDED", "BANNED"] as const) {
+    const email = newQuickSignEmail();
+    const suffix = randomUUID().replaceAll("-", "").slice(0, 10);
+    const registered = await registerCustomer({
+      name: "Restricted Quick Sign",
+      username: `restricted.quick.${suffix}`,
+      email,
+      password: "CustomerPass123!"
+    });
+
+    await prisma.customerAccount.update({
+      where: { id: registered.customer.id },
+      data: { status }
+    });
+
+    const now = new Date();
+    const verificationCode = "418296";
+    const challengeId = `email-auth-otp:${randomUUID().replaceAll("-", "")}`;
+    await prisma.customerEmailAuthChallenge.create({
+      data: {
+        id: challengeId,
+        customerAccountId: registered.customer.id,
+        emailNormalized: email,
+        otpHash: emailOtpHash(challengeId, email, verificationCode),
+        expiresAt: new Date(now.getTime() + 10 * 60 * 1000),
+        createdAt: now
+      }
+    });
+
+    const before = await prisma.customerSession.count({
+      where: { customerAccountId: registered.customer.id }
+    });
+    await assert.rejects(
+      verifyCustomerEmailAuth({ email, verificationCode }, now),
+      (error) => {
+        assert.ok(error instanceof HttpError);
+        assert.equal(error.statusCode, 403);
+        assert.equal(error.code, `CUSTOMER_ACCOUNT_${status}`);
+        return true;
+      }
+    );
+    const after = await prisma.customerSession.count({
+      where: { customerAccountId: registered.customer.id }
+    });
+    assert.equal(after, before);
+    const consumed = await prisma.customerEmailAuthChallenge.findUnique({
+      where: { id: challengeId }
+    });
+    assert.ok(consumed?.consumedAt);
+  }
 });
 
 test.after(async () => {
