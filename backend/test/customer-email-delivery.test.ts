@@ -267,7 +267,7 @@ test("production Gmail SMTP delivers OTP and recovery codes without calling Rese
   assert.match(sent[1]?.text ?? "", /654321/);
 });
 
-test("production Gmail SMTP fails closed without credentials instead of falling back to Resend", async () => {
+test("production Gmail SMTP rejects missing credentials", async () => {
   const module = await loadDeliveryModule();
   assert.ok(module.createCustomerIdentityEmailDelivery);
   let resendCalled = false;
@@ -292,7 +292,7 @@ test("production Gmail SMTP fails closed without credentials instead of falling 
   assert.equal(resendCalled, false);
 });
 
-test("production Gmail SMTP errors never expose credentials or OTP and never silently use Resend", async () => {
+test("production Gmail SMTP hides secrets on failure", async () => {
   const module = await loadDeliveryModule();
   assert.ok(module.createCustomerIdentityEmailDelivery);
   let resendCalled = false;
@@ -374,7 +374,7 @@ test("production Gmail API delivers OTP and recovery codes over HTTPS", async ()
   assert.match(decodeText(rawEmails[1] ?? ""), /654321/);
 });
 
-test("production Gmail API fails closed on expired OAuth grants without leaking secrets", async () => {
+test("production Gmail API hides secrets on expired grant", async () => {
   const module = await loadDeliveryModule();
   assert.ok(module.createCustomerIdentityEmailDelivery);
   let sendCalled = false;
