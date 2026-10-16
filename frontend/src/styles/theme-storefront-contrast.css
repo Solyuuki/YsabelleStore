@@ -2608,62 +2608,52 @@
   color: #fff;
 }
 
-/* Sprint 13: privacy banner matches Storefront chrome even when About/Discover
-   intentionally preserve their cinematic scene palette without :root.dark. */
-:is(:root.dark, :root[data-about-chrome-theme="dark"]) .customer-app .customer-privacy-notice {
+/* Sprint 13: theme-aware privacy banner, including About's preserved scene theme. */
+:root.dark .customer-app .customer-privacy-notice,
+:root[data-about-chrome-theme="dark"] .customer-privacy-notice {
   background: #192438;
   border-top-color: #4d607d;
   color: #d4dfef;
   box-shadow: 0 -10px 26px rgb(3 9 24 / 24%);
   backdrop-filter: none;
 }
-:is(:root.dark, :root[data-about-chrome-theme="dark"])
-  .customer-app
-  .customer-privacy-notice__icon {
+
+:root.dark .customer-app .customer-privacy-notice__icon,
+:root[data-about-chrome-theme="dark"] .customer-privacy-notice__icon {
   background: #343657;
   border-color: #8171be;
   color: #ddd3ff;
   box-shadow: none;
 }
-:is(:root.dark, :root[data-about-chrome-theme="dark"])
-  .customer-app
-  .customer-privacy-notice__eyebrow {
-  color: #cfc2ff;
-}
-:is(:root.dark, :root[data-about-chrome-theme="dark"])
-  .customer-app
-  .customer-privacy-notice__copy
-  >
-  strong {
-  color: #f0f4ff;
-}
-:is(:root.dark, :root[data-about-chrome-theme="dark"])
-  .customer-app
-  .customer-privacy-notice__copy
-  p:not(.customer-privacy-notice__eyebrow) {
+
+:root[data-about-chrome-theme="dark"] .customer-privacy-notice__copy p {
   color: #cbd7e9;
 }
-:is(:root.dark, :root[data-about-chrome-theme="dark"])
-  .customer-app
-  .customer-privacy-notice__links
-  :is(a, button) {
+
+:root[data-about-chrome-theme="dark"] .customer-privacy-notice__eyebrow {
+  color: #cfc2ff;
+}
+
+:root[data-about-chrome-theme="dark"] .customer-privacy-notice__copy > strong {
+  color: #f0f4ff;
+}
+
+:root[data-about-chrome-theme="dark"] .customer-privacy-notice__links :is(a, button) {
   color: #ded2ff;
 }
-:is(:root.dark, :root[data-about-chrome-theme="dark"])
-  .customer-app
-  .customer-privacy-notice__dismiss {
+
+:root[data-about-chrome-theme="dark"] .customer-privacy-notice__dismiss {
   background: #2a3850;
   border-color: #617493;
   color: #eaf0ff;
 }
-:is(:root.dark, :root[data-about-chrome-theme="dark"])
-  .customer-app
-  .customer-privacy-notice__dismiss:hover {
+
+:root[data-about-chrome-theme="dark"] .customer-privacy-notice__dismiss:hover {
   background: #3a4b66;
   color: #ffffff;
 }
 
-/* Email registration step/card, verification labels and code entry. */
+/* Registration email/verification steps inherit their own dark opaque surfaces. */
 :root.dark .customer-app .customer-auth-page--register .customer-mobile-auth {
   background: #1d2b43;
   border: 1px solid #647693;
@@ -2671,83 +2661,67 @@
   box-shadow: 0 16px 34px rgb(4 10 26 / 22%);
   backdrop-filter: none;
 }
+
 :root.dark .customer-app .customer-auth-page--register .customer-mobile-auth::before {
   content: none;
 }
-:root.dark .customer-app .customer-auth-page--register .customer-mobile-auth__heading strong {
+
+:root.dark .customer-app .customer-mobile-auth__heading strong {
   color: #f1f5ff;
 }
-:root.dark
-  .customer-app
-  .customer-auth-page--register
-  :is(.customer-mobile-auth__meta, .customer-mobile-auth__hint, .customer-mobile-auth__countdown) {
+
+:root.dark .customer-app .customer-mobile-auth__meta,
+:root.dark .customer-app .customer-mobile-auth__hint,
+:root.dark .customer-app .customer-mobile-auth__countdown {
   color: #bfcee5;
 }
-:root.dark .customer-app .customer-auth-page--register .customer-mobile-auth__icon {
+
+:root.dark .customer-app .customer-mobile-auth__icon {
   background: #39365d;
   border-color: #766ba8;
   color: #d9cdff;
   box-shadow: none;
 }
-:root.dark
-  .customer-app
-  .customer-auth-page--register
-  .customer-mobile-auth
-  .customer-auth-field
-  >
-  span:first-child {
+
+:root.dark .customer-app .customer-mobile-auth .customer-auth-field > span:first-child {
   color: #e7efff;
 }
-:root.dark
-  .customer-app
-  .customer-auth-page--register
-  .customer-mobile-auth
-  .customer-auth-field
-  input {
+
+:root.dark .customer-app .customer-mobile-auth .customer-auth-field input {
   background: #142139;
   border-color: #667d9d;
   color: #f1f5ff;
   box-shadow: none;
 }
-:root.dark
-  .customer-app
-  .customer-auth-page--register
-  .customer-mobile-auth
-  .customer-auth-field
-  input::placeholder {
+
+:root.dark .customer-app .customer-mobile-auth .customer-auth-field input::placeholder {
   color: #b8c9e2;
   opacity: 1;
 }
-:root.dark
-  .customer-app
-  .customer-auth-page--register
-  .customer-mobile-auth
-  .customer-auth-field
-  input:focus-visible {
+
+:root.dark .customer-app .customer-mobile-auth .customer-auth-field input:focus-visible {
   outline: 2px solid #c2b2ff;
   outline-offset: 2px;
 }
+
 :root.dark .customer-app .customer-auth-page--register .customer-mobile-auth .customer-auth-submit {
   background: linear-gradient(115deg, #245fd1, #5540bd 48%, #932876);
   border-color: #8277c2;
   color: #ffffff;
   text-shadow: 0 1px 1px rgb(8 14 31 / 35%);
 }
-:root.dark
-  .customer-app
-  .customer-auth-page--register
-  .customer-mobile-auth
-  :is(.customer-mobile-auth__secondary, .customer-mobile-auth__back) {
+
+:root.dark .customer-app .customer-mobile-auth__secondary,
+:root.dark .customer-app .customer-mobile-auth__back {
   color: #d3c5ff;
 }
-:root.dark
-  .customer-app
-  .customer-auth-page--register
-  .customer-mobile-auth
-  :is(.customer-mobile-auth__secondary, .customer-mobile-auth__back):hover:not(:disabled) {
+
+:root.dark .customer-app .customer-mobile-auth__secondary:hover:not(:disabled),
+:root.dark .customer-app .customer-mobile-auth__back:hover:not(:disabled) {
   color: #ffffff;
 }
-:root.dark .customer-app .customer-auth-page--register .customer-mobile-auth .customer-auth-alert {
+
+:root.dark .customer-app .customer-mobile-auth .customer-auth-alert {
   background: #492e42;
   border-color: #b07e9c;
   color: #ffe0ed;
