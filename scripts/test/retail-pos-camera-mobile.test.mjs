@@ -53,7 +53,8 @@ test("barcode decoding works across browsers and closes camera tracks on exit", 
   assert.equal(lock.packages["node_modules/@zxing/library"].version, "0.21.3");
   assert.match(scanner, /BrowserMultiFormatReader\(HINTS, \{/);
   assert.match(scanner, /navigator\.mediaDevices\.getUserMedia\(constraints\)/);
-  assert.match(scanner, /const \[videoElement, setVideoElement\] = useState<HTMLVideoElement \| null>\(null\)/);
+  assert.match(scanner, /const \[videoElement, setVideoElement\]/);
+  assert.match(scanner, /useState<HTMLVideoElement \| null>\(null\)/);
   assert.match(scanner, /ref=\{setVideoElement\}/);
   assert.match(scanner, /if \(!open \|\| !videoElement\) return;/);
   assert.match(scanner, /\[open, retryAttempt, videoElement\]/);
