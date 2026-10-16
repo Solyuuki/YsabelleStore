@@ -835,10 +835,12 @@ async function deliverSupportMessageEmail(
       error instanceof Error &&
       (error.message.startsWith("Support Gmail authentication failed (") ||
         error.message.startsWith("Support Gmail request failed ("));
+    const missingParent =
+      error instanceof Error &&
+      error.message === "Cannot send a threaded support reply without its parent Message-ID.";
     const diagnostic = safeError
       ? error.message
-      : error instanceof Error &&
-          error.message === "Cannot send a threaded support reply without its parent Message-ID."
+      : missingParent
         ? "thread_parent_unavailable"
         : "unknown";
     console.error(`[support-gmail] ${options.kind} delivery failed: ${diagnostic}`);
