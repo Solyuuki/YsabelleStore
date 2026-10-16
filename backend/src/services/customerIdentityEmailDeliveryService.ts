@@ -293,8 +293,10 @@ async function sendGmailApiIdentityEmail(
 
   const { html, subject, text } = emailCopy(input.purpose, input.verificationCode);
   const boundary = "ysabelle-store-identity";
-  const mimePart = (value: string) =>
-    Buffer.from(value, "utf8").toString("base64").replace(/.{1,76}/g, "async function sendEmailRequest(\r\n").trimEnd();
+  function mimePart(value: string) {
+    const encoded = Buffer.from(value, "utf8").toString("base64");
+    return (encoded.match(/.{1,76}/g) ?? []).join("\r\n");
+  }
   const raw = [
     `From: ${formatFromAddress(input.senderEmail)}`,
     `To: ${input.to}`,
