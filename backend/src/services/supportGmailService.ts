@@ -812,9 +812,7 @@ async function deliverSupportMessageEmail(
             ticketId: message.ticketId,
             id: { not: message.id },
             gmailMessageId: { not: null },
-            ...(message.ticket.gmailThreadId
-              ? { gmailThreadId: message.ticket.gmailThreadId }
-              : {})
+            ...(message.ticket.gmailThreadId ? { gmailThreadId: message.ticket.gmailThreadId } : {})
           }
         })
       : null;
@@ -833,16 +831,16 @@ async function deliverSupportMessageEmail(
   } catch (error) {
     const safeError =
       error instanceof Error &&
-      (error.message.startsWith("Support Gmail authentication failed (") ||
-        error.message.startsWith("Support Gmail request failed ("));
-    const missingParent =
+      /^Support Gmail (?:authentication|request) failed(?: \\([A-Za-z0-9_; ]+\\))?\\.$/.test(
+        error.message
+      );
+    let diagnostic = safeError && error instanceof Error ? error.message : "unknown";
+    if (
       error instanceof Error &&
-      error.message === "Cannot send a threaded support reply without its parent Message-ID.";
-    const diagnostic = safeError
-      ? error.message
-      : missingParent
-        ? "thread_parent_unavailable"
-        : "unknown";
+      error.message === "Cannot send a threaded support reply without its parent Message-ID."
+    ) {
+      diagnostic = "thread_parent_unavailable";
+    }
     console.error(`[support-gmail] ${options.kind} delivery failed: ${diagnostic}`);
     const operations: Prisma.PrismaPromise<unknown>[] = [
       prisma.supportMessage.update({
