@@ -14,6 +14,9 @@ type DevelopmentSmtpMessage = {
 type DeliveryModule = {
   createCustomerIdentityEmailDelivery?: (config: {
     apiKey?: string;
+    emailProvider?: "resend" | "gmail_smtp";
+    smtpUser?: string;
+    smtpAppPassword?: string;
     developmentSmtpAppPassword?: string;
     developmentSmtpUser?: string;
     fetchImpl: typeof fetch;
