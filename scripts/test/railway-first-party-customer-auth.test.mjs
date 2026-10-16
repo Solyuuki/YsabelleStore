@@ -2,8 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const source = (relative) =>
-  readFileSync(new URL("../../" + relative, import.meta.url), "utf8");
+const source = (relative) => readFileSync(new URL("../../" + relative, import.meta.url), "utf8");
 
 test("Railway uses a first-party API URL and forwards it only to configured backend", () => {
   const docker = source("deployment/railway/frontend.Dockerfile");

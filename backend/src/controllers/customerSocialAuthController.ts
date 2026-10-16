@@ -145,10 +145,7 @@ export const completeCustomerSocialAuth: RequestHandler = async (request, respon
     new URL(env.FRONTEND_URL).origin !== new URL(publicBackendUrl()).origin &&
     request.get("x-ysabelle-first-party-proxy") !== "1";
 
-  if (
-    requiresFirstPartyRelay &&
-    (await isPendingCustomerWebOAuthState(provider, state))
-  ) {
+  if (requiresFirstPartyRelay && (await isPendingCustomerWebOAuthState(provider, state))) {
     const parameters = new URLSearchParams({ state });
     if (code) parameters.set("code", code);
     if (providerError) parameters.set("error", providerError);

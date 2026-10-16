@@ -25,9 +25,7 @@ const mimeTypes = {
   ".woff2": "font/woff2"
 };
 const port = Number(process.env.PORT || 8080);
-const apiProxyTarget = process.env.API_PROXY_TARGET
-  ? new URL(process.env.API_PROXY_TARGET)
-  : null;
+const apiProxyTarget = process.env.API_PROXY_TARGET ? new URL(process.env.API_PROXY_TARGET) : null;
 
 if (
   apiProxyTarget &&
@@ -94,14 +92,18 @@ function proxyApi(request, response) {
   headers["x-ysabelle-first-party-proxy"] = "1";
 
   const send = target.protocol === "https:" ? httpsRequest : httpRequest;
-  const upstream = send(target, { method: request.method, headers }, (upstreamResponse) => {
-    if (response.headersSent) return;
-    const responseHeaders = { ...upstreamResponse.headers };
-    for (const name of hopByHopHeaders) delete responseHeaders[name];
-    responseHeaders["cache-control"] = "no-store";
-    response.writeHead(upstreamResponse.statusCode || 502, responseHeaders);
-    upstreamResponse.pipe(response);
-  });
+  const upstream = send(
+    target,
+    { method: request.method, headers },
+    (upstreamResponse) => {
+      if (response.headersSent) return;
+      const responseHeaders = { ...upstreamResponse.headers };
+      for (const name of hopByHopHeaders) delete responseHeaders[name];
+      responseHeaders["cache-control"] = "no-store";
+      response.writeHead(upstreamResponse.statusCode || 502, responseHeaders);
+      upstreamResponse.pipe(response);
+    }
+  );
 
   upstream.setTimeout(30_000, () => upstream.destroy(new Error("API proxy timed out")));
   upstream.on("error", () => {
@@ -135,7 +137,11 @@ function safePath(pathname) {
 async function serve(request, response) {
   response.setHeader("X-Content-Type-Options", "nosniff");
   response.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-  if (request.url?.startsWith("/api/") || request.url?.startsWith("/api?") || request.url === "/api") {
+  if (
+    request.url?.startsWith("/api/") ||
+    request.url?.startsWith("/api?") ||
+    request.url === "/api"
+  ) {
     proxyApi(request, response);
     return;
   }
