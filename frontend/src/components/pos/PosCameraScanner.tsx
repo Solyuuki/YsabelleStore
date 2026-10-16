@@ -102,7 +102,9 @@ function cameraErrorMessage(error: unknown) {
 }
 
 export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraScannerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
+  // Radix DialogContent renders in a portal. Its video ref can be unavailable
+  // when the scanner's open effect first runs. Re-run startup when mounted.
+  const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
   const controlsRef = useRef<IScannerControls | null>(null);
   const trackRef = useRef<MediaStreamTrack | null>(null);
   const detectedRef = useRef(false);
@@ -121,7 +123,7 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
   callbackRef.current = onDetected;
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !videoElement) return;
     let cancelled = false;
     let localControls: IScannerControls | null = null;
     let localStream: MediaStream | null = null;
@@ -143,8 +145,7 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
         );
         return;
       }
-      const video = videoRef.current;
-      if (!video) return;
+      const video = videoElement;
 
       try {
         // ZXing decodes EAN, UPC, Code 128, and other retail 1D barcodes on
@@ -252,13 +253,12 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
       if (localStream) stopCameraStream(localStream);
       trackRef.current?.stop();
       trackRef.current = null;
-      const video = videoRef.current;
-      if (video?.srcObject instanceof MediaStream) {
-        video.srcObject.getTracks().forEach((track) => track.stop());
-        video.srcObject = null;
+      if (videoElement.srcObject instanceof MediaStream) {
+        videoElement.srcObject.getTracks().forEach((track) => track.stop());
+        videoElement.srcObject = null;
       }
     };
-  }, [open, retryAttempt]);
+  }, [open, retryAttempt, videoElement]);
 
   async function changeTorch() {
     const track = trackRef.current;
@@ -320,7 +320,7 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
             className="pos-camera-scanner__video"
             muted
             playsInline
-            ref={videoRef}
+            ref={setVideoElement}
           />
           <div aria-hidden="true" className="pos-camera-scanner__aim">
             <span className="pos-camera-scanner__aim-line" />
