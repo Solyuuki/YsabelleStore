@@ -195,6 +195,48 @@ test("inactive customer cannot log in and active customer receives a new finite 
   assert.ok(session.expiresAt.getTime() > Date.now());
 });
 
+test("suspension and ban notices require valid credentials or a verified session", async () => {
+  const suffix = randomUUID().slice(0, 8);
+  const registered = await registerCustomer({
+    name: "Moderation Customer",
+    username: `moderation.${suffix}`,
+    email: `moderation-${suffix}@example.com`,
+    password: "CustomerPass123!"
+  });
+  rememberCustomer(registered.customer.id);
+
+  for (const status of ["SUSPENDED", "BANNED"] as const) {
+    await prisma.customerAccount.update({
+      data: { status },
+      where: { id: registered.customer.id }
+    });
+
+    await assert.rejects(
+      loginCustomer({ identifier: registered.customer.email, password: "wrong-password" }),
+      (error) =>
+        expectHttpError(error, {
+          status: 401,
+          code: "INVALID_CUSTOMER_CREDENTIALS",
+          message: "Invalid credentials."
+        })
+    );
+
+    const expected = {
+      status: 403,
+      code: `CUSTOMER_ACCOUNT_${status}`,
+      message: `Your account has been ${status === "BANNED" ? "banned" : "suspended"}.`
+    };
+    await assert.rejects(
+      loginCustomer({ identifier: registered.customer.email, password: "CustomerPass123!" }),
+      (error) => expectHttpError(error, expected)
+    );
+    await assert.rejects(
+      getCustomerFromSessionToken(registered.sessionToken),
+      (error) => expectHttpError(error, expected)
+    );
+  }
+});
+
 test("expired, revoked, and inactive-account sessions are rejected", async () => {
   const suffix = randomUUID().slice(0, 8);
   const customer = await prisma.customerAccount.create({

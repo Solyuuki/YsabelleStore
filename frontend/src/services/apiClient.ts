@@ -1,6 +1,10 @@
 import { frontendRuntimeConfig, resolveApiUrl } from "@/config/runtime";
 import { assertSystemMutationAllowed } from "@/services/systemReliabilityGate";
 import type { ApiResponse } from "@/types/api";
+import {
+  CUSTOMER_RESTRICTION_EVENT,
+  customerRestrictionFromCode
+} from "@/utils/customerAccountRestriction";
 import { shouldAttachInternalBearer } from "@/utils/internalAuthRoutes";
 
 export type ApiRequestOptions = Omit<RequestInit, "body"> & {
@@ -144,6 +148,19 @@ export class ApiClient {
     }
 
     if (!interceptedPayload.success) {
+      const errorCode =
+        interceptedPayload.error &&
+        typeof interceptedPayload.error === "object" &&
+        "code" in interceptedPayload.error
+          ? interceptedPayload.error.code
+          : null;
+      const restriction = customerRestrictionFromCode(errorCode);
+      if (restriction && eventContext.path.startsWith("/api/customer-auth/")) {
+        window.dispatchEvent(
+          new CustomEvent(CUSTOMER_RESTRICTION_EVENT, { detail: restriction })
+        );
+      }
+
       dispatchHttpError({
         ...eventContext,
         message: interceptedPayload.message,

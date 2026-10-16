@@ -20,10 +20,17 @@ import type {
   CustomerLoginInput,
   CustomerRegisterInput
 } from "@/types/customerAuth";
+import {
+  CUSTOMER_RESTRICTION_EVENT,
+  customerRestrictionFromSocialCallback,
+  type CustomerRestriction
+} from "@/utils/customerAccountRestriction";
 import { resolveCustomerAuthStatus } from "./customerAuthState";
 
 type CustomerAuthContextValue = {
   customer: Customer | null;
+  restriction: CustomerRestriction | null;
+  clearRestriction: () => void;
   error: string | null;
   isReady: boolean;
   login: (input: CustomerLoginInput) => Promise<Customer>;
@@ -39,6 +46,25 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [restriction, setRestriction] = useState<CustomerRestriction | null>(() =>
+    window.location.pathname === "/login"
+      ? customerRestrictionFromSocialCallback(window.location.search)
+      : null
+  );
+  const clearRestriction = useCallback(() => setRestriction(null), []);
+
+  useEffect(() => {
+    const handleRestriction = (event: Event) => {
+      const next = (event as CustomEvent<CustomerRestriction>).detail;
+      if (next !== "SUSPENDED" && next !== "BANNED") return;
+      setRestriction(next);
+      setCustomer(null);
+      setLoading(false);
+    };
+
+    window.addEventListener(CUSTOMER_RESTRICTION_EVENT, handleRestriction);
+    return () => window.removeEventListener(CUSTOMER_RESTRICTION_EVENT, handleRestriction);
+  }, []);
 
   const refreshSession = useCallback(async () => {
     try {
@@ -59,9 +85,28 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
     void refreshSession();
   }, [refreshSession]);
 
+  // Moderation revokes sessions immediately. Re-check on focus and while the
+  // tab is visible so a signed-in customer sees the notice without refreshing.
+  useEffect(() => {
+    if (!customer || restriction) return;
+    const verifyOnFocus = () => void refreshSession();
+    const verifyOnVisibility = () => {
+      if (document.visibilityState === "visible") void refreshSession();
+    };
+    const interval = window.setInterval(verifyOnVisibility, 60_000);
+    window.addEventListener("focus", verifyOnFocus);
+    document.addEventListener("visibilitychange", verifyOnVisibility);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", verifyOnFocus);
+      document.removeEventListener("visibilitychange", verifyOnVisibility);
+    };
+  }, [customer, restriction, refreshSession]);
+
   const login = useCallback(async (input: CustomerLoginInput) => {
     const authenticatedCustomer = await loginCustomer(input);
     setCustomer(authenticatedCustomer);
+    setRestriction(null);
     setError(null);
     setLoading(false);
     return authenticatedCustomer;
@@ -101,6 +146,8 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<CustomerAuthContextValue>(
     () => ({
       customer,
+      restriction,
+      clearRestriction,
       error,
       isReady: !loading,
       login,
@@ -109,7 +156,18 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
       register,
       status
     }),
-    [customer, error, loading, login, logout, refreshSession, register, status]
+    [
+      customer,
+      restriction,
+      clearRestriction,
+      error,
+      loading,
+      login,
+      logout,
+      refreshSession,
+      register,
+      status
+    ]
   );
 
   return <CustomerAuthContext.Provider value={value}>{children}</CustomerAuthContext.Provider>;

@@ -30,6 +30,8 @@ const SOCIAL_CALLBACK_STATUS_BY_CODE: Record<string, string> = {
   SOCIAL_AUTH_EMAIL_REQUIRED: "email_required",
   SOCIAL_AUTH_LINK_CONFLICT: "link_conflict",
   SOCIAL_AUTH_ACCOUNT_UNAVAILABLE: "account_unavailable",
+  CUSTOMER_ACCOUNT_SUSPENDED: "account_suspended",
+  CUSTOMER_ACCOUNT_BANNED: "account_banned",
   SOCIAL_AUTH_PROVIDER_UNAVAILABLE: "provider_unavailable",
   SOCIAL_AUTH_PROVIDER_ERROR: "provider_error",
   SOCIAL_AUTH_INVALID_CALLBACK: "invalid_callback"

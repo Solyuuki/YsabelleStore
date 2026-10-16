@@ -11,6 +11,7 @@ import {
   type CustomerLoginInput,
   type CustomerRegisterInput
 } from "../validators/customerAuth.validators.js";
+import { customerAccountRestriction } from "./customerAccountRestriction.js";
 import { hashPassword, passwordHashNeedsUpgrade, verifyPassword } from "./passwordHashService.js";
 
 const CUSTOMER_SESSION_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
@@ -192,7 +193,7 @@ export async function loginCustomer(input: CustomerLoginInput): Promise<Customer
             where: { username: classification.normalized }
           });
 
-  if (!customer || customer.status !== "ACTIVE" || !customer.passwordHash) {
+  if (!customer || !customer.passwordHash) {
     return verifyDummyPassword(parsed.password);
   }
 
@@ -200,6 +201,10 @@ export async function loginCustomer(input: CustomerLoginInput): Promise<Customer
   if (!passwordMatches) {
     throw invalidCredentials();
   }
+
+  const restriction = customerAccountRestriction(customer.status);
+  if (restriction) throw restriction;
+  if (customer.status !== "ACTIVE") throw invalidCredentials();
 
   if (passwordHashNeedsUpgrade(customer.passwordHash)) {
     await prisma.customerAccount.update({
@@ -230,10 +235,14 @@ export async function getCustomerFromSessionToken(
 
   if (
     !session ||
-    session.revokedAt !== null ||
-    session.expiresAt.getTime() <= now.getTime() ||
-    session.customerAccount.status !== "ACTIVE"
+    session.expiresAt.getTime() <= now.getTime()
   ) {
+    throw invalidSession();
+  }
+
+  const restriction = customerAccountRestriction(session.customerAccount.status);
+  if (restriction) throw restriction;
+  if (session.revokedAt !== null || session.customerAccount.status !== "ACTIVE") {
     throw invalidSession();
   }
 

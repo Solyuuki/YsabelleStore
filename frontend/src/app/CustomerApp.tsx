@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 
 import { CustomerErrorBoundary } from "@/components/customer/CustomerErrorBoundary";
 import { StoreEntrance } from "@/components/customer/StoreEntrance";
+import { StatusScreen } from "@/components/shared/StatusScreen";
 import { CartProvider } from "@/context/CartContext";
 import { CustomerAuthProvider, useCustomerAuth } from "@/context/CustomerAuthContext";
 import { CustomerFavoritesProvider } from "@/context/CustomerFavoritesContext";
@@ -144,8 +145,10 @@ function CustomerAppRoutes({
   const rawPathname = locationUrl.pathname.replace(/\/$/, "") || "/";
   const pathname =
     window.location.protocol === "file:" && rawPathname.endsWith("/index.html") ? "/" : rawPathname;
-  const { status } = useCustomerAuth();
-  const redirect = resolveCustomerAuthRedirect(pathname, status, locationUrl.search);
+  const { status, restriction, clearRestriction } = useCustomerAuth();
+  const redirect = restriction
+    ? null
+    : resolveCustomerAuthRedirect(pathname, status, locationUrl.search);
   const authPageKind = getCustomerAuthPageKind(pathname);
   const protectedRoute = isCustomerProtectedRoute(pathname);
   const [storeEntranceDismissed, setStoreEntranceDismissed] = useState(readStoreEntranceState);
@@ -162,6 +165,33 @@ function CustomerAppRoutes({
     if (pathname === "/about") return;
     return scheduleAboutExperiencePreload();
   }, [pathname]);
+
+  if (restriction) {
+    return (
+      <StatusScreen
+        critical
+        description={`Your account has been ${restriction === "BANNED" ? "banned" : "suspended"}. Please contact Ysabelle Store Customer Support.`}
+        eyebrow="Customer account"
+        primaryAction={{
+          label: "Contact customer support",
+          onClick: () => {
+            clearRestriction();
+            navigate("/support");
+          }
+        }}
+        secondaryAction={{
+          label: "Back to sign in",
+          onClick: () => {
+            clearRestriction();
+            navigate("/login");
+          }
+        }}
+        statusLabel="403"
+        title={restriction === "BANNED" ? "Account banned" : "Account suspended"}
+        variant="auth"
+      />
+    );
+  }
 
   if (redirect || ((authPageKind || protectedRoute) && status === "loading")) {
     return (
