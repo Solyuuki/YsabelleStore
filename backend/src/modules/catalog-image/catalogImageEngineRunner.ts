@@ -6,11 +6,16 @@ import { env } from "../../config/env.js";
 import { HttpError } from "../../utils/httpError.js";
 import { CatalogImageProcessGate } from "./catalogImageProcessGate.js";
 
-const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
-const CATALOG_IMAGE_ENGINE_SCRIPT = path.resolve(
-  currentDirectory,
-  "../../../../catalog-image-engine/app/main.py"
-);
+// Source and compiled modules live at backend/src and backend/dist/src respectively.
+export function resolveCatalogImageEngineScriptPath(moduleUrl: string): string {
+  const moduleDirectory = path.dirname(fileURLToPath(moduleUrl));
+  const fourLevelsUp = path.resolve(moduleDirectory, "../../../..");
+  const repositoryRoot =
+    path.basename(fourLevelsUp) === "backend" ? path.dirname(fourLevelsUp) : fourLevelsUp;
+  return path.join(repositoryRoot, "catalog-image-engine", "app", "main.py");
+}
+
+const CATALOG_IMAGE_ENGINE_SCRIPT = resolveCatalogImageEngineScriptPath(import.meta.url);
 const MAX_PROCESS_OUTPUT_BYTES = 1024 * 1024;
 const STATUS_VALUES = new Set(["APPROVED", "NEEDS_REVIEW", "REJECTED"] as const);
 const SEVERITY_VALUES = new Set(["info", "warning", "error"] as const);

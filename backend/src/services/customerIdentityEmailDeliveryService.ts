@@ -20,7 +20,10 @@ export type CustomerIdentityEmailPurpose =
   | "session_security";
 
 export class CustomerIdentityEmailDeliveryError extends Error {
-  public constructor() {
+  public constructor(
+    public readonly stage: "configuration" | "oauth_token" | "gmail_send" = "configuration",
+    public readonly httpStatus?: number
+  ) {
     super("Customer identity verification email delivery failed.");
     this.name = "CustomerIdentityEmailDeliveryError";
   }
@@ -284,7 +287,9 @@ async function sendGmailApiIdentityEmail(
     }),
     signal: AbortSignal.timeout(15_000)
   });
-  if (!tokenResponse.ok) throw new CustomerIdentityEmailDeliveryError();
+  if (!tokenResponse.ok) {
+    throw new CustomerIdentityEmailDeliveryError("oauth_token", tokenResponse.status);
+  }
 
   const tokenPayload = (await tokenResponse.json()) as { access_token?: unknown };
   if (typeof tokenPayload.access_token !== "string" || !tokenPayload.access_token.trim()) {
@@ -327,7 +332,9 @@ async function sendGmailApiIdentityEmail(
     body: JSON.stringify({ raw: Buffer.from(raw, "utf8").toString("base64url") }),
     signal: AbortSignal.timeout(15_000)
   });
-  if (!sendResponse.ok) throw new CustomerIdentityEmailDeliveryError();
+  if (!sendResponse.ok) {
+    throw new CustomerIdentityEmailDeliveryError("gmail_send", sendResponse.status);
+  }
 }
 
 async function sendEmailRequest(
@@ -425,6 +432,13 @@ export function createCustomerIdentityEmailDelivery({
 
     if (emailProvider === "gmail_api") {
       if (!gmailClientId || !gmailClientSecret || !gmailRefreshToken || !gmailSenderEmail) {
+        console.error(
+          JSON.stringify({
+            event: "customer_identity_gmail_failed",
+            purpose: input.purpose,
+            stage: "configuration"
+          })
+        );
         throw new CustomerIdentityEmailDeliveryError();
       }
       try {
@@ -438,8 +452,23 @@ export function createCustomerIdentityEmailDelivery({
           },
           fetchImpl
         );
+        // Gmail accepted the request; inbox delivery is checked separately during QA.
+        console.info(
+          JSON.stringify({ event: "customer_identity_gmail_accepted", purpose: input.purpose })
+        );
         return;
-      } catch {
+      } catch (error) {
+        // Never log recipient, verification code, tokens, headers or provider body.
+        console.error(
+          JSON.stringify({
+            event: "customer_identity_gmail_failed",
+            purpose: input.purpose,
+            stage: error instanceof CustomerIdentityEmailDeliveryError ? error.stage : "transport",
+            ...(error instanceof CustomerIdentityEmailDeliveryError && error.httpStatus
+              ? { httpStatus: error.httpStatus }
+              : {})
+          })
+        );
         throw new CustomerIdentityEmailDeliveryError();
       }
     }

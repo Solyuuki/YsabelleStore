@@ -65,7 +65,7 @@ test("privacy policy documents Philippine law, processors, rights, and no curren
 });
 
 test("privacy UI is responsive, material-aware, and reduced-motion safe", () => {
-  assert.match(privacyCss, /backdrop-filter:\s*blur/);
+  assert.match(privacyCss, /\.customer-privacy-notice\s*\{[^}]*backdrop-filter:\s*none;/);
   assert.match(privacyCss, /customer-privacy-hero/);
   assert.match(privacyCss, /customer-privacy-layout/);
   assert.match(privacyCss, /@media \(max-width: 720px\)/);
