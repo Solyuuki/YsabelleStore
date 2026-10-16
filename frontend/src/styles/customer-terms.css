@@ -1,0 +1,74 @@
+/* Sprint 13 Terms of Service follows the approved Privacy Policy reading
+   surface, theme tokens, galaxy/portal backgrounds, and responsive TOC. */
+.customer-terms-page .customer-privacy-hero h1 {
+  text-wrap: balance;
+  line-height: 1.06;
+}
+
+.customer-terms-page .customer-privacy-section__body > p:last-child {
+  margin-bottom: 0;
+}
+
+.customer-terms-page .customer-privacy-section__body a:not(.customer-button) {
+  color: var(--privacy-accent-ink);
+  font-weight: 760;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.customer-terms-page .customer-privacy-section__body a:focus-visible,
+.customer-terms-page .customer-privacy-toc a:focus-visible {
+  border-radius: 0.2rem;
+  outline: 3px solid var(--privacy-accent-ink);
+  outline-offset: 3px;
+}
+
+.customer-terms-page .customer-privacy-section__body {
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 980px) {
+  .customer-terms-page .customer-privacy-toc nav a {
+    min-height: 44px;
+    align-content: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .customer-terms-page .customer-privacy-hero h1 {
+    font-size: clamp(2.25rem, 11.5vw, 3.3rem);
+    line-height: 1.12;
+  }
+
+  .customer-terms-page .customer-privacy-toc nav {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .customer-terms-page .customer-privacy-section__heading {
+    align-items: start;
+    gap: 0.65rem;
+  }
+
+  .customer-terms-page .customer-privacy-section h2 {
+    min-width: 0;
+    font-size: clamp(1.32rem, 6vw, 1.7rem);
+    line-height: 1.22;
+    overflow-wrap: break-word;
+  }
+
+  .customer-terms-page .customer-privacy-section__body > p {
+    font-size: 0.88rem;
+    line-height: 1.72;
+  }
+}
+
+@media (max-width: 359px) {
+  .customer-terms-page .customer-privacy-section__heading > span {
+    width: 2.2rem;
+    height: 2.2rem;
+  }
+
+  .customer-terms-page .customer-privacy-hero__law {
+    font-size: 0.64rem;
+  }
+}

@@ -25,6 +25,7 @@ import "@/styles/theme-storefront-contrast.css";
 import "@/styles/customer-order-policy.css";
 import "@/styles/customer-mobile-tokens.css";
 import "@/styles/customer-adaptive-mobile.css";
+import "@/styles/customer-terms.css";
 import {
   getCustomerAuthPageKind,
   isCustomerProtectedRoute,
@@ -99,6 +100,11 @@ const CustomerSupportPage = lazy(() =>
 const PrivacyPolicyPage = lazy(() =>
   import("@/pages/customer/PrivacyPolicyPage").then(({ PrivacyPolicyPage }) => ({
     default: PrivacyPolicyPage
+  }))
+);
+const TermsOfServicePage = lazy(() =>
+  import("@/pages/customer/TermsOfServicePage").then(({ TermsOfServicePage }) => ({
+    default: TermsOfServicePage
   }))
 );
 const CustomerNotFoundPage = lazy(() =>
@@ -216,6 +222,7 @@ function CustomerAppRoutes({
     page = <CustomerAccountPage location={location} navigate={navigate} />;
   else if (pathname === "/support") page = <CustomerSupportPage navigate={navigate} />;
   else if (pathname === "/privacy") page = <PrivacyPolicyPage navigate={navigate} />;
+  else if (pathname === "/terms") page = <TermsOfServicePage navigate={navigate} />;
   else page = <CustomerNotFoundPage navigate={navigate} />;
 
   return (

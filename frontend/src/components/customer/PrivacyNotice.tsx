@@ -52,7 +52,7 @@ export function PrivacyNotice({
 
   return (
     <>
-      {visible && pathname !== "/privacy" ? (
+      {visible && pathname !== "/privacy" && pathname !== "/terms" ? (
         <aside aria-label="Privacy notice" className="customer-privacy-notice" role="region">
           <div className="customer-privacy-notice__texture" aria-hidden="true" />
           <div className="customer-privacy-notice__inner">

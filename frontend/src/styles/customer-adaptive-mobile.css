@@ -2949,3 +2949,63 @@
     color: #fff;
   }
 }
+
+
+/* Sprint 13: preserve complete editorial headings on narrow Android/iOS screens.
+   Decorative category-to-merchandising overlap must never cover Trending copy. */
+@media (max-width: 700px) {
+  .customer-app .customer-home .home-category-merch-handoff {
+    display: none;
+  }
+
+  .customer-app .customer-home .home-merchandising-canvas {
+    margin-top: 0;
+  }
+
+  .customer-app .customer-home .home-merchandising-canvas > .home-merchandising--trending,
+  .customer-app .customer-home .home-merchandising-canvas > .home-merchandising--loading {
+    padding-top: clamp(2rem, 6vw, 2.75rem);
+  }
+
+  .customer-app .customer-home .home-section-heading,
+  .customer-app .customer-home .home-section-heading > div {
+    min-width: 0;
+    max-width: 100%;
+    overflow: visible;
+  }
+
+  .customer-app .customer-home .home-section-heading__eyebrow {
+    display: block;
+    max-width: 100%;
+    margin: 0 0 0.35rem;
+    padding-block: 0.12rem;
+    overflow-wrap: break-word;
+    white-space: normal;
+    line-height: 1.5;
+  }
+
+  .customer-app .customer-home .home-section-heading__title {
+    max-width: 100%;
+    line-height: 1.18;
+    overflow-wrap: break-word;
+  }
+
+  .customer-app .customer-home .home-section-heading__description {
+    max-width: 100%;
+    line-height: 1.55;
+    overflow-wrap: break-word;
+  }
+}
+
+/* On phones, a scroll reveal must not hide or clip section headings during
+   momentum scrolling. Card/reel animations and tablet/desktop behavior stay intact. */
+@media (max-width: 700px) and (prefers-reduced-motion: no-preference) {
+  .customer-app .customer-home .home-section-heading__eyebrow,
+  .customer-app .customer-home .home-section-heading__title,
+  .customer-app .customer-home .home-section-heading__description,
+  .customer-app .customer-home .home-section-heading__action {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
