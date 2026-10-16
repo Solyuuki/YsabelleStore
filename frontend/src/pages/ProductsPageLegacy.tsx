@@ -3179,7 +3179,8 @@ function ProductDetailsDialog({
                       }
                     />
                     <p className="text-xs text-slate-500">
-                      Unique identifier used by product imports. Changing it may affect future matching.
+                      Unique identifier used by product imports. Changing it may affect future
+                      matching.
                     </p>
                   </div>
                   <div className="space-y-2">
