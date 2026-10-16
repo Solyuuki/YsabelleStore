@@ -230,3 +230,15 @@ Automated coverage verifies the canonical 50 identity manifest against the relea
 | Date       | Command             | Result | Evidence                                                                                                                                             |
 | ---------- | ------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-10-12 | npm run verify:code | Passed | PR #54 CI run 38197033098 at 1a3adfc6848074494e6a138cfd4a3724a6d63da8; aggregate verification passed before this documentation-only evidence commit. |
+
+## Sprint 13 Gmail Support Retry Verification (2026-10-16)
+
+Branch: `m1/v0.13/fix/support-email-thread-retry`
+
+The aggregate code verifier passed in CI run 38892562190 on implementation commit
+`2ca1c6a71af3`. The subsequent status verification failed because these
+implementation artifacts lacked current evidence. Production email QA remains pending.
+
+| Date       | Command             | Result | Evidence                                              |
+| ---------- | ------------------- | ------ | ----------------------------------------------------- |
+| 2026-10-16 | npm run verify:code | Passed | CI 38892562190; 601/601, 15/15, 371/371 tests passed. |

@@ -180,3 +180,9 @@ Result: independent Dark Mode asset/contrast contract suite PASSED; frontend, ba
 | Date       | Branch                           | Command             | Result | Evidence                                                                                                                                                |
 | ---------- | -------------------------------- | ------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-10-12 | m1/v0.12/docs/activate-sprint-12 | npm run verify:code | Passed | PR #54 CI run 38197033098 at 1a3adfc6848074494e6a138cfd4a3724a6d63da8; aggregate step passed. Full CI blocked only by pending artifact status evidence. |
+
+## Sprint 13 Gmail Support Retry Aggregate Evidence
+
+| Date       | Branch                                  | Command             | Result | Notes                                         |
+| ---------- | --------------------------------------- | ------------------- | ------ | --------------------------------------------- |
+| 2026-10-16 | m1/v0.13/fix/support-email-thread-retry | npm run verify:code | Passed | CI 38892562190; exact code head 2ca1c6a71af3. |

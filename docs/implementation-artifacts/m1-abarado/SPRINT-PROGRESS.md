@@ -114,3 +114,12 @@ Built a separate Dark Mode presentation system for Storefront and Retail. Custom
 About Experience scene files, motion assets, and original Light Mode textures were not modified. Existing Light Mode CSS is preserved by selectors scoped under `:root.dark`.
 
 Validation: CI run 37739767192 — frontend/backend/Electron workspace validations and independent appearance contract job passed; repository quality gates failed at `npm run format:check`, blocking subsequent root tests and verification. Manual visual and screen-reader/keyboard QA pending. Status: implemented, not release-approved.
+
+## Sprint 13 Gmail Support Retry Progress (2026-10-16)
+
+- Branch: `m1/v0.13/fix/support-email-thread-retry`
+- Task: YSB-M1-SUPPORT-EMAIL-013
+- Implementation: Thread-aware Gmail parent selection, sanitized delivery failure
+  diagnostics, reliable retry response, and targeted regression tests.
+- Validation: `npm run verify:code` passed in CI run 38892562190 on code head `2ca1c6a71af3`.
+- Release status: Pending manual staff-reply and ticket-closure email delivery QA.

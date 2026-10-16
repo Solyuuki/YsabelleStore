@@ -7,6 +7,8 @@ import { createCustomerSupportTicket } from "../src/services/customerSupportServ
 import {
   createSupportGmailClient,
   deliverStaffSupportMessageEmail,
+  deliverSupportLifecycleMessageEmail,
+  SUPPORT_LIFECYCLE_SENDER_NAME,
   syncSupportGmailInboxWithClient,
   type GmailApiMessage,
   type SupportGmailClient
@@ -741,6 +743,103 @@ test("Gmail resolution NO reopens ticket without a final resolved email", async 
   } finally {
     await scope.cleanup();
   }
+});
+
+test("lifecycle email selects a parent from the same Gmail thread", async () => {
+  const scope = await captureDatabaseFixtureScope(prisma);
+  try {
+    const ticket = await createCustomerSupportTicket({
+      customerName: "Thread test",
+      customerEmail: `thread-test-${randomUUID()}@example.com`,
+      category: "OTHER",
+      subject: "Thread test",
+      message: "Please help."
+    });
+    const threadId = `thread-${randomUUID()}`;
+    const parentId = `parent-${randomUUID()}`;
+    await prisma.supportTicket.update({
+      where: { id: ticket.id },
+      data: { gmailThreadId: threadId, status: "CLOSED", closedAt: new Date() }
+    });
+    await prisma.supportMessage.create({
+      data: {
+        ticketId: ticket.id,
+        senderType: "SYSTEM",
+        channel: "EMAIL",
+        senderName: "Ysabelle Store Auto Acknowledgement",
+        body: "Received",
+        deliveryStatus: "SENT",
+        gmailMessageId: parentId,
+        gmailThreadId: threadId
+      }
+    });
+    await prisma.supportMessage.create({
+      data: {
+        ticketId: ticket.id,
+        senderType: "CUSTOMER",
+        channel: "EMAIL",
+        senderName: "Customer",
+        body: "Another thread",
+        deliveryStatus: "NOT_APPLICABLE",
+        gmailMessageId: `other-${randomUUID()}`,
+        gmailThreadId: `other-thread-${randomUUID()}`
+      }
+    });
+    const notice = await prisma.supportMessage.create({
+      data: {
+        ticketId: ticket.id,
+        senderType: "SYSTEM",
+        channel: "EMAIL",
+        senderName: SUPPORT_LIFECYCLE_SENDER_NAME,
+        body: "This support conversation is now closed.",
+        deliveryStatus: "PENDING"
+      }
+    });
+    const client: SupportGmailClient = {
+      async getMessage() {
+        throw new Error("Unexpected");
+      },
+      async listInboxMessages() {
+        return [];
+      },
+      async sendSupportReply(input) {
+        assert.equal(input.threadId, threadId);
+        assert.equal(input.replyToGmailMessageId, parentId);
+        return { id: `sent-${randomUUID()}`, threadId };
+      }
+    };
+    const result = await deliverSupportLifecycleMessageEmail(notice.id, client);
+    assert.equal(result.status, "SENT");
+  } finally {
+    await scope.cleanup();
+  }
+});
+
+test("Gmail HTTP errors use an allowlisted reason without raw details", async () => {
+  const tokenBody = JSON.stringify({ access_token: "example-token", expires_in: 3600 });
+  const rejectedBody = JSON.stringify({ error: { errors: [{ reason: "invalidArgument" }] } });
+  const client = createSupportGmailClient({
+    clientId: "client-id",
+    clientSecret: "secret",
+    refreshToken: "refresh-token",
+    supportEmail: "ysabellestore.support@gmail.com",
+    fromName: "Ysabelle Store Customer Support",
+    fetchImpl: async (input) => {
+      if (String(input) === "https://oauth2.googleapis.com/token") {
+        return new Response(tokenBody, { status: 200 });
+      }
+      return new Response(rejectedBody, { status: 400 });
+    }
+  });
+  await assert.rejects(
+    () => client.listInboxMessages(),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.match(error.message, /HTTP 400; invalidArgument/);
+      assert.doesNotMatch(error.message, /access_token|example-token/);
+      return true;
+    }
+  );
 });
 
 test("Gmail OAuth errors report safe provider codes without exposing Google response details", async () => {
