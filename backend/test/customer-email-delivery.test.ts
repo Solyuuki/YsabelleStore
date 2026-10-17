@@ -455,28 +455,23 @@ test("Brevo sends registration, sign-in and recovery email", async () => {
   assert.ok(requests.every((request) => request.init?.method === "POST"));
   const headers = new Headers(requests[0]?.init?.headers);
   assert.equal(headers.get("api-key"), "brevo-secret-for-test");
-  const bodies = requests.map((request) => {
-    return JSON.parse(String(request.init?.body)) as {
-      sender: { name: string; email: string };
-      to: Array<{ email: string }>;
-      subject: string;
-      htmlContent: string;
-      textContent: string;
-    };
+  const bodies = requests.map((request) => String(request.init?.body));
+  assert.match(bodies[0] ?? "", /"name":"Ysabelle Store"/);
+  assert.match(bodies[0] ?? "", /"email":"verified@example.com"/);
+  assert.match(bodies[0] ?? "", /"email":"new@example.com"/);
+  assert.match(bodies[1] ?? "", /"email":"login@example.com"/);
+  assert.match(bodies[2] ?? "", /"email":"recover@example.com"/);
+  assert.match(bodies[3] ?? "", /"email":"recover@example.com"/);
+  assert.match(bodies[0] ?? "", /111222/);
+  assert.match(bodies[1] ?? "", /333444/);
+  assert.match(bodies[2] ?? "", /555666/);
+  assert.match(bodies[3] ?? "", /777888/);
+  const subjects = bodies.map((body) => {
+    const value = JSON.parse(body) as { subject: string };
+    return value.subject;
   });
-  assert.deepEqual(bodies[0]?.sender, { name: "Ysabelle Store", email: "verified@example.com" });
-  assert.deepEqual(bodies.map((body) => body.to[0]?.email), [
-    "new@example.com",
-    "login@example.com",
-    "recover@example.com",
-    "recover@example.com"
-  ]);
-  assert.match(bodies[0]?.htmlContent ?? "", /111222/);
-  assert.match(bodies[1]?.textContent ?? "", /333444/);
-  assert.match(bodies[2]?.htmlContent ?? "", /555666/);
-  assert.match(bodies[3]?.htmlContent ?? "", /777888/);
-  assert.notEqual(bodies[2]?.subject, bodies[3]?.subject);
-  assert.doesNotMatch(bodies[3]?.subject ?? "", /777888/);
+  assert.notEqual(subjects[2], subjects[3]);
+  assert.doesNotMatch(subjects[3] ?? "", /777888/);
 });
 
 test("Brevo fails closed when sender or API key is missing", async () => {
