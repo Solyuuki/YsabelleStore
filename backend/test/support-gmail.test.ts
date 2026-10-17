@@ -934,3 +934,30 @@ test("Brevo support rejects errors without leaking API keys or provider response
     }
   );
 });
+
+test("Gmail rate-limit responses activate a cooldown without replaying requests", async () => {
+  let gmailCalls = 0;
+  const client = createSupportGmailClient({
+    clientId: "client-id",
+    clientSecret: "client-secret",
+    refreshToken: "refresh-token",
+    supportEmail: "support@example.com",
+    fromName: "Support",
+    fetchImpl: async (input) => {
+      if (String(input) === "https://oauth2.googleapis.com/token") {
+        return new Response(JSON.stringify({ access_token: "valid", expires_in: 3600 }), {
+          status: 200
+        });
+      }
+      gmailCalls += 1;
+      return new Response(
+        JSON.stringify({ error: { errors: [{ reason: "rateLimitExceeded" }] } }),
+        { status: 403, headers: { "retry-after": "120" } }
+      );
+    }
+  });
+
+  await assert.rejects(client.listInboxMessages(), /HTTP 403; rateLimitExceeded/);
+  await assert.rejects(client.listInboxMessages(), /HTTP 429; rateLimitExceeded/);
+  assert.equal(gmailCalls, 1);
+});
