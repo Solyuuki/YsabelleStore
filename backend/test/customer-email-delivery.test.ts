@@ -14,7 +14,9 @@ type DevelopmentSmtpMessage = {
 type DeliveryModule = {
   createCustomerIdentityEmailDelivery?: (config: {
     apiKey?: string;
-    emailProvider?: "resend" | "gmail_smtp" | "gmail_api";
+    emailProvider?: "resend" | "gmail_smtp" | "gmail_api" | "brevo";
+    brevoApiKey?: string;
+    brevoSenderEmail?: string;
     gmailClientId?: string;
     gmailClientSecret?: string;
     gmailRefreshToken?: string;
@@ -414,4 +416,111 @@ test("production Gmail API hides secrets on expired grant", async () => {
     }
   );
   assert.equal(sendCalled, false);
+});
+
+test("Brevo delivers registration, sign-in and recovery email through its transactional API", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+
+  const requests: Array<{ url: string; init?: RequestInit }> = [];
+  const send = module.createCustomerIdentityEmailDelivery({
+    nodeEnv: "production",
+    emailProvider: "brevo",
+    brevoApiKey: "brevo-secret-for-test",
+    brevoSenderEmail: "verified@example.com",
+    fetchImpl: async (url, init) => {
+      requests.push({ url: String(url), init });
+      return new Response(JSON.stringify({ messageId: "brevo-message-id" }), {
+        status: 201,
+        headers: { "content-type": "application/json" }
+      });
+    }
+  });
+
+  await send({ to: "new@example.com", verificationCode: "111222", purpose: "registration" });
+  await send({ to: "login@example.com", verificationCode: "333444", purpose: "authentication" });
+  await send({
+    to: "recover@example.com",
+    verificationCode: "555666",
+    purpose: "password_recovery"
+  });
+  await send({
+    to: "recover@example.com",
+    verificationCode: "777888",
+    purpose: "password_recovery"
+  });
+
+  assert.equal(requests.length, 4);
+  assert.ok(requests.every((request) => request.url === "https://api.brevo.com/v3/smtp/email"));
+  assert.ok(requests.every((request) => request.init?.method === "POST"));
+  const headers = new Headers(requests[0]?.init?.headers);
+  assert.equal(headers.get("api-key"), "brevo-secret-for-test");
+  const bodies = requests.map((request) => JSON.parse(String(request.init?.body)) as {
+    sender: { name: string; email: string };
+    to: Array<{ email: string }>;
+    subject: string;
+    htmlContent: string;
+    textContent: string;
+  });
+  assert.deepEqual(bodies[0]?.sender, { name: "Ysabelle Store", email: "verified@example.com" });
+  assert.deepEqual(bodies.map((body) => body.to[0]?.email), [
+    "new@example.com",
+    "login@example.com",
+    "recover@example.com",
+    "recover@example.com"
+  ]);
+  assert.match(bodies[0]?.htmlContent ?? "", /111222/);
+  assert.match(bodies[1]?.textContent ?? "", /333444/);
+  assert.match(bodies[2]?.htmlContent ?? "", /555666/);
+  assert.match(bodies[3]?.htmlContent ?? "", /777888/);
+  assert.notEqual(bodies[2]?.subject, bodies[3]?.subject);
+  assert.doesNotMatch(bodies[3]?.subject ?? "", /777888/);
+});
+
+test("Brevo fails closed when sender or API key is missing", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+  let fetchCalled = false;
+  const send = module.createCustomerIdentityEmailDelivery({
+    nodeEnv: "production",
+    emailProvider: "brevo",
+    brevoApiKey: "",
+    brevoSenderEmail: "",
+    fetchImpl: async () => {
+      fetchCalled = true;
+      return new Response(JSON.stringify({ messageId: "bad" }), { status: 201 });
+    }
+  });
+
+  await assert.rejects(
+    () => send({ to: "customer@example.com", verificationCode: "123456", purpose: "registration" }),
+    (error: unknown) => error instanceof module.CustomerIdentityEmailDeliveryError
+  );
+  assert.equal(fetchCalled, false);
+});
+
+test("Brevo rejects API errors and malformed responses without exposing secrets or OTP", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+  for (const response of [
+    new Response("brevo-secret-for-test OTP 123456", { status: 401 }),
+    new Response(JSON.stringify({ error: "brevo-secret-for-test" }), { status: 201 })
+  ]) {
+    const send = module.createCustomerIdentityEmailDelivery({
+      nodeEnv: "production",
+      emailProvider: "brevo",
+      brevoApiKey: "brevo-secret-for-test",
+      brevoSenderEmail: "verified@example.com",
+      fetchImpl: async () => response
+    });
+    await assert.rejects(
+      () =>
+        send({ to: "customer@example.com", verificationCode: "123456", purpose: "authentication" }),
+      (error: unknown) => {
+        assert.ok(error instanceof module.CustomerIdentityEmailDeliveryError);
+        assert.doesNotMatch(error.message, /brevo-secret-for-test|123456/);
+        return true;
+      }
+    );
+  }
 });

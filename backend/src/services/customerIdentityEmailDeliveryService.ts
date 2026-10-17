@@ -5,6 +5,7 @@ import { connect as connectTls, type TLSSocket } from "node:tls";
 import { env } from "../config/env.js";
 
 const RESEND_EMAIL_ENDPOINT = "https://api.resend.com/emails";
+const BREVO_EMAIL_ENDPOINT = "https://api.brevo.com/v3/smtp/email";
 const GMAIL_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 const GMAIL_SEND_ENDPOINT = "https://gmail.googleapis.com/gmail/v1/users/me/messages/send";
 const DEVELOPMENT_RESEND_FROM_EMAIL = "onboarding@resend.dev";
@@ -22,7 +23,7 @@ export type CustomerIdentityEmailPurpose =
 
 export class CustomerIdentityEmailDeliveryError extends Error {
   public constructor(
-    public readonly stage: "configuration" | "oauth_token" | "gmail_send" = "configuration",
+    public readonly stage: "configuration" | "oauth_token" | "gmail_send" | "brevo_send" = "configuration",
     public readonly httpStatus?: number
   ) {
     super("Customer identity verification email delivery failed.");
@@ -42,7 +43,9 @@ type DevelopmentSmtpMessage = {
 
 type CustomerIdentityEmailDeliveryConfig = {
   apiKey?: string;
-  emailProvider?: "resend" | "gmail_smtp" | "gmail_api";
+  emailProvider?: "resend" | "gmail_smtp" | "gmail_api" | "brevo";
+  brevoApiKey?: string;
+  brevoSenderEmail?: string;
   gmailClientId?: string;
   gmailClientSecret?: string;
   gmailRefreshToken?: string;
@@ -341,6 +344,54 @@ async function sendGmailApiIdentityEmail(
   }
 }
 
+async function sendBrevoIdentityEmail(
+  input: {
+    apiKey: string;
+    senderEmail: string;
+    to: string;
+    verificationCode: string;
+    purpose: CustomerIdentityEmailPurpose;
+  },
+  fetchImpl: typeof fetch
+): Promise<void> {
+  const { html, subject, text } = emailCopy(input.purpose, input.verificationCode);
+  // Gmail conversation grouping can hide repeated OTPs behind an old message.
+  // This non-secret suffix makes each new request independently visible.
+  const distinctSubject = `${subject} [${randomBytes(4).toString("hex")}]`;
+  const response = await fetchImpl(BREVO_EMAIL_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "api-key": input.apiKey,
+      "content-type": "application/json",
+      accept: "application/json"
+    },
+    body: JSON.stringify({
+      sender: { name: CUSTOMER_IDENTITY_FROM_NAME, email: input.senderEmail },
+      to: [{ email: input.to }],
+      subject: distinctSubject,
+      htmlContent: html,
+      textContent: text
+    }),
+    signal: AbortSignal.timeout(15_000)
+  });
+
+  if (!response.ok) {
+    throw new CustomerIdentityEmailDeliveryError("brevo_send", response.status);
+  }
+
+  // Provider acceptance is not a guarantee of delivery, but a message ID lets
+  // Brevo track the request in its transactional email logs.
+  let messageId: unknown;
+  try {
+    ({ messageId } = (await response.json()) as { messageId?: unknown });
+  } catch {
+    throw new CustomerIdentityEmailDeliveryError("brevo_send", response.status);
+  }
+  if (typeof messageId !== "string" || !messageId.trim()) {
+    throw new CustomerIdentityEmailDeliveryError("brevo_send", response.status);
+  }
+}
+
 async function sendEmailRequest(
   input: {
     apiKey: string;
@@ -387,6 +438,8 @@ async function isDevelopmentSenderRestriction(
 
 export function createCustomerIdentityEmailDelivery({
   apiKey = env.RESEND_API_KEY,
+  brevoApiKey = env.BREVO_API_KEY,
+  brevoSenderEmail = env.BREVO_SENDER_EMAIL,
   emailProvider = env.CUSTOMER_EMAIL_PROVIDER,
   gmailClientId = env.GOOGLE_OAUTH_CLIENT_ID,
   gmailClientSecret = env.GOOGLE_OAUTH_CLIENT_SECRET,
@@ -466,6 +519,47 @@ export function createCustomerIdentityEmailDelivery({
         console.error(
           JSON.stringify({
             event: "customer_identity_gmail_failed",
+            purpose: input.purpose,
+            stage: error instanceof CustomerIdentityEmailDeliveryError ? error.stage : "transport",
+            ...(error instanceof CustomerIdentityEmailDeliveryError && error.httpStatus
+              ? { httpStatus: error.httpStatus }
+              : {})
+          })
+        );
+        throw new CustomerIdentityEmailDeliveryError();
+      }
+    }
+
+    if (emailProvider === "brevo") {
+      if (!brevoApiKey?.trim() || !brevoSenderEmail?.trim()) {
+        console.error(
+          JSON.stringify({
+            event: "customer_identity_brevo_failed",
+            purpose: input.purpose,
+            stage: "configuration"
+          })
+        );
+        throw new CustomerIdentityEmailDeliveryError();
+      }
+
+      try {
+        await sendBrevoIdentityEmail(
+          {
+            ...input,
+            apiKey: brevoApiKey.trim(),
+            senderEmail: brevoSenderEmail.trim()
+          },
+          fetchImpl
+        );
+        console.info(
+          JSON.stringify({ event: "customer_identity_brevo_accepted", purpose: input.purpose })
+        );
+        return;
+      } catch (error) {
+        // Never log recipient, OTP, API key, or provider response body.
+        console.error(
+          JSON.stringify({
+            event: "customer_identity_brevo_failed",
             purpose: input.purpose,
             stage: error instanceof CustomerIdentityEmailDeliveryError ? error.stage : "transport",
             ...(error instanceof CustomerIdentityEmailDeliveryError && error.httpStatus
