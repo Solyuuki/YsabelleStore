@@ -418,7 +418,7 @@ test("production Gmail API hides secrets on expired grant", async () => {
   assert.equal(sendCalled, false);
 });
 
-test("Brevo delivers registration, sign-in and recovery email through its transactional API", async () => {
+test("Brevo sends registration, sign-in and recovery email", async () => {
   const module = await loadDeliveryModule();
   assert.ok(module.createCustomerIdentityEmailDelivery);
 
@@ -455,12 +455,14 @@ test("Brevo delivers registration, sign-in and recovery email through its transa
   assert.ok(requests.every((request) => request.init?.method === "POST"));
   const headers = new Headers(requests[0]?.init?.headers);
   assert.equal(headers.get("api-key"), "brevo-secret-for-test");
-  const bodies = requests.map((request) => JSON.parse(String(request.init?.body)) as {
-    sender: { name: string; email: string };
-    to: Array<{ email: string }>;
-    subject: string;
-    htmlContent: string;
-    textContent: string;
+  const bodies = requests.map((request) => {
+    return JSON.parse(String(request.init?.body)) as {
+      sender: { name: string; email: string };
+      to: Array<{ email: string }>;
+      subject: string;
+      htmlContent: string;
+      textContent: string;
+    };
   });
   assert.deepEqual(bodies[0]?.sender, { name: "Ysabelle Store", email: "verified@example.com" });
   assert.deepEqual(bodies.map((body) => body.to[0]?.email), [
@@ -499,7 +501,7 @@ test("Brevo fails closed when sender or API key is missing", async () => {
   assert.equal(fetchCalled, false);
 });
 
-test("Brevo rejects API errors and malformed responses without exposing secrets or OTP", async () => {
+test("Brevo errors never expose secrets or OTP", async () => {
   const module = await loadDeliveryModule();
   assert.ok(module.createCustomerIdentityEmailDelivery);
   for (const response of [

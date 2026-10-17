@@ -21,9 +21,11 @@ export type CustomerIdentityEmailPurpose =
   | "password_recovery"
   | "session_security";
 
+type CustomerIdentityDeliveryStage = "configuration" | "oauth_token" | "gmail_send" | "brevo_send";
+
 export class CustomerIdentityEmailDeliveryError extends Error {
   public constructor(
-    public readonly stage: "configuration" | "oauth_token" | "gmail_send" | "brevo_send" = "configuration",
+    public readonly stage: CustomerIdentityDeliveryStage = "configuration",
     public readonly httpStatus?: number
   ) {
     super("Customer identity verification email delivery failed.");
