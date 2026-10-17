@@ -40,6 +40,7 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().min(1).optional(),
   BREVO_API_KEY: optionalNonEmptyString,
   BREVO_SENDER_EMAIL: optionalEmail,
+  SUPPORT_EMAIL_PROVIDER: z.enum(["gmail_api", "brevo"]).default("gmail_api"),
   CUSTOMER_EMAIL_PROVIDER: z.enum(["resend", "gmail_smtp", "gmail_api", "brevo"]).default("resend"),
   SMTP_USER: optionalEmail,
   SMTP_PASSWORD: optionalNonEmptyString,
