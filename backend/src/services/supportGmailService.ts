@@ -12,6 +12,8 @@ const GMAIL_API_BASE = "https://gmail.googleapis.com/gmail/v1/users/me";
 const BREVO_EMAIL_ENDPOINT = "https://api.brevo.com/v3/smtp/email";
 const GMAIL_REQUEST_TIMEOUT_MS = 15_000;
 const GMAIL_SYNC_INTERVAL_MS = 60_000;
+const GMAIL_RATE_LIMIT_BASE_DELAY_MS = 60_000;
+const GMAIL_RATE_LIMIT_MAX_DELAY_MS = 15 * 60_000;
 const GMAIL_SYNC_PAGE_SIZE = 50;
 const GMAIL_SYNC_MAX_MESSAGES = 200;
 const GMAIL_SYNC_QUERY_DAYS = 30;
@@ -66,6 +68,25 @@ function loadSupportLogoBytes() {
 
 let syncInFlight: Promise<SupportGmailSyncResult> | null = null;
 let syncWorkerTimer: NodeJS.Timeout | null = null;
+let gmailRateLimitUntil = 0;
+let gmailRateLimitFailures = 0;
+
+function isGmailRateLimitError(error: unknown) {
+  return (
+    error instanceof Error &&
+    /^Support Gmail request failed \(HTTP (?:403|429); (?:rateLimitExceeded|userRateLimitExceeded|quotaExceeded)\)\.$/.test(error.message)
+  );
+}
+
+function recordGmailRateLimit() {
+  gmailRateLimitFailures += 1;
+  const delay = Math.min(
+    GMAIL_RATE_LIMIT_MAX_DELAY_MS,
+    GMAIL_RATE_LIMIT_BASE_DELAY_MS * 2 ** Math.min(gmailRateLimitFailures - 1, 4)
+  );
+  gmailRateLimitUntil = Math.max(gmailRateLimitUntil, Date.now() + delay);
+}
+
 
 export type SupportGmailConfiguration = {
   clientId: string;
@@ -574,6 +595,8 @@ export function createSupportGmailClient(input: SupportGmailConfiguration): Supp
   };
   let cachedAccessToken: { token: string; expiresAt: number } | null = null;
   let accessTokenRefresh: Promise<string> | null = null;
+  let rateLimitUntil = 0;
+  let rateLimitFailures = 0;
 
   async function refreshAccessToken() {
     let response: Response;
@@ -656,6 +679,11 @@ export function createSupportGmailClient(input: SupportGmailConfiguration): Supp
   }
 
   async function gmailRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
+    // Reject calls during cooldown instead of consuming more quota. POST sends are never
+    // automatically replayed: retrying a potentially delivered email can duplicate it.
+    if (Date.now() < rateLimitUntil) {
+      throw new Error("Support Gmail request failed (HTTP 429; rateLimitExceeded).");
+    }
     async function requestWithToken(token: string) {
       try {
         return await configuration.fetchImpl(`${GMAIL_API_BASE}${path}`, {
@@ -707,8 +735,24 @@ export function createSupportGmailClient(input: SupportGmailConfiguration): Supp
       } catch {
         // Never log Google's raw error description or response body.
       }
-      throw new Error(`Support Gmail request failed (HTTP ${response.status}; ${reason}).`);
+      const failure = new Error(`Support Gmail request failed (HTTP ${response.status}; ${reason}).`);
+      if (isGmailRateLimitError(failure)) {
+        rateLimitFailures += 1;
+        const delay = Math.min(
+          GMAIL_RATE_LIMIT_MAX_DELAY_MS,
+          GMAIL_RATE_LIMIT_BASE_DELAY_MS * 2 ** Math.min(rateLimitFailures - 1, 4)
+        );
+        const retryAfterSeconds = Number(response.headers.get("retry-after"));
+        const retryAfterMs =
+          Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0
+            ? retryAfterSeconds * 1_000
+            : 0;
+        rateLimitUntil = Date.now() + Math.max(delay, retryAfterMs);
+      }
+      throw failure;
     }
+    rateLimitFailures = 0;
+    rateLimitUntil = 0;
     return (await response.json()) as T;
   }
 
@@ -1225,12 +1269,19 @@ export async function syncSupportGmailInboxWithClient(
 
 export async function syncSupportGmailInbox() {
   if (syncInFlight) return await syncInFlight;
+  if (Date.now() < gmailRateLimitUntil) return { imported: 0, skipped: 0 };
 
   const operation = syncSupportGmailInboxWithClient(runtimeClient());
   syncInFlight = operation;
 
   try {
-    return await operation;
+    const result = await operation;
+    gmailRateLimitFailures = 0;
+    gmailRateLimitUntil = 0;
+    return result;
+  } catch (error) {
+    if (isGmailRateLimitError(error)) recordGmailRateLimit();
+    throw error;
   } finally {
     if (syncInFlight === operation) syncInFlight = null;
   }
