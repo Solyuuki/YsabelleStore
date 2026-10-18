@@ -368,12 +368,14 @@ export function SalesPage() {
                       {currencyFormatter.format(Number(selectedSale.subtotalAmount))}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Discount</span>
-                    <span className="font-medium text-slate-950">
-                      {currencyFormatter.format(Number(selectedSale.discountAmount))}
-                    </span>
-                  </div>
+                  {Number(selectedSale.discountAmount) > 0 ? (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">Discount</span>
+                      <span className="font-medium text-slate-950">
+                        {currencyFormatter.format(Number(selectedSale.discountAmount))}
+                      </span>
+                    </div>
+                  ) : null}
                   <div className="flex justify-between border-t border-slate-200 pt-3 text-base font-semibold">
                     <span>Total</span>
                     <span>{currencyFormatter.format(Number(selectedSale.totalAmount))}</span>
