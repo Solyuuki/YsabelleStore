@@ -62,10 +62,12 @@ export function SalesMobileReceiptDetails({ sale }: { sale: PosSale }) {
           <span>Subtotal</span>
           <span>{peso.format(Number(sale.subtotalAmount))}</span>
         </div>
-        <div>
-          <span>Discount</span>
-          <span>{peso.format(Number(sale.discountAmount))}</span>
-        </div>
+        {Number(sale.discountAmount) > 0 ? (
+          <div>
+            <span>Discount</span>
+            <span>{peso.format(Number(sale.discountAmount))}</span>
+          </div>
+        ) : null}
         <div className="ys-sales-mobile-grand-total">
           <strong>Total</strong>
           <strong>{peso.format(Number(sale.totalAmount))}</strong>
