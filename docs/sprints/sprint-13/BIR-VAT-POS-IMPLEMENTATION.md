@@ -1,9 +1,10 @@
 # Sprint 13 — BIR VAT Retail POS implementation (not release approved)
 
 Primary BIR sources:
-- RMC 77-2024: https://bir-cdn.bir.gov.ph/BIR/pdf/RMC%20No.%2077-2024.pdf
-- BIR official VAT Invoice examples (A1/B1): https://orus.bir.gov.ph/files/RMC_No_77_2024_Annex_A1_B6.pdf
-- EOPT RA 11976: https://lawphil.net/statutes/repacts/ra2024/ra_11976_2024.html
+
+- [RMC 77-2024](https://bir-cdn.bir.gov.ph/BIR/pdf/RMC%20No.%2077-2024.pdf)
+- [BIR VAT Invoice examples](https://orus.bir.gov.ph/files/RMC_No_77_2024_Annex_A1_B6.pdf)
+- [EOPT Act, RA 11976](https://lawphil.net/statutes/repacts/ra2024/ra_11976_2024.html)
 
 ## Completed technical foundation (not yet live)
 

@@ -25,11 +25,11 @@ test("mixed VATable, exempt and zero-rated sales reconcile", () => {
   assert.equal(result.vatAmount.toFixed(2), "12.00");
   assert.equal(result.vatExemptSalesAmount.toFixed(2), "80.00");
   assert.equal(result.zeroRatedSalesAmount.toFixed(2), "50.00");
-  assert.equal(
-    result.vatableSalesAmount.add(result.vatAmount)
-      .add(result.vatExemptSalesAmount).add(result.zeroRatedSalesAmount).toFixed(2),
-    "242.00"
-  );
+  const reconstructedTotal = result.vatableSalesAmount
+    .add(result.vatAmount)
+    .add(result.vatExemptSalesAmount)
+    .add(result.zeroRatedSalesAmount);
+  assert.equal(reconstructedTotal.toFixed(2), "242.00");
 });
 
 test("cent rounding preserves total", () => {

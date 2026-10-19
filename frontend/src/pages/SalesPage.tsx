@@ -402,7 +402,9 @@ export function SalesPage() {
                       </div>
                     </>
                   ) : (
-                    <p className="text-xs font-medium text-amber-800">VAT breakdown unavailable for this historical sale.</p>
+                    <p className="text-xs font-medium text-amber-800">
+                      VAT breakdown unavailable for this historical sale.
+                    </p>
                   )}
                   <div className="flex justify-between border-t border-slate-200 pt-3 text-base font-semibold">
                     <span>Total</span>
