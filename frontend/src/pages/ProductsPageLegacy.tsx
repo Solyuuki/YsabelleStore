@@ -3585,10 +3585,7 @@ function ProductDetailsDialog({
                 </div>
 
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs leading-5 text-emerald-800">
-                  Thesis demo notice: Some expiry dates were synthetically generated for academic
-                  demonstration. They are not manufacturer-verified. Check real package labels
-                  before selling or distributing products. Stock quantities and movement history
-                  are available in Inventory.
+                  {"Thesis demo notice: Some expiration dates were generated for academic demonstration and are not manufacturer-verified. Check packaging before selling; stock history remains available in Inventory."}
                 </div>
               </div>
             )}

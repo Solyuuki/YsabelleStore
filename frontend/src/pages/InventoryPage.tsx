@@ -608,8 +608,7 @@ export function InventoryPage() {
       <Alert>
         <AlertTitle>Thesis demo — sample expiration dates</AlertTitle>
         <AlertDescription>
-          Some batch expiry dates are generated for academic demonstration (2028–2029). They are
-          not manufacturer-verified; inspect package labels before any real-world sales.
+          {"Some batch expiry dates are demo-generated (2028–2029), not manufacturer-verified. Check packaging before real-world sales."}
         </AlertDescription>
       </Alert>
 
