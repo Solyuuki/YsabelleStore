@@ -51,6 +51,10 @@ export type PosSale = {
   cashReceived: string;
   change: string;
   discountAmount: string;
+  vatableSalesAmount: string | null;
+  vatAmount: string | null;
+  vatExemptSalesAmount: string | null;
+  zeroRatedSalesAmount: string | null;
   id: string;
   itemCount: number;
   items: PosSaleItem[];

@@ -7,6 +7,10 @@ export function buildRetailReceiptDataFromSale(sale: PosSale): RetailReceiptData
     cashierName: sale.cashierName,
     change: sale.change,
     discountAmount: sale.discountAmount,
+    vatableSalesAmount: sale.vatableSalesAmount,
+    vatAmount: sale.vatAmount,
+    vatExemptSalesAmount: sale.vatExemptSalesAmount,
+    zeroRatedSalesAmount: sale.zeroRatedSalesAmount,
     itemCount: sale.itemCount,
     items: sale.items.map((item) => ({
       barcode: item.barcode,

@@ -1,12 +1,13 @@
 import { createHash, randomBytes } from "node:crypto";
 
-import { Prisma, SaleStatus } from "@prisma/client";
+import { Prisma, ProductVatCategory, SaleStatus } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
 import { invalidateForecastCache } from "../modules/forecasting/forecast.service.js";
 import { HttpError } from "../utils/httpError.js";
 import type { PosCheckoutItemInput } from "../validators/pos.validators.js";
 import { operationalProductWhere } from "./catalogQualityPolicy.js";
+import { calculatePosVatBreakdown } from "./posVatService.js";
 import { activeReservationsByProduct, lockProductStock } from "./stockReservationService.js";
 import {
   allocateStockForSale,
@@ -53,6 +54,10 @@ type SaleSummaryRecord = {
   cashierName: string | null;
   cashReceived: string;
   discountAmount: string;
+  vatableSalesAmount: string | null;
+  vatAmount: string | null;
+  vatExemptSalesAmount: string | null;
+  zeroRatedSalesAmount: string | null;
   change: string;
   id: string;
   itemCount: number;
@@ -238,6 +243,10 @@ export async function checkoutPosSale(input: {
               cashierName: existing.cashier?.name ?? input.cashierName,
               cashReceived: (existing.checkoutCashReceived ?? existing.totalAmount).toString(),
               discountAmount: existing.discountAmount.toString(),
+              vatableSalesAmount: existing.vatableSalesAmount?.toString() ?? null,
+              vatAmount: existing.vatAmount?.toString() ?? null,
+              vatExemptSalesAmount: existing.vatExemptSalesAmount?.toString() ?? null,
+              zeroRatedSalesAmount: existing.zeroRatedSalesAmount?.toString() ?? null,
               change: (existing.checkoutChange ?? new Prisma.Decimal(0)).toString(),
               id: existing.id,
               itemCount: existing.items.reduce((sum, item) => sum + item.quantity, 0),
@@ -288,6 +297,13 @@ export async function checkoutPosSale(input: {
           });
         }
 
+        if (product.vatCategory === ProductVatCategory.UNCLASSIFIED) {
+          throw new HttpError(422, "Product VAT category must be approved before checkout.", {
+            code: "POS_PRODUCT_VAT_CLASSIFICATION_REQUIRED",
+            details: { productId: product.id, sku: product.sku }
+          });
+        }
+
         const unitPrice = toDecimal(product.sellingPrice);
 
         if (unitPrice.lessThan(0)) {
@@ -310,8 +326,16 @@ export async function checkoutPosSale(input: {
         (sum, line) => sum.add(line.unitPrice.mul(line.quantity)),
         new Prisma.Decimal(0)
       );
+      // Selling prices are VAT inclusive; do not add VAT to the amount charged.
+      // The generic discount control is not yet supported for new POS sales.
       const discountAmount = new Prisma.Decimal(0);
       const totalAmount = subtotalAmount.sub(discountAmount);
+      const vatBreakdown = calculatePosVatBreakdown(
+        checkoutLines.map((line) => ({
+          grossAmount: line.unitPrice.mul(line.quantity),
+          vatCategory: line.product.vatCategory
+        }))
+      );
       const cashReceived =
         input.cashReceived === undefined ? totalAmount : toDecimal(input.cashReceived);
 
@@ -331,6 +355,10 @@ export async function checkoutPosSale(input: {
         data: {
           cashierId: input.cashierId,
           discountAmount,
+          vatableSalesAmount: vatBreakdown.vatableSalesAmount,
+          vatAmount: vatBreakdown.vatAmount,
+          vatExemptSalesAmount: vatBreakdown.vatExemptSalesAmount,
+          zeroRatedSalesAmount: vatBreakdown.zeroRatedSalesAmount,
           notes: input.notes?.trim() || null,
           saleDate,
           saleNumber,
@@ -370,7 +398,8 @@ export async function checkoutPosSale(input: {
               quantity: allocation.quantity,
               saleId: sale.id,
               totalAmount: lineTotal,
-              unitPrice: line.unitPrice
+              unitPrice: line.unitPrice,
+              vatCategoryAtSale: line.product.vatCategory
             }
           });
 
@@ -411,6 +440,10 @@ export async function checkoutPosSale(input: {
           cashierName: input.cashierName,
           cashReceived: cashReceived.toString(),
           discountAmount: sale.discountAmount.toString(),
+          vatableSalesAmount: sale.vatableSalesAmount?.toString() ?? null,
+          vatAmount: sale.vatAmount?.toString() ?? null,
+          vatExemptSalesAmount: sale.vatExemptSalesAmount?.toString() ?? null,
+          zeroRatedSalesAmount: sale.zeroRatedSalesAmount?.toString() ?? null,
           change: change.toString(),
           id: sale.id,
           itemCount: saleItems.reduce((sum, item) => sum + item.quantity, 0),
@@ -457,6 +490,10 @@ export async function listRecentSales(limit = 20): Promise<SalesListResult> {
       cashierName: sale.cashier?.name ?? null,
       cashReceived: sale.totalAmount.toString(),
       discountAmount: sale.discountAmount.toString(),
+      vatableSalesAmount: sale.vatableSalesAmount?.toString() ?? null,
+      vatAmount: sale.vatAmount?.toString() ?? null,
+      vatExemptSalesAmount: sale.vatExemptSalesAmount?.toString() ?? null,
+      zeroRatedSalesAmount: sale.zeroRatedSalesAmount?.toString() ?? null,
       change: new Prisma.Decimal(0).toString(),
       id: sale.id,
       itemCount: sale.items.reduce((sum, item) => sum + item.quantity, 0),

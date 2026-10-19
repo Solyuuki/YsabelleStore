@@ -18,6 +18,9 @@ export type RetailReceiptData = {
   receiptNumber: string;
   saleDate: string;
   subtotal: string;
-  taxAmount?: string | null;
+  vatableSalesAmount: string | null;
+  vatAmount: string | null;
+  vatExemptSalesAmount: string | null;
+  zeroRatedSalesAmount: string | null;
   total: string;
 };
