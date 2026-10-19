@@ -7,6 +7,7 @@ const script = read("backend/src/scripts/backfillThesisDemoExpiries.ts");
 const inventory = read("frontend/src/pages/InventoryPage.tsx");
 const productView = read("frontend/src/pages/ProductsPageLegacy.tsx");
 const productService = read("backend/src/services/productService.ts");
+const disclosure = read("frontend/src/components/shared/ThesisDemoExpiryNotice.tsx");
 
 test("demo expiration backfill requires explicit apply and preserves existing expirations", () => {
   assert.match(script, /--apply-thesis-demo-2026-10-19/);
@@ -20,9 +21,10 @@ test("demo expiration backfill requires explicit apply and preserves existing ex
 });
 
 test("owner inventory and products disclose synthetic demo date origin", () => {
-  assert.match(inventory, /Thesis demo — sample expiration dates/);
-  assert.match(inventory, /not manufacturer-verified/);
-  assert.match(productView, /Thesis demo notice/);
+  assert.match(inventory, /<ThesisDemoExpiryNotice \/>/);
+  assert.match(productView, /<ThesisDemoExpiryNotice \/>/);
+  assert.match(disclosure, /THESIS DEMO/);
+  assert.match(disclosure, /not manufacturer-verified/);
   assert.match(productView, /Nearest batch expiry/);
   assert.match(productService, /inventoryBatches: true/);
 });

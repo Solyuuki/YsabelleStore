@@ -32,6 +32,7 @@ import { AppPagination } from "@/components/shared/AppPagination";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { ThesisDemoExpiryNotice } from "@/components/shared/ThesisDemoExpiryNotice";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/ToastProvider";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -3585,8 +3586,9 @@ function ProductDetailsDialog({
                 </div>
 
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs leading-5 text-emerald-800">
-                  {"Thesis demo notice: Some expiration dates were generated for academic demonstration and are not manufacturer-verified. Check packaging before selling; stock history remains available in Inventory."}
+                  Stock quantities and movement history are available in Inventory.
                 </div>
+                <ThesisDemoExpiryNotice />
               </div>
             )}
           </div>
