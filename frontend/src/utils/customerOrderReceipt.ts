@@ -110,14 +110,15 @@ export function printCustomerOrderReceipt(order: StorefrontOrder): void {
     popup.document.open();
     popup.document.write(customerOrderReceiptHtml(order));
     popup.document.close();
-    popup.addEventListener("load", () => {
+    // Print exactly once, whether the popup has loaded already or loads later.
+    const triggerPrint = () => {
       popup.focus();
       popup.print();
-    }, { once: true });
-    // A document.write page can be loaded before the listener is registered.
+    };
     if (popup.document.readyState === "complete") {
-      popup.focus();
-      popup.print();
+      triggerPrint();
+    } else {
+      popup.addEventListener("load", triggerPrint, { once: true });
     }
   } catch (error) {
     popup.close();
@@ -125,7 +126,7 @@ export function printCustomerOrderReceipt(order: StorefrontOrder): void {
   }
 }
 
-export async function downloadCustomerOrderReceipt(order: StorefrontOrder): Promise<void> {
+export async function createCustomerOrderReceiptPdf(order: StorefrontOrder) {
   const receipt = buildCustomerOrderReceipt(order);
   const { jsPDF } = await import("jspdf");
   const document = new jsPDF({ format: "a4", unit: "mm" });
@@ -199,5 +200,10 @@ export async function downloadCustomerOrderReceipt(order: StorefrontOrder): Prom
   document.text("Customer order summary only. Not a BIR-registered VAT invoice.", left, y);
   y += 5;
   document.text("Payment status is shown as recorded by the store.", left, y);
-  document.save(receiptFileName(receipt.orderNumber));
+  return document;
+}
+
+export async function downloadCustomerOrderReceipt(order: StorefrontOrder): Promise<void> {
+  const document = await createCustomerOrderReceiptPdf(order);
+  document.save(receiptFileName(order.orderNumber));
 }
