@@ -724,7 +724,7 @@ model Product {
   unit                      ProductUnit                 @default(PIECE)
   costPrice                 Decimal?                    @map("cost_price") @db.Decimal(10, 2)
   sellingPrice              Decimal                     @map("selling_price") @db.Decimal(10, 2)
-  vatCategory               ProductVatCategory          @default(UNCLASSIFIED) @map("vat_category")
+  vatCategory               ProductVatCategory          @default(VATABLE) @map("vat_category")
   reorderLevel              Int                         @default(0) @map("reorder_level") @db.UnsignedInt
   targetStockLevel          Int                         @default(0) @map("target_stock_level") @db.UnsignedInt
   restockTargetApprovedLevel Int?                      @map("restock_target_approved_level") @db.UnsignedInt

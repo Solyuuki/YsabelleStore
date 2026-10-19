@@ -545,6 +545,10 @@ test(
   { concurrency: false },
   async () => {
     const product = await createProduct(buildProductInput());
+    await prisma.product.update({
+      where: { id: product.id },
+      data: { vatCategory: "UNCLASSIFIED" }
+    });
     await addStock(product.id, {
       quantity: 1,
       batchCode: uniqueLabel("VAT-UNKNOWN"),

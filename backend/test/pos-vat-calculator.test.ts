@@ -16,6 +16,12 @@ test("VAT-inclusive price 112 equals 100 net and 12 VAT", () => {
   assert.equal(result.vatableSalesAmount.add(result.vatAmount).toFixed(2), "112.00");
 });
 
+test("VAT-inclusive 60.00 decomposes to 53.57 base and 6.43 VAT", () => {
+  const result = calculatePosVatBreakdown([line("60.00", ProductVatCategory.VATABLE)]);
+  assert.equal(result.vatableSalesAmount.toFixed(2), "53.57");
+  assert.equal(result.vatAmount.toFixed(2), "6.43");
+});
+
 test("mixed VATable, exempt and zero-rated sales reconcile", () => {
   const result = calculatePosVatBreakdown([
     line("112.00", ProductVatCategory.VATABLE),

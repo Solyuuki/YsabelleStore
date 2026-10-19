@@ -21,6 +21,7 @@
     "0015_rider_handoff_customer_note": "30f6d33c755585f030ede98a7e548d36db71a0f227668923a54f9d802ac233e0",
     "0016_verified_product_families": "d8fa6de8d4e2b53b9aa66f8c04ae4457ea423253e779d157360076b10b012338",
     "0017_retail_vat_sale_snapshots": "1bec7b45b25b3f1e012edcab8fdbeddca806a51c34aebdae74ce812f9610f772",
-    "0018_retail_vat_schema_marker": "b2152a763800526515bef12ceb2daab6d40feda36d140f24735e05c67097de00"
+    "0018_retail_vat_schema_marker": "b2152a763800526515bef12ceb2daab6d40feda36d140f24735e05c67097de00",
+    "0019_retail_vatable_default": "bdcc0d82250c9a2cc09de5dad2cceeed3521356ac9d926dc95a8a0f60c15d335"
   }
 }
