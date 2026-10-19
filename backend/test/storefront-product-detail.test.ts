@@ -257,16 +257,25 @@ test("sold-out stock is hidden from customer search and direct links until resto
         search: suffix
       });
     const before = await list("all");
-    assert.deepEqual(before.items.map((product) => product.id), [inStock.id]);
+    assert.deepEqual(
+      before.items.map((product) => product.id),
+      [inStock.id]
+    );
     assert.equal(before.meta.totalItems, 1);
-    assert.deepEqual((await list("in-stock")).items.map((product) => product.id), [inStock.id]);
+    assert.deepEqual(
+      (await list("in-stock")).items.map((product) => product.id),
+      [inStock.id]
+    );
     assert.deepEqual((await list("out-of-stock")).items, []);
     await assert.rejects(getStorefrontProduct(soldOut.id), (error: unknown) => {
       assert.equal((error as { statusCode?: number }).statusCode, 404);
       return true;
     });
     const related = await listStorefrontRelatedProducts(inStock.id, 4);
-    assert.equal(related.sameCategory.some((item) => item.id === soldOut.id), false);
+    assert.equal(
+      related.sameCategory.some((item) => item.id === soldOut.id),
+      false
+    );
 
     // Stock-in makes the existing active product visible again without toggling status.
     await prisma.inventoryBatch.create({

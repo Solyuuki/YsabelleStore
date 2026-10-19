@@ -990,7 +990,7 @@ async function requireStorefrontProduct(productId: string) {
   });
 
   const reserved = product
-    ? (await activeReservationsByProduct(prisma, [product.id])).get(product.id) ?? 0
+    ? ((await activeReservationsByProduct(prisma, [product.id])).get(product.id) ?? 0)
     : 0;
   if (!product || !hasStorefrontStock(product, reserved)) {
     throw new HttpError(404, "Product was not found in the storefront.", {
