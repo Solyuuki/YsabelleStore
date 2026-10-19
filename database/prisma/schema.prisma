@@ -700,6 +700,13 @@ model Category {
   @@map("categories")
 }
 
+enum ProductVatCategory {
+  UNCLASSIFIED
+  VATABLE
+  VAT_EXEMPT
+  ZERO_RATED
+}
+
 model Product {
   id                        String                      @id @default(cuid()) @db.VarChar(191)
   categoryId                String                      @map("category_id") @db.VarChar(191)
@@ -717,6 +724,7 @@ model Product {
   unit                      ProductUnit                 @default(PIECE)
   costPrice                 Decimal?                    @map("cost_price") @db.Decimal(10, 2)
   sellingPrice              Decimal                     @map("selling_price") @db.Decimal(10, 2)
+  vatCategory               ProductVatCategory          @default(UNCLASSIFIED) @map("vat_category")
   reorderLevel              Int                         @default(0) @map("reorder_level") @db.UnsignedInt
   targetStockLevel          Int                         @default(0) @map("target_stock_level") @db.UnsignedInt
   restockTargetApprovedLevel Int?                      @map("restock_target_approved_level") @db.UnsignedInt
@@ -1080,6 +1088,10 @@ model Sale {
   saleDate       DateTime   @default(now()) @map("sale_date")
   subtotalAmount Decimal    @map("subtotal_amount") @db.Decimal(12, 2)
   discountAmount Decimal    @default(0) @map("discount_amount") @db.Decimal(12, 2)
+  vatableSalesAmount Decimal? @map("vatable_sales_amount") @db.Decimal(12, 2)
+  vatAmount Decimal? @map("vat_amount") @db.Decimal(12, 2)
+  vatExemptSalesAmount Decimal? @map("vat_exempt_sales_amount") @db.Decimal(12, 2)
+  zeroRatedSalesAmount Decimal? @map("zero_rated_sales_amount") @db.Decimal(12, 2)
   totalAmount    Decimal    @map("total_amount") @db.Decimal(12, 2)
   status         SaleStatus @default(COMPLETED)
   notes          String?    @db.VarChar(255)
@@ -1102,6 +1114,7 @@ model SaleItem {
   batchId     String?         @map("batch_id") @db.VarChar(191)
   quantity    Int             @db.UnsignedInt
   unitPrice   Decimal         @map("unit_price") @db.Decimal(10, 2)
+  vatCategoryAtSale ProductVatCategory? @map("vat_category_at_sale")
   totalAmount Decimal         @map("total_amount") @db.Decimal(12, 2)
   createdAt   DateTime        @default(now()) @map("created_at")
   sale        Sale            @relation(fields: [saleId], references: [id], onDelete: Cascade, onUpdate: Cascade)

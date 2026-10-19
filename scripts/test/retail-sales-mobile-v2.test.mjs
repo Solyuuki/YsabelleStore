@@ -79,3 +79,18 @@ test("Print dialog Close button remains readable in dark mode and official paper
   const printPaper = read("frontend/src/styles/receipt.css");
   assert.match(printPaper, /\.receipt-paper\s*\{[\s\S]*?background: #ffffff;/);
 });
+
+test("Sales receipts hide unsupported zero discounts but preserve historical nonzero discounts", () => {
+  assert.match(sales, /Number\(selectedSale\.discountAmount\) > 0 \?/);
+  assert.match(modal, /Number\(sale\.discountAmount\) > 0 \?/);
+  const printed = read("frontend/src/components/receipt/RetailReceipt.tsx");
+  assert.match(printed, /Number\(receipt\.discountAmount\) > 0/);
+});
+
+test("VAT breakdown only appears when the sale contains a durable tax snapshot", () => {
+  assert.match(sales, /typeof selectedSale\.vatAmount === "string"/);
+  assert.match(modal, /typeof sale\.vatAmount === "string"/);
+  const printed = read("frontend/src/components/receipt/RetailReceipt.tsx");
+  assert.match(printed, /NOT A BIR-REGISTERED VAT INVOICE/);
+  assert.match(printed, /VATable sales \(net of VAT\)/);
+});

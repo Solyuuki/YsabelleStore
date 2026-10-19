@@ -86,10 +86,7 @@ export function RetailReceipt({ className, compact = false, receipt }: RetailRec
     receipt.discountAmount && Number(receipt.discountAmount) > 0
       ? formatReceiptCurrency(receipt.discountAmount)
       : null;
-  const taxValue =
-    receipt.taxAmount && Number(receipt.taxAmount) > 0
-      ? formatReceiptCurrency(receipt.taxAmount)
-      : null;
+  const hasRecordedVatBreakdown = typeof receipt.vatAmount === "string";
 
   return (
     <section
@@ -107,7 +104,10 @@ export function RetailReceipt({ className, compact = false, receipt }: RetailRec
         <h2 className="mt-2 text-2xl font-semibold tracking-[0.16em] text-slate-950">
           Retail Store
         </h2>
-        <p className="mt-1 text-sm text-slate-600">Official retail receipt</p>
+        <p className="mt-1 text-sm text-slate-600">Transaction Summary</p>
+        <p className="mt-1 text-[10px] font-semibold text-slate-700">
+          NOT A BIR-REGISTERED VAT INVOICE
+        </p>
       </header>
 
       <div className="space-y-4 py-4 text-sm">
@@ -153,7 +153,30 @@ export function RetailReceipt({ className, compact = false, receipt }: RetailRec
         <div className="space-y-2 border-t border-dashed border-slate-300 pt-3">
           <TotalsRow label="Subtotal" value={subtotalValue} />
           {discountValue ? <TotalsRow label="Discount" value={discountValue} /> : null}
-          {taxValue ? <TotalsRow label="Tax" value={taxValue} /> : null}
+          {hasRecordedVatBreakdown ? (
+            <>
+              <TotalsRow
+                label="VATable sales (net of VAT)"
+                value={formatReceiptCurrency(receipt.vatableSalesAmount ?? "0")}
+              />
+              <TotalsRow
+                label="VAT (12%, inclusive)"
+                value={formatReceiptCurrency(receipt.vatAmount ?? "0")}
+              />
+              <TotalsRow
+                label="VAT-exempt sales"
+                value={formatReceiptCurrency(receipt.vatExemptSalesAmount ?? "0")}
+              />
+              <TotalsRow
+                label="Zero-rated sales"
+                value={formatReceiptCurrency(receipt.zeroRatedSalesAmount ?? "0")}
+              />
+            </>
+          ) : (
+            <p className="text-xs font-medium text-amber-800">
+              Historical sale: VAT category and tax amounts were not recorded.
+            </p>
+          )
           <TotalsRow label="Item count" value={itemCountLabel} />
           <TotalsRow label="Cash received" value={cashReceivedValue} />
           <TotalsRow label="Change" value={changeValue} />

@@ -368,12 +368,42 @@ export function SalesPage() {
                       {currencyFormatter.format(Number(selectedSale.subtotalAmount))}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Discount</span>
-                    <span className="font-medium text-slate-950">
-                      {currencyFormatter.format(Number(selectedSale.discountAmount))}
-                    </span>
-                  </div>
+                  {Number(selectedSale.discountAmount) > 0 ? (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">Discount</span>
+                      <span className="font-medium text-slate-950">
+                        {currencyFormatter.format(Number(selectedSale.discountAmount))}
+                      </span>
+                    </div>
+                  ) : null}
+                  {typeof selectedSale.vatAmount === "string" ? (
+                    <>
+                      <div className="flex justify-between text-sm">
+                        <span>VATable sales (net)</span>
+                        <span>
+                          {currencyFormatter.format(Number(selectedSale.vatableSalesAmount ?? 0))}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>VAT (12%, included)</span>
+                        <span>{currencyFormatter.format(Number(selectedSale.vatAmount))}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>VAT-exempt sales</span>
+                        <span>
+                          {currencyFormatter.format(Number(selectedSale.vatExemptSalesAmount ?? 0))}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Zero-rated sales</span>
+                        <span>
+                          {currencyFormatter.format(Number(selectedSale.zeroRatedSalesAmount ?? 0))}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-xs font-medium text-amber-800">VAT breakdown unavailable for this historical sale.</p>
+                  )}
                   <div className="flex justify-between border-t border-slate-200 pt-3 text-base font-semibold">
                     <span>Total</span>
                     <span>{currencyFormatter.format(Number(selectedSale.totalAmount))}</span>

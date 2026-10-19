@@ -7,6 +7,7 @@ export type PosProduct = {
   name: string;
   sku: string;
   sellingPrice: string;
+  vatCategory: "UNCLASSIFIED" | "VATABLE" | "VAT_EXEMPT" | "ZERO_RATED";
   unit: string;
 };
 
@@ -51,6 +52,10 @@ export type PosSale = {
   cashReceived: string;
   change: string;
   discountAmount: string;
+  vatableSalesAmount: string | null;
+  vatAmount: string | null;
+  vatExemptSalesAmount: string | null;
+  zeroRatedSalesAmount: string | null;
   id: string;
   itemCount: number;
   items: PosSaleItem[];

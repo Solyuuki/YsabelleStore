@@ -62,10 +62,34 @@ export function SalesMobileReceiptDetails({ sale }: { sale: PosSale }) {
           <span>Subtotal</span>
           <span>{peso.format(Number(sale.subtotalAmount))}</span>
         </div>
-        <div>
-          <span>Discount</span>
-          <span>{peso.format(Number(sale.discountAmount))}</span>
-        </div>
+        {Number(sale.discountAmount) > 0 ? (
+          <div>
+            <span>Discount</span>
+            <span>{peso.format(Number(sale.discountAmount))}</span>
+          </div>
+        ) : null}
+        {typeof sale.vatAmount === "string" ? (
+          <>
+            <div>
+              <span>VATable sales (net)</span>
+              <span>{peso.format(Number(sale.vatableSalesAmount ?? 0))}</span>
+            </div>
+            <div>
+              <span>VAT (12%, included)</span>
+              <span>{peso.format(Number(sale.vatAmount))}</span>
+            </div>
+            <div>
+              <span>VAT-exempt sales</span>
+              <span>{peso.format(Number(sale.vatExemptSalesAmount ?? 0))}</span>
+            </div>
+            <div>
+              <span>Zero-rated sales</span>
+              <span>{peso.format(Number(sale.zeroRatedSalesAmount ?? 0))}</span>
+            </div>
+          </>
+        ) : (
+          <p>VAT breakdown unavailable for this historical sale.</p>
+        )}
         <div className="ys-sales-mobile-grand-total">
           <strong>Total</strong>
           <strong>{peso.format(Number(sale.totalAmount))}</strong>
