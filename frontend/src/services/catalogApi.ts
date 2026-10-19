@@ -80,6 +80,7 @@ export type CreateProductInput = {
   imageUrl?: string | null;
   costPrice: string;
   sellingPrice: string;
+  vatCategory?: ProductRecord["vatCategory"];
   reorderLevel: number;
   targetStockLevel: number;
   status?: ProductRecord["status"];
