@@ -21,6 +21,16 @@ test("storefront accepts an active approved CIQE image and keeps list payload ca
         dataQualityStatus: "APPROVED",
         isStorefrontVisible: true,
         name: `CIQE Product ${suffix}`,
+        inventory: { create: { quantityOnHand: 2 } },
+        inventoryBatches: {
+          create: {
+            batchCode: `CIQE-STOCK-${suffix}`,
+            quantityReceived: 2,
+            quantityRemaining: 2,
+            status: "AVAILABLE",
+            unitCost: "10"
+          }
+        },
         sellingPrice: "15",
         sku: `CIQE-STOREFRONT-${suffix}`,
         status: "ACTIVE",
@@ -84,6 +94,16 @@ test("storefront still accepts legacy curated product images without an active C
         imageUrl,
         isStorefrontVisible: true,
         name: `Legacy Product ${suffix}`,
+        inventory: { create: { quantityOnHand: 2 } },
+        inventoryBatches: {
+          create: {
+            batchCode: `LEGACY-STOCK-${suffix}`,
+            quantityReceived: 2,
+            quantityRemaining: 2,
+            status: "AVAILABLE",
+            unitCost: "10"
+          }
+        },
         sellingPrice: "15",
         sku: `LEGACY-STOREFRONT-${suffix}`,
         status: "ACTIVE",
