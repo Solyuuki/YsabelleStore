@@ -491,6 +491,10 @@ test(
   { concurrency: false },
   async () => {
     const product = await createProduct(buildProductInput());
+    await prisma.product.update({
+      where: { id: product.id },
+      data: { vatCategory: "VATABLE" }
+    });
     await addStock(product.id, { quantity: 5, batchCode: uniqueLabel("BATCH"), expiresAt: null });
     const cashier = await createTestCashier();
     const result = await checkoutPosSale({
@@ -516,6 +520,10 @@ test(
   { concurrency: false },
   async () => {
     const product = await createProduct(buildProductInput());
+    await prisma.product.update({
+      where: { id: product.id },
+      data: { vatCategory: "VATABLE" }
+    });
     await addStock(product.id, { quantity: 2, batchCode: uniqueLabel("BATCH"), expiresAt: null });
     const cashier = await createTestCashier();
     const result = await checkoutPosSale({
@@ -534,6 +542,10 @@ test(
 
 test("Sales list preserves receipt fields for reprint", { concurrency: false }, async () => {
   const product = await createProduct(buildProductInput());
+  await prisma.product.update({
+    where: { id: product.id },
+    data: { vatCategory: "VATABLE" }
+  });
   await addStock(product.id, { quantity: 1, batchCode: uniqueLabel("BATCH"), expiresAt: null });
   const cashier = await createTestCashier();
   const sale = await checkoutPosSale({
