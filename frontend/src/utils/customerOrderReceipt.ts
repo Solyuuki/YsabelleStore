@@ -53,8 +53,7 @@ export function buildCustomerOrderReceipt(order: StorefrontOrder) {
     ticketNumber: order.deliveryTicketNumber,
     orderedAt: receiptDate.format(new Date(order.createdAt)),
     deliveredAt: order.deliveredAt ? receiptDate.format(new Date(order.deliveredAt)) : null,
-    paymentMethod:
-      order.paymentMethod === "CASH_ON_DELIVERY" ? "Cash on Delivery" : "PayMongo",
+    paymentMethod: order.paymentMethod === "CASH_ON_DELIVERY" ? "Cash on Delivery" : "PayMongo",
     paymentStatus: order.paymentStatus,
     items,
     total: Number(order.totalAmount)

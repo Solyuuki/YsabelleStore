@@ -14,10 +14,7 @@ const account = readFileSync(
   resolve(process.cwd(), "src/pages/customer/CustomerAccountPage.tsx"),
   "utf8"
 );
-const css = readFileSync(
-  resolve(process.cwd(), "src/styles/customer-account-premium.css"),
-  "utf8"
-);
+const css = readFileSync(resolve(process.cwd(), "src/styles/customer-account-premium.css"), "utf8");
 const example = {
   id: "test-1",
   orderNumber: "YS-20261016-5EC2FF",
