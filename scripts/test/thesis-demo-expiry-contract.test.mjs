@@ -20,8 +20,8 @@ test("demo expiration backfill requires explicit apply and preserves existing ex
   assert.match(script, /EXPIRY_SPREAD_DAYS = 366/);
 });
 
-test("owner inventory and products disclose synthetic demo date origin", () => {
-  assert.match(inventory, /<ThesisDemoExpiryNotice \/>/);
+test("inventory omits the demo notification while product details disclose synthetic dates", () => {
+  assert.doesNotMatch(inventory, /ThesisDemoExpiryNotice/);
   assert.match(productView, /<ThesisDemoExpiryNotice \/>/);
   assert.match(disclosure, /THESIS DEMO/);
   assert.match(disclosure, /not manufacturer-verified/);

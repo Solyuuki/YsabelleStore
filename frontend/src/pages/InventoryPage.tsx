@@ -37,7 +37,6 @@ import { useAuth } from "@/context/AuthContext";
 import { AppPagination } from "@/components/shared/AppPagination";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { ThesisDemoExpiryNotice } from "@/components/shared/ThesisDemoExpiryNotice";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/ToastProvider";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -606,7 +605,6 @@ export function InventoryPage() {
         }
       />
 
-      <ThesisDemoExpiryNotice />
 
       <Card className="retail-inventory-list-card">
         <CardContent className="space-y-4 p-4 lg:p-5">
