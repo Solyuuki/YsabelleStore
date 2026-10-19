@@ -74,9 +74,15 @@ assert.match(account, /order.deliveryStatus === "DELIVERED"/);
 assert.match(css, /\.customer-account-history-card__receipt-actions button/);
 assert.match(css, /\.customer-account-history-card__amount/);
 assert.match(css, /@media \(max-width: 720px\)/);
-const pdf = await createCustomerOrderReceiptPdf(example);
-const binary = new Uint8Array(pdf.output("arraybuffer"));
-assert.equal(String.fromCharCode(...binary.slice(0, 4)), "%PDF");
-assert.ok(binary.length > 1000, "Expected a nonempty customer PDF.");
+async function validatePdf() {
+  const pdf = await createCustomerOrderReceiptPdf(example);
+  const binary = new Uint8Array(pdf.output("arraybuffer"));
+  assert.equal(String.fromCharCode(...binary.slice(0, 4)), "%PDF");
+  assert.ok(binary.length > 1000, "Expected a nonempty customer PDF.");
+  console.log("Customer order receipt and responsive order history contract passed.");
+}
 
-console.log("Customer order receipt and responsive order history contract passed.");
+void validatePdf().catch((error: unknown) => {
+  console.error(error);
+  process.exitCode = 1;
+});
