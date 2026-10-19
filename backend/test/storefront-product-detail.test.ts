@@ -225,8 +225,8 @@ test("product detail shows only sellable size siblings in ascending package orde
           sizeUnit: "LITER",
           sizeValue: "1",
           stockStatus: "IN_STOCK"
-        },
-       ]
+        }
+      ]
     );
     assert.equal(
       detail.sizeVariants.some((variant) => variant.id === unavailable.id),

@@ -227,7 +227,10 @@ async function listStorefrontSizeVariants(product: StorefrontProductRecord) {
       // PACK/BOX are sale-unit labels, not proof that weight/volume/count match.
       if (size.dimension !== selectedSize.dimension) return null;
 
-      const availableStock = getSellableStockQuantity(candidate.inventoryBatches);
+      const availableStock = Math.max(
+        0,
+        getSellableStockQuantity(candidate.inventoryBatches) - (reservations.get(candidate.id) ?? 0)
+      );
       return {
         id: candidate.id,
         name: candidate.name,

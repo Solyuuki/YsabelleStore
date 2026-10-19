@@ -60,6 +60,15 @@ export function CustomerHomePage({ navigate }: { navigate: (path: string) => voi
     status: "loading"
   });
 
+  // Return visits should show freshly sellable products, not a stale catalog.
+  useEffect(() => {
+    const recheck = () => {
+      if (document.visibilityState === "visible") setReloadKey((key) => key + 1);
+    };
+    window.addEventListener("focus", recheck);
+    return () => window.removeEventListener("focus", recheck);
+  }, []);
+
   useEffect(() => {
     const controller = new AbortController();
     setCategories((current) => ({ ...current, error: "", status: "loading" }));
