@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 
 import {
   buildCustomerOrderReceipt,
+  createCustomerOrderReceiptPdf,
   customerOrderReceiptHtml,
   receiptFileName
 } from "../frontend/src/utils/customerOrderReceipt";
@@ -53,3 +54,8 @@ assert.match(css, /\.customer-account-history-card__receipt-actions button/);
 assert.match(css, /\.customer-account-history-card__amount/);
 assert.match(css, /@media \(max-width: 720px\)/);
 console.log("Customer order receipt and responsive order history contract passed.");
+
+const pdf = await createCustomerOrderReceiptPdf(example);
+const binary = new Uint8Array(pdf.output("arraybuffer"));
+assert.equal(String.fromCharCode(...binary.slice(0, 4)), "%PDF");
+assert.ok(binary.length > 1000, "Expected a nonempty customer PDF.");
