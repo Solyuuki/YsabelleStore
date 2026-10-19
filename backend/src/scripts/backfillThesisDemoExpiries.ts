@@ -1,5 +1,3 @@
-import { pathToFileURL } from "node:url";
-
 import { InventoryBatchStatus } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
@@ -63,17 +61,14 @@ export async function backfillThesisDemoExpiries(apply = false) {
   return report;
 }
 
-const entryPoint = process.argv[1];
-if (entryPoint && import.meta.url === pathToFileURL(entryPoint).href) {
-  void backfillThesisDemoExpiries(process.argv.includes(APPLY_FLAG))
-    .then((result) => {
-      console.log(JSON.stringify(result));
-    })
-    .catch((error: unknown) => {
-      console.error("Thesis demo expiry backfill failed.", error);
-      process.exitCode = 1;
-    })
-    .finally(async () => {
-      await prisma.$disconnect();
-    });
-}
+void backfillThesisDemoExpiries(process.argv.includes(APPLY_FLAG))
+  .then((result) => {
+    console.log(JSON.stringify(result));
+  })
+  .catch((error: unknown) => {
+    console.error("Thesis demo expiry backfill failed.", error);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
