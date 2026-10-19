@@ -5,6 +5,8 @@ export function buildRetailReceiptDataFromSale(sale: PosSale): RetailReceiptData
   return {
     cashReceived: sale.cashReceived,
     cashierName: sale.cashierName,
+    customerName: sale.customerName ?? null,
+    saleSource: sale.source ?? (sale.saleNumber.startsWith("WEB-") ? "WEB" : "POS"),
     change: sale.change,
     discountAmount: sale.discountAmount,
     vatableSalesAmount: sale.vatableSalesAmount,

@@ -39,7 +39,7 @@ test("Receipt item rows retain exact transaction line, batch, and total values",
   for (const field of [
     "sale.saleNumber",
     "sale.saleDate",
-    "sale.cashierName",
+    "getSaleAttribution(sale)",
     "sale.itemCount",
     "sale.items.map",
     "item.productName",

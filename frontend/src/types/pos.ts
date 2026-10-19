@@ -49,6 +49,9 @@ export type PosSaleItem = {
 
 export type PosSale = {
   cashierName: string | null;
+  /** Order-time customer name, unaffected by a subsequent account ban. */
+  customerName?: string | null;
+  source?: "POS" | "WEB";
   cashReceived: string;
   change: string;
   discountAmount: string;

@@ -1,4 +1,5 @@
 import type { PosSale } from "@/types/pos";
+import { getSaleAttribution } from "@/utils/saleAttribution";
 
 const peso = new Intl.NumberFormat("en-PH", {
   currency: "PHP",
@@ -13,6 +14,8 @@ const saleDate = new Intl.DateTimeFormat("en-PH", {
 });
 
 export function SalesMobileReceiptDetails({ sale }: { sale: PosSale }) {
+  const attribution = getSaleAttribution(sale);
+
   return (
     <div className="ys-sales-mobile-receipt">
       <section aria-label="Receipt summary" className="ys-sales-mobile-receipt-summary">
@@ -20,7 +23,9 @@ export function SalesMobileReceiptDetails({ sale }: { sale: PosSale }) {
         <h3 className="ys-sales-mobile-receipt-number">{sale.saleNumber}</h3>
         <p className="ys-sales-mobile-date">{saleDate.format(new Date(sale.saleDate))}</p>
         <div className="ys-sales-mobile-receipt-metadata">
-          <span>Cashier: {sale.cashierName ?? "Unassigned cashier"}</span>
+          <span>
+            {attribution.label}: {attribution.name}
+          </span>
           <span>
             {sale.itemCount} item{sale.itemCount === 1 ? "" : "s"}
           </span>

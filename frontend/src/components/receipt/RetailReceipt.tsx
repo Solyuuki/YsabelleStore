@@ -123,12 +123,22 @@ export function RetailReceipt({ className, compact = false, receipt }: RetailRec
               {formatReceiptDateTime(receipt.saleDate)}
             </span>
           </div>
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-slate-500">Cashier</span>
-            <span className="text-right font-medium text-slate-950">
-              {receipt.cashierName ?? "Unassigned"}
-            </span>
-          </div>
+          {receipt.saleSource === "WEB" ? (
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-slate-500">Customer</span>
+              <span className="text-right font-medium text-slate-950">
+                {receipt.customerName?.trim() || "Name unavailable"}
+              </span>
+            </div>
+          ) : null}
+          {receipt.cashierName || receipt.saleSource !== "WEB" ? (
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-slate-500">Cashier</span>
+              <span className="text-right font-medium text-slate-950">
+                {receipt.cashierName ?? "Unassigned"}
+              </span>
+            </div>
+          ) : null}
           <div className="flex items-center justify-between gap-4">
             <span className="text-slate-500">Payment method</span>
             <span className="font-medium text-slate-950">{receipt.paymentMethod}</span>

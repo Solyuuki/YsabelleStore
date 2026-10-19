@@ -53,6 +53,8 @@ type SaleItemRecord = {
 
 type SaleSummaryRecord = {
   cashierName: string | null;
+  customerName: string | null;
+  source: "POS" | "WEB";
   cashReceived: string;
   discountAmount: string;
   vatableSalesAmount: string | null;
@@ -243,6 +245,8 @@ export async function checkoutPosSale(input: {
           return {
             sale: {
               cashierName: existing.cashier?.name ?? input.cashierName,
+              customerName: null,
+              source: "POS",
               cashReceived: (existing.checkoutCashReceived ?? existing.totalAmount).toString(),
               discountAmount: existing.discountAmount.toString(),
               vatableSalesAmount: existing.vatableSalesAmount?.toString() ?? null,
@@ -438,6 +442,8 @@ export async function checkoutPosSale(input: {
       return {
         sale: {
           cashierName: input.cashierName,
+          customerName: null,
+          source: "POS",
           cashReceived: cashReceived.toString(),
           discountAmount: sale.discountAmount.toString(),
           vatableSalesAmount: sale.vatableSalesAmount?.toString() ?? null,
@@ -470,6 +476,8 @@ export async function listRecentSales(limit = 20): Promise<SalesListResult> {
   const sales = await prisma.sale.findMany({
     include: {
       cashier: true,
+      // Use the persisted customer-order snapshot even after account restrictions.
+      customerOrder: { select: { customerName: true } },
       items: {
         include: {
           product: true
@@ -488,6 +496,8 @@ export async function listRecentSales(limit = 20): Promise<SalesListResult> {
   return {
     sales: sales.map((sale) => ({
       cashierName: sale.cashier?.name ?? null,
+      customerName: sale.customerOrder?.customerName ?? null,
+      source: sale.customerOrder || sale.saleNumber.startsWith("WEB-") ? "WEB" : "POS",
       cashReceived: sale.totalAmount.toString(),
       discountAmount: sale.discountAmount.toString(),
       vatableSalesAmount: sale.vatableSalesAmount?.toString() ?? null,
