@@ -88,8 +88,8 @@ test("Sales receipts hide unsupported zero discounts but preserve historical non
 });
 
 test("VAT breakdown only appears when the sale contains a durable tax snapshot", () => {
-  assert.match(sales, /selectedSale\.vatAmount !== null/);
-  assert.match(modal, /sale\.vatAmount !== null/);
+  assert.match(sales, /typeof selectedSale\.vatAmount === "string"/);
+  assert.match(modal, /typeof sale\.vatAmount === "string"/);
   const printed = read("frontend/src/components/receipt/RetailReceipt.tsx");
   assert.match(printed, /NOT A BIR-REGISTERED VAT INVOICE/);
   assert.match(printed, /VATable sales \(net of VAT\)/);

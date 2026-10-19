@@ -86,7 +86,7 @@ export function RetailReceipt({ className, compact = false, receipt }: RetailRec
     receipt.discountAmount && Number(receipt.discountAmount) > 0
       ? formatReceiptCurrency(receipt.discountAmount)
       : null;
-  const hasRecordedVatBreakdown = receipt.vatAmount !== null;
+  const hasRecordedVatBreakdown = typeof receipt.vatAmount === "string";
 
   return (
     <section
@@ -155,10 +155,22 @@ export function RetailReceipt({ className, compact = false, receipt }: RetailRec
           {discountValue ? <TotalsRow label="Discount" value={discountValue} /> : null}
           {hasRecordedVatBreakdown ? (
             <>
-              <TotalsRow label="VATable sales (net of VAT)" value={formatReceiptCurrency(receipt.vatableSalesAmount ?? "0")} />
-              <TotalsRow label="VAT (12%, inclusive)" value={formatReceiptCurrency(receipt.vatAmount ?? "0")} />
-              <TotalsRow label="VAT-exempt sales" value={formatReceiptCurrency(receipt.vatExemptSalesAmount ?? "0")} />
-              <TotalsRow label="Zero-rated sales" value={formatReceiptCurrency(receipt.zeroRatedSalesAmount ?? "0")} />
+              <TotalsRow
+                label="VATable sales (net of VAT)"
+                value={formatReceiptCurrency(receipt.vatableSalesAmount ?? "0")}
+              />
+              <TotalsRow
+                label="VAT (12%, inclusive)"
+                value={formatReceiptCurrency(receipt.vatAmount ?? "0")}
+              />
+              <TotalsRow
+                label="VAT-exempt sales"
+                value={formatReceiptCurrency(receipt.vatExemptSalesAmount ?? "0")}
+              />
+              <TotalsRow
+                label="Zero-rated sales"
+                value={formatReceiptCurrency(receipt.zeroRatedSalesAmount ?? "0")}
+              />
             </>
           ) : (
             <p className="text-xs font-medium text-amber-800">

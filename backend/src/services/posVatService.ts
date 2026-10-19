@@ -26,7 +26,14 @@ export function calculatePosVatBreakdown(
     }
   }
 
-  const vatableSalesAmount = vatableGross.div("1.12").toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+  const vatableSalesAmount = vatableGross
+    .div("1.12")
+    .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
   const vatAmount = vatableGross.sub(vatableSalesAmount);
-  return { vatableSalesAmount, vatAmount, vatExemptSalesAmount, zeroRatedSalesAmount };
+  return {
+    vatableSalesAmount,
+    vatAmount,
+    vatExemptSalesAmount,
+    zeroRatedSalesAmount
+  };
 }

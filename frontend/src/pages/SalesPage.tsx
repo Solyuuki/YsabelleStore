@@ -376,12 +376,30 @@ export function SalesPage() {
                       </span>
                     </div>
                   ) : null}
-                  {selectedSale.vatAmount !== null ? (
+                  {typeof selectedSale.vatAmount === "string" ? (
                     <>
-                      <div className="flex justify-between text-sm"><span>VATable sales (net)</span><span>{currencyFormatter.format(Number(selectedSale.vatableSalesAmount ?? 0))}</span></div>
-                      <div className="flex justify-between text-sm"><span>VAT (12%, included)</span><span>{currencyFormatter.format(Number(selectedSale.vatAmount))}</span></div>
-                      <div className="flex justify-between text-sm"><span>VAT-exempt sales</span><span>{currencyFormatter.format(Number(selectedSale.vatExemptSalesAmount ?? 0))}</span></div>
-                      <div className="flex justify-between text-sm"><span>Zero-rated sales</span><span>{currencyFormatter.format(Number(selectedSale.zeroRatedSalesAmount ?? 0))}</span></div>
+                      <div className="flex justify-between text-sm">
+                        <span>VATable sales (net)</span>
+                        <span>
+                          {currencyFormatter.format(Number(selectedSale.vatableSalesAmount ?? 0))}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>VAT (12%, included)</span>
+                        <span>{currencyFormatter.format(Number(selectedSale.vatAmount))}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>VAT-exempt sales</span>
+                        <span>
+                          {currencyFormatter.format(Number(selectedSale.vatExemptSalesAmount ?? 0))}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Zero-rated sales</span>
+                        <span>
+                          {currencyFormatter.format(Number(selectedSale.zeroRatedSalesAmount ?? 0))}
+                        </span>
+                      </div>
                     </>
                   ) : (
                     <p className="text-xs font-medium text-amber-800">VAT breakdown unavailable for this historical sale.</p>
