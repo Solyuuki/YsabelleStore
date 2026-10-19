@@ -1,21 +1,10 @@
 import { InventoryBatchStatus } from "@prisma/client";
 
 import { prisma } from "../database/prismaClient.js";
+import { getThesisDemoExpiryDate } from "../utils/thesisDemoExpiry.js";
 
 const APPLY_FLAG = "--apply-thesis-demo-2026-10-19";
-const DEMO_START_UTC = Date.UTC(2028, 9, 19);
-const DAY_MS = 86_400_000;
-const EXPIRY_SPREAD_DAYS = 366;
 const CHUNK_SIZE = 50;
-
-/** Reproducible 2–3 year THESIS DEMO dates; these are not product-label expiry dates. */
-export function getThesisDemoExpiryDate(productId: string, batchId: string) {
-  let hash = 2166136261;
-  for (const codePoint of `${productId}:${batchId}`) {
-    hash = Math.imul(hash ^ codePoint.charCodeAt(0), 16777619) >>> 0;
-  }
-  return new Date(DEMO_START_UTC + (hash % EXPIRY_SPREAD_DAYS) * DAY_MS);
-}
 
 export async function backfillThesisDemoExpiries(apply = false) {
   const batches = await prisma.inventoryBatch.findMany({
