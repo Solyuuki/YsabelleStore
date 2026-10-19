@@ -55,6 +55,7 @@ export function ShopPage({
     totalPages: 1
   });
   const [loading, setLoading] = useState(true);
+  const [stockRefreshKey, setStockRefreshKey] = useState(0);
   const [error, setError] = useState("");
   const [showRefreshLoader, setShowRefreshLoader] = useState(false);
   const [catalogTransition, setCatalogTransition] = useState<CatalogTransitionPhase>("idle");
@@ -79,6 +80,21 @@ export function ShopPage({
   useEffect(() => {
     setSearch(searchParam);
   }, [searchParam]);
+
+  // Recheck stock when the shopper returns to this tab or keeps it open.
+  useEffect(() => {
+    const recheck = () => {
+      if (document.visibilityState === "visible") {
+        setStockRefreshKey((key) => key + 1);
+      }
+    };
+    const interval = window.setInterval(recheck, 60_000);
+    window.addEventListener("focus", recheck);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", recheck);
+    };
+  }, []);
 
   useEffect(() => {
     if (!availabilityOpen) return;
@@ -185,7 +201,7 @@ export function ShopPage({
       if (swapTimer !== null) window.clearTimeout(swapTimer);
       if (enterTimer !== null) window.clearTimeout(enterTimer);
     };
-  }, [availabilityParam, categorySlug, pageParam, searchParam]);
+  }, [availabilityParam, categorySlug, pageParam, searchParam, stockRefreshKey]);
 
   const activeCategory = categories.find((category) => category.slug === categorySlug);
 

@@ -157,7 +157,7 @@ test("storefront reviews aggregate persisted ratings and support bounded rating 
   }
 });
 
-test("product detail exposes size siblings in ascending package order and keeps sold-out options visible", async () => {
+test("product detail shows only sellable size siblings in ascending package order", async () => {
   const scope = await captureDatabaseFixtureScope(prisma);
   const suffix = randomUUID().slice(0, 8);
 
@@ -226,23 +226,79 @@ test("product detail exposes size siblings in ascending package order and keeps 
           sizeValue: "1",
           stockStatus: "IN_STOCK"
         },
-        {
-          id: unavailable.id,
-          sizeTier: "LARGE",
-          sizeUnit: "LITER",
-          sizeValue: "1.5",
-          stockStatus: "OUT_OF_STOCK"
-        }
-      ]
+       ]
     );
     assert.equal(
       detail.sizeVariants.some((variant) => variant.id === unavailable.id),
-      true
+      false
     );
     assert.equal(
       detail.sizeVariants.some((variant) => variant.id === otherVariant.id),
       false
     );
+  } finally {
+    await scope.cleanup();
+  }
+});
+
+test("sold-out stock is hidden from customer search and direct links until restocked", async () => {
+  const scope = await captureDatabaseFixtureScope(prisma);
+  const suffix = randomUUID().slice(0, 8);
+  try {
+    const { category } = await ensureCanonicalStorefrontCategory(0);
+    const soldOut = await createProduct(
+      category.id,
+      `Sold-out Product ${suffix}`,
+      `${suffix}-sold`,
+      0
+    );
+    const inStock = await createProduct(
+      category.id,
+      `Available Product ${suffix}`,
+      `${suffix}-ready`,
+      3
+    );
+    const list = async (availability: "all" | "in-stock" | "out-of-stock") =>
+      listStorefrontProducts({
+        availability,
+        category: category.slug,
+        page: 1,
+        pageSize: 24,
+        search: suffix
+      });
+    const before = await list("all");
+    assert.deepEqual(before.items.map((product) => product.id), [inStock.id]);
+    assert.equal(before.meta.totalItems, 1);
+    assert.deepEqual((await list("in-stock")).items.map((product) => product.id), [inStock.id]);
+    assert.deepEqual((await list("out-of-stock")).items, []);
+    await assert.rejects(getStorefrontProduct(soldOut.id), (error: unknown) => {
+      assert.equal((error as { statusCode?: number }).statusCode, 404);
+      return true;
+    });
+    const related = await listStorefrontRelatedProducts(inStock.id, 4);
+    assert.equal(related.sameCategory.some((item) => item.id === soldOut.id), false);
+
+    // Stock-in makes the existing active product visible again without toggling status.
+    await prisma.inventoryBatch.create({
+      data: {
+        batchCode: `RESTOCK-${suffix}`,
+        productId: soldOut.id,
+        quantityReceived: 2,
+        quantityRemaining: 2,
+        unitCost: "10.00",
+        status: "AVAILABLE"
+      }
+    });
+    await prisma.inventory.update({
+      where: { productId: soldOut.id },
+      data: { quantityOnHand: 2 }
+    });
+    const after = await list("all");
+    assert.deepEqual(
+      new Set(after.items.map((product) => product.id)),
+      new Set([soldOut.id, inStock.id])
+    );
+    assert.equal((await getStorefrontProduct(soldOut.id)).availableStock, 2);
   } finally {
     await scope.cleanup();
   }
@@ -379,14 +435,12 @@ test("related products stay strictly inside the current category", async () => {
     if (categoryFixture.created && fallbackCategoryFixture.created) {
       assert.deepEqual(
         result.sameCategory.map((product) => product.id),
-        [sameAvailable.id, sameUnavailable.id]
+        [sameAvailable.id]
       );
-      assert.ok((result.sameCategory[0]?.availableStock ?? 0) > 0);
-      assert.equal(result.sameCategory[1]?.availableStock, 0);
+      assert.ok(result.sameCategory.every((item) => item.availableStock > 0));
       assert.equal(result.sameCategory[0]?.averageRating, 4.5);
       assert.equal(result.sameCategory[0]?.reviewCount, 2);
-      assert.equal(result.sameCategory[1]?.averageRating, 0);
-      assert.equal(result.sameCategory[1]?.reviewCount, 0);
+      assert.equal(returnedIds.includes(sameUnavailable.id), false);
       assert.equal(returnedIds.includes(fallbackAvailable.id), false);
       assert.deepEqual(result.fallback, []);
     }

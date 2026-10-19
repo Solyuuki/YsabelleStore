@@ -77,7 +77,10 @@ const TRENDING_MINIMUM_AVERAGE_RATING = 4;
 /** The only customer-catalog visibility rule: sellable batches less active reservations.
  * Products are never deactivated or deleted when stock reaches zero.
  */
-function hasStorefrontStock(product: StorefrontProductRecord, reserved = 0) {
+function hasStorefrontStock(
+  product: Pick<StorefrontProductRecord, "inventoryBatches">,
+  reserved = 0
+) {
   return getSellableStockQuantity(product.inventoryBatches) > reserved;
 }
 
