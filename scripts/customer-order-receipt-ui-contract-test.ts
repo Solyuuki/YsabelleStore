@@ -10,8 +10,14 @@ import {
 } from "../frontend/src/utils/customerOrderReceipt";
 import type { StorefrontOrder } from "../frontend/src/types/storefront";
 
-const account = readFileSync(resolve(process.cwd(), "src/pages/customer/CustomerAccountPage.tsx"), "utf8");
-const css = readFileSync(resolve(process.cwd(), "src/styles/customer-account-premium.css"), "utf8");
+const account = readFileSync(
+  resolve(process.cwd(), "src/pages/customer/CustomerAccountPage.tsx"),
+  "utf8"
+);
+const css = readFileSync(
+  resolve(process.cwd(), "src/styles/customer-account-premium.css"),
+  "utf8"
+);
 const example = {
   id: "test-1",
   orderNumber: "YS-20261016-5EC2FF",
@@ -23,9 +29,27 @@ const example = {
   paymentStatus: "PAID",
   totalAmount: "81.00",
   items: [
-    { productId: "a", productName: "Active Bottle", quantity: 1, unitPrice: "25.00", totalAmount: "25.00" },
-    { productId: "b", productName: "Isotonic Drink", quantity: 1, unitPrice: "26.00", totalAmount: "26.00" },
-    { productId: "c", productName: "<script>alert('x')</script>", quantity: 1, unitPrice: "30.00", totalAmount: "30.00" }
+    {
+      productId: "a",
+      productName: "Active Bottle",
+      quantity: 1,
+      unitPrice: "25.00",
+      totalAmount: "25.00"
+    },
+    {
+      productId: "b",
+      productName: "Isotonic Drink",
+      quantity: 1,
+      unitPrice: "26.00",
+      totalAmount: "26.00"
+    },
+    {
+      productId: "c",
+      productName: "<script>alert('x')</script>",
+      quantity: 1,
+      unitPrice: "30.00",
+      totalAmount: "30.00"
+    }
   ]
 } as StorefrontOrder;
 
@@ -53,9 +77,9 @@ assert.match(account, /order.deliveryStatus === "DELIVERED"/);
 assert.match(css, /\.customer-account-history-card__receipt-actions button/);
 assert.match(css, /\.customer-account-history-card__amount/);
 assert.match(css, /@media \(max-width: 720px\)/);
-console.log("Customer order receipt and responsive order history contract passed.");
-
 const pdf = await createCustomerOrderReceiptPdf(example);
 const binary = new Uint8Array(pdf.output("arraybuffer"));
 assert.equal(String.fromCharCode(...binary.slice(0, 4)), "%PDF");
 assert.ok(binary.length > 1000, "Expected a nonempty customer PDF.");
+
+console.log("Customer order receipt and responsive order history contract passed.");

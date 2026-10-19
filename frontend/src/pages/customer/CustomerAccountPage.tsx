@@ -1176,7 +1176,9 @@ export function CustomerAccountPage({
                                   type="button"
                                 >
                                   <Download aria-hidden="true" size={16} />
-                                  {receiptDownloadId === order.id ? "Preparing PDF..." : "Download PDF"}
+                                  {receiptDownloadId === order.id
+                                    ? "Preparing PDF..."
+                                    : "Download PDF"}
                                 </button>
                               </div>
                             ) : (
@@ -1185,7 +1187,10 @@ export function CustomerAccountPage({
                               </p>
                             )}
                             {receiptError?.id === order.id ? (
-                              <p className="customer-account-history-card__receipt-error" role="alert">
+                              <p
+                                className="customer-account-history-card__receipt-error"
+                                role="alert"
+                              >
                                 {receiptError.message}
                               </p>
                             ) : null}

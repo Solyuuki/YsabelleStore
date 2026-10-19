@@ -65,11 +65,21 @@ export function customerOrderReceiptHtml(order: StorefrontOrder): string {
   const receipt = buildCustomerOrderReceipt(order);
   const safe = escapeReceiptHtml;
   const money = (amount: number) => safe(php.format(amount));
-  const rows = receipt.items.map((item) =>
-    "<tr><td>" + safe(item.name) + "</td><td class='num'>" + item.quantity +
-    "</td><td class='num'>" + money(item.unitPrice) +
-    "</td><td class='num'>" + money(item.lineTotal) + "</td></tr>"
-  ).join("");
+  const rows = receipt.items
+    .map((item) =>
+      [
+        "<tr><td>",
+        safe(item.name),
+        "</td><td class='num'>",
+        item.quantity,
+        "</td><td class='num'>",
+        money(item.unitPrice),
+        "</td><td class='num'>",
+        money(item.lineTotal),
+        "</td></tr>"
+      ].join("")
+    )
+    .join("");
   return [
     "<!doctype html><html lang='en'><head><meta charset='utf-8'>",
     "<meta name='viewport' content='width=device-width,initial-scale=1'>",
@@ -90,9 +100,14 @@ export function customerOrderReceiptHtml(order: StorefrontOrder): string {
     "<div class='ref'><p><strong>Order:</strong> " + safe(receipt.orderNumber) + "</p>",
     "<p><strong>Delivery ticket:</strong> " + safe(receipt.ticketNumber) + "</p>",
     "<p><strong>Ordered:</strong> " + safe(receipt.orderedAt) + "</p>",
-    receipt.deliveredAt ? "<p><strong>Delivered:</strong> " + safe(receipt.deliveredAt) + "</p>" : "",
-    "<p><strong>Payment:</strong> " + safe(receipt.paymentMethod) + " (" +
-    safe(receipt.paymentStatus) + ")</p></div>",
+    receipt.deliveredAt
+      ? "<p><strong>Delivered:</strong> " + safe(receipt.deliveredAt) + "</p>"
+      : "",
+    "<p><strong>Payment:</strong> " +
+      safe(receipt.paymentMethod) +
+      " (" +
+      safe(receipt.paymentStatus) +
+      ")</p></div>",
     "<table><thead><tr><th>Product</th><th class='num'>Qty</th><th class='num'>Unit</th>",
     "<th class='num'>Amount</th></tr></thead><tbody>" + rows + "</tbody></table>",
     "<div class='total'><span>Order total</span><span>" + money(receipt.total) + "</span></div>",
@@ -105,7 +120,9 @@ export function customerOrderReceiptHtml(order: StorefrontOrder): string {
 export function printCustomerOrderReceipt(order: StorefrontOrder): void {
   // Open during the click event to avoid popup blockers.
   const popup = window.open("", "_blank", "width=840,height=760");
-  if (!popup) throw new Error("Your browser blocked the receipt window. Allow pop-ups to print.");
+  if (!popup) {
+    throw new Error("Your browser blocked the receipt window. Allow pop-ups to print.");
+  }
   try {
     popup.document.open();
     popup.document.write(customerOrderReceiptHtml(order));
@@ -130,7 +147,6 @@ export async function createCustomerOrderReceiptPdf(order: StorefrontOrder) {
   const receipt = buildCustomerOrderReceipt(order);
   const { jsPDF } = await import("jspdf");
   const document = new jsPDF({ format: "a4", unit: "mm" });
-  const pageWidth = 210;
   const left = 17;
   const right = 193;
   let y = 22;
