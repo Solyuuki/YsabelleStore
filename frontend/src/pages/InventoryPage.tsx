@@ -605,7 +605,6 @@ export function InventoryPage() {
         }
       />
 
-
       <Card className="retail-inventory-list-card">
         <CardContent className="space-y-4 p-4 lg:p-5">
           <div
