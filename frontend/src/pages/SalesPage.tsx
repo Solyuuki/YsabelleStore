@@ -329,9 +329,7 @@ export function SalesPage() {
                   </p>
                   <p className="mt-2 text-sm text-slate-600">
                     {selectedAttribution?.label}:{" "}
-                    <span className="font-medium text-slate-950">
-                      {selectedAttribution?.name}
-                    </span>
+                    <span className="font-medium text-slate-950">{selectedAttribution?.name}</span>
                   </p>
                 </div>
 
