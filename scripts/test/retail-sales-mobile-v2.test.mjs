@@ -102,3 +102,19 @@ test("VAT breakdown only appears when the sale contains a durable tax snapshot",
   assert.match(printed, /NOT A BIR-REGISTERED VAT INVOICE/);
   assert.match(printed, /VATable sales \(net of VAT\)/);
 });
+
+// Only the compact Sales details UI hides the itemized tax categories.
+// The printed transaction summary retains the recorded BIR-style breakdown.
+test("Sales details show exactly one VAT row across desktop and mobile", () => {
+  for (const ui of [sales, modal]) {
+    assert.equal(ui.split("VAT (12%, included)").length - 1, 1);
+    assert.doesNotMatch(ui, />VATable sales \(net\)</);
+    assert.doesNotMatch(ui, />VAT-exempt sales</);
+    assert.doesNotMatch(ui, />Zero-rated sales</);
+    assert.match(ui, /vatAmount/);
+  }
+  const printed = read("frontend/src/components/receipt/RetailReceipt.tsx");
+  assert.match(printed, /VATable sales \(net of VAT\)/);
+  assert.match(printed, /VAT-exempt sales/);
+  assert.match(printed, /Zero-rated sales/);
+});
