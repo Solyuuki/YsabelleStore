@@ -28,6 +28,7 @@ type PosProductResult = {
   name: string;
   sku: string;
   sellingPrice: string;
+  vatCategory: ProductVatCategory;
   unit: string;
 };
 
@@ -171,6 +172,7 @@ export async function searchPosProducts(
         name: product.name,
         sku: product.sku,
         sellingPrice: product.sellingPrice.toString(),
+        vatCategory: product.vatCategory,
         unit: product.unit
       };
     }),

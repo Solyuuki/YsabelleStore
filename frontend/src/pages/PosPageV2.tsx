@@ -123,7 +123,8 @@ export function PosPage() {
     return {
       itemCount: cartLines.reduce((sum, line) => sum + line.quantity, 0),
       subtotal,
-      total: subtotal
+      total: subtotal,
+      vatReady: cartLines.every((line) => line.product.vatCategory !== "UNCLASSIFIED")
     };
   }, [cartLines]);
 
@@ -836,6 +837,11 @@ export function PosPage() {
                           <p className="mt-1 text-xs text-slate-500">
                             {line.product.barcode ?? line.product.sku}
                           </p>
+                          {line.product.vatCategory === "UNCLASSIFIED" ? (
+                            <p className="mt-1 text-xs font-semibold text-amber-800">
+                              VAT classification required before checkout
+                            </p>
+                          ) : null}
                         </div>
                         <Button
                           aria-label={`Remove ${line.product.name}`}
@@ -916,8 +922,17 @@ export function PosPage() {
                     </div>
                   </div>
 
+                  {!cartSummary.vatReady ? (
+                    <p className="mt-2 text-xs font-semibold text-amber-800">
+                      Checkout requires approved VAT categories for every product.
+                    </p>
+                  ) : null}
                   <div className="mt-3 grid grid-cols-2 gap-3">
-                    <Button disabled={isCheckingOut} type="button" onClick={openCashPayment}>
+                    <Button
+                      disabled={isCheckingOut || !cartSummary.vatReady}
+                      type="button"
+                      onClick={openCashPayment}
+                    >
                       Cash · {currencyFormatter.format(cartSummary.total)}
                     </Button>
                     <Button
