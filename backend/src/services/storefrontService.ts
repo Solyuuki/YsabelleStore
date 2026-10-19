@@ -764,7 +764,9 @@ export async function listCustomerFavoriteProducts(customerAccountId: string) {
   });
   const serialized = await serializeStorefrontProducts(products);
   const productMap = new Map(
-    serialized.filter((product) => product.availableStock > 0).map((product) => [product.id, product])
+    serialized
+      .filter((product) => product.availableStock > 0)
+      .map((product) => [product.id, product])
   );
 
   return favorites.flatMap((favorite) => {

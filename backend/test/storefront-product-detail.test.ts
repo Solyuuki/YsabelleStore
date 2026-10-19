@@ -269,7 +269,10 @@ test("sold-out stock is hidden from customer search and direct links until resto
     const before = await list("all");
     assert.deepEqual(before.items.map((product) => product.id), [inStock.id]);
     assert.equal(before.meta.totalItems, 1);
-    assert.deepEqual((await list("in-stock")).items.map((product) => product.id), [inStock.id]);
+    assert.deepEqual(
+      (await list("in-stock")).items.map((product) => product.id),
+      [inStock.id]
+    );
     assert.deepEqual((await list("out-of-stock")).items, []);
     await assert.rejects(getStorefrontProduct(soldOut.id), (error: unknown) => {
       assert.equal((error as { statusCode?: number }).statusCode, 404);
