@@ -69,6 +69,13 @@ export const productUnitSchema = z.enum([
   "MILLILITER"
 ]);
 
+export const productVatCategorySchema = z.enum([
+  "UNCLASSIFIED",
+  "VATABLE",
+  "VAT_EXEMPT",
+  "ZERO_RATED"
+]);
+
 export const productStatusSchema = z.enum(["ACTIVE", "INACTIVE", "DISCONTINUED"]);
 export const catalogQualityStatusSchema = z.enum(["APPROVED", "NEEDS_REVIEW", "REJECTED"]);
 export const productSizeUnitSchema = z.enum(["MILLILITER", "LITER", "GRAM", "KILOGRAM", "PIECE"]);
@@ -99,6 +106,7 @@ export const createProductSchema = z.object({
 });
 
 export const updateProductSchema = z.object({
+  vatCategory: productVatCategorySchema.optional(),
   name: z.string().trim().min(1).max(160).optional(),
   sku: z.string().trim().min(1).max(80).optional(),
   barcode: nullableOptionalTextSchema(80),

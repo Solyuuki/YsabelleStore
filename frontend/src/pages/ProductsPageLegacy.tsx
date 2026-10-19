@@ -2914,6 +2914,7 @@ function ProductDetailsDialog({
     name: "",
     reorderLevel: "0",
     sellingPrice: "",
+    vatCategory: "UNCLASSIFIED" as ProductRecord["vatCategory"],
     sizeUnit: "" as NonNullable<ProductRecord["sizeUnit"]> | "",
     sizeValue: "",
     sku: "",
@@ -2943,6 +2944,7 @@ function ProductDetailsDialog({
       isStorefrontVisible: product.isStorefrontVisible,
       reorderLevel: String(product.reorderLevel),
       sellingPrice: product.sellingPrice,
+      vatCategory: product.vatCategory ?? "UNCLASSIFIED",
       targetStockLevel: String(product.targetStockLevel),
       authorizeTargetStockPolicy: false,
       unit: product.unit,
@@ -3060,6 +3062,7 @@ function ProductDetailsDialog({
         isStorefrontVisible: form.isStorefrontVisible,
         reorderLevel: Number(form.reorderLevel),
         sellingPrice: form.sellingPrice.trim(),
+        vatCategory: form.vatCategory,
         targetStockLevel: Number(form.targetStockLevel),
         authorizeTargetStockPolicy: form.authorizeTargetStockPolicy,
         unit: form.unit,
@@ -3378,6 +3381,27 @@ function ProductDetailsDialog({
                         setForm((current) => ({ ...current, sellingPrice: event.target.value }))
                       }
                     />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="edit-vat-category">VAT category (Owner verified)</Label>
+                    <Select
+                      id="edit-vat-category"
+                      value={form.vatCategory}
+                      onChange={(event) =>
+                        setForm((current) => ({
+                          ...current,
+                          vatCategory: event.target.value as ProductRecord["vatCategory"]
+                        }))
+                      }
+                    >
+                      <option value="UNCLASSIFIED">Not yet reviewed</option>
+                      <option value="VATABLE">VATable (12%, included in price)</option>
+                      <option value="VAT_EXEMPT">VAT exempt</option>
+                      <option value="ZERO_RATED">Zero-rated</option>
+                    </Select>
+                    <p className="text-xs text-slate-500">
+                      Verify tax category with BIR records. Future sales only.
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="edit-reorder">Reorder level</Label>

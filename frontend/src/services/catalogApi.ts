@@ -36,6 +36,7 @@ export type ProductInventorySummary = {
 };
 
 export type ProductRecord = {
+  vatCategory: "UNCLASSIFIED" | "VATABLE" | "VAT_EXEMPT" | "ZERO_RATED";
   id: string;
   name: string;
   sku: string;
@@ -598,6 +599,7 @@ export async function updateProduct(
       | "isStorefrontVisible"
       | "costPrice"
       | "sellingPrice"
+      | "vatCategory"
       | "reorderLevel"
       | "targetStockLevel"
     >

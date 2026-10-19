@@ -9,7 +9,7 @@ Primary BIR sources:
 ## Completed technical foundation (not yet live)
 
 - VAT category on each product: UNCLASSIFIED, VATABLE, VAT_EXEMPT, ZERO_RATED. Existing catalog defaults to UNCLASSIFIED; never assume all groceries are standard-rated.
-- Unclassified POS products fail validation **before inventory mutation**. **DO NOT deploy** until all POS-sellable products are correctly reviewed/classified with an authorized workflow.
+- Checkout does not block unclassified products; VAT figures for affected sales are NULL (unknown), never assumed 12%.
 - Prices are VAT inclusive: net = VATable gross / 1.12 rounded once at sale level; VAT = VATable gross - net. Checkout price, cash, and inventory flows remain unchanged. There is no active generic POS discount control or Discount label in Retail/Sales/print UI. The existing backend discount field stays at 0 for new POS sales; a nonzero amount recorded on a historical sale is displayed solely as a read-only "Historical adjustment" to preserve the original receipt arithmetic. No recorded transaction is rewritten.
 - The sale stores VATable net, VAT amount, exempt gross, zero-rated gross and immutable per-line tax classification atomically with checkout. Retry/idempotent paths return the stored amounts.
 - Legacy sales keep NULL tax snapshots (unknown); reprinting does not invent VAT figures.
@@ -19,7 +19,7 @@ Primary BIR sources:
 
 1. Collect the actual BIR-registered legal seller name, VAT TIN and branch code, registered address, and registered/approved POS or invoicing-system details. **Never invent TIN, permit, ATP or approval.**
 2. Implement registered invoice number series, issuance/void/reprint audit, buyer registered name/TIN/address capture where required, proper approved invoice format and serial range, and invoice archival. A POS sale number alone is NOT evidence of an approved invoice series.
-3. Have the business/accountant classify all current products and review exemptions/zero-rated transactions. Add an authenticated category-approval workflow; no mass default VATable assignment.
+3. Have the business/accountant classify all current products and review exemptions/zero-rated transactions. Owner-only category editing is available; no automatic VAT assignment.
 4. Test approved BIR VAT Invoice against the registered form and confirm BIR registration/permission for the applicable CRM/POS/CAS environment with the appropriate authority.
 5. Back up first; rehearse additive Prisma migration, rollback strategy, stock concurrency and invoice QA against a disposable environment. Never reset a production database.
 6. Run exact-head CI, unit tests, printer testing, POS and Storefront concurrency, retry, and old-sale reprint evidence. Do not promote branch until gates are green and owner accepts.
