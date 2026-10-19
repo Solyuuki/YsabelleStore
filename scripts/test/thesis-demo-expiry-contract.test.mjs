@@ -37,7 +37,10 @@ test("new thesis demo opening, adjustment and reconciliation batches retain an e
   assert.match(generator, /THESIS_DEMO_EXPIRIES_ENABLED === "false"/);
   assert.match(stockDomain, /getThesisDemoExpiryForNewBatch\(input\.productId, batchCode\)/);
   assert.match(stockDomain, /getThesisDemoExpiryForNewBatch\(product\.id, batchCode\)/);
-  assert.match(stockDomain, /getThesisDemoExpiryForNewBatch\(input\.productId, identifiers\.batchCode\)/);
+  assert.match(
+    stockDomain,
+    /getThesisDemoExpiryForNewBatch\(input\.productId, identifiers\.batchCode\)/
+  );
   assert.match(stockDomain, /const expiresAt = input\.expiresAt \?\? null/);
   assert.match(stockDomain, /expiresAt,\s+productId: product\.id/);
 });
