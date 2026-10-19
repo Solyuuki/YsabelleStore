@@ -176,7 +176,7 @@ export function RetailReceipt({ className, compact = false, receipt }: RetailRec
             <p className="text-xs font-medium text-amber-800">
               Historical sale: VAT category and tax amounts were not recorded.
             </p>
-          )
+          )}
           <TotalsRow label="Item count" value={itemCountLabel} />
           <TotalsRow label="Cash received" value={cashReceivedValue} />
           <TotalsRow label="Change" value={changeValue} />
