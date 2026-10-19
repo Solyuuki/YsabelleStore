@@ -80,7 +80,7 @@ test("Print dialog Close button remains readable in dark mode and official paper
   assert.match(printPaper, /\.receipt-paper\s*\{[\s\S]*?background: #ffffff;/);
 });
 
-test("Retail sales and print receipts exclude unsupported Discount labels while retaining old adjustments", () => {
+test("Retail receipts omit unsupported Discount labels but retain historical adjustments", () => {
   const printed = read("frontend/src/components/receipt/RetailReceipt.tsx");
   const pos = read("frontend/src/pages/PosPageV2.tsx");
   assert.doesNotMatch(sales, />Discount</);
