@@ -246,18 +246,8 @@ test("sold-out stock is hidden from customer search and direct links until resto
   const suffix = randomUUID().slice(0, 8);
   try {
     const { category } = await ensureCanonicalStorefrontCategory(0);
-    const soldOut = await createProduct(
-      category.id,
-      `Sold-out Product ${suffix}`,
-      `${suffix}-sold`,
-      0
-    );
-    const inStock = await createProduct(
-      category.id,
-      `Available Product ${suffix}`,
-      `${suffix}-ready`,
-      3
-    );
+    const soldOut = await createProduct(category.id, `Sold-out ${suffix}`, `${suffix}-sold`, 0);
+    const inStock = await createProduct(category.id, `Available ${suffix}`, `${suffix}-ready`, 3);
     const list = async (availability: "all" | "in-stock" | "out-of-stock") =>
       listStorefrontProducts({
         availability,
@@ -269,10 +259,7 @@ test("sold-out stock is hidden from customer search and direct links until resto
     const before = await list("all");
     assert.deepEqual(before.items.map((product) => product.id), [inStock.id]);
     assert.equal(before.meta.totalItems, 1);
-    assert.deepEqual(
-      (await list("in-stock")).items.map((product) => product.id),
-      [inStock.id]
-    );
+    assert.deepEqual((await list("in-stock")).items.map((product) => product.id), [inStock.id]);
     assert.deepEqual((await list("out-of-stock")).items, []);
     await assert.rejects(getStorefrontProduct(soldOut.id), (error: unknown) => {
       assert.equal((error as { statusCode?: number }).statusCode, 404);

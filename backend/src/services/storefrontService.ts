@@ -483,23 +483,23 @@ export async function listStorefrontProducts(query: StorefrontProductQuery) {
     products.map((product) => product.id)
   );
   // A legacy "out-of-stock" URL cannot expose a sold-out product.
-  const visibleProducts =
-    query.availability === "out-of-stock"
-      ? []
-      : products.filter((product) =>
-          hasStorefrontStock(product, reservations.get(product.id) ?? 0)
-        );
+  const inStockProducts = products.filter((product) =>
+    hasStorefrontStock(product, reservations.get(product.id) ?? 0)
+  );
+  const visibleProducts = query.availability === "out-of-stock" ? [] : inStockProducts;
   const totalItems = visibleProducts.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / query.pageSize));
   const page = Math.min(query.page, totalPages);
   const start = (page - 1) * query.pageSize;
   const pageProducts = visibleProducts.slice(start, start + query.pageSize);
 
+  // Recheck after reading review data in case another checkout reserved the last unit.
+  const pageItems = (await serializeStorefrontProducts(pageProducts)).filter(
+    (product) => product.availableStock > 0
+  );
+
   return {
-    // Recheck after reading review data in case another checkout reserved the last unit.
-    items: (await serializeStorefrontProducts(pageProducts)).filter(
-      (product) => product.availableStock > 0
-    ),
+    items: pageItems,
     meta: { page, pageSize: query.pageSize, totalItems, totalPages }
   };
 }
@@ -763,11 +763,8 @@ export async function listCustomerFavoriteProducts(customerAccountId: string) {
     where: storefrontProductWhere({ id: { in: productIds } })
   });
   const serialized = await serializeStorefrontProducts(products);
-  const productMap = new Map(
-    serialized
-      .filter((product) => product.availableStock > 0)
-      .map((product) => [product.id, product])
-  );
+  const sellableFavorites = serialized.filter((product) => product.availableStock > 0);
+  const productMap = new Map(sellableFavorites.map((product) => [product.id, product]));
 
   return favorites.flatMap((favorite) => {
     const product = productMap.get(favorite.productId);
@@ -970,11 +967,13 @@ export async function listStorefrontRelatedProducts(productId: string, limit = 4
     })
     .slice(0, limit);
 
+  const availableRelated = (await serializeStorefrontProducts(sameCategory)).filter(
+    (candidate) => candidate.availableStock > 0
+  );
+
   return {
     category: product.category,
-    sameCategory: (await serializeStorefrontProducts(sameCategory)).filter(
-      (candidate) => candidate.availableStock > 0
-    ),
+    sameCategory: availableRelated,
     fallback: []
   };
 }
