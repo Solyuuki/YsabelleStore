@@ -299,13 +299,6 @@ export async function checkoutPosSale(input: {
           });
         }
 
-        if (product.vatCategory === ProductVatCategory.UNCLASSIFIED) {
-          throw new HttpError(422, "Product VAT category must be approved before checkout.", {
-            code: "POS_PRODUCT_VAT_CLASSIFICATION_REQUIRED",
-            details: { productId: product.id, sku: product.sku }
-          });
-        }
-
         const unitPrice = toDecimal(product.sellingPrice);
 
         if (unitPrice.lessThan(0)) {
@@ -332,12 +325,17 @@ export async function checkoutPosSale(input: {
       // The generic discount control is not yet supported for new POS sales.
       const discountAmount = new Prisma.Decimal(0);
       const totalAmount = subtotalAmount.sub(discountAmount);
-      const vatBreakdown = calculatePosVatBreakdown(
-        checkoutLines.map((line) => ({
-          grossAmount: line.unitPrice.mul(line.quantity),
-          vatCategory: line.product.vatCategory
-        }))
-      );
+      // Unknown classification must never become fictitious 12% VAT or block a sale.
+      const vatBreakdown = checkoutLines.some(
+        (line) => line.product.vatCategory === ProductVatCategory.UNCLASSIFIED
+      )
+        ? null
+        : calculatePosVatBreakdown(
+            checkoutLines.map((line) => ({
+              grossAmount: line.unitPrice.mul(line.quantity),
+              vatCategory: line.product.vatCategory
+            }))
+          );
       const cashReceived =
         input.cashReceived === undefined ? totalAmount : toDecimal(input.cashReceived);
 
@@ -357,10 +355,10 @@ export async function checkoutPosSale(input: {
         data: {
           cashierId: input.cashierId,
           discountAmount,
-          vatableSalesAmount: vatBreakdown.vatableSalesAmount,
-          vatAmount: vatBreakdown.vatAmount,
-          vatExemptSalesAmount: vatBreakdown.vatExemptSalesAmount,
-          zeroRatedSalesAmount: vatBreakdown.zeroRatedSalesAmount,
+          vatableSalesAmount: vatBreakdown?.vatableSalesAmount ?? null,
+          vatAmount: vatBreakdown?.vatAmount ?? null,
+          vatExemptSalesAmount: vatBreakdown?.vatExemptSalesAmount ?? null,
+          zeroRatedSalesAmount: vatBreakdown?.zeroRatedSalesAmount ?? null,
           notes: input.notes?.trim() || null,
           saleDate,
           saleNumber,

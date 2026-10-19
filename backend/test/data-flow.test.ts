@@ -540,6 +540,32 @@ test(
   }
 );
 
+test(
+  "Unclassified POS goods check out safely without inventing VAT",
+  { concurrency: false },
+  async () => {
+    const product = await createProduct(buildProductInput());
+    await addStock(product.id, {
+      quantity: 1,
+      batchCode: uniqueLabel("VAT-UNKNOWN"),
+      expiresAt: null
+    });
+    const cashier = await createTestCashier();
+    const result = await checkoutPosSale({
+      cashierId: cashier.id,
+      cashierName: cashier.name,
+      items: [{ productId: product.id, quantity: 1 }]
+    });
+    assert.equal(result.sale.vatAmount, null);
+    assert.equal(result.sale.vatableSalesAmount, null);
+    const saved = await prisma.sale.findUniqueOrThrow({ where: { id: result.sale.id } });
+    assert.equal(saved.vatAmount, null);
+    const state = await getStockState(product.id);
+    assert.equal(state.inventory.quantityOnHand, 0);
+    assertInvariant(state);
+  }
+);
+
 test("Sales list preserves receipt fields for reprint", { concurrency: false }, async () => {
   const product = await createProduct(buildProductInput());
   await prisma.product.update({

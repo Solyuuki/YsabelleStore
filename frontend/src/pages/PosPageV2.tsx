@@ -123,8 +123,7 @@ export function PosPage() {
     return {
       itemCount: cartLines.reduce((sum, line) => sum + line.quantity, 0),
       subtotal,
-      total: subtotal,
-      vatReady: cartLines.every((line) => line.product.vatCategory !== "UNCLASSIFIED")
+      total: subtotal
     };
   }, [cartLines]);
 
@@ -838,8 +837,8 @@ export function PosPage() {
                             {line.product.barcode ?? line.product.sku}
                           </p>
                           {line.product.vatCategory === "UNCLASSIFIED" ? (
-                            <p className="mt-1 text-xs font-semibold text-amber-800">
-                              VAT classification required before checkout
+                            <p className="mt-1 text-xs text-amber-700">
+                              VAT details pending review
                             </p>
                           ) : null}
                         </div>
@@ -922,14 +921,14 @@ export function PosPage() {
                     </div>
                   </div>
 
-                  {!cartSummary.vatReady ? (
-                    <p className="mt-2 text-xs font-semibold text-amber-800">
-                      Checkout requires approved VAT categories for every product.
+                  {cartLines.some((line) => line.product.vatCategory === "UNCLASSIFIED") ? (
+                    <p className="mt-2 text-xs text-amber-700">
+                      Checkout remains available. VAT classification is pending Owner review.
                     </p>
                   ) : null}
                   <div className="mt-3 grid grid-cols-2 gap-3">
                     <Button
-                      disabled={isCheckingOut || !cartSummary.vatReady}
+                      disabled={isCheckingOut}
                       type="button"
                       onClick={openCashPayment}
                     >

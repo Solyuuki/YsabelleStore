@@ -88,7 +88,7 @@ export function SalesMobileReceiptDetails({ sale }: { sale: PosSale }) {
             </div>
           </>
         ) : (
-          <p>VAT breakdown unavailable for this historical sale.</p>
+          <p>VAT was not recorded for this transaction.</p>
         )}
         <div className="ys-sales-mobile-grand-total">
           <strong>Total</strong>
