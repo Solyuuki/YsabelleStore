@@ -907,9 +907,22 @@
   gap: 12px;
 }
 
-.customer-account-history-card__summary > strong {
+.customer-account-history-card__amount {
+  display: grid;
+  flex: none;
+  gap: 2px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.customer-account-history-card__amount small {
+  color: #7a8499;
+  font-size: 0.68rem;
+}
+
+.customer-account-history-card__amount strong {
   color: #202a42;
-  font-size: 0.86rem;
+  font-size: 0.9rem;
 }
 
 .customer-account-history-card__summary > svg {
@@ -966,6 +979,86 @@
   color: #25304a;
 }
 
+/* Customer-only receipt controls: no nested action inside the summary toggle. */
+.customer-account-history-card__total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid rgba(113, 104, 174, 0.18);
+  padding-top: 12px;
+  color: #69748d;
+  font-size: 0.85rem;
+}
+
+.customer-account-history-card__total strong {
+  color: #202a42;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.customer-account-history-card__receipt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.customer-account-history-card__receipt-actions button {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border: 1px solid rgba(113, 104, 174, 0.26);
+  border-radius: 10px;
+  background: rgba(118, 100, 221, 0.1);
+  color: #43368d;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.customer-account-history-card__receipt-actions button:hover {
+  background: rgba(118, 100, 221, 0.19);
+}
+
+.customer-account-history-card__receipt-actions button:focus-visible {
+  outline: 3px solid #8b78e6;
+  outline-offset: 2px;
+}
+
+.customer-account-history-card__receipt-actions button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.customer-account-history-card__closed-note,
+.customer-account-history-card__receipt-error {
+  margin: 0;
+  color: #69748d;
+  font-size: 0.78rem;
+}
+
+.customer-account-history-card__receipt-error {
+  color: #b42335;
+}
+
+:root.dark .customer-account-history-card__amount strong,
+:root.dark .customer-account-history-card__total strong {
+  color: #f4f6ff;
+}
+
+:root.dark .customer-account-history-card__receipt-actions button {
+  border-color: rgba(184, 188, 236, 0.33);
+  background: rgba(140, 128, 210, 0.17);
+  color: #e8e4ff;
+}
+
+:root.dark .customer-account-history-card__receipt-actions button:hover {
+  background: rgba(140, 128, 210, 0.27);
+}
+
 @media (max-width: 720px) {
   .customer-account-inline-action-form {
     grid-template-columns: 1fr;
@@ -978,6 +1071,14 @@
   .customer-account-history-card__summary {
     justify-content: flex-start;
     flex-wrap: wrap;
+  }
+
+  .customer-account-history-card__amount {
+    margin-left: auto;
+  }
+
+  .customer-account-history-card__receipt-actions button {
+    flex: 1 1 145px;
   }
 }
 

@@ -1,6 +1,8 @@
 import {
   CheckCircle2,
   ChevronDown,
+  Download,
+  Printer,
   CreditCard,
   Heart,
   History,
@@ -54,6 +56,10 @@ import {
 import type { CustomerSecuritySummary, CustomerSessionSummary } from "@/types/customerAccount";
 import { EMPTY_CUSTOMER_ADDRESS, type CustomerAddress } from "@/types/customerAddress";
 import type { StorefrontOrder } from "@/types/storefront";
+import {
+  downloadCustomerOrderReceipt,
+  printCustomerOrderReceipt
+} from "@/utils/customerOrderReceipt";
 
 const orderDateFormatter = new Intl.DateTimeFormat("en-PH", {
   dateStyle: "medium",
@@ -170,6 +176,8 @@ export function CustomerAccountPage({
   const [confirmingOrder, setConfirmingOrder] = useState<string | null>(null);
   const [resumingPaymentOrder, setResumingPaymentOrder] = useState<string | null>(null);
   const [historyPage, setHistoryPage] = useState(1);
+  const [receiptDownloadId, setReceiptDownloadId] = useState<string | null>(null);
+  const [receiptError, setReceiptError] = useState<{ id: string; message: string } | null>(null);
   // Bound the Order History list to three compact cards per page on all viewports.
   // Active deliveries retain their full live tracking; archived orders stay paginated.
   const historyPageSize = 3;
@@ -433,6 +441,35 @@ export function CustomerAccountPage({
     } catch (reason) {
       setOrdersError(errorMessage(reason, "PayMongo checkout could not be reopened."));
       setResumingPaymentOrder(null);
+    }
+  }
+
+  async function handleDownloadReceipt(order: StorefrontOrder) {
+    if (order.deliveryStatus !== "DELIVERED" || receiptDownloadId) return;
+    setReceiptError(null);
+    setReceiptDownloadId(order.id);
+    try {
+      await downloadCustomerOrderReceipt(order);
+    } catch (reason) {
+      setReceiptError({
+        id: order.id,
+        message: errorMessage(reason, "Receipt PDF could not be downloaded. Please try again.")
+      });
+    } finally {
+      setReceiptDownloadId(null);
+    }
+  }
+
+  function handlePrintReceipt(order: StorefrontOrder) {
+    if (order.deliveryStatus !== "DELIVERED") return;
+    setReceiptError(null);
+    try {
+      printCustomerOrderReceipt(order);
+    } catch (reason) {
+      setReceiptError({
+        id: order.id,
+        message: errorMessage(reason, "Could not open the receipt. Allow pop-ups and try again.")
+      });
     }
   }
 
@@ -1082,7 +1119,10 @@ export function CustomerAccountPage({
                               <span>
                                 {order.itemCount} item{order.itemCount === 1 ? "" : "s"}
                               </span>
-                              <strong>{formatCurrency(Number(order.totalAmount))}</strong>
+                              <span className="customer-account-history-card__amount">
+                                <small>Total</small>
+                                <strong>{formatCurrency(Number(order.totalAmount))}</strong>
+                              </span>
                               <span
                                 className={`customer-delivery-status customer-delivery-status--${order.deliveryStatus.toLowerCase()}`}
                               >
@@ -1115,6 +1155,40 @@ export function CustomerAccountPage({
                                 </li>
                               ))}
                             </ul>
+                            <div className="customer-account-history-card__total">
+                              <span>Order total</span>
+                              <strong>{formatCurrency(Number(order.totalAmount))}</strong>
+                            </div>
+                            {order.deliveryStatus === "DELIVERED" ? (
+                              <div className="customer-account-history-card__receipt-actions">
+                                <button
+                                  aria-label={`Print receipt for order ${order.orderNumber}`}
+                                  onClick={() => handlePrintReceipt(order)}
+                                  type="button"
+                                >
+                                  <Printer aria-hidden="true" size={16} />
+                                  Print receipt
+                                </button>
+                                <button
+                                  aria-label={`Download PDF receipt for order ${order.orderNumber}`}
+                                  disabled={receiptDownloadId !== null}
+                                  onClick={() => void handleDownloadReceipt(order)}
+                                  type="button"
+                                >
+                                  <Download aria-hidden="true" size={16} />
+                                  {receiptDownloadId === order.id ? "Preparing PDF..." : "Download PDF"}
+                                </button>
+                              </div>
+                            ) : (
+                              <p className="customer-account-history-card__closed-note">
+                                Cancelled order — no sales receipt was issued.
+                              </p>
+                            )}
+                            {receiptError?.id === order.id ? (
+                              <p className="customer-account-history-card__receipt-error" role="alert">
+                                {receiptError.message}
+                              </p>
+                            ) : null}
                           </div>
                         </details>
                       ))}
