@@ -32,6 +32,7 @@ export const listStorefrontCategoriesController: RequestHandler = async (
 ) => {
   try {
     const categories = await listStorefrontCategories();
+    response.setHeader("Cache-Control", "private, no-store");
     response.json(createSuccessResponse("Storefront categories loaded.", categories));
   } catch (error) {
     next(error);
@@ -45,6 +46,7 @@ export const listStorefrontProductsController: RequestHandler = async (request, 
       code: "INVALID_STOREFRONT_QUERY"
     });
     const result = await listStorefrontProducts(query);
+    response.setHeader("Cache-Control", "private, no-store");
     response.json(createSuccessResponse("Storefront products loaded.", result.items, result.meta));
   } catch (error) {
     next(error);
@@ -58,6 +60,7 @@ export const listStorefrontMerchandisingController: RequestHandler = async (
 ) => {
   try {
     const merchandising = await listStorefrontMerchandising();
+    response.setHeader("Cache-Control", "private, no-store");
     response.json(createSuccessResponse("Storefront merchandising loaded.", merchandising));
   } catch (error) {
     next(error);
@@ -169,6 +172,7 @@ export const listStorefrontRelatedProductsController: RequestHandler = async (
       code: "INVALID_STOREFRONT_RELATED_QUERY"
     });
     const related = await listStorefrontRelatedProducts(params.id, query.limit);
+    response.setHeader("Cache-Control", "private, no-store");
     response.json(createSuccessResponse("Related storefront products loaded.", related));
   } catch (error) {
     next(error);

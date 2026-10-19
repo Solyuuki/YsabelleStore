@@ -23,7 +23,7 @@ const SEARCH_DEBOUNCE_MS = 350;
 const CATALOG_EXIT_DURATION_MS = 120;
 const CATALOG_REFRESH_LOADER_DELAY_MS = 180;
 const CATALOG_ENTER_DURATION_MS = 260;
-type AvailabilityFilter = "all" | "in-stock" | "out-of-stock";
+type AvailabilityFilter = "all" | "in-stock";
 type CatalogTransitionPhase = "idle" | "exiting" | "entering";
 
 export function ShopPage({
@@ -38,11 +38,7 @@ export function ShopPage({
   const params = new URL(location, window.location.origin).searchParams;
   const searchParam = params.get("search") ?? "";
   const availabilityParam: AvailabilityFilter =
-    params.get("availability") === "out-of-stock"
-      ? "out-of-stock"
-      : params.get("availability") === "in-stock"
-        ? "in-stock"
-        : "all";
+    params.get("availability") === "in-stock" ? "in-stock" : "all";
   const pageParam = Math.max(1, Number(params.get("page")) || 1);
   const [search, setSearch] = useState(searchParam);
   const [categoriesExpanded, setCategoriesExpanded] = useState(false);
@@ -411,20 +407,15 @@ export function ShopPage({
                   onChange={(event) => applyAvailability(event.target.value as AvailabilityFilter)}
                   value={availabilityParam}
                 >
-                  <option value="all">All availability</option>
+                  <option value="all">Available products</option>
                   <option value="in-stock">In stock</option>
-                  <option value="out-of-stock">Out of stock</option>
                 </select>
               </label>
               <button
                 aria-controls="shop-availability-options"
                 aria-expanded={availabilityOpen}
                 aria-label={`Availability: ${
-                  availabilityParam === "all"
-                    ? "All availability"
-                    : availabilityParam === "in-stock"
-                      ? "In stock"
-                      : "Out of stock"
+                  availabilityParam === "all" ? "Available products" : "In stock"
                 }. Choose filter`}
                 className="customer-select__mobile-trigger"
                 onClick={toggleAvailability}
@@ -447,9 +438,8 @@ export function ShopPage({
                 >
                   {(
                     [
-                      ["all", "All availability"],
-                      ["in-stock", "In stock"],
-                      ["out-of-stock", "Out of stock"]
+                      ["all", "Available products"],
+                      ["in-stock", "In stock"]
                     ] as const
                   ).map(([value, label]) => (
                     <button

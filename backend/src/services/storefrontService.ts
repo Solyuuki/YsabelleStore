@@ -71,9 +71,15 @@ type StorefrontOrderContext = {
 };
 
 const STOREFRONT_MERCHANDISING_LIMIT = 4;
-const STOREFRONT_RELATED_CANDIDATE_MULTIPLIER = 3;
 const TRENDING_WINDOW_DAYS = 30;
 const TRENDING_MINIMUM_AVERAGE_RATING = 4;
+
+/** The only customer-catalog visibility rule: sellable batches less active reservations.
+ * Products are never deactivated or deleted when stock reaches zero.
+ */
+function hasStorefrontStock(product: StorefrontProductRecord, reserved = 0) {
+  return getSellableStockQuantity(product.inventoryBatches) > reserved;
+}
 
 function stockStatus(availableStock: number, reorderLevel: number) {
   if (availableStock <= 0) return "OUT_OF_STOCK" as const;
@@ -196,16 +202,20 @@ async function listStorefrontSizeVariants(product: StorefrontProductRecord) {
   const selectedSize = resolveProductSize(product);
   if (!selectedSize) return [];
 
-  const candidates = (
-    await prisma.product.findMany({
-      include: storefrontProductInclude,
-      orderBy: [{ name: "asc" }, { id: "asc" }],
-      where: storefrontProductWhere({
-        categoryId: product.categoryId,
-        ...(product.familyId ? { OR: [{ familyId: product.familyId }, { familyId: null }] } : {})
-      })
+  const possibleVariants = await prisma.product.findMany({
+    include: storefrontProductInclude,
+    orderBy: [{ name: "asc" }, { id: "asc" }],
+    where: storefrontProductWhere({
+      categoryId: product.categoryId,
+      ...(product.familyId ? { OR: [{ familyId: product.familyId }, { familyId: null }] } : {})
     })
-  )
+  });
+  const reservations = await activeReservationsByProduct(
+    prisma,
+    possibleVariants.map((candidate) => candidate.id)
+  );
+  const candidates = possibleVariants
+    .filter((candidate) => hasStorefrontStock(candidate, reservations.get(candidate.id) ?? 0))
     .map((candidate) => {
       const size = resolveProductSize(candidate);
       if (!size || !isSameSizeVariantFamily(product, candidate)) return null;
@@ -405,18 +415,32 @@ export async function listStorefrontCategories() {
       description: true,
       activeCoverAssetId: true,
       coverPosition: true,
-      coverStatus: true,
-      _count: {
-        select: { products: { where: categoryProductWhere } }
-      }
+      coverStatus: true
     }
   });
+  if (categories.length === 0) return [];
+
+  // Category counts must match the *visible* catalog, not the total database rows.
+  const eligibleProducts = await prisma.product.findMany({
+    include: { inventoryBatches: true },
+    where: storefrontProductWhere({ categoryId: { in: categories.map((item) => item.id) } })
+  });
+  const reservations = await activeReservationsByProduct(
+    prisma,
+    eligibleProducts.map((product) => product.id)
+  );
+  const counts = new Map<string, number>();
+  for (const product of eligibleProducts) {
+    if (!hasStorefrontStock(product, reservations.get(product.id) ?? 0)) continue;
+    counts.set(product.categoryId, (counts.get(product.categoryId) ?? 0) + 1);
+  }
 
   return categories
+    .filter((category) => (counts.get(category.id) ?? 0) > 0)
     .sort((left, right) => compareStorefrontCategoryNames(left.name, right.name))
-    .map(({ _count, activeCoverAssetId, coverPosition, coverStatus, ...category }) => ({
+    .map(({ activeCoverAssetId, coverPosition, coverStatus, ...category }) => ({
       ...category,
-      productCount: _count.products,
+      productCount: counts.get(category.id) ?? 0,
       storefrontCover:
         activeCoverAssetId && coverStatus === "READY"
           ? {
@@ -452,15 +476,13 @@ export async function listStorefrontProducts(query: StorefrontProductQuery) {
     prisma,
     products.map((product) => product.id)
   );
-  const visibleProducts = products.filter((product) => {
-    const availableStock = Math.max(
-      0,
-      getSellableStockQuantity(product.inventoryBatches) - (reservations.get(product.id) ?? 0)
-    );
-    if (query.availability === "in-stock") return availableStock > 0;
-    if (query.availability === "out-of-stock") return availableStock <= 0;
-    return true;
-  });
+  // A legacy "out-of-stock" URL cannot expose a sold-out product.
+  const visibleProducts =
+    query.availability === "out-of-stock"
+      ? []
+      : products.filter((product) =>
+          hasStorefrontStock(product, reservations.get(product.id) ?? 0)
+        );
   const totalItems = visibleProducts.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / query.pageSize));
   const page = Math.min(query.page, totalPages);
@@ -468,7 +490,10 @@ export async function listStorefrontProducts(query: StorefrontProductQuery) {
   const pageProducts = visibleProducts.slice(start, start + query.pageSize);
 
   return {
-    items: await serializeStorefrontProducts(pageProducts),
+    // Recheck after reading review data in case another checkout reserved the last unit.
+    items: (await serializeStorefrontProducts(pageProducts)).filter(
+      (product) => product.availableStock > 0
+    ),
     meta: { page, pageSize: query.pageSize, totalItems, totalPages }
   };
 }
@@ -635,14 +660,16 @@ export async function getStorefrontProduct(productId: string) {
     });
   }
 
-  const [serializedProduct, sizeVariants] = await Promise.all([
-    serializeStorefrontProducts([product]).then((products) => products[0]!),
-    listStorefrontSizeVariants(product)
-  ]);
+  const [serializedProduct] = await serializeStorefrontProducts([product]);
+  if (!serializedProduct || serializedProduct.availableStock <= 0) {
+    throw new HttpError(404, "Product is currently unavailable in the storefront.", {
+      code: "STOREFRONT_PRODUCT_NOT_FOUND"
+    });
+  }
 
   return {
     ...serializedProduct,
-    sizeVariants
+    sizeVariants: await listStorefrontSizeVariants(product)
   };
 }
 
@@ -730,7 +757,9 @@ export async function listCustomerFavoriteProducts(customerAccountId: string) {
     where: storefrontProductWhere({ id: { in: productIds } })
   });
   const serialized = await serializeStorefrontProducts(products);
-  const productMap = new Map(serialized.map((product) => [product.id, product]));
+  const productMap = new Map(
+    serialized.filter((product) => product.availableStock > 0).map((product) => [product.id, product])
+  );
 
   return favorites.flatMap((favorite) => {
     const product = productMap.get(favorite.productId);
@@ -901,20 +930,23 @@ function normalizeReviewComment(value: string) {
 
 export async function listStorefrontRelatedProducts(productId: string, limit = 4) {
   const product = await requireStorefrontProduct(productId);
-  const candidateLimit = Math.max(limit * STOREFRONT_RELATED_CANDIDATE_MULTIPLIER, limit);
 
   const candidates = await prisma.product.findMany({
     include: storefrontProductInclude,
     orderBy: [{ name: "asc" }, { id: "asc" }],
-    take: candidateLimit,
     where: storefrontProductWhere({
       categoryId: product.category.id,
       id: { not: product.id }
     })
   });
 
+  const reservations = await activeReservationsByProduct(
+    prisma,
+    candidates.map((candidate) => candidate.id)
+  );
   const currentBrand = product.brand ? normalizeProductIdentity(product.brand) : "";
   const sameCategory = candidates
+    .filter((candidate) => hasStorefrontStock(candidate, reservations.get(candidate.id) ?? 0))
     .sort((left, right) => {
       const leftBrandMatch =
         Boolean(currentBrand) && normalizeProductIdentity(left.brand ?? "") === currentBrand;
@@ -932,7 +964,9 @@ export async function listStorefrontRelatedProducts(productId: string, limit = 4
 
   return {
     category: product.category,
-    sameCategory: await serializeStorefrontProducts(sameCategory),
+    sameCategory: (await serializeStorefrontProducts(sameCategory)).filter(
+      (candidate) => candidate.availableStock > 0
+    ),
     fallback: []
   };
 }
@@ -942,12 +976,16 @@ async function requireStorefrontProduct(productId: string) {
     select: {
       id: true,
       brand: true,
+      inventoryBatches: true,
       category: { select: { id: true, name: true, slug: true } }
     },
     where: storefrontProductWhere({ id: productId })
   });
 
-  if (!product) {
+  const reserved = product
+    ? (await activeReservationsByProduct(prisma, [product.id])).get(product.id) ?? 0
+    : 0;
+  if (!product || !hasStorefrontStock(product, reserved)) {
     throw new HttpError(404, "Product was not found in the storefront.", {
       code: "STOREFRONT_PRODUCT_NOT_FOUND"
     });
