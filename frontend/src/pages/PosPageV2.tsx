@@ -927,11 +927,7 @@ export function PosPage() {
                     </p>
                   ) : null}
                   <div className="mt-3 grid grid-cols-2 gap-3">
-                    <Button
-                      disabled={isCheckingOut}
-                      type="button"
-                      onClick={openCashPayment}
-                    >
+                    <Button disabled={isCheckingOut} type="button" onClick={openCashPayment}>
                       Cash · {currencyFormatter.format(cartSummary.total)}
                     </Button>
                     <Button
