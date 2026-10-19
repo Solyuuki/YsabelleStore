@@ -605,6 +605,14 @@ export function InventoryPage() {
         }
       />
 
+      <Alert>
+        <AlertTitle>Thesis demo — sample expiration dates</AlertTitle>
+        <AlertDescription>
+          Some batch expiry dates are generated for academic demonstration (2028–2029). They are
+          not manufacturer-verified; inspect package labels before any real-world sales.
+        </AlertDescription>
+      </Alert>
+
       <Card className="retail-inventory-list-card">
         <CardContent className="space-y-4 p-4 lg:p-5">
           <div

@@ -3520,6 +3520,14 @@ function ProductDetailsDialog({
                   />
                   <DetailLine label="Reorder level" value={String(product.reorderLevel)} />
                   <DetailLine label="Target stock level" value={String(product.targetStockLevel)} />
+                  <DetailLine
+                    label="Nearest batch expiry"
+                    value={
+                      product.inventory.nearestExpiry
+                        ? new Date(product.inventory.nearestExpiry).toLocaleDateString("en-PH")
+                        : "No recorded expiry"
+                    }
+                  />
                   <div className="space-y-2">
                     <DetailLine
                       label="Status"
@@ -3577,7 +3585,10 @@ function ProductDetailsDialog({
                 </div>
 
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs leading-5 text-emerald-800">
-                  Stock quantities and movement history are available in Inventory.
+                  Thesis demo notice: Some expiry dates were synthetically generated for academic
+                  demonstration. They are not manufacturer-verified. Check real package labels
+                  before selling or distributing products. Stock quantities and movement history
+                  are available in Inventory.
                 </div>
               </div>
             )}

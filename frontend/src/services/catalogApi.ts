@@ -28,6 +28,8 @@ export type CreateCategoryInput = {
 
 export type ProductInventorySummary = {
   inventoryId: string;
+  nearestExpiry?: string | null;
+  batchCount?: number;
   currentQuantity: number;
   availableQuantity: number;
   stockStatus: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
