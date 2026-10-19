@@ -80,11 +80,19 @@ test("Print dialog Close button remains readable in dark mode and official paper
   assert.match(printPaper, /\.receipt-paper\s*\{[\s\S]*?background: #ffffff;/);
 });
 
-test("Sales receipts hide unsupported zero discounts but preserve historical nonzero discounts", () => {
+test("Retail sales and print receipts exclude unsupported Discount labels while retaining old adjustments", () => {
+  const printed = read("frontend/src/components/receipt/RetailReceipt.tsx");
+  const pos = read("frontend/src/pages/PosPageV2.tsx");
+  assert.doesNotMatch(sales, />Discount</);
+  assert.doesNotMatch(modal, />Discount</);
+  assert.doesNotMatch(printed, /label="Discount"/);
+  assert.doesNotMatch(pos, /Discount/);
   assert.match(sales, /Number\(selectedSale\.discountAmount\) > 0 \?/);
   assert.match(modal, /Number\(sale\.discountAmount\) > 0 \?/);
-  const printed = read("frontend/src/components/receipt/RetailReceipt.tsx");
   assert.match(printed, /Number\(receipt\.discountAmount\) > 0/);
+  assert.match(sales, /Historical adjustment/);
+  assert.match(modal, /Historical adjustment/);
+  assert.match(printed, /label="Historical adjustment"/);
 });
 
 test("VAT breakdown only appears when the sale contains a durable tax snapshot", () => {

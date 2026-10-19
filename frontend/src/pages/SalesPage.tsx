@@ -370,7 +370,7 @@ export function SalesPage() {
                   </div>
                   {Number(selectedSale.discountAmount) > 0 ? (
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-500">Discount</span>
+                      <span className="text-slate-500">Historical adjustment</span>
                       <span className="font-medium text-slate-950">
                         {currencyFormatter.format(Number(selectedSale.discountAmount))}
                       </span>

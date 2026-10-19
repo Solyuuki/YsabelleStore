@@ -64,7 +64,7 @@ export function SalesMobileReceiptDetails({ sale }: { sale: PosSale }) {
         </div>
         {Number(sale.discountAmount) > 0 ? (
           <div>
-            <span>Discount</span>
+            <span>Historical adjustment</span>
             <span>{peso.format(Number(sale.discountAmount))}</span>
           </div>
         ) : null}

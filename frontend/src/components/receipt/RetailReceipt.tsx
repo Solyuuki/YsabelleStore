@@ -82,7 +82,8 @@ export function RetailReceipt({ className, compact = false, receipt }: RetailRec
   const totalValue = formatReceiptCurrency(receipt.total);
   const cashReceivedValue = formatReceiptCurrency(receipt.cashReceived);
   const changeValue = formatReceiptCurrency(receipt.change);
-  const discountValue =
+  // Preserve the math of historical sales without presenting an active discount option.
+  const historicalAdjustment =
     receipt.discountAmount && Number(receipt.discountAmount) > 0
       ? formatReceiptCurrency(receipt.discountAmount)
       : null;
@@ -152,7 +153,9 @@ export function RetailReceipt({ className, compact = false, receipt }: RetailRec
 
         <div className="space-y-2 border-t border-dashed border-slate-300 pt-3">
           <TotalsRow label="Subtotal" value={subtotalValue} />
-          {discountValue ? <TotalsRow label="Discount" value={discountValue} /> : null}
+          {historicalAdjustment ? (
+            <TotalsRow label="Historical adjustment" value={historicalAdjustment} />
+          ) : null}
           {hasRecordedVatBreakdown ? (
             <>
               <TotalsRow
