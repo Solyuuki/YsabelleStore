@@ -1291,3 +1291,72 @@
     max-width: 100%;
   }
 }
+
+/* UAT F03: optional checkout notes are progressively disclosed instead of
+   displaying another large form section on every order. */
+.customer-checkout-page .customer-checkout-optional-notes {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgb(105 101 177 / 26%);
+  border-radius: 1rem;
+  background: rgb(248 247 255 / 86%);
+}
+
+.customer-checkout-page .customer-checkout-optional-notes > summary {
+  display: flex;
+  min-height: 48px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem 1rem;
+  padding: 0.85rem 1rem;
+  color: #322b70;
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+.customer-checkout-page .customer-checkout-optional-notes > summary span {
+  color: #535b73;
+  font-size: 0.875rem;
+}
+
+.customer-checkout-page .customer-checkout-optional-notes > summary:focus-visible {
+  outline: 2px solid #645cff;
+  outline-offset: -2px;
+}
+
+.customer-checkout-page .customer-checkout-optional-notes > .customer-notes-field {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.3rem 1rem 1rem;
+}
+
+.customer-checkout-page .customer-checkout-country-note {
+  margin: 0;
+  color: #535b73;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+:root.dark .customer-app .customer-checkout-optional-notes {
+  border-color: #586789;
+  background: #202d47;
+}
+
+:root.dark .customer-app .customer-checkout-optional-notes > summary {
+  color: #f1edff;
+}
+
+:root.dark .customer-app .customer-checkout-optional-notes > summary span,
+:root.dark .customer-app .customer-checkout-country-note {
+  color: #d3daed;
+}
+
+@media (max-width: 700px) {
+  .customer-app .customer-checkout-page .customer-checkout-section-title p,
+  .customer-app .customer-checkout-page .customer-checkout-field-label,
+  .customer-app .customer-checkout-page .customer-checkout-country-note {
+    font-size: max(0.875rem, 14px);
+    line-height: 1.5;
+  }
+}
