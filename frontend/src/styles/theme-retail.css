@@ -2292,12 +2292,10 @@
 
 /* UAT compatibility: secondary sidebar labels must remain legible on the
    dark workstation surface. Active-item accents and other themes are unchanged. */
-:root.dark .app-shell-ambient > aside :is(
-  .type-label,
-  .type-caption,
-  [class~="text-slate-500"],
-  [class~="text-slate-600"]
-) {
+:root.dark
+  .app-shell-ambient
+  > aside
+  :is(.type-label, .type-caption, [class~="text-slate-500"], [class~="text-slate-600"]) {
   color: #cbd5e8 !important;
 }
 
@@ -2320,9 +2318,7 @@
   color: #c9d5ea !important;
 }
 
-:root.dark[data-appearance-scope="retail"]
-  .retail-desktop-sidebar
-  .ys-staff-sidebar-theme-toggle {
+:root.dark[data-appearance-scope="retail"] .retail-desktop-sidebar .ys-staff-sidebar-theme-toggle {
   border-color: #637796 !important;
   background: #2b3c58 !important;
   color: #f0f4ff !important;
