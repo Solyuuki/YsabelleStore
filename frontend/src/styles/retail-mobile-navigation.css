@@ -435,3 +435,28 @@
     }
   }
 }
+
+/* UAT F01: mobile portal sidebar contrast correction */
+@media (max-width: 767px),
+  (max-height: 500px) and (orientation: landscape) and (max-width: 1024px) {
+  :root.dark[data-appearance-scope="retail"] .retail-mobile-nav__drawer[role="dialog"] {
+    border-color: #647795;
+    background-color: #18263c;
+    color: #edf3ff;
+    color-scheme: dark;
+  }
+
+  :root.dark[data-appearance-scope="retail"] .retail-mobile-nav__drawer-title,
+  :root.dark[data-appearance-scope="retail"] .retail-mobile-nav__footer-name {
+    color: #f1f5ff;
+  }
+
+  :root.dark[data-appearance-scope="retail"] .retail-mobile-nav__group-label,
+  :root.dark[data-appearance-scope="retail"] .retail-mobile-nav__drawer-description {
+    color: #c9d5e8;
+  }
+
+  :root.dark[data-appearance-scope="retail"] .retail-mobile-nav__link:not([aria-current="page"]) {
+    color: #e7eefc;
+  }
+}
