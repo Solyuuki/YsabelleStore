@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { config as loadEnv } from "dotenv";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import {
   resolveCatalogImageStoragePaths,
