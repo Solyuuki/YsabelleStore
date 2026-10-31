@@ -758,3 +758,44 @@
     gap: 0.6rem;
   }
 }
+
+/* UAT F02: keep recovery controls within phone viewports. Do not remove
+   required recovery steps or reduce the minimum interactive control size. */
+@media (max-width: 700px) {
+  .customer-app .customer-auth-page--recovery,
+  .customer-app .customer-auth-page--recovery .customer-auth-stage,
+  .customer-app .customer-auth-page--recovery .customer-auth-stage__panel,
+  .customer-app .customer-auth-page--recovery .customer-recovery-card {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .customer-app .customer-auth-page--recovery .customer-auth-stage__panel {
+    padding-inline: clamp(0.75rem, 3.5vw, 1.1rem);
+  }
+
+  .customer-app .customer-auth-page--recovery .customer-recovery-code-slots {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: clamp(0.2rem, 1vw, 0.45rem);
+  }
+
+  .customer-app .customer-auth-page--recovery .customer-recovery-code-slot {
+    min-width: 0;
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .customer-app .customer-auth-page--recovery .customer-recovery-code-input {
+    min-width: 0;
+    width: 100%;
+    min-height: 48px !important;
+  }
+
+  .customer-app .customer-auth-page--recovery .customer-recovery-progress__step {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
