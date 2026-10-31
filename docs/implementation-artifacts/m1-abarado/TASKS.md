@@ -146,3 +146,12 @@ Status: code implemented on `sprint/v0.11/sprint-11`; automated theme contracts 
 - Evidence: CI run 38892562190 executed `npm run verify:code` successfully on code head `2ca1c6a71af3`.
 - Status: Automated code verification passed; implementation-artifact documentation is
   being completed. Manual Gmail delivery and retry QA remain pending.
+
+## Sprint 13 UAT Compatibility and Security Remediation (2026-10-31)
+
+- Task ID: YSB-M1-UAT-COMPAT-014
+- Branch: `m1/v0.13/fix/uat-compatibility-and-usability` (PR #62; code head `468e47cde20dc267cc14036debcc6bfac5d42dcd`).
+- Scope: Resolve reported F01-F05 UI compatibility/readability findings on the feature branch and remediate vulnerable production dependencies without modifying backend business rules or suppressing the audit.
+- Dependency changes: Electron 42.11.18, Multer 2.5.0, Zod 4.6.7 (with existing Zod 3 schema API preserved through `zod/v3`), DOMPurify 3.4.17, body-parser 1.20.9, and undici 7.30.1.
+- Evidence: CI run 41202158723 completed `npm run verify:code`, workspace tests, the full build, and `npm run security:audit:production` successfully on the implementation head; the run's subsequent artifact check failed because the current artifact evidence was not yet recorded.
+- Status: Code changes committed and automated code/security checks passed; documentation evidence now recorded. Manual device/browser re-testing of F01-F05 is still required before declaring each UAT finding verified or merging.
