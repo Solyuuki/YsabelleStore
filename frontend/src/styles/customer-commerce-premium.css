@@ -1250,3 +1250,44 @@
     display: inline;
   }
 }
+
+/* UAT compatibility: preserve every checkout field and validation rule.
+   Only the layout density changes where the two-column form becomes cramped. */
+@media (min-width: 641px) and (max-width: 1100px) {
+  .customer-checkout-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .customer-checkout-layout > * {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .customer-checkout-page .customer-checkout-form {
+    min-width: 0;
+    gap: 1rem;
+  }
+
+  .customer-checkout-page .customer-checkout-form section {
+    min-width: 0;
+    padding: clamp(0.85rem, 3vw, 1.15rem);
+  }
+
+  .customer-checkout-page .customer-checkout-section-title {
+    min-width: 0;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .customer-checkout-page .customer-form-grid,
+  .customer-checkout-page .customer-form-grid > label {
+    min-width: 0;
+    column-gap: 0.7rem;
+    row-gap: 0.8rem;
+  }
+
+  .customer-checkout-page :is(input, select, textarea) {
+    max-width: 100%;
+  }
+}
