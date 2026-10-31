@@ -1,0 +1,45 @@
+name: UAT Security Dependency Repair (Temporary)
+
+on:
+  push:
+    branches:
+      - "m1/v0.13/fix/uat-compatibility-and-usability"
+
+permissions:
+  contents: write
+
+jobs:
+  remediate-lockfile:
+    if: ${{ !contains(github.event.head_commit.message, '[uat-security-auto]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Inspect installed dependency versions
+        run: node -e "const p=require('./package-lock.json').packages;for(const x of ['body-parser','dompurify','electron','express','multer','qs','undici','zod'])console.log(x,p['node_modules/'+x]?.version||'not present')"
+      - name: Apply safe semver-compatible security fixes to lockfile
+        run: |
+          set +e
+          npm audit fix --package-lock-only --ignore-scripts --no-fund
+          echo "npm audit fix exit status: $?"
+          exit 0
+      - name: Show updated production security audit
+        run: |
+          node scripts/security-audit.mjs --production || true
+      - name: Commit generated lockfile changes on UAT branch only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json package.json frontend/package.json backend/package.json electron/package.json
+          if git diff --cached --quiet; then
+            echo "No lockfile changes from npm audit fix"
+            exit 0
+          fi
+          git commit -m "m1/fix(security): remediate production dependency advisories [uat-security-auto]"
+          git push origin HEAD:m1/v0.13/fix/uat-compatibility-and-usability
