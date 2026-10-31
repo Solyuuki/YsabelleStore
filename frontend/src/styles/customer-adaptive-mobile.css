@@ -3036,3 +3036,66 @@
     width: 100%;
   }
 }
+
+/* UAT F02: proportional mobile product cards. Keep the established two-column
+   catalogue and the existing 44px quantity actions while preventing overflow. */
+@media (max-width: 700px) and (orientation: portrait) {
+  .customer-home .customer-product-card,
+  .customer-shop-page .customer-product-card {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .customer-home .customer-product-card__media,
+  .customer-home .customer-product-card__body,
+  .customer-shop-page .customer-product-card__media,
+  .customer-shop-page .customer-product-card__body {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .customer-home .customer-product-card .customer-product-visual,
+  .customer-shop-page .customer-product-card .customer-product-visual {
+    min-width: 0;
+    min-height: 0;
+    aspect-ratio: 3 / 2;
+  }
+
+  .customer-home .customer-product-card__favorite,
+  .customer-shop-page .customer-product-card__favorite {
+    top: 0.55rem;
+    right: 0.55rem;
+  }
+
+  .customer-home .customer-product-badge,
+  .customer-shop-page .customer-product-badge {
+    top: 0.55rem;
+    left: 0.55rem;
+    max-width: calc(100% - 4.3rem);
+  }
+
+  .customer-home .customer-product-card__price-row,
+  .customer-shop-page .customer-product-card__price-row {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 480px) and (orientation: portrait) {
+  .customer-app .customer-product-card__purchase-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.4rem;
+  }
+
+  .customer-app .customer-product-card__actions .customer-quantity {
+    min-width: 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .customer-app .customer-product-card__cart-button {
+    width: 100%;
+    min-width: 0;
+  }
+}
