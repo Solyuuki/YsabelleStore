@@ -9,10 +9,22 @@ const css = (path) => readFileSync(new URL("../../" + path, import.meta.url), "u
 test("UAT: narrow phone product cards reflow controls without shrinking tap targets", () => {
   const mobile = css("frontend/src/styles/customer-adaptive-mobile.css");
   assert.match(mobile, /@media \(max-width: 390px\) and \(orientation: portrait\)/);
-  assert.match(mobile, /\.customer-app \.customer-product-card__purchase-row \{\s*grid-template-columns: minmax\(0, 1fr\)/);
-  assert.match(mobile, /\.customer-app \.customer-product-card__actions \.customer-quantity \{\s*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
-  assert.match(mobile, /\.customer-app \.customer-product-card__actions \.customer-quantity > button \{\s*min-width: 0;\s*min-height: 44px/);
-  assert.match(mobile, /\.customer-app \.customer-product-card__actions \.customer-button \{\s*min-height: 44px/);
+  assert.match(
+    mobile,
+    /\.customer-app \.customer-product-card__purchase-row \{\s*grid-template-columns: minmax\(0, 1fr\)/
+  );
+  assert.match(
+    mobile,
+    /\.customer-app \.customer-product-card__actions \.customer-quantity \{\s*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/
+  );
+  assert.match(
+    mobile,
+    /\.customer-app \.customer-product-card__actions \.customer-quantity > button \{\s*min-width: 0;\s*min-height: 44px/
+  );
+  assert.match(
+    mobile,
+    /\.customer-app \.customer-product-card__actions \.customer-button \{\s*min-height: 44px/
+  );
 });
 
 test("UAT: recovery slots and progress fit narrow phones", () => {
@@ -28,7 +40,10 @@ test("UAT: checkout reflows between phone and tablet without changing validation
   assert.match(checkout, /@media \(min-width: 641px\) and \(max-width: 1100px\)/);
   assert.match(checkout, /\.customer-checkout-layout \{\s*grid-template-columns: minmax\(0, 1fr\)/);
   assert.match(checkout, /@media \(max-width: 700px\)/);
-  assert.match(checkout, /\.customer-checkout-page \.customer-checkout-form section \{\s*min-width: 0/);
+  assert.match(
+    checkout,
+    /\.customer-checkout-page \.customer-checkout-form section \{\s*min-width: 0/
+  );
   assert.match(checkout, /\.customer-checkout-page input\[aria-invalid="true"\]/);
 });
 
