@@ -705,3 +705,56 @@
     transform: none;
   }
 }
+
+/* UAT compatibility: six OTP slots and the stepper must fit small phones
+   without oversized typography or horizontal overflow. */
+@media (max-width: 390px) {
+  .customer-auth-page--recovery .customer-auth-stage__panel {
+    padding: 1rem 0.75rem 1.25rem;
+  }
+
+  .customer-recovery-intro h1 {
+    max-width: 100%;
+    font-size: clamp(1.55rem, 7vw, 1.9rem);
+    line-height: 1.18;
+  }
+
+  .customer-recovery-progress {
+    min-width: 0;
+    gap: 0.15rem;
+    padding: 0.45rem 0.35rem;
+  }
+
+  .customer-recovery-progress__step {
+    min-width: 0;
+    gap: 0.2rem;
+    font-size: 0.6rem;
+    white-space: normal;
+  }
+
+  .customer-recovery-progress__line {
+    min-width: 0;
+    margin-inline: 0.15rem;
+  }
+
+  .customer-recovery-code-slots {
+    min-width: 0;
+    gap: 0.25rem;
+  }
+
+  .customer-recovery-code-slot {
+    min-width: 0;
+    min-height: 48px;
+    border-radius: 0.55rem;
+    font-size: 1.2rem;
+  }
+
+  .customer-recovery-code-input {
+    min-height: 48px !important;
+  }
+
+  .customer-recovery-actions--verify {
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+}
