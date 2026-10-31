@@ -2289,3 +2289,14 @@
 :root.dark .app-shell-ambient > aside .ys-staff-sidebar-theme-toggle:focus-visible {
   outline-color: #b9adff;
 }
+
+/* UAT compatibility: secondary sidebar labels must remain legible on the
+   dark workstation surface. Active-item accents and other themes are unchanged. */
+:root.dark .app-shell-ambient > aside :is(
+  .type-label,
+  .type-caption,
+  [class~="text-slate-500"],
+  [class~="text-slate-600"]
+) {
+  color: #cbd5e8 !important;
+}
