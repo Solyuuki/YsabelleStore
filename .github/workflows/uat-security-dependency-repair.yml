@@ -1,4 +1,4 @@
-name: UAT Security Dependency Repair (Temporary)
+name: UAT Zod Compatibility Migration (Temporary)
 
 on:
   push:
@@ -9,72 +9,55 @@ permissions:
   contents: write
 
 jobs:
-  remediate-lockfile:
+  preserve-zod-api:
     if: ${{ !contains(github.event.head_commit.message, '[uat-security-auto]') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: true
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - name: Inspect installed dependency versions
-        run: node -e "const p=require('./package-lock.json').packages;for(const x of ['body-parser','dompurify','electron','express','multer','qs','undici','zod'])console.log(x,p['node_modules/'+x]?.version||'not present')"
-      - name: Upgrade high-severity runtime dependencies to patched releases
-        run: |
-          npm install --workspace=electron --save-exact --package-lock-only --ignore-scripts --no-audit --no-fund electron@42.11.18
-          npm install --workspace=backend --save-exact --package-lock-only --ignore-scripts --no-audit --no-fund multer@2.5.0
-          npm install --workspace=backend --save-exact --package-lock-only --ignore-scripts --no-audit --no-fund zod@4.6.7
-          npm install --workspace=frontend --save-exact --package-lock-only --ignore-scripts --no-audit --no-fund zod@4.6.7
-      - name: Preserve existing Zod 3 validation semantics under patched Zod 4
+      - name: Preserve existing Zod 3 schema API under secure Zod 4
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           import path from 'node:path';
           const roots = ['backend/src', 'backend/test', 'frontend/src', 'scripts', 'electron/src', 'tools'];
-          const excludes = new Set(['node_modules','.git','dist','build','coverage']);
-          const fileExtensions = /\\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/;
+          const excludes = new Set(['node_modules', '.git', 'dist', 'build', 'coverage']);
+          const extensions = ['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs'];
           let updated = 0;
-          function visit(dir) {
+          function walk(dir) {
             if (!fs.existsSync(dir)) return;
             for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
               if (excludes.has(entry.name)) continue;
               const filename = path.join(dir, entry.name);
-              if (entry.isDirectory()) { visit(filename); continue; }
-              if (!fileExtensions.test(filename)) continue;
+              if (entry.isDirectory()) { walk(filename); continue; }
+              if (!extensions.some(ext => filename.endsWith(ext))) continue;
               const before = fs.readFileSync(filename, 'utf8');
-              const after = before.replace(/from (['"])zod\\1/g, 'from $1zod/v3$1')
-                .replace(/require\\((['"])zod\\1\\)/g, 'require($1zod/v3$1)')
-                .replace(/import\\((['"])zod\\1\\)/g, 'import($1zod/v3$1)');
-              if (after === before) continue;
+              let after = before
+                .split('from "zod"').join('from "zod/v3"')
+                .split("from 'zod'").join("from 'zod/v3'")
+                .split('require("zod")').join('require("zod/v3")')
+                .split("require('zod')").join("require('zod/v3')")
+                .split('import("zod")').join('import("zod/v3")')
+                .split("import('zod')").join("import('zod/v3')");
+              if (before === after) continue;
               fs.writeFileSync(filename, after);
               updated++;
-              console.log('Zod compat:', filename);
+              console.log('Zod v3 import:', filename);
             }
           }
-          for (const dir of roots) visit(dir);
-          console.log('Zod v3 compatibility import updates:', updated);
+          for (const root of roots) walk(root);
+          console.log('Total updated:', updated);
           NODE
-      - name: Apply remaining semver-compatible dependency patches
-        run: |
-          set +e
-          npm audit fix --package-lock-only --ignore-scripts --no-fund
-          echo "npm audit fix exit status: $?"
-          exit 0
-      - name: Show updated production security audit
-        run: |
-          node scripts/security-audit.mjs --production || true
-      - name: Commit generated lockfile changes on UAT branch only
+      - name: Commit API compatibility changes to UAT branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package-lock.json package.json frontend/package.json backend/package.json electron/package.json backend/src backend/test frontend/src scripts electron/src tools
+          git add backend/src backend/test frontend/src scripts electron/src tools
           if git diff --cached --quiet; then
-            echo "No lockfile changes from npm audit fix"
+            echo "All imports already compatible"
             exit 0
           fi
-          git commit -m "m1/fix(security): remediate production dependency advisories [uat-security-auto]"
+          git commit -m "m1/fix(security): retain Zod v3 API using patched Zod 4 [uat-security-auto]"
           git push origin HEAD:m1/v0.13/fix/uat-compatibility-and-usability
