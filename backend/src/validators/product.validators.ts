@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import { isSupportedCatalogImageUrl } from "../utils/catalogImage.js";
 

@@ -8,6 +8,7 @@ type SidebarNavItemProps = {
   badgeCount?: number;
   badgeTone?: "brand" | "warning";
   collapsed: boolean;
+  description?: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   label: string;
   onClick: () => void;
@@ -19,6 +20,7 @@ export function SidebarNavItem({
   badgeCount,
   badgeTone = "brand",
   collapsed,
+  description,
   icon: Icon,
   label,
   onClick
@@ -30,6 +32,7 @@ export function SidebarNavItem({
     <div className="group/nav relative min-w-0">
       <Button
         aria-label={hasBadge ? `${label}, ${badgeCount} items need attention` : label}
+        aria-description={description}
         className={cn(
           "relative h-11 min-w-0 w-full overflow-hidden justify-start border-0 bg-transparent px-3 text-slate-600 shadow-none transition-[background-color,color,box-shadow,transform] duration-200 ease-out hover:bg-indigo-50/90 hover:text-slate-950 hover:shadow-sm",
           collapsed && "justify-center gap-0 px-0",
@@ -37,7 +40,7 @@ export function SidebarNavItem({
             "ys-material-accent bg-gradient-to-br from-[#168cff] via-[#645cff] to-[#c94fa6] text-white shadow-sm shadow-indigo-950/10 hover:from-[#168cff] hover:via-[#645cff] hover:to-[#c94fa6] hover:text-white hover:shadow-sm"
         )}
         onClick={onClick}
-        title={collapsed ? label : undefined}
+        title={description ?? (collapsed ? label : undefined)}
         type="button"
         variant="ghost"
       >

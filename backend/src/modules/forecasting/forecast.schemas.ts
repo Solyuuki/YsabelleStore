@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 
 export const forecastListQuerySchema = z.object({
   search: z.string().trim().max(120).optional(),

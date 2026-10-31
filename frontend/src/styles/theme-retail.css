@@ -2289,3 +2289,43 @@
 :root.dark .app-shell-ambient > aside .ys-staff-sidebar-theme-toggle:focus-visible {
   outline-color: #b9adff;
 }
+
+/* UAT compatibility: secondary sidebar labels must remain legible on the
+   dark workstation surface. Active-item accents and other themes are unchanged. */
+:root.dark
+  .app-shell-ambient
+  > aside
+  :is(.type-label, .type-caption, [class~="text-slate-500"], [class~="text-slate-600"]) {
+  color: #cbd5e8 !important;
+}
+
+/* UAT F01: retail sidebar contrast correction */
+:root.dark[data-appearance-scope="retail"] .app-shell-ambient > .retail-desktop-sidebar {
+  background: #18263c !important;
+  border-right-color: #536580 !important;
+  color: #e8efff !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  .retail-desktop-sidebar
+  :is([class~="text-slate-950"], [class~="text-slate-900"], [class~="text-slate-700"]) {
+  color: #f0f4ff !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  .retail-desktop-sidebar
+  :is([class~="text-slate-600"], [class~="text-slate-500"]) {
+  color: #c9d5ea !important;
+}
+
+:root.dark[data-appearance-scope="retail"] .retail-desktop-sidebar .ys-staff-sidebar-theme-toggle {
+  border-color: #637796 !important;
+  background: #2b3c58 !important;
+  color: #f0f4ff !important;
+}
+
+:root.dark[data-appearance-scope="retail"]
+  .retail-desktop-sidebar
+  .ys-staff-sidebar-theme-toggle:hover {
+  background: #394d6e !important;
+}

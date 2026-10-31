@@ -186,3 +186,11 @@ Result: independent Dark Mode asset/contrast contract suite PASSED; frontend, ba
 | Date       | Branch                                  | Command             | Result | Notes                                         |
 | ---------- | --------------------------------------- | ------------------- | ------ | --------------------------------------------- |
 | 2026-10-16 | m1/v0.13/fix/support-email-thread-retry | npm run verify:code | Passed | CI 38892562190; exact code head 2ca1c6a71af3. |
+
+## Sprint 13 UAT Compatibility and Security Remediation (2026-10-31)
+
+Current branch validation evidence was captured from CI run 41202158723, which passed `npm run verify:code` before the implementation-artifact documentation gate. This record does not assert that all later steps of that CI run passed.
+
+| Date       | Branch                                       | Command             | Result | Notes                                                                                                |
+| ---------- | -------------------------------------------- | ------------------- | ------ | ---------------------------------------------------------------------------------------------------- |
+| 2026-10-31 | m1/v0.13/fix/uat-compatibility-and-usability | npm run verify:code | Passed | CI 41202158723, implementation head 468e47cde20dc267cc14036debcc6bfac5d42dcd; aggregate step passed. |
