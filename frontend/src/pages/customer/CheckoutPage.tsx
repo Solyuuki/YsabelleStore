@@ -325,9 +325,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
         <div className="customer-page-heading">
           <p className="customer-kicker">Delivery checkout</p>
           <h1>Checkout</h1>
-          <p>
-            Check your name, mobile number, and delivery address. Then choose how to pay.
-          </p>
+          <p>Check your name, mobile number, and delivery address. Then choose how to pay.</p>
         </div>
 
         <form className="customer-checkout-layout" noValidate onSubmit={submit}>
