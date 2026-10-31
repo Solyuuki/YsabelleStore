@@ -3008,3 +3008,31 @@
     transition: none !important;
   }
 }
+
+/* UAT compatibility: keep the existing two-card phone catalogue, but prevent
+   quantity and Add controls from squeezing each other at 320-390px widths. */
+@media (max-width: 390px) and (orientation: portrait) {
+  .customer-home .customer-product-card .customer-product-visual,
+  .customer-shop-page .customer-product-card .customer-product-visual {
+    aspect-ratio: 3 / 2;
+  }
+
+  .customer-home .customer-product-card h3,
+  .customer-shop-page .customer-product-card h3 {
+    overflow-wrap: anywhere;
+  }
+
+  .customer-app .customer-product-card__purchase-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.4rem;
+  }
+
+  .customer-app .customer-product-card__actions .customer-quantity {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .customer-app .customer-product-card__cart-button {
+    min-width: 0;
+    width: 100%;
+  }
+}
