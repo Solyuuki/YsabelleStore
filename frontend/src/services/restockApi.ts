@@ -360,7 +360,9 @@ export async function approveRestockOrder(
   if (!response.success || !response.data) {
     if (!response.success && response.error?.code === "RESTOCK_AUTOMATED_POLICY_BLOCKED") {
       const details = response.error.details as { warnings?: RestockOwnerWarning[] } | undefined;
-      throw new RestockAutomatedPolicyBlockedError(Array.isArray(details?.warnings) ? details.warnings : []);
+      throw new RestockAutomatedPolicyBlockedError(
+        Array.isArray(details?.warnings) ? details.warnings : []
+      );
     }
     if (!response.success && response.error?.code === "RESTOCK_OWNER_WARNING_ACK_REQUIRED") {
       const details = response.error.details as { warnings?: RestockOwnerWarning[] } | undefined;

@@ -77,10 +77,7 @@ test("Receiving bypasses live procurement policy but retains anomaly checks and 
     "utf8"
   );
   assert.match(restock, /findInflatedAutomatedLine\(snapshot\.notes, selectedLines\)/);
-  assert.match(
-    restock,
-    /if \(stage === "RECEIPT"\) return \[\]/
-  );
+  assert.match(restock, /if \(stage === "RECEIPT"\) return \[\]/);
   assert.match(restock, /RESTOCK_OWNER_WARNING_ACK_REQUIRED/);
   assert.match(restock, /RESTOCK_AUTOMATED_POLICY_BLOCKED/);
   assert.match(restock, /OwnerPurchaseWarningsAcknowledged/);

@@ -40,7 +40,6 @@ test("Owner can apply a positive system suggestion without creating another tick
   assert.match(planner, /setDraftDirty\(true\)/);
 });
 
-
 test("Owner sees blocked automated approval and can decline the saved recommended ticket", () => {
   const api = read("frontend/src/services/restockApi.ts");
   const drafts = read("frontend/src/components/reports/RestockDraftsPanel.tsx");

@@ -265,9 +265,7 @@ async function claimMonthlyRun(monthKey: string): Promise<MonthlyClaim | null> {
       throw error;
     }
   }
-  if (
-    previous.action === "RESTOCK_MONTH_CREATED"
-  ) {
+  if (previous.action === "RESTOCK_MONTH_CREATED") {
     return null;
   }
   const started = Date.parse(previous.reason);

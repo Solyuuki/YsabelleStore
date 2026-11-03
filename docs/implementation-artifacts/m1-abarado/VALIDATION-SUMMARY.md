@@ -197,6 +197,6 @@ Current branch validation evidence was captured from CI run 41202158723, which p
 
 ## Sprint 13 Recommender Monthly Ticket Recovery — 2026-11-03
 
-| Date | Branch | Command | Result | Notes |
-| --- | --- | --- | --- | --- |
+| Date       | Branch                 | Command             | Result  | Notes                                                                                  |
+| ---------- | ---------------------- | ------------------- | ------- | -------------------------------------------------------------------------------------- |
 | 2026-11-03 | sprint/v0.13/sprint-13 | npm run verify:code | Pending | Awaiting GitHub Actions CI result for the restock ticket patch; not ready for Railway. |

@@ -140,7 +140,15 @@ export function RestockDraftsPanel({
   }
 
   async function confirmDraft(acknowledgeWarnings = false) {
-    if (!selectedDraft || confirming || removing || declining || removePromptOpen || declinePromptOpen) return;
+    if (
+      !selectedDraft ||
+      confirming ||
+      removing ||
+      declining ||
+      removePromptOpen ||
+      declinePromptOpen
+    )
+      return;
     setConfirming(true);
     setError(null);
     try {
@@ -397,6 +405,11 @@ export function RestockDraftsPanel({
                           {line.product.name}
                         </p>
                         <p className="mt-0.5 truncate text-xs text-slate-500">{line.product.sku}</p>
+                        {line.notes?.includes("Pending policy review:") ? (
+                          <p className="mt-1 text-xs font-medium text-amber-800 dark:text-amber-200">
+                            {line.notes}
+                          </p>
+                        ) : null}
                       </div>
                       <span className="shrink-0 text-sm font-semibold text-slate-950">
                         {line.requestedQuantity.toLocaleString()} units
@@ -419,7 +432,9 @@ export function RestockDraftsPanel({
                     role="group"
                   >
                     <p className="text-sm font-semibold">Decline this recommended ticket?</p>
-                    <p className="mt-1 text-xs">Your reason will be recorded. Inventory remains unchanged.</p>
+                    <p className="mt-1 text-xs">
+                      Your reason will be recorded. Inventory remains unchanged.
+                    </p>
                     <textarea
                       aria-label="Decline reason"
                       className="mt-2 min-h-20 w-full rounded-md border border-red-300 bg-white px-3 py-2 text-sm text-slate-950"
