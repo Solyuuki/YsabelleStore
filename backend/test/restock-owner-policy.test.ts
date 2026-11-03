@@ -79,9 +79,10 @@ test("Receiving bypasses live procurement policy but retains anomaly checks and 
   assert.match(restock, /findInflatedAutomatedLine\(snapshot\.notes, selectedLines\)/);
   assert.match(
     restock,
-    /if \(stage === "RECEIPT" \|\| isAutomatedMonthlyOrder\(snapshot\.notes\)\) return \[\]/
+    /if \(stage === "RECEIPT"\) return \[\]/
   );
   assert.match(restock, /RESTOCK_OWNER_WARNING_ACK_REQUIRED/);
+  assert.match(restock, /RESTOCK_AUTOMATED_POLICY_BLOCKED/);
   assert.match(restock, /OwnerPurchaseWarningsAcknowledged/);
   assert.match(lifecycle, /RESTOCK_OVER_DELIVERY_NOT_AUTHORIZED/);
   assert.match(lifecycle, /RESTOCK_RECEIPT_VERSION_CONFLICT/);

@@ -47,6 +47,7 @@ type RestockActionLine = {
   productId: string;
   quantity: number;
   recommendationId: string | null;
+  holdReason: string | null;
   recommendationSource:
     | typeof RestockRecommendationSource.SARIMA
     | typeof RestockRecommendationSource.LOW_STOCK
@@ -162,23 +163,24 @@ async function loadOperationalActionLines() {
         console.warn(
           `[restock] Holding automated recommendation for ${candidate.product.sku}: ${verdict.reason}. Owner review required.`
         );
-        continue;
+      } else {
+        lineCosts.push(verdict.lineCostPHP);
       }
-      lineCosts.push(verdict.lineCostPHP);
+      // Failed authorization prevents approval, not visibility of the proposed line.
       lines.push({
         productId: candidate.product.id,
         quantity,
         recommendationId: candidate.recommendationId,
-        recommendationSource: candidate.recommendationSource
+        recommendationSource: candidate.recommendationSource,
+        holdReason: verdict.safe ? null : verdict.reason
       });
     }
 
     if (page >= result.meta.totalPages) {
       if (exceedsRestockOrderBudget(lineCosts)) {
         console.warn(
-          "[restock] Monthly automated recommendations exceed the purchase budget. No draft was created or updated."
+          "[restock] Monthly automated recommendations exceed the purchase budget. Owner approval must remain blocked until the order passes review."
         );
-        return [];
       }
       return lines;
     }
@@ -264,8 +266,7 @@ async function claimMonthlyRun(monthKey: string): Promise<MonthlyClaim | null> {
     }
   }
   if (
-    previous.action === "RESTOCK_MONTH_CREATED" ||
-    previous.action === "RESTOCK_MONTH_NO_ACTION"
+    previous.action === "RESTOCK_MONTH_CREATED"
   ) {
     return null;
   }
@@ -329,7 +330,7 @@ async function runRestockAutomation(): Promise<RestockAutomationResult> {
   if (!claim) return { orderId: null, orderNumber: null, status: "NO_ACTION" };
 
   try {
-    // Evaluate once per activated month, with persistent no-action/created state.
+    // Retry prior no-action runs; an existing monthly ticket permanently closes the cycle.
     const actionLines = await loadOperationalActionLines();
     if (actionLines.length === 0) {
       await completeMonthlyRun(claim, "RESTOCK_MONTH_NO_ACTION", "No eligible monthly restock.");
@@ -358,7 +359,9 @@ async function runRestockAutomation(): Promise<RestockAutomationResult> {
           notes: `${batch.marker} [RestockSourceMonth:${sourceMonth}] Frozen forecast-driven multi-product batch; Owner approval required.`,
           lines: actionLines.map((line) => ({
             isSelected: true,
-            notes: "Inventory Recommender generated this forecast-driven replenishment line.",
+            notes: line.holdReason
+              ? `Inventory Recommender proposed this line. Pending policy review: ${line.holdReason}.`
+              : "Inventory Recommender generated this forecast-driven replenishment line.",
             ownerOverrideReason: null,
             productId: line.productId,
             recommendationId: line.recommendationId,

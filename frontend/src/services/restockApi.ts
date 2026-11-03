@@ -335,6 +335,15 @@ export class RestockOwnerWarningError extends Error {
   }
 }
 
+export class RestockAutomatedPolicyBlockedError extends Error {
+  readonly warnings: RestockOwnerWarning[];
+  constructor(warnings: RestockOwnerWarning[]) {
+    super("Resolve the required purchasing checks before approving this automated plan.");
+    this.name = "RestockAutomatedPolicyBlockedError";
+    this.warnings = warnings;
+  }
+}
+
 export async function approveRestockOrder(
   orderId: string,
   expectedVersion: number,
@@ -349,6 +358,10 @@ export async function approveRestockOrder(
   );
 
   if (!response.success || !response.data) {
+    if (!response.success && response.error?.code === "RESTOCK_AUTOMATED_POLICY_BLOCKED") {
+      const details = response.error.details as { warnings?: RestockOwnerWarning[] } | undefined;
+      throw new RestockAutomatedPolicyBlockedError(Array.isArray(details?.warnings) ? details.warnings : []);
+    }
     if (!response.success && response.error?.code === "RESTOCK_OWNER_WARNING_ACK_REQUIRED") {
       const details = response.error.details as { warnings?: RestockOwnerWarning[] } | undefined;
       throw new RestockOwnerWarningError(Array.isArray(details?.warnings) ? details.warnings : []);

@@ -155,3 +155,7 @@ Status: code implemented on `sprint/v0.11/sprint-11`; automated theme contracts 
 - Dependency changes: Electron 42.11.18, Multer 2.5.0, Zod 4.6.7 (with existing Zod 3 schema API preserved through `zod/v3`), DOMPurify 3.4.17, body-parser 1.20.9, and undici 7.30.1.
 - Evidence: CI run 41202158723 completed `npm run verify:code`, workspace tests, the full build, and `npm run security:audit:production` successfully on the implementation head; the run's subsequent artifact check failed because the current artifact evidence was not yet recorded.
 - Status: Code changes committed and automated code/security checks passed; documentation evidence now recorded. Manual device/browser re-testing of F01-F05 is still required before declaring each UAT finding verified or merging.
+
+## Sprint 13 Recommender Monthly Ticket Recovery — 2026-11-03
+
+Branch: `sprint/v0.13/sprint-13`. Scope: preserve automated monthly restock proposals even when procurement policy is not verified; retain hold reasons; retry prior no-action month; block automated approval until safety checks pass; expose Owner Decline with reason. Source modules: `restockAutomationService.ts`, `restockService.ts`, `restockApi.ts`, `RestockDraftsPanel.tsx`, `RestockOwnerWarnings.tsx`. Regression contracts added. Status: code committed for CI validation; not yet approved for production. UAT PR #62 must not be deployed with this hotfix.

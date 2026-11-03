@@ -74,3 +74,12 @@ test("monthly snapshot is loaded before candidate computation and cannot be amen
   assert.equal(section.includes("appendActionLinesToMonthlyBatch"), false);
   assert.match(section, /RestockSourceMonth:/);
 });
+
+
+test("blocked recommendations remain in monthly review drafts and no-action runs retry", () => {
+  assert.match(automationSource, /holdReason: verdict\.safe \? null : verdict\.reason/);
+  assert.match(automationSource, /notes: line\.holdReason/);
+  assert.match(automationSource, /previous\.action === "RESTOCK_MONTH_CREATED"/);
+  assert.doesNotMatch(automationSource, /previous\.action === "RESTOCK_MONTH_NO_ACTION"/);
+  assert.match(automationSource, /Owner approval must remain blocked/);
+});

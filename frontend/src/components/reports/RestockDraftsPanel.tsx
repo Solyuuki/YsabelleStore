@@ -1,4 +1,4 @@
-import { CheckCircle2, LoaderCircle, RefreshCw, Trash2 } from "lucide-react";
+import { CheckCircle2, LoaderCircle, RefreshCw, Trash2, XCircle } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useToast } from "@/components/shared/ToastProvider";
@@ -17,9 +17,11 @@ import {
 } from "@/components/ui/dialog";
 import {
   approveRestockOrder,
+  cancelRestockOrder,
   listRestockOrders,
   replaceRestockOrderLines,
   removeRestockDraft,
+  RestockAutomatedPolicyBlockedError,
   RestockOwnerWarningError,
   type RestockOwnerWarning,
   type RestockOrder,
@@ -58,6 +60,10 @@ export function RestockDraftsPanel({
   const [confirming, setConfirming] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [removePromptOpen, setRemovePromptOpen] = useState(false);
+  const [declinePromptOpen, setDeclinePromptOpen] = useState(false);
+  const [declineReason, setDeclineReason] = useState("");
+  const [declining, setDeclining] = useState(false);
+  const [policyBlocked, setPolicyBlocked] = useState(false);
   const [ownerWarnings, setOwnerWarnings] = useState<RestockOwnerWarning[]>([]);
   const draftScrollRef = useRef<HTMLDivElement>(null);
 
@@ -122,6 +128,7 @@ export function RestockDraftsPanel({
       });
       setSelectedDraft(updated);
       setOwnerWarnings([]);
+      setPolicyBlocked(false);
       await loadDrafts();
     } catch (requestError) {
       setError(
@@ -133,7 +140,7 @@ export function RestockDraftsPanel({
   }
 
   async function confirmDraft(acknowledgeWarnings = false) {
-    if (!selectedDraft || confirming || removing || removePromptOpen) return;
+    if (!selectedDraft || confirming || removing || declining || removePromptOpen || declinePromptOpen) return;
     setConfirming(true);
     setError(null);
     try {
@@ -151,6 +158,11 @@ export function RestockDraftsPanel({
       onDraftConfirmed();
       await loadDrafts();
     } catch (requestError) {
+      if (requestError instanceof RestockAutomatedPolicyBlockedError) {
+        setOwnerWarnings(requestError.warnings);
+        setPolicyBlocked(true);
+        return;
+      }
       if (requestError instanceof RestockOwnerWarningError) {
         setOwnerWarnings(requestError.warnings);
         return;
@@ -162,6 +174,45 @@ export function RestockDraftsPanel({
       );
     } finally {
       setConfirming(false);
+    }
+  }
+
+  async function declineRecommendedDraft() {
+    if (
+      !selectedDraft ||
+      !isRecommendedPlan(selectedDraft) ||
+      declining ||
+      confirming ||
+      removing ||
+      declineReason.trim().length < 3
+    ) {
+      return;
+    }
+    setDeclining(true);
+    setError(null);
+    try {
+      const cancelled = await cancelRestockOrder(selectedDraft.id, {
+        expectedVersion: selectedDraft.version,
+        reason: declineReason.trim()
+      });
+      setSelectedDraft(null);
+      setDeclinePromptOpen(false);
+      setDeclineReason("");
+      setOwnerWarnings([]);
+      setPolicyBlocked(false);
+      pushToast({
+        title: "Recommended ticket declined",
+        message: `${cancelled.orderNumber} was cancelled. Inventory remains unchanged.`,
+        variant: "success"
+      });
+      onDraftConfirmed();
+      await loadDrafts();
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error ? requestError.message : "Could not decline the ticket."
+      );
+    } finally {
+      setDeclining(false);
     }
   }
 
@@ -266,7 +317,7 @@ export function RestockDraftsPanel({
                           {draft.orderNumber}
                         </p>
                         {recommendedPlan ? (
-                          <Badge variant="info">Recommended inventory plan</Badge>
+                          <Badge variant="warning">Pending Owner Review</Badge>
                         ) : null}
                       </div>
                       <p className="mt-1 text-xs text-slate-500">
@@ -277,6 +328,9 @@ export function RestockDraftsPanel({
                     <Button
                       onClick={() => {
                         setOwnerWarnings([]);
+                        setPolicyBlocked(false);
+                        setDeclinePromptOpen(false);
+                        setDeclineReason("");
                         setRemovePromptOpen(false);
                         setSelectedDraft(draft);
                       }}
@@ -303,9 +357,12 @@ export function RestockDraftsPanel({
       <Dialog
         open={Boolean(selectedDraft)}
         onOpenChange={(open) => {
-          if (!open && !confirming && !removing) {
+          if (!open && !confirming && !removing && !declining) {
             setSelectedDraft(null);
             setOwnerWarnings([]);
+            setPolicyBlocked(false);
+            setDeclinePromptOpen(false);
+            setDeclineReason("");
             setRemovePromptOpen(false);
           }
         }}
@@ -349,11 +406,30 @@ export function RestockDraftsPanel({
                 </div>
 
                 <RestockOwnerWarnings
+                  blocking={policyBlocked}
                   warnings={ownerWarnings}
                   onApplySuggestedQuantity={(productId, quantity) =>
                     void applySuggestedQuantity(productId, quantity)
                   }
                 />
+                {declinePromptOpen ? (
+                  <div
+                    aria-label="Decline recommended ticket"
+                    className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-red-900"
+                    role="group"
+                  >
+                    <p className="text-sm font-semibold">Decline this recommended ticket?</p>
+                    <p className="mt-1 text-xs">Your reason will be recorded. Inventory remains unchanged.</p>
+                    <textarea
+                      aria-label="Decline reason"
+                      className="mt-2 min-h-20 w-full rounded-md border border-red-300 bg-white px-3 py-2 text-sm text-slate-950"
+                      maxLength={500}
+                      onChange={(event) => setDeclineReason(event.target.value)}
+                      placeholder="Reason (at least 3 characters)"
+                      value={declineReason}
+                    />
+                  </div>
+                ) : null}
                 {removePromptOpen ? (
                   <div
                     className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-red-900 dark:border-red-400/60 dark:bg-red-950/35 dark:text-red-100"
@@ -376,7 +452,26 @@ export function RestockDraftsPanel({
               </div>
 
               <DialogFooter className="shrink-0 flex-wrap gap-2">
-                {removePromptOpen ? (
+                {declinePromptOpen ? (
+                  <>
+                    <Button
+                      disabled={declining}
+                      onClick={() => setDeclinePromptOpen(false)}
+                      type="button"
+                      variant="secondary"
+                    >
+                      Back to review
+                    </Button>
+                    <Button
+                      disabled={declining || declineReason.trim().length < 3}
+                      onClick={() => void declineRecommendedDraft()}
+                      type="button"
+                      variant="danger"
+                    >
+                      {declining ? "Declining…" : "Confirm decline"}
+                    </Button>
+                  </>
+                ) : removePromptOpen ? (
                   <>
                     <Button
                       disabled={removing}
@@ -421,11 +516,26 @@ export function RestockDraftsPanel({
                         Remove draft
                       </Button>
                     ) : null}
+                    {isRecommendedPlan(selectedDraft) ? (
+                      <Button
+                        disabled={confirming || removing || declining}
+                        onClick={() => {
+                          setError(null);
+                          setDeclinePromptOpen(true);
+                        }}
+                        type="button"
+                        variant="danger"
+                      >
+                        <XCircle aria-hidden="true" className="h-4 w-4" />
+                        Decline
+                      </Button>
+                    ) : null}
                     <Button
-                      disabled={confirming || removing}
+                      disabled={confirming || removing || declining}
                       onClick={() => {
                         setSelectedDraft(null);
                         setOwnerWarnings([]);
+                        setPolicyBlocked(false);
                         setRemovePromptOpen(false);
                       }}
                       type="button"
@@ -434,7 +544,7 @@ export function RestockDraftsPanel({
                       Keep draft
                     </Button>
                     <Button
-                      disabled={confirming || removing}
+                      disabled={confirming || removing || declining || policyBlocked}
                       onClick={() => void confirmDraft(ownerWarnings.length > 0)}
                       type="button"
                     >

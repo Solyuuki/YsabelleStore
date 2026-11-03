@@ -39,3 +39,16 @@ test("Owner can apply a positive system suggestion without creating another tick
   assert.match(planner, /requestedQuantity: quantity/);
   assert.match(planner, /setDraftDirty\(true\)/);
 });
+
+
+test("Owner sees blocked automated approval and can decline the saved recommended ticket", () => {
+  const api = read("frontend/src/services/restockApi.ts");
+  const drafts = read("frontend/src/components/reports/RestockDraftsPanel.tsx");
+  const warnings = read("frontend/src/components/reports/RestockOwnerWarnings.tsx");
+  assert.match(api, /RESTOCK_AUTOMATED_POLICY_BLOCKED/);
+  assert.match(api, /RestockAutomatedPolicyBlockedError/);
+  assert.match(warnings, /Approval is on hold/);
+  assert.match(drafts, /cancelRestockOrder\(selectedDraft\.id/);
+  assert.match(drafts, /Pending Owner Review/);
+  assert.match(drafts, /policyBlocked/);
+});
