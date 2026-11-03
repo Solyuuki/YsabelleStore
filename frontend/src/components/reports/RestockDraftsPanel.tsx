@@ -325,7 +325,10 @@ export function RestockDraftsPanel({
                           {draft.orderNumber}
                         </p>
                         {recommendedPlan ? (
-                          <Badge variant="warning">Pending Owner Review</Badge>
+                          <>
+                            <Badge variant="info">Recommended inventory plan</Badge>
+                            <Badge variant="warning">Pending Owner Review</Badge>
+                          </>
                         ) : null}
                       </div>
                       <p className="mt-1 text-xs text-slate-500">
