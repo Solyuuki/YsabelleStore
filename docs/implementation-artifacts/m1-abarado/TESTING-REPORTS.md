@@ -253,4 +253,8 @@ The following aggregate result is from GitHub Actions CI run 41202158723, implem
 
 ## Sprint 13 Recommender Monthly Ticket Recovery — 2026-11-03
 
-Evidence before implementation: Railway backend runtime on 2026-11-01 00:45 Asia/Manila logged 51 `TARGET_POLICY_UNVERIFIED` holds. New static contract assertions cover retained draft lines, retryable no-action, blocked automated approval, visible Owner-review state and decline. **Pending:** workflow CI results for the new commit, full `npm run verify:code` results, frontend/backend build validation, exact ticket-only release validation and live Owner QA. No new test outcomes are represented as passed without run evidence.
+Production evidence: Railway backend runtime on 2026-11-01 00:45 Asia/Manila recorded 51 `TARGET_POLICY_UNVERIFIED` holds. CI on implementation head `696915dc` passed code-format, lint, typecheck, guardrail tests, workspace tests, forecasting checks, repository build, production security audit, `npm run verify:code` and `npm run verify:status`. This entry only certifies completed CI steps, not the subsequent Phase 6 rehearsal or a complete release. The detached ticket-only Railway candidates require independent deployment verification. No Railway deployment or interactive Owner QA has been performed.
+
+| Date       | Command             | Result | Evidence                                               |
+| ---------- | ------------------- | ------ | ------------------------------------------------------ |
+| 2026-11-03 | npm run verify:code | Passed | CI 41566648792 at 696915dc; aggregate verifier passed. |
