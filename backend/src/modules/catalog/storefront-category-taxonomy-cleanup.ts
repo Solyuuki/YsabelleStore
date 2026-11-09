@@ -14,6 +14,7 @@ import {
   STOREFRONT_CATEGORY_TAXONOMY,
   storefrontCategoryForSource
 } from "./storefront-category-taxonomy.js";
+import { proposedUatCategoryCorrection } from "./uat-category-repair.js";
 
 const LEGACY_CATEGORY_NAMES = [
   "Baking / Spreads & Dessert Ingredients",
@@ -44,6 +45,7 @@ type SourceMappingRow = {
   sourceCategory: string;
   canonicalProduct: {
     id: string;
+    name: string;
     categoryId: string;
     inventory: {
       id: string;
@@ -309,7 +311,15 @@ export async function executeStorefrontCategoryTaxonomyCleanup(input: {
         continue;
       }
 
-      const taxonomy = storefrontCategoryForSource(sourceCategory)!;
+      const sourceTaxonomy = storefrontCategoryForSource(sourceCategory)!;
+      const correctionSlug = proposedUatCategoryCorrection({
+        currentCategorySlug: sourceTaxonomy.slug,
+        productName: product.name,
+        sourceProductId
+      });
+      const taxonomy = correctionSlug
+        ? STOREFRONT_CATEGORY_TAXONOMY.find((row) => row.slug === correctionSlug) ?? sourceTaxonomy
+        : sourceTaxonomy;
       const targetCategory = categoryByPublicName.get(taxonomy.name)!;
       if (product.categoryId !== targetCategory.id) {
         await tx.product.update({
