@@ -43,7 +43,10 @@ test("presentation and approved categories retain the exact pre-D01 names until 
   assert.ok(expected.includes("Frozen Foods"));
   assert.equal(expected.includes("Restricted / Retired"), false);
   assert.equal(new Set(expected).size, expected.length);
-  assert.equal((STOREFRONT_CATEGORY_NAMES as readonly string[]).includes("Baking & Dessert"), false);
+  assert.equal(
+    (STOREFRONT_CATEGORY_NAMES as readonly string[]).includes("Baking & Dessert"),
+    false
+  );
 });
 
 test("presentation catalog excludes unresolved images, restricted alcohol, and missing image URLs", () => {
