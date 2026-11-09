@@ -429,25 +429,48 @@ export async function listStorefrontCategories() {
 
 export async function listStorefrontProducts(query: StorefrontProductQuery) {
   const search = query.search?.trim();
+  const where = storefrontProductWhere({
+    ...(query.category ? { category: { slug: query.category } } : {}),
+    ...(search
+      ? {
+          OR: [
+            { name: { contains: search } },
+            { description: { contains: search } },
+            { category: { name: { contains: search } } },
+            { sku: { contains: search } },
+            { barcode: { contains: search } }
+          ]
+        }
+      : {})
+  });
+
+  // D02: for unfiltered availability, paginate in SQL before joining inventory batches,
+  // loading reservations and calculating reviews. Do not fetch the entire product catalog.
+  if (query.availability === "all") {
+    const totalItems = await prisma.product.count({ where });
+    const totalPages = Math.max(1, Math.ceil(totalItems / query.pageSize));
+    const page = Math.min(query.page, totalPages);
+    const pageProducts = await prisma.product.findMany({
+      include: storefrontProductInclude,
+      orderBy: [{ name: "asc" }, { id: "asc" }],
+      skip: (page - 1) * query.pageSize,
+      take: query.pageSize,
+      where
+    });
+
+    return {
+      items: await serializeStorefrontProducts(pageProducts),
+      meta: { page, pageSize: query.pageSize, totalItems, totalPages }
+    };
+  }
+
+  // Stock availability includes reserved quantities. Preserve exact existing behavior
+  // for in-stock/out-of-stock filters until a reservation-aware database filter exists.
   const products = await prisma.product.findMany({
     include: storefrontProductInclude,
     orderBy: [{ name: "asc" }, { id: "asc" }],
-    where: storefrontProductWhere({
-      ...(query.category ? { category: { slug: query.category } } : {}),
-      ...(search
-        ? {
-            OR: [
-              { name: { contains: search } },
-              { description: { contains: search } },
-              { category: { name: { contains: search } } },
-              { sku: { contains: search } },
-              { barcode: { contains: search } }
-            ]
-          }
-        : {})
-    })
+    where
   });
-
   const reservations = await activeReservationsByProduct(
     prisma,
     products.map((product) => product.id)
