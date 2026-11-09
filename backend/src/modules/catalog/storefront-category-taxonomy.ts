@@ -58,6 +58,12 @@ export const STOREFRONT_CATEGORY_TAXONOMY = [
     sourceCategories: ["Frozen / Chilled"]
   },
   {
+    name: "Dairy Products",
+    slug: "dairy-products",
+    // Standalone retail aisle for D01 repairs; source data has no dedicated dairy category.
+    sourceCategories: []
+  },
+  {
     name: "Household Supplies",
     slug: "household-supplies",
     sourceCategories: ["Household Supplies"]
