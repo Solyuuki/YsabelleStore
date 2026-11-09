@@ -30,7 +30,7 @@ async function main() {
   );
   const publicSlugs = new Set<string>(STOREFRONT_CATEGORY_TAXONOMY.map((row) => row.slug));
   const currentBySlug = new Map(categories.map((row) => [row.slug, row]));
-  const selected = [];
+  const selected: Array<{ id: string; sku: string; currentId: string; targetSlug: string }> = [];
   const unresolved = [];
 
   for (const product of products) {

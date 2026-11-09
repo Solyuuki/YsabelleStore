@@ -27,7 +27,7 @@ const OVERRIDES: Record<string, string[]> = {
   "bread-bakery": ["P279", "P332"]
 };
 
-const overrides = new Map(
+const overrides = new Map<string, string>(
   Object.entries(OVERRIDES).flatMap(([slug, codes]) =>
     codes.map((code) => [`SARIMA-${code}`, slug] as const)
   )
