@@ -166,6 +166,7 @@ export function CustomerAccountPage({
   }, [location]);
   const [orders, setOrders] = useState<StorefrontOrder[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
+  const [refreshingOrders, setRefreshingOrders] = useState(false);
   const [ordersError, setOrdersError] = useState<string | null>(null);
   const [confirmingOrder, setConfirmingOrder] = useState<string | null>(null);
   const [resumingPaymentOrder, setResumingPaymentOrder] = useState<string | null>(null);
@@ -422,6 +423,21 @@ export function CustomerAccountPage({
   useEffect(() => {
     if (favoritesPage > favoritesTotalPages) setFavoritesPage(favoritesTotalPages);
   }, [favoritesPage, favoritesTotalPages]);
+
+  // D03: give customers a way to refresh delivery progress without reloading the page.
+  async function handleRefreshOrders() {
+    if (refreshingOrders || ordersLoading) return;
+    setRefreshingOrders(true);
+    setOrdersError(null);
+    try {
+      const latestOrders = await fetchCustomerOrders();
+      setOrders(latestOrders);
+    } catch (reason) {
+      setOrdersError(errorMessage(reason, "Could not refresh order status. Please try again."));
+    } finally {
+      setRefreshingOrders(false);
+    }
+  }
 
   async function handleResumePaymongo(orderNumber: string) {
     if (resumingPaymentOrder) return;
@@ -919,7 +935,15 @@ export function CustomerAccountPage({
                   Follow each signed-in order from preparation through customer-confirmed delivery.
                 </p>
               </div>
-              <Truck aria-hidden="true" size={22} />
+              <button
+                className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-current px-3 py-2 text-sm"
+                disabled={ordersLoading || refreshingOrders}
+                onClick={() => void handleRefreshOrders()}
+                type="button"
+              >
+                <RefreshCw aria-hidden="true" size={16} />
+                {refreshingOrders ? "Refreshing..." : "Refresh status"}
+              </button>
             </div>
 
             {ordersLoading ? (
@@ -2002,6 +2026,10 @@ function DeliveryProgress({ order }: { order: StorefrontOrder }) {
 
   return (
     <div className="customer-delivery-progress" aria-label="Delivery progress">
+      <p className="mb-4 text-sm" aria-live="polite">
+        <strong>Current status: {deliveryStatusLabel(order.deliveryStatus)}.</strong>{" "}
+        {deliveryStatusGuidance(order.deliveryStatus)}
+      </p>
       <ol className="customer-delivery-stepper">
         {DELIVERY_PROGRESS_STEPS.map((step, index) => {
           const event = eventByStatus.get(step.status);
@@ -2043,6 +2071,25 @@ function DeliveryProgress({ order }: { order: StorefrontOrder }) {
       </ol>
     </div>
   );
+}
+
+function deliveryStatusGuidance(status: StorefrontOrder["deliveryStatus"]) {
+  switch (status) {
+    case "ORDER_PLACED":
+      return "The store has received your order and will start preparing it.";
+    case "PREPARING":
+      return "The store is gathering your items. Delivery has not started yet.";
+    case "READY_FOR_DELIVERY":
+      return "Your order is packed and waiting for courier coordination.";
+    case "OUT_FOR_DELIVERY":
+      return "Your order is on the way. See courier details below if available.";
+    case "DELIVERED":
+      return "The delivery is marked complete. Please confirm receipt if prompted.";
+    case "DELIVERY_FAILED":
+      return "Delivery could not be completed. Contact the store for the next steps.";
+    case "CANCELLED":
+      return "This order was cancelled. Contact the store if this was unexpected.";
+  }
 }
 
 function deliveryStatusLabel(status: StorefrontOrder["deliveryStatus"]) {
