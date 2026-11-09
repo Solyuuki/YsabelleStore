@@ -10,8 +10,8 @@ import {
   storefrontCategoryForSource
 } from "../src/modules/catalog/storefront-category-taxonomy.js";
 
-test("storefront taxonomy exposes fourteen clean public categories in UX order", () => {
-  assert.equal(STOREFRONT_CATEGORY_TAXONOMY.length, 14);
+test("storefront taxonomy exposes fifteen clean public categories in UX order", () => {
+  assert.equal(STOREFRONT_CATEGORY_TAXONOMY.length, 15);
   assert.deepEqual(STOREFRONT_CATEGORY_NAMES, [
     "Coffee & Milk",
     "Juice, Tea, Soda & Water",
@@ -23,6 +23,7 @@ test("storefront taxonomy exposes fourteen clean public categories in UX order",
     "Rice & Staples",
     "Snacks & Confectionery",
     "Frozen & Chilled",
+    "Dairy Products",
     "Household Supplies",
     "Laundry Supplies",
     "Personal Care & Hygiene",
