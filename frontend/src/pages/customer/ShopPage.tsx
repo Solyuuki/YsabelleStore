@@ -105,6 +105,20 @@ export function ShopPage({
     };
   }, [availabilityOpen]);
 
+  // D02: categories change much less often than product filters. Load them once
+  // instead of blocking each product refresh on a second categories API request.
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetchStorefrontCategories(controller.signal)
+      .then((nextCategories) => {
+        if (!controller.signal.aborted) setCategories(nextCategories);
+      })
+      .catch(() => {
+        // A category-menu request should not prevent product browsing.
+      });
+    return () => controller.abort();
+  }, []);
+
   useEffect(() => {
     const controller = new AbortController();
     const hasDisplayedProducts = displayedProductsRef.current.length > 0;
@@ -124,23 +138,18 @@ export function ShopPage({
       }, CATALOG_REFRESH_LOADER_DELAY_MS);
     }
 
-    Promise.all([
-      fetchStorefrontCategories(controller.signal),
-      fetchStorefrontProducts(
-        {
-          search: searchParam,
-          category: categorySlug,
-          availability: availabilityParam,
-          page: pageParam,
-          pageSize: 24
-        },
-        controller.signal
-      )
-    ])
-      .then(([nextCategories, result]) => {
+    fetchStorefrontProducts(
+      {
+        search: searchParam,
+        category: categorySlug,
+        availability: availabilityParam,
+        page: pageParam,
+        pageSize: 24
+      },
+      controller.signal
+    )
+      .then((result) => {
         if (controller.signal.aborted) return;
-
-        setCategories(nextCategories);
 
         const elapsed = performance.now() - transitionStartedAt;
         const swapDelay = hasDisplayedProducts
