@@ -86,7 +86,7 @@ const DELIVERY_PROGRESS_STEPS: Array<{
 }> = [
   { status: "ORDER_PLACED", label: "Order placed" },
   { status: "PREPARING", label: "Preparing" },
-  { status: "READY_FOR_DELIVERY", label: "Ready" },
+  { status: "READY_FOR_DELIVERY", label: "Ready for delivery" },
   { status: "OUT_FOR_DELIVERY", label: "On the way" },
   { status: "DELIVERED", label: "Delivered" }
 ];
@@ -2092,6 +2092,7 @@ function DeliveryProgress({ order }: { order: StorefrontOrder }) {
 
           return (
             <li
+              aria-current={isCurrent ? "step" : undefined}
               className={[isComplete ? "is-complete" : "", isCurrent ? "is-current" : ""]
                 .filter(Boolean)
                 .join(" ")}

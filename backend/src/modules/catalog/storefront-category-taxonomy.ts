@@ -13,9 +13,14 @@ export const STOREFRONT_CATEGORY_TAXONOMY = [
     sourceCategories: ["Beverages / Coffee & Milk"]
   },
   {
-    name: "Juice, Tea, Soda & Water",
+    name: "Drinks & Beverages",
     slug: "juice-tea-soda-water",
     sourceCategories: ["Beverages / Juice, Tea, Soda & Water"]
+  },
+  {
+    name: "Dairy & Eggs",
+    slug: "dairy-eggs",
+    sourceCategories: []
   },
   {
     name: "Bread & Bakery",
@@ -23,7 +28,7 @@ export const STOREFRONT_CATEGORY_TAXONOMY = [
     sourceCategories: ["Bread & Bakery"]
   },
   {
-    name: "Baking & Dessert",
+    name: "Baking Essentials",
     slug: "baking-dessert",
     sourceCategories: ["Baking / Spreads & Dessert Ingredients"]
   },
@@ -33,7 +38,7 @@ export const STOREFRONT_CATEGORY_TAXONOMY = [
     sourceCategories: ["Canned Goods"]
   },
   {
-    name: "Condiments & Cooking",
+    name: "Cooking Essentials",
     slug: "condiments-cooking",
     sourceCategories: ["Condiments & Cooking Ingredients"]
   },
@@ -48,12 +53,12 @@ export const STOREFRONT_CATEGORY_TAXONOMY = [
     sourceCategories: ["Rice & Staples"]
   },
   {
-    name: "Snacks & Confectionery",
+    name: "Snacks & Sweets",
     slug: "snacks-confectionery",
     sourceCategories: ["Snacks / Biscuits & Confectionery"]
   },
   {
-    name: "Frozen & Chilled",
+    name: "Frozen Foods",
     slug: "frozen-chilled",
     sourceCategories: ["Frozen / Chilled"]
   },
@@ -68,12 +73,12 @@ export const STOREFRONT_CATEGORY_TAXONOMY = [
     sourceCategories: ["Laundry Supplies"]
   },
   {
-    name: "Personal Care & Hygiene",
+    name: "Personal Care Essentials",
     slug: "personal-care-hygiene",
     sourceCategories: ["Personal Care / Hygiene"]
   },
   {
-    name: "Tissue & Cotton",
+    name: "Tissue & Paper",
     slug: "tissue-cotton",
     sourceCategories: ["Tissue & Cotton"]
   }
