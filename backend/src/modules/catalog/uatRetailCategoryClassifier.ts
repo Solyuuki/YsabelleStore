@@ -7,15 +7,59 @@ import {
 // word rather than the actual retail product type. Never infer cheese from snack flavours.
 const OVERRIDES: Record<string, string[]> = {
   "dairy-eggs": [
-    "P104", "P105", "P115", "P116", "P141", "P193", "P194",
-    "P198", "P199", "P204", "P205", "P206", "P212", "P247",
-    "P252", "P264", "P265", "P314", "P315", "P436", "P437"
+    "P104",
+    "P105",
+    "P115",
+    "P116",
+    "P141",
+    "P193",
+    "P194",
+    "P198",
+    "P199",
+    "P204",
+    "P205",
+    "P206",
+    "P212",
+    "P247",
+    "P252",
+    "P264",
+    "P265",
+    "P314",
+    "P315",
+    "P436",
+    "P437"
   ],
   "snacks-confectionery": [
-    "P232", "P233", "P236", "P250", "P297", "P299", "P305", "P307",
-    "P321", "P335", "P352", "P361", "P373", "P401", "P412", "P426",
-    "P427", "P430", "P462", "P464", "P272", "P273", "P301", "P302",
-    "P319", "P320", "P346", "P433", "P434", "P289"
+    "P232",
+    "P233",
+    "P236",
+    "P250",
+    "P297",
+    "P299",
+    "P305",
+    "P307",
+    "P321",
+    "P335",
+    "P352",
+    "P361",
+    "P373",
+    "P401",
+    "P412",
+    "P426",
+    "P427",
+    "P430",
+    "P462",
+    "P464",
+    "P272",
+    "P273",
+    "P301",
+    "P302",
+    "P319",
+    "P320",
+    "P346",
+    "P433",
+    "P434",
+    "P289"
   ],
   "condiments-cooking": ["P100", "P101", "P103", "P117", "P179", "P191", "P249"],
   "canned-goods": ["P195", "P196", "P208", "P213", "P214", "P215"],
@@ -71,9 +115,15 @@ export function desiredRetailCategorySlug(product: RetailCategoryCandidate): str
   // The following exact retail-type hints repair non-SARIMA catalog uploads too.
   if (/\b(?:piattos|potato chips|corn chips|tortillos|cheese curls|chiz curls)\b/i.test(name))
     return "snacks-confectionery";
-  if (/\b(?:bathroom tissue|toilet tissue|facial tissue|tissue roll|absorbent cotton)\b/i.test(name))
+  if (
+    /\b(?:bathroom tissue|toilet tissue|facial tissue|tissue roll|absorbent cotton)\b/i.test(name)
+  )
     return "tissue-cotton";
-  if (/\b(?:eden (?:original )?cheese|eden creamy slices|cheezee (?:cheese|spread)|quickmelt cheese)\b/i.test(name))
+  if (
+    /\b(?:eden (?:original )?cheese|eden creamy slices|cheezee (?:cheese|spread)|quickmelt cheese)\b/i.test(
+      name
+    )
+  )
     return "dairy-eggs";
 
   if (product.sourceCategory) {

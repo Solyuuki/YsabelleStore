@@ -46,56 +46,70 @@ async function main() {
       if (product.isStorefrontVisible) unresolved.push(product.sku);
       continue;
     }
-    selected.push({ id: product.id, sku: product.sku, currentId: product.categoryId, targetSlug: expected });
+    selected.push({
+      id: product.id,
+      sku: product.sku,
+      currentId: product.categoryId,
+      targetSlug: expected
+    });
   }
 
   const collisions = STOREFRONT_CATEGORY_TAXONOMY.filter((entry) =>
     categories.some((existing) => existing.name === entry.name && existing.slug !== entry.slug)
   ).map((entry) => entry.name);
 
-  console.info(JSON.stringify({
-    fix: "UAT-D01",
-    mode: apply ? "APPLY" : "DRY_RUN",
-    checkedProducts: products.length,
-    classifiedProducts: selected.length,
-    unresolvedStorefrontSkus: unresolved,
-    conflictingCategoryNames: collisions,
-    possibleReassignments: selected.filter((item) => currentBySlug.get(item.targetSlug)?.id !== item.currentId).length
-  }));
+  console.info(
+    JSON.stringify({
+      fix: "UAT-D01",
+      mode: apply ? "APPLY" : "DRY_RUN",
+      checkedProducts: products.length,
+      classifiedProducts: selected.length,
+      unresolvedStorefrontSkus: unresolved,
+      conflictingCategoryNames: collisions,
+      possibleReassignments: selected.filter(
+        (item) => currentBySlug.get(item.targetSlug)?.id !== item.currentId
+      ).length
+    })
+  );
 
   if (unresolved.length || collisions.length) {
-    throw new Error("UAT_D01_REVIEW_REQUIRED: ambiguous visible products or category name collisions");
+    throw new Error(
+      "UAT_D01_REVIEW_REQUIRED: ambiguous visible products or category name collisions"
+    );
   }
   if (!apply) return;
 
   // No inventory counts, prices, SKUs, transactions or order records are updated.
-  const result = await prisma.$transaction(async (tx) => {
-    const categoryIds = new Map<string, string>();
-    for (const entry of STOREFRONT_CATEGORY_TAXONOMY) {
-      const category = await tx.category.upsert({
-        where: { slug: entry.slug },
-        create: {
-          name: entry.name,
-          slug: entry.slug,
-          description: "Retail product category",
-          recordSource: CatalogRecordSource.CATALOG,
-          dataQualityStatus: CatalogQualityStatus.APPROVED,
-          isActive: true,
-          isStorefrontVisible: true
-        },
-        update: { name: entry.name }
-      });
-      categoryIds.set(entry.slug, category.id);
-    }
-    let changed = 0;
-    for (const item of selected) {
-      const targetId = categoryIds.get(item.targetSlug)!;
-      if (targetId === item.currentId) continue;
-      await tx.product.update({ where: { id: item.id }, data: { categoryId: targetId } });
-      changed += 1;
-    }
-    return { changed, categorized: selected.length };
-  }, { timeout: 120000, maxWait: 20000 });
+  const result = await prisma.$transaction(
+    async (tx) => {
+      const categoryIds = new Map<string, string>();
+      for (const entry of STOREFRONT_CATEGORY_TAXONOMY) {
+        const category = await tx.category.upsert({
+          where: { slug: entry.slug },
+          create: {
+            name: entry.name,
+            slug: entry.slug,
+            description: "Retail product category",
+            recordSource: CatalogRecordSource.CATALOG,
+            dataQualityStatus: CatalogQualityStatus.APPROVED,
+            isActive: true,
+            isStorefrontVisible: true
+          },
+          update: { name: entry.name }
+        });
+        categoryIds.set(entry.slug, category.id);
+      }
+      let changed = 0;
+      for (const item of selected) {
+        const targetId = categoryIds.get(item.targetSlug)!;
+        if (targetId === item.currentId) continue;
+        await tx.product.update({ where: { id: item.id }, data: { categoryId: targetId } });
+        changed += 1;
+      }
+      return { changed, categorized: selected.length };
+    },
+    { timeout: 120000, maxWait: 20000 }
+  );
   console.info("UAT_D01_RETAIL_CATEGORIES_APPLIED", JSON.stringify(result));
 }
 
