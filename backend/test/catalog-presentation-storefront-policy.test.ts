@@ -4,6 +4,7 @@ import test from "node:test";
 import { UNRESOLVED_CATALOG_IMAGE_CLEANUP_IDENTITIES } from "../src/modules/catalog/catalog-unresolved-image-cleanup-authorization.js";
 import {
   RESTRICTED_ALCOHOL_SOURCE_PRODUCT_IDS,
+  STOREFRONT_CATEGORY_APPROVED_NAMES,
   STOREFRONT_CATEGORY_NAMES
 } from "../src/modules/catalog/storefront-category-taxonomy.js";
 import {
@@ -31,10 +32,18 @@ test("renderable storefront image gate accepts relative and HTTP(S) URLs only", 
   });
 });
 
-test("presentation categories are limited to the clean storefront taxonomy", () => {
-  assert.deepEqual(presentationStorefrontCategoryWhere.name, {
-    in: [...STOREFRONT_CATEGORY_NAMES]
-  });
+test("presentation and approved categories retain the exact pre-D01 names until remapping", () => {
+  const expected = [...STOREFRONT_CATEGORY_APPROVED_NAMES];
+  assert.deepEqual(presentationStorefrontCategoryWhere.name, { in: expected });
+  assert.ok(expected.includes("Baking & Dessert"));
+  assert.ok(expected.includes("Snacks & Confectionery"));
+  assert.ok(expected.includes("Frozen & Chilled"));
+  assert.ok(expected.includes("Baking Essentials"));
+  assert.ok(expected.includes("Snacks & Sweets"));
+  assert.ok(expected.includes("Frozen Foods"));
+  assert.equal(expected.includes("Restricted / Retired"), false);
+  assert.equal(new Set(expected).size, expected.length);
+  assert.equal(STOREFRONT_CATEGORY_NAMES.includes("Baking & Dessert"), false);
 });
 
 test("presentation catalog excludes unresolved images, restricted alcohol, and missing image URLs", () => {
