@@ -2,6 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { prisma } from "../database/prismaClient.js";
+import { storefrontProductWhere } from "../services/catalogQualityPolicy.js";
 import { STOREFRONT_CATEGORY_TAXONOMY } from "../modules/catalog/storefront-category-taxonomy.js";
 import { proposedUatCategoryCorrection } from "../modules/catalog/uat-category-repair.js";
 
@@ -10,10 +11,12 @@ const APPLY_FLAG = "--apply-uat-d01-category-repair";
 
 export async function runUatCategoryRepair(apply = false) {
   const products = await prisma.product.findMany({
-    where: {
-      isStorefrontVisible: true,
+    // Use the same effective visibility policy as the storefront, including
+    // approved and presentation-catalog modes; imported records can be visible
+    // even if their isStorefrontVisible flag is false in presentation mode.
+    where: storefrontProductWhere({
       category: { is: { slug: { in: ["baking-dessert", "frozen-chilled"] } } }
-    },
+    }),
     select: {
       id: true,
       name: true,
