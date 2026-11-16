@@ -167,7 +167,8 @@ test("mobile shop filters keep desktop native select and expose a bounded phone 
     /onChange=\{\(event\) => applyAvailability\(event\.target\.value as AvailabilityFilter\)\}/
   );
   assert.match(shop, /<option value="in-stock">In stock<\/option>/);
-  assert.match(shop, /<option value="out-of-stock">Out of stock<\/option>/);
+  assert.match(shop, /<option value="all">Available products<\/option>/);
+  assert.doesNotMatch(shop, /<option value="out-of-stock">/);
   assert.match(shop, /customer-select__active-dot/);
   assert.match(shop, /className="customer-select__desktop"/);
   assert.match(shop, /aria-expanded=\{availabilityOpen\}/);

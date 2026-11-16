@@ -172,6 +172,33 @@ test("a newer recovery request invalidates an older unused OTP", async () => {
   );
 });
 
+test("a consumed recovery OTP does not prevent issuing and verifying a fresh code", async () => {
+  const suffix = randomUUID().slice(0, 8);
+  const registered = await registerCustomer({
+    name: "Repeat Recovery Customer",
+    username: `repeat.recovery.${suffix}`,
+    email: `repeat-recovery-${suffix}@example.com`,
+    password: "OldPassword123!"
+  });
+  rememberCustomer(registered.customer.id);
+  const { deliveries, delivery } = captureDelivery();
+
+  await requestCustomerPasswordRecovery({ identifier: registered.customer.email }, delivery);
+  const firstGrant = await verifyCustomerPasswordRecoveryCode({
+    identifier: registered.customer.email,
+    verificationCode: deliveries[0]!.verificationCode
+  });
+  assert.ok(firstGrant.recoveryGrant);
+
+  await requestCustomerPasswordRecovery({ identifier: registered.customer.email }, delivery);
+  assert.equal(deliveries.length, 2);
+  const nextGrant = await verifyCustomerPasswordRecoveryCode({
+    identifier: registered.customer.email,
+    verificationCode: deliveries[1]!.verificationCode
+  });
+  assert.ok(nextGrant.recoveryGrant);
+});
+
 test("delivery failure removes the newly issued OTP challenge", async () => {
   const suffix = randomUUID().slice(0, 8);
   const registered = await registerCustomer({

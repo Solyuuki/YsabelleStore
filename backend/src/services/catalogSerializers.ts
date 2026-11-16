@@ -65,6 +65,7 @@ export type InventorySummary = {
 };
 
 export type ProductSummary = {
+  vatCategory: Product["vatCategory"];
   id: string;
   name: string;
   sku: string;
@@ -221,6 +222,7 @@ export function serializeProduct(product: ProductWithRelations): ProductSummary 
 
   return {
     id: product.id,
+    vatCategory: product.vatCategory,
     name: product.name,
     sku: product.sku,
     barcode: product.barcode ?? null,

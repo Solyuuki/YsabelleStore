@@ -114,3 +114,22 @@ Built a separate Dark Mode presentation system for Storefront and Retail. Custom
 About Experience scene files, motion assets, and original Light Mode textures were not modified. Existing Light Mode CSS is preserved by selectors scoped under `:root.dark`.
 
 Validation: CI run 37739767192 — frontend/backend/Electron workspace validations and independent appearance contract job passed; repository quality gates failed at `npm run format:check`, blocking subsequent root tests and verification. Manual visual and screen-reader/keyboard QA pending. Status: implemented, not release-approved.
+
+## Sprint 13 Gmail Support Retry Progress (2026-10-16)
+
+- Branch: `m1/v0.13/fix/support-email-thread-retry`
+- Task: YSB-M1-SUPPORT-EMAIL-013
+- Implementation: Thread-aware Gmail parent selection, sanitized delivery failure
+  diagnostics, reliable retry response, and targeted regression tests.
+- Validation: `npm run verify:code` passed in CI run 38892562190 on code head `2ca1c6a71af3`.
+- Release status: Pending manual staff-reply and ticket-closure email delivery QA.
+
+## Sprint 13 UAT Compatibility and Security Remediation (2026-10-31)
+
+On 2026-10-31, implemented the F01-F05 UAT compatibility and readability updates and patched the six initially high/critical production-reachable npm audit findings on `m1/v0.13/fix/uat-compatibility-and-usability` (PR #62). Updated affected package manifests and lockfile; preserved existing validation behavior with `zod/v3` imports under patched Zod 4.6.7.
+
+Automated evidence: GitHub Actions run 41202158723, implementation head `468e47cde20dc267cc14036debcc6bfac5d42dcd`. Formatting, lint, typecheck, guardrail/workspace/forecasting tests, build, `npm run security:audit:production`, and aggregate `npm run verify:code` all passed. The final `verify:status` artifact check failed only for missing current-branch progress/testing evidence; this update records that evidence without changing the check. F01-F05 rendered-device QA and maintainer merge approval remain pending.
+
+## Sprint 13 Recommender Monthly Ticket Recovery — 2026-11-03
+
+The production monthly worker skipped 51 `TARGET_POLICY_UNVERIFIED` recommendations before creating any Owner-review ticket. This change separates proposal persistence from purchase authorization, and reopens `RESTOCK_MONTH_NO_ACTION` as retryable without duplicating an existing monthly order. Owner may approve only after required evidence is verified, or decline with an audit reason. The branch contains merged PR #62; do not deploy branch HEAD without isolating a hotfix-only release from existing production baselines. CI and exact-release validation remain pending.

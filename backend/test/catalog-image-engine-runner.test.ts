@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 import {
   parseCatalogImageEngineOutput,
-  parseCategoryCoverImageEngineOutput
+  parseCategoryCoverImageEngineOutput,
+  resolveCatalogImageEngineScriptPath
 } from "../src/modules/catalog-image/catalogImageEngineRunner.js";
 
 const validResult = {
@@ -108,4 +111,13 @@ test("category-cover parser rejects product variant names", () => {
       })
     )
   );
+});
+
+test("catalog engine locates the script in source and Railway compiled layout", () => {
+  const root = path.resolve(process.cwd(), "test-catalog-layout");
+  const script = path.join(root, "catalog-image-engine", "app", "main.py");
+  for (const layout of ["src", path.join("dist", "src")]) {
+    const moduleFile = path.join(root, "backend", layout, "modules", "catalog-image", "runner.js");
+    assert.equal(resolveCatalogImageEngineScriptPath(pathToFileURL(moduleFile).href), script);
+  }
 });

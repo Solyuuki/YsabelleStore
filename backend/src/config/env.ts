@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { config as loadEnv } from "dotenv";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import {
   resolveCatalogImageStoragePaths,
@@ -38,6 +38,12 @@ const envSchema = z.object({
   PAYMONGO_SECRET_KEY: optionalNonEmptyString,
   PAYMONGO_WEBHOOK_SECRET: optionalNonEmptyString,
   RESEND_API_KEY: z.string().min(1).optional(),
+  BREVO_API_KEY: optionalNonEmptyString,
+  BREVO_SENDER_EMAIL: optionalEmail,
+  SUPPORT_EMAIL_PROVIDER: z.enum(["gmail_api", "brevo"]).default("gmail_api"),
+  CUSTOMER_EMAIL_PROVIDER: z.enum(["resend", "gmail_smtp", "gmail_api", "brevo"]).default("resend"),
+  SMTP_USER: optionalEmail,
+  SMTP_PASSWORD: optionalNonEmptyString,
   CUSTOMER_RECOVERY_FROM_EMAIL: z.string().email().optional(),
   CUSTOMER_DEV_GMAIL_SMTP_USER: z.string().email().optional(),
   CUSTOMER_DEV_GMAIL_SMTP_APP_PASSWORD: optionalNonEmptyString,

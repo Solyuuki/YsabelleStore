@@ -235,3 +235,39 @@
     transform: none;
   }
 }
+
+/* UAT F04: reduce desktop sign-in overflow without hiding form content or
+   changing account authentication behavior. */
+@media (min-width: 761px) {
+  .customer-auth-page--login {
+    min-height: calc(100dvh - 76px);
+    padding-block: clamp(0.8rem, 2.3vh, 1.75rem);
+  }
+
+  .customer-auth-page--login .customer-auth-stage {
+    width: min(100%, 36rem);
+    max-width: 100%;
+  }
+
+  .customer-auth-page--login .customer-auth-stage__panel {
+    padding: clamp(1.25rem, 2.4vw, 2rem);
+  }
+
+  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-card__intro {
+    margin-bottom: 1rem;
+  }
+
+  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-card__intro h1 {
+    font-size: clamp(2rem, 3.5vw, 2.9rem);
+    line-height: 1.08;
+  }
+
+  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-form {
+    gap: 0.8rem;
+  }
+
+  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-field input,
+  .customer-auth-page--login .customer-auth-stage__panel .customer-auth-submit {
+    min-height: 48px;
+  }
+}

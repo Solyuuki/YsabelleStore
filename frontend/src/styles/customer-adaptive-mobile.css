@@ -2949,3 +2949,153 @@
     color: #fff;
   }
 }
+
+/* Sprint 13: preserve complete editorial headings on narrow Android/iOS screens.
+   Decorative category-to-merchandising overlap must never cover Trending copy. */
+@media (max-width: 700px) {
+  .customer-app .customer-home .home-category-merch-handoff {
+    display: none;
+  }
+
+  .customer-app .customer-home .home-merchandising-canvas {
+    margin-top: 0;
+  }
+
+  .customer-app .customer-home .home-merchandising-canvas > .home-merchandising--trending,
+  .customer-app .customer-home .home-merchandising-canvas > .home-merchandising--loading {
+    padding-top: clamp(2rem, 6vw, 2.75rem);
+  }
+
+  .customer-app .customer-home .home-section-heading,
+  .customer-app .customer-home .home-section-heading > div {
+    min-width: 0;
+    max-width: 100%;
+    overflow: visible;
+  }
+
+  .customer-app .customer-home .home-section-heading__eyebrow {
+    display: block;
+    max-width: 100%;
+    margin: 0 0 0.35rem;
+    padding-block: 0.12rem;
+    overflow-wrap: break-word;
+    white-space: normal;
+    line-height: 1.5;
+  }
+
+  .customer-app .customer-home .home-section-heading__title {
+    max-width: 100%;
+    line-height: 1.18;
+    overflow-wrap: break-word;
+  }
+
+  .customer-app .customer-home .home-section-heading__description {
+    max-width: 100%;
+    line-height: 1.55;
+    overflow-wrap: break-word;
+  }
+}
+
+/* On phones, a scroll reveal must not hide or clip section headings during
+   momentum scrolling. Card/reel animations and tablet/desktop behavior stay intact. */
+@media (max-width: 700px) and (prefers-reduced-motion: no-preference) {
+  .customer-app .customer-home .home-section-heading__eyebrow,
+  .customer-app .customer-home .home-section-heading__title,
+  .customer-app .customer-home .home-section-heading__description,
+  .customer-app .customer-home .home-section-heading__action {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* UAT compatibility: keep the existing two-card phone catalogue, but prevent
+   quantity and Add controls from squeezing each other at 320-390px widths. */
+@media (max-width: 390px) and (orientation: portrait) {
+  .customer-home .customer-product-card .customer-product-visual,
+  .customer-shop-page .customer-product-card .customer-product-visual {
+    aspect-ratio: 3 / 2;
+  }
+
+  .customer-home .customer-product-card h3,
+  .customer-shop-page .customer-product-card h3 {
+    overflow-wrap: anywhere;
+  }
+
+  .customer-app .customer-product-card__purchase-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.4rem;
+  }
+
+  .customer-app .customer-product-card__actions .customer-quantity {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .customer-app .customer-product-card__cart-button {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+/* UAT F02: proportional mobile product cards. Keep the established two-column
+   catalogue and the existing 44px quantity actions while preventing overflow. */
+@media (max-width: 700px) and (orientation: portrait) {
+  .customer-home .customer-product-card,
+  .customer-shop-page .customer-product-card {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .customer-home .customer-product-card__media,
+  .customer-home .customer-product-card__body,
+  .customer-shop-page .customer-product-card__media,
+  .customer-shop-page .customer-product-card__body {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .customer-home .customer-product-card .customer-product-visual,
+  .customer-shop-page .customer-product-card .customer-product-visual {
+    min-width: 0;
+    min-height: 0;
+    aspect-ratio: 3 / 2;
+  }
+
+  .customer-home .customer-product-card__favorite,
+  .customer-shop-page .customer-product-card__favorite {
+    top: 0.55rem;
+    right: 0.55rem;
+  }
+
+  .customer-home .customer-product-badge,
+  .customer-shop-page .customer-product-badge {
+    top: 0.55rem;
+    left: 0.55rem;
+    max-width: calc(100% - 4.3rem);
+  }
+
+  .customer-home .customer-product-card__price-row,
+  .customer-shop-page .customer-product-card__price-row {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 480px) and (orientation: portrait) {
+  .customer-app .customer-product-card__purchase-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.4rem;
+  }
+
+  .customer-app .customer-product-card__actions .customer-quantity {
+    min-width: 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .customer-app .customer-product-card__cart-button {
+    width: 100%;
+    min-width: 0;
+  }
+}

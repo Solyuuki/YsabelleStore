@@ -5,8 +5,11 @@ import test from "node:test";
 import { prisma } from "../src/database/prismaClient.js";
 import { createCustomerSupportTicket } from "../src/services/customerSupportService.js";
 import {
+  createSupportBrevoSender,
   createSupportGmailClient,
   deliverStaffSupportMessageEmail,
+  deliverSupportLifecycleMessageEmail,
+  SUPPORT_LIFECYCLE_SENDER_NAME,
   syncSupportGmailInboxWithClient,
   type GmailApiMessage,
   type SupportGmailClient
@@ -741,4 +744,193 @@ test("Gmail resolution NO reopens ticket without a final resolved email", async 
   } finally {
     await scope.cleanup();
   }
+});
+
+test("lifecycle email selects a parent from the same Gmail thread", async () => {
+  const scope = await captureDatabaseFixtureScope(prisma);
+  try {
+    const ticket = await createCustomerSupportTicket({
+      customerName: "Thread test",
+      customerEmail: `thread-test-${randomUUID()}@example.com`,
+      category: "OTHER",
+      subject: "Thread test",
+      message: "Please help."
+    });
+    const threadId = `thread-${randomUUID()}`;
+    const parentId = `parent-${randomUUID()}`;
+    await prisma.supportTicket.update({
+      where: { id: ticket.id },
+      data: { gmailThreadId: threadId, status: "CLOSED", closedAt: new Date() }
+    });
+    await prisma.supportMessage.create({
+      data: {
+        ticketId: ticket.id,
+        senderType: "SYSTEM",
+        channel: "EMAIL",
+        senderName: "Ysabelle Store Auto Acknowledgement",
+        body: "Received",
+        deliveryStatus: "SENT",
+        gmailMessageId: parentId,
+        gmailThreadId: threadId
+      }
+    });
+    await prisma.supportMessage.create({
+      data: {
+        ticketId: ticket.id,
+        senderType: "CUSTOMER",
+        channel: "EMAIL",
+        senderName: "Customer",
+        body: "Another thread",
+        deliveryStatus: "NOT_APPLICABLE",
+        gmailMessageId: `other-${randomUUID()}`,
+        gmailThreadId: `other-thread-${randomUUID()}`
+      }
+    });
+    const notice = await prisma.supportMessage.create({
+      data: {
+        ticketId: ticket.id,
+        senderType: "SYSTEM",
+        channel: "EMAIL",
+        senderName: SUPPORT_LIFECYCLE_SENDER_NAME,
+        body: "This support conversation is now closed.",
+        deliveryStatus: "PENDING"
+      }
+    });
+    const client: SupportGmailClient = {
+      async getMessage() {
+        throw new Error("Unexpected");
+      },
+      async listInboxMessages() {
+        return [];
+      },
+      async sendSupportReply(input) {
+        assert.equal(input.threadId, threadId);
+        assert.equal(input.replyToGmailMessageId, parentId);
+        return { id: `sent-${randomUUID()}`, threadId };
+      }
+    };
+    const result = await deliverSupportLifecycleMessageEmail(notice.id, client);
+    assert.equal(result.status, "SENT");
+  } finally {
+    await scope.cleanup();
+  }
+});
+
+test("Gmail HTTP errors use an allowlisted reason without raw details", async () => {
+  const tokenBody = JSON.stringify({ access_token: "example-token", expires_in: 3600 });
+  const rejectedBody = JSON.stringify({ error: { errors: [{ reason: "invalidArgument" }] } });
+  const client = createSupportGmailClient({
+    clientId: "client-id",
+    clientSecret: "secret",
+    refreshToken: "refresh-token",
+    supportEmail: "ysabellestore.support@gmail.com",
+    fromName: "Ysabelle Store Customer Support",
+    fetchImpl: async (input) => {
+      if (String(input) === "https://oauth2.googleapis.com/token") {
+        return new Response(tokenBody, { status: 200 });
+      }
+      return new Response(rejectedBody, { status: 400 });
+    }
+  });
+  await assert.rejects(
+    () => client.listInboxMessages(),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.match(error.message, /HTTP 400; invalidArgument/);
+      assert.doesNotMatch(error.message, /access_token|example-token/);
+      return true;
+    }
+  );
+});
+
+test("Gmail OAuth errors report safe provider codes without exposing Google response details", async () => {
+  const client = createSupportGmailClient({
+    clientId: "client-id",
+    clientSecret: "secret",
+    refreshToken: "refresh-token",
+    supportEmail: "ysabellestore.support@gmail.com",
+    fromName: "Ysabelle Store Customer Support",
+    fetchImpl: async () =>
+      new Response(
+        JSON.stringify({
+          error: "invalid_grant",
+          error_description: "Sensitive provider diagnostics: refresh-token"
+        }),
+        { status: 400 }
+      )
+  });
+
+  await assert.rejects(
+    () => client.listInboxMessages(),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.match(error.message, /invalid_grant; HTTP 400/);
+      assert.doesNotMatch(error.message, /refresh-token|Sensitive provider diagnostics/);
+      return true;
+    }
+  );
+});
+
+test("Brevo support sends branded ticket replies with a reply-to address and no Gmail request", async () => {
+  const calls: Array<{ url: string; init?: RequestInit }> = [];
+  const send = createSupportBrevoSender({
+    apiKey: "test-brevo-key",
+    senderEmail: "verified@example.com",
+    supportEmail: "support@example.com",
+    fromName: "Ysabelle Store Customer Support",
+    fetchImpl: async (url, init) => {
+      calls.push({ url: String(url), init });
+      return new Response(JSON.stringify({ messageId: "brevo-support-id" }), { status: 201 });
+    }
+  });
+  await send({
+    to: "customer@example.com",
+    ticketNumber: "YS-CS-123456",
+    subject: "Help needed",
+    body: "Please help with my order.",
+    kind: "STAFF_REPLY"
+  });
+
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0]?.url, "https://api.brevo.com/v3/smtp/email");
+  assert.equal(new Headers(calls[0]?.init?.headers).get("api-key"), "test-brevo-key");
+  const body = JSON.parse(String(calls[0]?.init?.body)) as {
+    sender: { email: string };
+    replyTo: { email: string };
+    to: Array<{ email: string }>;
+    subject: string;
+    htmlContent: string;
+    textContent: string;
+  };
+  assert.equal(body.sender.email, "verified@example.com");
+  assert.equal(body.replyTo.email, "support@example.com");
+  assert.equal(body.to[0]?.email, "customer@example.com");
+  assert.equal(body.subject, "[YS-CS-123456] Help needed");
+  assert.match(body.htmlContent, /YS-CS-123456/);
+  assert.match(body.textContent, /Please help with my order/);
+});
+
+test("Brevo support rejects errors without leaking API keys or provider response body", async () => {
+  const send = createSupportBrevoSender({
+    apiKey: "secret-brevo-key",
+    senderEmail: "verified@example.com",
+    supportEmail: "support@example.com",
+    fromName: "Ysabelle Store Customer Support",
+    fetchImpl: async () => new Response("secret-brevo-key private content", { status: 401 })
+  });
+  await assert.rejects(
+    () =>
+      send({
+        to: "customer@example.com",
+        ticketNumber: "YS-CS-123456",
+        subject: "Help needed",
+        body: "Please help"
+      }),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.match(error.message, /HTTP 401/);
+      assert.doesNotMatch(error.message, /secret-brevo-key|private content/);
+      return true;
+    }
+  );
 });

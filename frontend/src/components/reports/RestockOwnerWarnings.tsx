@@ -15,10 +15,12 @@ const warningLabels: Record<string, string> = {
 
 export function RestockOwnerWarnings({
   warnings,
-  onApplySuggestedQuantity
+  onApplySuggestedQuantity,
+  blocking = false
 }: {
   warnings: RestockOwnerWarning[];
   onApplySuggestedQuantity?: (productId: string, quantity: number) => void;
+  blocking?: boolean;
 }) {
   if (warnings.length === 0) return null;
 
@@ -30,8 +32,9 @@ export function RestockOwnerWarnings({
     >
       <p className="text-sm font-semibold">Purchasing advice — Owner decision</p>
       <p className="mt-1 text-xs leading-5">
-        These are recommendations, not purchase restrictions. You may keep your requested quantities
-        and confirm the order. Your acknowledgment will be recorded.
+        {blocking
+          ? "Approval is on hold until required purchasing checks are resolved. Review the product target-stock authorization, POS evidence, stock quantities and costs before retrying."
+          : "These are recommendations, not purchase restrictions. You may keep your requested quantities and confirm the order. Your acknowledgment will be recorded."}
       </p>
       <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
         {warnings.map((warning, index) => (
@@ -44,7 +47,8 @@ export function RestockOwnerWarnings({
             {warning.suggestedQuantity !== null
               ? ` System suggests: ${warning.suggestedQuantity.toLocaleString()} units.`
               : ""}
-            {onApplySuggestedQuantity &&
+            {!blocking &&
+            onApplySuggestedQuantity &&
             warning.productId &&
             warning.suggestedQuantity !== null &&
             Number.isSafeInteger(warning.suggestedQuantity) &&

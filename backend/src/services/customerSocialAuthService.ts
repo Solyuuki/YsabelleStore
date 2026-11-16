@@ -6,6 +6,7 @@ import { prisma } from "../database/prismaClient.js";
 import { normalizeCustomerEmail } from "../utils/customerIdentity.js";
 import { HttpError } from "../utils/httpError.js";
 import { createCustomerSession, type SafeCustomer } from "./customerAuthService.js";
+import { customerAccountRestriction } from "./customerAccountRestriction.js";
 
 const SOCIAL_LINK_INTENT_LIFETIME_MS = 10 * 60 * 1000;
 
@@ -78,6 +79,8 @@ function normalizeIdentity(input: CustomerSocialIdentityInput) {
 }
 
 async function authenticatedResult(customer: CustomerAccount): Promise<CustomerSocialAuthResult> {
+  const restriction = customerAccountRestriction(customer.status);
+  if (restriction) throw restriction;
   if (customer.status !== "ACTIVE") {
     throw socialError(403, "SOCIAL_AUTH_ACCOUNT_UNAVAILABLE", "Customer account is unavailable.");
   }
@@ -95,6 +98,8 @@ async function createLinkIntent(
   identity: ReturnType<typeof normalizeIdentity>,
   now: Date
 ): Promise<CustomerSocialAuthResult> {
+  const restriction = customerAccountRestriction(customer.status);
+  if (restriction) throw restriction;
   if (customer.status !== "ACTIVE") {
     throw socialError(403, "SOCIAL_AUTH_ACCOUNT_UNAVAILABLE", "Customer account is unavailable.");
   }
@@ -135,6 +140,8 @@ async function autoLinkAuthoritativeIdentity(
   customer: CustomerAccount,
   identity: ReturnType<typeof normalizeIdentity>
 ): Promise<CustomerSocialAuthResult> {
+  const restriction = customerAccountRestriction(customer.status);
+  if (restriction) throw restriction;
   if (customer.status !== "ACTIVE") {
     throw socialError(403, "SOCIAL_AUTH_ACCOUNT_UNAVAILABLE", "Customer account is unavailable.");
   }

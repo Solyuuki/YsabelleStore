@@ -9,6 +9,7 @@ import { HttpError } from "../utils/httpError.js";
 
 const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 const GMAIL_API_BASE = "https://gmail.googleapis.com/gmail/v1/users/me";
+const BREVO_EMAIL_ENDPOINT = "https://api.brevo.com/v3/smtp/email";
 const GMAIL_REQUEST_TIMEOUT_MS = 15_000;
 const GMAIL_SYNC_INTERVAL_MS = 60_000;
 const GMAIL_SYNC_PAGE_SIZE = 50;
@@ -16,7 +17,7 @@ const GMAIL_SYNC_MAX_MESSAGES = 200;
 const GMAIL_SYNC_QUERY_DAYS = 30;
 const GMAIL_ACCESS_TOKEN_REFRESH_SKEW_MS = 60_000;
 const SUPPORT_EMAIL_BODY_MAX_LENGTH = 5_000;
-const DELIVERY_ERROR_MESSAGE = "Gmail delivery failed. Retry is available.";
+const DELIVERY_ERROR_MESSAGE = "Support email delivery failed. Retry is available.";
 const TICKET_REFERENCE_PATTERN = /\bYS-CS-\d{6}\b/i;
 
 const SUPPORT_LOGO_CONTENT_ID = "ysabelle-support-logo";
@@ -173,7 +174,11 @@ export function getSupportGmailStatus() {
 }
 
 export function isSupportGmailDeliveryEnabled() {
-  return isSupportGmailConfigured() && !isAutomatedTestRuntime();
+  if (isAutomatedTestRuntime()) return false;
+  if (env.SUPPORT_EMAIL_PROVIDER === "brevo") {
+    return Boolean(env.BREVO_API_KEY && env.BREVO_SENDER_EMAIL && env.CUSTOMER_SUPPORT_EMAIL);
+  }
+  return isSupportGmailConfigured();
 }
 
 function supportGmailNotConfigured() {
@@ -379,6 +384,18 @@ function buildRawSupportEmail(
   configuration: SupportGmailConfiguration,
   input: SupportGmailSendInput,
   replyMessageId: string | null
+): string;
+function buildRawSupportEmail(
+  configuration: SupportGmailConfiguration,
+  input: SupportGmailSendInput,
+  replyMessageId: string | null,
+  output: "brevo"
+): { subject: string; html: string; text: string };
+function buildRawSupportEmail(
+  configuration: SupportGmailConfiguration,
+  input: SupportGmailSendInput,
+  replyMessageId: string | null,
+  output?: "brevo"
 ) {
   const subject = sanitizeHeaderValue(
     input.threadSubject ?? `[${input.ticketNumber}] ${input.subject}`
@@ -453,6 +470,8 @@ function buildRawSupportEmail(
   </body>
 </html>`;
 
+  if (output === "brevo") return { subject, html, text };
+
   const alternativeBoundary = `ys-alt-${Date.now().toString(36)}`;
   const relatedBoundary = `ys-related-${Math.random().toString(36).slice(2)}`;
   const alternative = [
@@ -497,6 +516,52 @@ function buildRawSupportEmail(
   ].join("\r\n");
 }
 
+export function createSupportBrevoSender(input: {
+  apiKey: string;
+  senderEmail: string;
+  supportEmail: string;
+  fromName: string;
+  fetchImpl?: typeof fetch;
+}) {
+  const configuration: SupportGmailConfiguration = {
+    clientId: "",
+    clientSecret: "",
+    refreshToken: "",
+    supportEmail: input.supportEmail,
+    fromName: input.fromName
+  };
+  const fetchImpl = input.fetchImpl ?? fetch;
+
+  return async (message: SupportGmailSendInput): Promise<void> => {
+    const { subject, html, text } = buildRawSupportEmail(configuration, message, null, "brevo");
+    const response = await fetchImpl(BREVO_EMAIL_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "api-key": input.apiKey,
+        "content-type": "application/json",
+        accept: "application/json"
+      },
+      body: JSON.stringify({
+        sender: { name: input.fromName, email: input.senderEmail },
+        replyTo: { name: input.fromName, email: input.supportEmail },
+        to: [{ email: message.to }],
+        subject,
+        htmlContent: html,
+        textContent: text
+      }),
+      signal: AbortSignal.timeout(15_000)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Brevo support email rejected (HTTP ${response.status}).`);
+    }
+    const payload = (await response.json()) as { messageId?: unknown };
+    if (typeof payload.messageId !== "string" || !payload.messageId.trim()) {
+      throw new Error("Brevo support email returned an incomplete response.");
+    }
+  };
+}
+
 export function createSupportGmailClient(input: SupportGmailConfiguration): SupportGmailClient {
   const configuration = {
     ...input,
@@ -530,7 +595,27 @@ export function createSupportGmailClient(input: SupportGmailConfiguration): Supp
       throw new Error("Support Gmail authentication failed.");
     }
 
-    if (!response.ok) throw new Error("Support Gmail authentication failed.");
+    if (!response.ok) {
+      let providerCode = "unknown";
+      try {
+        const payload = (await response.json()) as { error?: unknown };
+        const safeCodes = [
+          "invalid_grant",
+          "invalid_client",
+          "unauthorized_client",
+          "invalid_scope",
+          "access_denied"
+        ];
+        if (typeof payload.error === "string" && safeCodes.includes(payload.error)) {
+          providerCode = payload.error;
+        }
+      } catch {
+        // Do not log provider payloads, tokens, or other credentials.
+      }
+      throw new Error(
+        `Support Gmail authentication failed (${providerCode}; HTTP ${response.status}).`
+      );
+    }
 
     const payload = (await response.json()) as {
       access_token?: unknown;
@@ -596,7 +681,34 @@ export function createSupportGmailClient(input: SupportGmailConfiguration): Supp
       response = await requestWithToken(token);
     }
 
-    if (!response.ok) throw new Error("Support Gmail request failed.");
+    if (!response.ok) {
+      let reason = "unknown";
+      try {
+        const payload = (await response.json()) as {
+          error?: { errors?: Array<{ reason?: unknown }> };
+        };
+        const providerReason = payload.error?.errors?.[0]?.reason;
+        const safeReasons = [
+          "invalidArgument",
+          "failedPrecondition",
+          "insufficientPermissions",
+          "rateLimitExceeded",
+          "userRateLimitExceeded",
+          "quotaExceeded",
+          "notFound",
+          "badRequest",
+          "forbidden",
+          "domainPolicy",
+          "authError"
+        ];
+        if (typeof providerReason === "string" && safeReasons.includes(providerReason)) {
+          reason = providerReason;
+        }
+      } catch {
+        // Never log Google's raw error description or response body.
+      }
+      throw new Error(`Support Gmail request failed (HTTP ${response.status}; ${reason}).`);
+    }
     return (await response.json()) as T;
   }
 
@@ -706,7 +818,7 @@ type SupportEmailDeliveryOptions = {
 async function deliverSupportMessageEmail(
   messageId: string,
   options: SupportEmailDeliveryOptions,
-  client: SupportGmailClient = runtimeClient()
+  client?: SupportGmailClient
 ) {
   const message = await prisma.supportMessage.findUnique({
     select: {
@@ -764,14 +876,16 @@ async function deliverSupportMessageEmail(
           where: {
             ticketId: message.ticketId,
             id: { not: message.id },
-            gmailMessageId: { not: null }
+            gmailMessageId: { not: null },
+            ...(message.ticket.gmailThreadId ? { gmailThreadId: message.ticket.gmailThreadId } : {})
           }
         })
       : null;
 
-  let sent: SupportGmailSendResult;
+  const useBrevo = env.SUPPORT_EMAIL_PROVIDER === "brevo";
+  let sent: SupportGmailSendResult | null = null;
   try {
-    sent = await client.sendSupportReply({
+    const payload: SupportGmailSendInput = {
       to: message.ticket.customerEmail,
       ticketNumber: message.ticket.ticketNumber,
       subject: message.ticket.subject,
@@ -779,8 +893,37 @@ async function deliverSupportMessageEmail(
       threadId: message.ticket.gmailThreadId,
       replyToGmailMessageId: previousGmailMessage?.gmailMessageId ?? null,
       kind: options.kind
-    });
-  } catch {
+    };
+    if (useBrevo) {
+      const apiKey = env.BREVO_API_KEY?.trim();
+      const senderEmail = env.BREVO_SENDER_EMAIL?.trim();
+      const supportEmail = env.CUSTOMER_SUPPORT_EMAIL?.trim();
+      if (!apiKey || !senderEmail || !supportEmail) {
+        throw new Error("Brevo support email configuration missing.");
+      }
+      await createSupportBrevoSender({
+        apiKey,
+        senderEmail,
+        supportEmail,
+        fromName: env.CUSTOMER_SUPPORT_FROM_NAME
+      })(payload);
+    } else {
+      sent = await (client ?? runtimeClient()).sendSupportReply(payload);
+    }
+  } catch (error) {
+    const safeError =
+      error instanceof Error &&
+      /^(?:Support Gmail (?:authentication|request) failed(?: \([A-Za-z0-9_; ]+\))?\.|Brevo support email (?:rejected \(HTTP [0-9]{3}\)|configuration missing|returned an incomplete response)\.)$/.test(
+        error.message
+      );
+    let diagnostic = safeError && error instanceof Error ? error.message : "unknown";
+    if (
+      error instanceof Error &&
+      error.message === "Cannot send a threaded support reply without its parent Message-ID."
+    ) {
+      diagnostic = "thread_parent_unavailable";
+    }
+    console.error(`[support-email] ${options.kind} delivery failed: ${diagnostic}`);
     const operations: Prisma.PrismaPromise<unknown>[] = [
       prisma.supportMessage.update({
         data: {
@@ -820,8 +963,8 @@ async function deliverSupportMessageEmail(
         channel: "EMAIL",
         deliveryStatus: "SENT",
         deliveryError: null,
-        gmailMessageId: sent.id,
-        gmailThreadId: sent.threadId,
+        gmailMessageId: sent?.id ?? null,
+        gmailThreadId: sent?.threadId ?? null,
         emailSentAt: sentAt
       },
       where: {
@@ -829,10 +972,14 @@ async function deliverSupportMessageEmail(
         deliveryStatus: "PENDING"
       }
     }),
-    prisma.supportTicket.update({
-      data: { gmailThreadId: sent.threadId },
-      where: { id: message.ticketId }
-    })
+    ...(sent
+      ? [
+          prisma.supportTicket.update({
+            data: { gmailThreadId: sent.threadId },
+            where: { id: message.ticketId }
+          })
+        ]
+      : [])
   ];
 
   if (options.transitionTicketStatus) {
@@ -852,12 +999,16 @@ async function deliverSupportMessageEmail(
   }
 
   await prisma.$transaction(operations);
-  return { status: "SENT" as const, gmailMessageId: sent.id, gmailThreadId: sent.threadId };
+  return {
+    status: "SENT" as const,
+    gmailMessageId: sent?.id ?? null,
+    gmailThreadId: sent?.threadId ?? null
+  };
 }
 
 export async function deliverStaffSupportMessageEmail(
   messageId: string,
-  client: SupportGmailClient = runtimeClient()
+  client?: SupportGmailClient
 ) {
   return deliverSupportMessageEmail(
     messageId,
@@ -868,7 +1019,7 @@ export async function deliverStaffSupportMessageEmail(
 
 export async function deliverAutomatedSupportAcknowledgementEmail(
   messageId: string,
-  client: SupportGmailClient = runtimeClient()
+  client?: SupportGmailClient
 ) {
   return deliverSupportMessageEmail(
     messageId,
@@ -879,7 +1030,7 @@ export async function deliverAutomatedSupportAcknowledgementEmail(
 
 export async function deliverSupportLifecycleMessageEmail(
   messageId: string,
-  client: SupportGmailClient = runtimeClient()
+  client?: SupportGmailClient
 ) {
   return deliverSupportMessageEmail(
     messageId,
@@ -1091,8 +1242,17 @@ async function reconcileSupportGmailInbox() {
     if (result.imported > 0) {
       console.info(`[support-gmail] Imported ${result.imported} customer email reply/replies.`);
     }
-  } catch {
-    console.error("[support-gmail] Gmail synchronization failed.");
+  } catch (error) {
+    const reason =
+      error instanceof Error &&
+      /^Support Gmail (?:authentication|request) failed(?: \([A-Za-z0-9_; ]+\))?\.$/.test(
+        error.message
+      )
+        ? error.message
+        : error instanceof Prisma.PrismaClientKnownRequestError
+          ? `Database error ${error.code}.`
+          : "Unknown error.";
+    console.error(`[support-gmail] Gmail synchronization failed: ${reason}`);
   }
 }
 

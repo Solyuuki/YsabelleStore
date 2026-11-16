@@ -500,7 +500,7 @@ export async function assertAutomatedRestockQuantitySafe(
 
   // Physical stock receipts operate on fixed approved quantities, never live
   // forecasts, POS history, provisional budgets or fluctuating unit costs.
-  if (stage === "RECEIPT" || isAutomatedMonthlyOrder(snapshot.notes)) return [];
+  if (stage === "RECEIPT") return [];
   if (selectedLines.length === 0) return [];
 
   const { listRestockPlanningCandidates } = await import("./restockPlanningService.js");
@@ -616,6 +616,17 @@ export async function approveRestockOrder(
         "APPROVAL",
         tx
       );
+      // Automated proposals cannot bypass purchasing limits by acknowledging a warning.
+      if (purchasingWarnings.length > 0 && isAutomatedMonthlyOrder(existing.notes)) {
+        throw new HttpError(
+          409,
+          "This automated restock is on hold until required purchasing checks are resolved.",
+          {
+            code: "RESTOCK_AUTOMATED_POLICY_BLOCKED",
+            details: { warnings: purchasingWarnings }
+          }
+        );
+      }
       if (purchasingWarnings.length > 0 && !input.acknowledgeWarnings) {
         throw new HttpError(
           409,

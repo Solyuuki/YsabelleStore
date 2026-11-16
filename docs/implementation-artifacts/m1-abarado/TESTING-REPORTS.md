@@ -230,3 +230,31 @@ Automated coverage verifies the canonical 50 identity manifest against the relea
 | Date       | Command             | Result | Evidence                                                                                                                                             |
 | ---------- | ------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-10-12 | npm run verify:code | Passed | PR #54 CI run 38197033098 at 1a3adfc6848074494e6a138cfd4a3724a6d63da8; aggregate verification passed before this documentation-only evidence commit. |
+
+## Sprint 13 Gmail Support Retry Verification (2026-10-16)
+
+Branch: `m1/v0.13/fix/support-email-thread-retry`
+
+The aggregate code verifier passed in CI run 38892562190 on implementation commit
+`2ca1c6a71af3`. The subsequent status verification failed because these
+implementation artifacts lacked current evidence. Production email QA remains pending.
+
+| Date       | Command             | Result | Evidence                                              |
+| ---------- | ------------------- | ------ | ----------------------------------------------------- |
+| 2026-10-16 | npm run verify:code | Passed | CI 38892562190; 601/601, 15/15, 371/371 tests passed. |
+
+## Sprint 13 UAT Compatibility and Security Remediation (2026-10-31)
+
+The following aggregate result is from GitHub Actions CI run 41202158723, implementation commit `468e47cde20dc267cc14036debcc6bfac5d42dcd`. That run passed the security audit and aggregate verifier before reaching the missing-artifact-evidence status gate. No real-device UAT retest is claimed by this entry.
+
+| Date       | Command             | Result | Evidence                                                                                                        |
+| ---------- | ------------------- | ------ | --------------------------------------------------------------------------------------------------------------- |
+| 2026-10-31 | npm run verify:code | Passed | CI 41202158723; aggregate code verifier passed at implementation head 468e47cde20dc267cc14036debcc6bfac5d42dcd. |
+
+## Sprint 13 Recommender Monthly Ticket Recovery — 2026-11-03
+
+Production evidence: Railway backend runtime on 2026-11-01 00:45 Asia/Manila recorded 51 `TARGET_POLICY_UNVERIFIED` holds. CI on implementation head `696915dc` passed code-format, lint, typecheck, guardrail tests, workspace tests, forecasting checks, repository build, production security audit, `npm run verify:code` and `npm run verify:status`. This entry only certifies completed CI steps, not the subsequent Phase 6 rehearsal or a complete release. The detached ticket-only Railway candidates require independent deployment verification. No Railway deployment or interactive Owner QA has been performed.
+
+| Date       | Command             | Result | Evidence                                               |
+| ---------- | ------------------- | ------ | ------------------------------------------------------ |
+| 2026-11-03 | npm run verify:code | Passed | CI 41566648792 at 696915dc; aggregate verifier passed. |

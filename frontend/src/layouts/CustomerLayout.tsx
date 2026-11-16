@@ -39,10 +39,10 @@ export function CustomerLayout({
         onStartGuide={startGuide}
         pathname={pathname}
       />
+      <PrivacyNotice navigate={navigate} pathname={pathname} />
       <main id="customer-main">{children}</main>
       <DiscoverBrandIdentity pathname={pathname} />
       <CustomerFooter navigate={navigate} onStartGuide={startGuide} pathname={pathname} />
-      <PrivacyNotice navigate={navigate} pathname={pathname} />
       <div aria-live="polite" className="sr-only" role="status">
         {announcement}
       </div>

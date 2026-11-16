@@ -170,16 +170,20 @@ export function RetailMobileNavigation({
                 return (
                   <div className="retail-mobile-nav__group" key={group.title}>
                     <p className="retail-mobile-nav__group-label">{group.title}</p>
-                    {items.map(({ icon: Icon, label, path }) => (
+                    {items.map(({ icon: Icon, label, description, path }) => (
                       <button
                         aria-current={activePath === path ? "page" : undefined}
+                        aria-description={description}
                         className="retail-mobile-nav__link"
                         key={path}
                         onClick={() => navigateAndDismiss(path)}
                         type="button"
                       >
                         <Icon aria-hidden="true" height={19} width={19} />
-                        <span>{label}</span>
+                        <span className="retail-mobile-nav__link-copy">
+                          <strong>{label}</strong>
+                          <small>{description}</small>
+                        </span>
                       </button>
                     ))}
                   </div>

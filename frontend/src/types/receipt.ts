@@ -10,6 +10,8 @@ export type RetailReceiptItem = {
 export type RetailReceiptData = {
   cashReceived: string;
   cashierName: string | null;
+  customerName?: string | null;
+  saleSource?: "POS" | "WEB";
   change: string;
   discountAmount?: string | null;
   itemCount: number;
@@ -18,6 +20,9 @@ export type RetailReceiptData = {
   receiptNumber: string;
   saleDate: string;
   subtotal: string;
-  taxAmount?: string | null;
+  vatableSalesAmount: string | null;
+  vatAmount: string | null;
+  vatExemptSalesAmount: string | null;
+  zeroRatedSalesAmount: string | null;
   total: string;
 };

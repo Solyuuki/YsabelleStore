@@ -86,32 +86,32 @@ const essentialShelfItems = [
   },
   {
     alt: "Packaged crackers, chips, and snacks arranged on a grocery shelf",
-    category: "Snacks & Confectionery",
+    category: "Snacks & Sweets",
     imageUrl: "/images/discover/essentials/snacks-retail-display.webp",
     slug: "snacks-confectionery"
   },
   {
     alt: "Baking ingredients arranged for dessert preparation",
-    category: "Baking & Dessert",
+    category: "Baking Essentials",
     imageUrl:
       "https://res.cloudinary.com/gnqoa3sp/image/upload/v1788803114/baking-dessert-pexels-8456734.webp",
     slug: "baking-dessert"
   },
   {
     alt: "Packaged hair and personal care products on retail shelves",
-    category: "Personal Care & Hygiene",
+    category: "Personal Care Essentials",
     imageUrl: "/images/discover/essentials/personal-care-retail-display.webp",
     slug: "personal-care-hygiene"
   },
   {
     alt: "Bottled and canned beverages arranged on a grocery shelf",
-    category: "Juice, Tea, Soda & Water",
+    category: "Drinks & Beverages",
     imageUrl: "/images/discover/essentials/beverages-retail-display.webp",
     slug: "juice-tea-soda-water"
   },
   {
     alt: "Cooking spices and condiments arranged on a kitchen table",
-    category: "Condiments & Cooking",
+    category: "Cooking Essentials",
     imageUrl:
       "https://res.cloudinary.com/gnqoa3sp/image/upload/v1788803157/condiments-cooking-pexels-531446.webp",
     slug: "condiments-cooking"

@@ -32,7 +32,18 @@ test("manual draft uses explicit two-stage permanent removal confirmation, not r
   assert.match(draft, /await loadDrafts\(\)/);
   assert.match(draft, /selectedDraft\.status === "DRAFT" && !isRecommendedPlan\(selectedDraft\)/);
   assert.match(draft, /\^RO-\[A-Z\]\{3\}-/);
-  assert.doesNotMatch(draft, /cancelRestockOrder\(/);
+  const manualRemoval = draft.slice(
+    draft.indexOf("async function confirmRemoveDraft()"),
+    draft.indexOf("  return (", draft.indexOf("async function confirmRemoveDraft()"))
+  );
+  assert.doesNotMatch(manualRemoval, /cancelRestockOrder\(/);
+  const automatedDecline = draft.slice(
+    draft.indexOf("async function declineRecommendedDraft()"),
+    draft.indexOf("async function confirmRemoveDraft()")
+  );
+  assert.match(automatedDecline, /!isRecommendedPlan\(selectedDraft\)/);
+  assert.match(automatedDecline, /await cancelRestockOrder\(selectedDraft\.id/);
+  assert.match(automatedDecline, /reason: declineReason\.trim\(\)/);
 });
 
 test("removal endpoint uses DELETE with expectedVersion, never cancellation mutation", () => {

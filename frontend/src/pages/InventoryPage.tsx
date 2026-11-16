@@ -95,8 +95,6 @@ function preferredInventoryPageSize() {
     : DEFAULT_PAGE_SIZE;
 }
 const SEARCH_DEBOUNCE_MS = 350;
-const INVENTORY_INITIAL_MINIMUM_MS = 500;
-const INVENTORY_UPDATE_MINIMUM_MS = 400;
 const DETAILS_MINIMUM_MS = 450;
 const MOVEMENTS_MINIMUM_MS = 450;
 const MUTATION_MINIMUM_MS = 550;
@@ -444,10 +442,8 @@ export function InventoryPage() {
     };
 
     try {
-      const result = await waitForMinimumDuration(
-        fetchInventory(query, { signal: controller.signal }),
-        reason === "initial" ? INVENTORY_INITIAL_MINIMUM_MS : INVENTORY_UPDATE_MINIMUM_MS
-      );
+      // Do not hold already-fetched inventory behind an artificial animation delay.
+      const result = await fetchInventory(query, { signal: controller.signal });
       if (requestId !== listRequestRef.current) return;
       if (result.meta.totalPages > 0 && view.page > result.meta.totalPages) {
         setPage(result.meta.totalPages);
@@ -784,12 +780,18 @@ export function InventoryPage() {
             {initialLoading ? (
               <InventoryTableSkeleton rowCount={pageSize} />
             ) : hasRows ? (
-              <div className={isLoading ? "pointer-events-none opacity-60" : ""}>
+              <div
+                className={
+                  isLoading
+                    ? "pointer-events-none opacity-90 transition-opacity duration-150"
+                    : "transition-opacity duration-150"
+                }
+              >
                 <InventoryTable rows={rows} onOpenDetails={openDetails} />
               </div>
             ) : null}
             {isLoading && hasRows ? (
-              <div className="pointer-events-none absolute inset-0 grid place-items-start bg-white/25 pt-3">
+              <div className="pointer-events-none absolute inset-0 grid place-items-start pt-3">
                 <span className="inline-flex items-center gap-2 rounded-md border border-emerald-100 bg-white px-3 py-2 text-xs font-medium text-emerald-800 shadow-sm">
                   <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
                   Updating inventory...

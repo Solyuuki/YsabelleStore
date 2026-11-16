@@ -14,6 +14,15 @@ type DevelopmentSmtpMessage = {
 type DeliveryModule = {
   createCustomerIdentityEmailDelivery?: (config: {
     apiKey?: string;
+    emailProvider?: "resend" | "gmail_smtp" | "gmail_api" | "brevo";
+    brevoApiKey?: string;
+    brevoSenderEmail?: string;
+    gmailClientId?: string;
+    gmailClientSecret?: string;
+    gmailRefreshToken?: string;
+    gmailSenderEmail?: string;
+    smtpUser?: string;
+    smtpAppPassword?: string;
     developmentSmtpAppPassword?: string;
     developmentSmtpUser?: string;
     fetchImpl: typeof fetch;
@@ -225,4 +234,290 @@ test("development Gmail SMTP sends password recovery codes through the shared id
   assert.equal(smtpMessages[0]?.subject, "Your Ysabelle Store password recovery code");
   assert.match(smtpMessages[0]?.text ?? "", /246810/);
   assert.match(smtpMessages[0]?.html ?? "", /246810/);
+});
+
+test("production Gmail SMTP delivers OTP and recovery codes without calling Resend", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+
+  const sent: DevelopmentSmtpMessage[] = [];
+  const send = module.createCustomerIdentityEmailDelivery({
+    nodeEnv: "production",
+    emailProvider: "gmail_smtp",
+    apiKey: "re_unused_key",
+    smtpUser: "ysabellestore.support@gmail.com",
+    smtpAppPassword: "app-password",
+    smtpSendImpl: async (message) => {
+      sent.push(message);
+    },
+    fetchImpl: async () => {
+      throw new Error("Resend must not be used when production Gmail SMTP is selected.");
+    }
+  });
+
+  await send({ to: "otp@example.com", verificationCode: "123456", purpose: "authentication" });
+  await send({
+    to: "recovery@example.com",
+    verificationCode: "654321",
+    purpose: "password_recovery"
+  });
+
+  assert.deepEqual(
+    sent.map((message) => message.to),
+    ["otp@example.com", "recovery@example.com"]
+  );
+  assert.ok(sent.every((message) => message.user === "ysabellestore.support@gmail.com"));
+  assert.equal(sent[0]?.from, "Ysabelle Store <ysabellestore.support@gmail.com>");
+  assert.match(sent[0]?.text ?? "", /123456/);
+  assert.match(sent[1]?.text ?? "", /654321/);
+});
+
+test("production Gmail SMTP rejects missing credentials", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+  let resendCalled = false;
+  const send = module.createCustomerIdentityEmailDelivery({
+    nodeEnv: "production",
+    emailProvider: "gmail_smtp",
+    apiKey: "re_unused_key",
+    smtpUser: "",
+    smtpAppPassword: "",
+    developmentSmtpUser: "",
+    developmentSmtpAppPassword: "",
+    fetchImpl: async () => {
+      resendCalled = true;
+      return new Response("{}", { status: 200 });
+    }
+  });
+
+  await assert.rejects(
+    () => send({ to: "otp@example.com", verificationCode: "123456", purpose: "authentication" }),
+    (error: unknown) => error instanceof module.CustomerIdentityEmailDeliveryError
+  );
+  assert.equal(resendCalled, false);
+});
+
+test("production Gmail SMTP hides secrets on failure", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+  let resendCalled = false;
+  const send = module.createCustomerIdentityEmailDelivery({
+    nodeEnv: "production",
+    emailProvider: "gmail_smtp",
+    smtpUser: "sender@gmail.com",
+    smtpAppPassword: "super-secret-app-password",
+    smtpSendImpl: async () => {
+      throw new Error("super-secret-app-password 123456 provider error");
+    },
+    fetchImpl: async () => {
+      resendCalled = true;
+      return new Response("{}", { status: 200 });
+    }
+  });
+
+  await assert.rejects(
+    () => send({ to: "otp@example.com", verificationCode: "123456", purpose: "authentication" }),
+    (error: unknown) => {
+      assert.ok(error instanceof module.CustomerIdentityEmailDeliveryError);
+      assert.equal(error.message.includes("super-secret"), false);
+      assert.equal(error.message.includes("123456"), false);
+      return true;
+    }
+  );
+  assert.equal(resendCalled, false);
+});
+
+test("production Gmail API delivers OTP and recovery codes over HTTPS", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+  const requests: Array<{ url: string; init?: RequestInit }> = [];
+  const send = module.createCustomerIdentityEmailDelivery({
+    nodeEnv: "production",
+    emailProvider: "gmail_api",
+    gmailClientId: "google-client",
+    gmailClientSecret: "google-secret",
+    gmailRefreshToken: "refresh-token",
+    gmailSenderEmail: "ysabellestore.support@gmail.com",
+    fetchImpl: async (url, init) => {
+      requests.push({ url: String(url), init });
+      if (String(url) === "https://oauth2.googleapis.com/token") {
+        return new Response(JSON.stringify({ access_token: "short-lived-access-token" }), {
+          status: 200
+        });
+      }
+      if (String(url) === "https://gmail.googleapis.com/gmail/v1/users/me/messages/send") {
+        return new Response(JSON.stringify({ id: "sent" }), { status: 200 });
+      }
+      throw new Error("Unexpected request");
+    }
+  });
+
+  await send({ to: "customer@example.com", verificationCode: "123456", purpose: "authentication" });
+  await send({
+    to: "recovery@example.com",
+    verificationCode: "654321",
+    purpose: "password_recovery"
+  });
+  await send({
+    to: "recovery@example.com",
+    verificationCode: "567890",
+    purpose: "password_recovery"
+  });
+
+  const sends = requests.filter((request) => request.url.endsWith("/messages/send"));
+  assert.equal(sends.length, 3);
+  assert.equal(requests.filter((request) => request.url.endsWith("/token")).length, 3);
+  assert.ok(requests.every((request) => !request.url.includes("resend.com")));
+  const rawEmails = sends.map((request) => {
+    const payload = JSON.parse(String(request.init?.body)) as { raw: string };
+    return Buffer.from(payload.raw, "base64url").toString("utf8");
+  });
+  assert.match(rawEmails[0] ?? "", /To: customer@example.com/);
+  assert.match(rawEmails[0] ?? "", /From: Ysabelle Store <ysabellestore.support@gmail.com>/);
+  assert.match(rawEmails[0] ?? "", /Subject: Your Ysabelle Store sign-in code/);
+  assert.match(rawEmails[1] ?? "", /Subject: Your Ysabelle Store password recovery code/);
+  assert.match(rawEmails[2] ?? "", /Subject: Your Ysabelle Store password recovery code/);
+  const subject = (raw: string) => raw.match(/^Subject: (.+)$/m)?.[1];
+  assert.notEqual(subject(rawEmails[1] ?? ""), subject(rawEmails[2] ?? ""));
+  assert.doesNotMatch(subject(rawEmails[2] ?? "") ?? "", /567890/);
+  const decodeText = (raw: string) => {
+    const encoded = raw.split("Content-Transfer-Encoding: base64")[1]?.split("--")[0]?.trim();
+    return Buffer.from(encoded ?? "", "base64").toString("utf8");
+  };
+  assert.match(decodeText(rawEmails[0] ?? ""), /123456/);
+  assert.match(decodeText(rawEmails[1] ?? ""), /654321/);
+  assert.match(decodeText(rawEmails[2] ?? ""), /567890/);
+});
+
+test("production Gmail API hides secrets on expired grant", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+  let sendCalled = false;
+  const send = module.createCustomerIdentityEmailDelivery({
+    nodeEnv: "production",
+    emailProvider: "gmail_api",
+    gmailClientId: "google-client",
+    gmailClientSecret: "sensitive-client-secret",
+    gmailRefreshToken: "sensitive-refresh-token",
+    gmailSenderEmail: "ysabellestore.support@gmail.com",
+    fetchImpl: async (url) => {
+      if (String(url).endsWith("/messages/send")) sendCalled = true;
+      return new Response("invalid_grant sensitive-refresh-token", { status: 400 });
+    }
+  });
+
+  await assert.rejects(
+    () =>
+      send({ to: "customer@example.com", verificationCode: "123456", purpose: "authentication" }),
+    (error: unknown) => {
+      assert.ok(error instanceof module.CustomerIdentityEmailDeliveryError);
+      assert.doesNotMatch(error.message, /sensitive|123456|invalid_grant/);
+      return true;
+    }
+  );
+  assert.equal(sendCalled, false);
+});
+
+test("Brevo sends registration, sign-in and recovery email", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+
+  const requests: Array<{ url: string; init?: RequestInit }> = [];
+  const send = module.createCustomerIdentityEmailDelivery({
+    nodeEnv: "production",
+    emailProvider: "brevo",
+    brevoApiKey: "brevo-secret-for-test",
+    brevoSenderEmail: "verified@example.com",
+    fetchImpl: async (url, init) => {
+      requests.push({ url: String(url), init });
+      return new Response(JSON.stringify({ messageId: "brevo-message-id" }), {
+        status: 201,
+        headers: { "content-type": "application/json" }
+      });
+    }
+  });
+
+  await send({ to: "new@example.com", verificationCode: "111222", purpose: "registration" });
+  await send({ to: "login@example.com", verificationCode: "333444", purpose: "authentication" });
+  await send({
+    to: "recover@example.com",
+    verificationCode: "555666",
+    purpose: "password_recovery"
+  });
+  await send({
+    to: "recover@example.com",
+    verificationCode: "777888",
+    purpose: "password_recovery"
+  });
+
+  assert.equal(requests.length, 4);
+  assert.ok(requests.every((request) => request.url === "https://api.brevo.com/v3/smtp/email"));
+  assert.ok(requests.every((request) => request.init?.method === "POST"));
+  const headers = new Headers(requests[0]?.init?.headers);
+  assert.equal(headers.get("api-key"), "brevo-secret-for-test");
+  const bodies = requests.map((request) => String(request.init?.body));
+  assert.match(bodies[0] ?? "", /"name":"Ysabelle Store"/);
+  assert.match(bodies[0] ?? "", /"email":"verified@example.com"/);
+  assert.match(bodies[0] ?? "", /"email":"new@example.com"/);
+  assert.match(bodies[1] ?? "", /"email":"login@example.com"/);
+  assert.match(bodies[2] ?? "", /"email":"recover@example.com"/);
+  assert.match(bodies[3] ?? "", /"email":"recover@example.com"/);
+  assert.match(bodies[0] ?? "", /111222/);
+  assert.match(bodies[1] ?? "", /333444/);
+  assert.match(bodies[2] ?? "", /555666/);
+  assert.match(bodies[3] ?? "", /777888/);
+  const subjects = bodies.map((body) => {
+    const value = JSON.parse(body) as { subject: string };
+    return value.subject;
+  });
+  assert.notEqual(subjects[2], subjects[3]);
+  assert.doesNotMatch(subjects[3] ?? "", /777888/);
+});
+
+test("Brevo fails closed when sender or API key is missing", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+  let fetchCalled = false;
+  const send = module.createCustomerIdentityEmailDelivery({
+    nodeEnv: "production",
+    emailProvider: "brevo",
+    brevoApiKey: "",
+    brevoSenderEmail: "",
+    fetchImpl: async () => {
+      fetchCalled = true;
+      return new Response(JSON.stringify({ messageId: "bad" }), { status: 201 });
+    }
+  });
+
+  await assert.rejects(
+    () => send({ to: "customer@example.com", verificationCode: "123456", purpose: "registration" }),
+    (error: unknown) => error instanceof module.CustomerIdentityEmailDeliveryError
+  );
+  assert.equal(fetchCalled, false);
+});
+
+test("Brevo errors never expose secrets or OTP", async () => {
+  const module = await loadDeliveryModule();
+  assert.ok(module.createCustomerIdentityEmailDelivery);
+  for (const response of [
+    new Response("brevo-secret-for-test OTP 123456", { status: 401 }),
+    new Response(JSON.stringify({ error: "brevo-secret-for-test" }), { status: 201 })
+  ]) {
+    const send = module.createCustomerIdentityEmailDelivery({
+      nodeEnv: "production",
+      emailProvider: "brevo",
+      brevoApiKey: "brevo-secret-for-test",
+      brevoSenderEmail: "verified@example.com",
+      fetchImpl: async () => response
+    });
+    await assert.rejects(
+      () =>
+        send({ to: "customer@example.com", verificationCode: "123456", purpose: "authentication" }),
+      (error: unknown) => {
+        assert.ok(error instanceof module.CustomerIdentityEmailDeliveryError);
+        assert.doesNotMatch(error.message, /brevo-secret-for-test|123456/);
+        return true;
+      }
+    );
+  }
 });

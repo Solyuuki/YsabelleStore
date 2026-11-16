@@ -43,6 +43,7 @@ type ProductListResult = {
 const productInclude = {
   category: true,
   inventory: true,
+  inventoryBatches: true,
   duplicateCandidatesLeft: { select: { status: true } },
   duplicateCandidatesRight: { select: { status: true } }
 } as const;
@@ -112,6 +113,7 @@ function normalizeProductInput(input: CreateProductRequest | UpdateProductReques
           ? (extractedSize?.sizeUnit ?? null)
           : undefined,
     dataQualityStatus: input.dataQualityStatus,
+    vatCategory: "vatCategory" in input ? input.vatCategory : undefined,
     isStorefrontVisible: input.isStorefrontVisible,
     status: input.status,
     unit: input.unit,
@@ -694,6 +696,9 @@ export async function updateProduct(
 
   if (normalized.dataQualityStatus !== undefined) {
     data.dataQualityStatus = normalized.dataQualityStatus;
+  }
+  if (normalized.vatCategory !== undefined) {
+    data.vatCategory = normalized.vatCategory;
   }
 
   if (normalized.isStorefrontVisible !== undefined) {

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import { SUPPORT_TICKET_CATEGORIES, SUPPORT_TICKET_STATUSES } from "../types/customerSupport.js";
 

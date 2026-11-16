@@ -39,7 +39,7 @@ test("Receipt item rows retain exact transaction line, batch, and total values",
   for (const field of [
     "sale.saleNumber",
     "sale.saleDate",
-    "sale.cashierName",
+    "getSaleAttribution(sale)",
     "sale.itemCount",
     "sale.items.map",
     "item.productName",
@@ -78,4 +78,43 @@ test("Print dialog Close button remains readable in dark mode and official paper
   assert.match(css, /:root.dark \[role="dialog"\]\.ys-sales-print-dialog \.ys-sales-print-close/);
   const printPaper = read("frontend/src/styles/receipt.css");
   assert.match(printPaper, /\.receipt-paper\s*\{[\s\S]*?background: #ffffff;/);
+});
+
+test("Retail receipts omit unsupported Discount labels but retain historical adjustments", () => {
+  const printed = read("frontend/src/components/receipt/RetailReceipt.tsx");
+  const pos = read("frontend/src/pages/PosPageV2.tsx");
+  assert.doesNotMatch(sales, />Discount</);
+  assert.doesNotMatch(modal, />Discount</);
+  assert.doesNotMatch(printed, /label="Discount"/);
+  assert.doesNotMatch(pos, /Discount/);
+  assert.match(sales, /Number\(selectedSale\.discountAmount\) > 0 \?/);
+  assert.match(modal, /Number\(sale\.discountAmount\) > 0 \?/);
+  assert.match(printed, /Number\(receipt\.discountAmount\) > 0/);
+  assert.match(sales, /Historical adjustment/);
+  assert.match(modal, /Historical adjustment/);
+  assert.match(printed, /label="Historical adjustment"/);
+});
+
+test("VAT breakdown only appears when the sale contains a durable tax snapshot", () => {
+  assert.match(sales, /typeof selectedSale\.vatAmount === "string"/);
+  assert.match(modal, /typeof sale\.vatAmount === "string"/);
+  const printed = read("frontend/src/components/receipt/RetailReceipt.tsx");
+  assert.match(printed, /NOT A BIR-REGISTERED VAT INVOICE/);
+  assert.match(printed, /VATable sales \(net of VAT\)/);
+});
+
+// Only the compact Sales details UI hides the itemized tax categories.
+// The printed transaction summary retains the recorded BIR-style breakdown.
+test("Sales details show exactly one VAT row across desktop and mobile", () => {
+  for (const ui of [sales, modal]) {
+    assert.equal(ui.split("VAT (12%, included)").length - 1, 1);
+    assert.doesNotMatch(ui, />VATable sales \(net\)</);
+    assert.doesNotMatch(ui, />VAT-exempt sales</);
+    assert.doesNotMatch(ui, />Zero-rated sales</);
+    assert.match(ui, /vatAmount/);
+  }
+  const printed = read("frontend/src/components/receipt/RetailReceipt.tsx");
+  assert.match(printed, /VATable sales \(net of VAT\)/);
+  assert.match(printed, /VAT-exempt sales/);
+  assert.match(printed, /Zero-rated sales/);
 });

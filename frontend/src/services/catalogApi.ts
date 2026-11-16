@@ -28,6 +28,8 @@ export type CreateCategoryInput = {
 
 export type ProductInventorySummary = {
   inventoryId: string;
+  nearestExpiry?: string | null;
+  batchCount?: number;
   currentQuantity: number;
   availableQuantity: number;
   stockStatus: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
@@ -36,6 +38,7 @@ export type ProductInventorySummary = {
 };
 
 export type ProductRecord = {
+  vatCategory: "UNCLASSIFIED" | "VATABLE" | "VAT_EXEMPT" | "ZERO_RATED";
   id: string;
   name: string;
   sku: string;
@@ -79,6 +82,7 @@ export type CreateProductInput = {
   imageUrl?: string | null;
   costPrice: string;
   sellingPrice: string;
+  vatCategory?: ProductRecord["vatCategory"];
   reorderLevel: number;
   targetStockLevel: number;
   status?: ProductRecord["status"];
@@ -584,6 +588,7 @@ export async function updateProduct(
     Pick<
       CreateProductInput,
       | "name"
+      | "sku"
       | "barcode"
       | "categoryId"
       | "unit"
@@ -597,6 +602,7 @@ export async function updateProduct(
       | "isStorefrontVisible"
       | "costPrice"
       | "sellingPrice"
+      | "vatCategory"
       | "reorderLevel"
       | "targetStockLevel"
     >
