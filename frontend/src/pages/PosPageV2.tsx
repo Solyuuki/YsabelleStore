@@ -836,6 +836,11 @@ export function PosPage() {
                           <p className="mt-1 text-xs text-slate-500">
                             {line.product.barcode ?? line.product.sku}
                           </p>
+                          {line.product.vatCategory === "UNCLASSIFIED" ? (
+                            <p className="mt-1 text-xs text-amber-700">
+                              VAT details pending review
+                            </p>
+                          ) : null}
                         </div>
                         <Button
                           aria-label={`Remove ${line.product.name}`}
@@ -916,6 +921,11 @@ export function PosPage() {
                     </div>
                   </div>
 
+                  {cartLines.some((line) => line.product.vatCategory === "UNCLASSIFIED") ? (
+                    <p className="mt-2 text-xs text-amber-700">
+                      Checkout remains available. VAT classification is pending Owner review.
+                    </p>
+                  ) : null}
                   <div className="mt-3 grid grid-cols-2 gap-3">
                     <Button disabled={isCheckingOut} type="button" onClick={openCashPayment}>
                       Cash · {currencyFormatter.format(cartSummary.total)}

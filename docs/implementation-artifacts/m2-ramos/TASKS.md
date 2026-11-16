@@ -36,3 +36,10 @@
 ## Completion Rule
 
 M2 backend tasks require code, API contract documentation, validation output, and implementation artifacts before they can be marked complete.
+
+## Sprint 13 Gmail Email Delivery Repair — 2026-10-16
+
+- Branch: `m2/v0.13/fix/gmail-production-delivery`; PR: [#59](https://github.com/Solyuuki/YsabelleStore/pull/59).
+- Task YSB-M2-EMAIL-013: add explicit production Gmail API delivery over HTTPS for customer OTP and password recovery, retain opt-in SMTP for compatible hosting, and improve sanitized Customer Support Gmail OAuth diagnostics.
+- Automated evidence: GitHub CI run 38877454839 passed formatting, lint, typecheck, backend tests, builds, and aggregate `npm run verify:code` before this artifact update.
+- Deployment and end-to-end email reception are **not yet verified**; do not mark production delivery complete until OAuth scope, account ownership, and Gmail send/inbox tests succeed.

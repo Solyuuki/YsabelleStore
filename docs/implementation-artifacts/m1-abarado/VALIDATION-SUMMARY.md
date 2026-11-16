@@ -180,3 +180,23 @@ Result: independent Dark Mode asset/contrast contract suite PASSED; frontend, ba
 | Date       | Branch                           | Command             | Result | Evidence                                                                                                                                                |
 | ---------- | -------------------------------- | ------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-10-12 | m1/v0.12/docs/activate-sprint-12 | npm run verify:code | Passed | PR #54 CI run 38197033098 at 1a3adfc6848074494e6a138cfd4a3724a6d63da8; aggregate step passed. Full CI blocked only by pending artifact status evidence. |
+
+## Sprint 13 Gmail Support Retry Aggregate Evidence
+
+| Date       | Branch                                  | Command             | Result | Notes                                         |
+| ---------- | --------------------------------------- | ------------------- | ------ | --------------------------------------------- |
+| 2026-10-16 | m1/v0.13/fix/support-email-thread-retry | npm run verify:code | Passed | CI 38892562190; exact code head 2ca1c6a71af3. |
+
+## Sprint 13 UAT Compatibility and Security Remediation (2026-10-31)
+
+Current branch validation evidence was captured from CI run 41202158723, which passed `npm run verify:code` before the implementation-artifact documentation gate. This record does not assert that all later steps of that CI run passed.
+
+| Date       | Branch                                       | Command             | Result | Notes                                                                                                |
+| ---------- | -------------------------------------------- | ------------------- | ------ | ---------------------------------------------------------------------------------------------------- |
+| 2026-10-31 | m1/v0.13/fix/uat-compatibility-and-usability | npm run verify:code | Passed | CI 41202158723, implementation head 468e47cde20dc267cc14036debcc6bfac5d42dcd; aggregate step passed. |
+
+## Sprint 13 Recommender Monthly Ticket Recovery — 2026-11-03
+
+| Date       | Branch                 | Command             | Result | Notes                                                                              |
+| ---------- | ---------------------- | ------------------- | ------ | ---------------------------------------------------------------------------------- |
+| 2026-11-03 | sprint/v0.13/sprint-13 | npm run verify:code | Passed | CI 41566648792 at 696915dc; aggregate code verifier passed. No Railway deployment. |

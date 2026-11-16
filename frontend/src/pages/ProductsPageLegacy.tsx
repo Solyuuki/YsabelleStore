@@ -32,6 +32,7 @@ import { AppPagination } from "@/components/shared/AppPagination";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { ThesisDemoExpiryNotice } from "@/components/shared/ThesisDemoExpiryNotice";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useToast } from "@/components/shared/ToastProvider";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -2900,6 +2901,7 @@ function ProductDetailsDialog({
   const { pushToast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [updatingAvailability, setUpdatingAvailability] = useState(false);
   const [discardingImageDrafts, setDiscardingImageDrafts] = useState(false);
   const [draftImageCandidateIds, setDraftImageCandidateIds] = useState<string[]>([]);
   const [form, setForm] = useState({
@@ -2913,8 +2915,11 @@ function ProductDetailsDialog({
     name: "",
     reorderLevel: "0",
     sellingPrice: "",
+    vatCategory: "UNCLASSIFIED" as ProductRecord["vatCategory"],
     sizeUnit: "" as NonNullable<ProductRecord["sizeUnit"]> | "",
     sizeValue: "",
+    sku: "",
+    status: "INACTIVE" as ProductRecord["status"],
     targetStockLevel: "0",
     authorizeTargetStockPolicy: false,
     unit: "PIECE" as ProductRecord["unit"],
@@ -2934,10 +2939,13 @@ function ProductDetailsDialog({
       costPrice: product.costPrice ?? "",
       description: product.description ?? "",
       name: product.name,
+      sku: product.sku,
+      status: product.status,
       dataQualityStatus: product.dataQualityStatus,
       isStorefrontVisible: product.isStorefrontVisible,
       reorderLevel: String(product.reorderLevel),
       sellingPrice: product.sellingPrice,
+      vatCategory: product.vatCategory ?? "UNCLASSIFIED",
       targetStockLevel: String(product.targetStockLevel),
       authorizeTargetStockPolicy: false,
       unit: product.unit,
@@ -2999,6 +3007,40 @@ function ProductDetailsDialog({
     onClose();
   }
 
+  async function handleViewAvailabilityChange() {
+    if (!product || updatingAvailability || saving || discardingImageDrafts) return;
+
+    const action = getAvailabilityAction(product.status);
+    if (!action) return;
+
+    setUpdatingAvailability(true);
+    try {
+      const response = await updateProductStatus(product.id, action.nextStatus);
+      if (!response.success || !response.data) {
+        pushToast({
+          message: response.message || "Availability could not be updated.",
+          title: "Availability update failed",
+          variant: "error"
+        });
+        return;
+      }
+      pushToast({
+        message: action.successMessage,
+        title: action.successTitle,
+        variant: "success"
+      });
+      onSaved();
+    } catch {
+      pushToast({
+        message: "The availability service is unavailable.",
+        title: "Availability update failed",
+        variant: "error"
+      });
+    } finally {
+      setUpdatingAvailability(false);
+    }
+  }
+
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -3016,10 +3058,12 @@ function ProductDetailsDialog({
         costPrice: form.costPrice.trim() || undefined,
         description: form.description.trim() || null,
         name: form.name.trim(),
+        sku: form.sku.trim(),
         dataQualityStatus: form.dataQualityStatus,
         isStorefrontVisible: form.isStorefrontVisible,
         reorderLevel: Number(form.reorderLevel),
         sellingPrice: form.sellingPrice.trim(),
+        vatCategory: form.vatCategory,
         targetStockLevel: Number(form.targetStockLevel),
         authorizeTargetStockPolicy: form.authorizeTargetStockPolicy,
         unit: form.unit,
@@ -3035,6 +3079,23 @@ function ProductDetailsDialog({
           variant: "error"
         });
         return;
+      }
+
+      if (form.status !== product.status) {
+        const availability = await updateProductStatus(product.id, form.status);
+        if (!availability.success || !availability.data) {
+          pushToast({
+            message:
+              "Other product details were saved, but availability could not be updated. " +
+              (availability.message || "Refresh and try again."),
+            title: "Availability update failed",
+            variant: "error"
+          });
+          setDraftImageCandidateIds([]);
+          setIsEditing(false);
+          onSaved();
+          return;
+        }
       }
 
       pushToast({
@@ -3111,6 +3172,20 @@ function ProductDetailsDialog({
                         setForm((current) => ({ ...current, name: event.target.value }))
                       }
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-sku">SKU</Label>
+                    <Input
+                      id="edit-sku"
+                      value={form.sku}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, sku: event.target.value }))
+                      }
+                    />
+                    <p className="text-xs text-slate-500">
+                      Unique identifier used by product imports. Changing it may affect future
+                      matching.
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="edit-barcode">Barcode</Label>
@@ -3225,6 +3300,30 @@ function ProductDetailsDialog({
                     </Select>
                   </div>
                   <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="edit-availability">Availability status</Label>
+                    <Select
+                      id="edit-availability"
+                      disabled={product.status === "DISCONTINUED"}
+                      value={form.status}
+                      onChange={(event) =>
+                        setForm((current) => ({
+                          ...current,
+                          status: event.target.value as ProductRecord["status"]
+                        }))
+                      }
+                    >
+                      <option value="ACTIVE">Available</option>
+                      <option value="INACTIVE">Unavailable</option>
+                      {product.status === "DISCONTINUED" ? (
+                        <option value="DISCONTINUED">Discontinued (locked)</option>
+                      ) : null}
+                    </Select>
+                    <p className="text-xs text-slate-500">
+                      Availability is separate from storefront approval and inventory stock.
+                      Discontinued products cannot be reactivated here.
+                    </p>
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
                     <ProductImageUploadPanel
                       disabled={saving || discardingImageDrafts}
                       onApproved={(candidate) => {
@@ -3283,6 +3382,27 @@ function ProductDetailsDialog({
                         setForm((current) => ({ ...current, sellingPrice: event.target.value }))
                       }
                     />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="edit-vat-category">VAT category (Owner verified)</Label>
+                    <Select
+                      id="edit-vat-category"
+                      value={form.vatCategory}
+                      onChange={(event) =>
+                        setForm((current) => ({
+                          ...current,
+                          vatCategory: event.target.value as ProductRecord["vatCategory"]
+                        }))
+                      }
+                    >
+                      <option value="UNCLASSIFIED">Not yet reviewed</option>
+                      <option value="VATABLE">VATable (12%, included in price)</option>
+                      <option value="VAT_EXEMPT">VAT exempt</option>
+                      <option value="ZERO_RATED">Zero-rated</option>
+                    </Select>
+                    <p className="text-xs text-slate-500">
+                      Verify tax category with BIR records. Future sales only.
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="edit-reorder">Reorder level</Label>
@@ -3402,9 +3522,38 @@ function ProductDetailsDialog({
                   <DetailLine label="Reorder level" value={String(product.reorderLevel)} />
                   <DetailLine label="Target stock level" value={String(product.targetStockLevel)} />
                   <DetailLine
-                    label="Status"
-                    value={product.status === "ACTIVE" ? "Available" : "Unavailable"}
+                    label="Nearest batch expiry"
+                    value={
+                      product.inventory.nearestExpiry
+                        ? new Date(product.inventory.nearestExpiry).toLocaleDateString("en-PH")
+                        : "No recorded expiry"
+                    }
                   />
+                  <div className="space-y-2">
+                    <DetailLine
+                      label="Status"
+                      value={
+                        product.status === "ACTIVE"
+                          ? "Available"
+                          : product.status === "INACTIVE"
+                            ? "Unavailable"
+                            : "Discontinued"
+                      }
+                    />
+                    {getAvailabilityAction(product.status) ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="secondary"
+                        disabled={updatingAvailability}
+                        onClick={() => void handleViewAvailabilityChange()}
+                      >
+                        {updatingAvailability
+                          ? "Updating..."
+                          : getAvailabilityAction(product.status)?.buttonLabel}
+                      </Button>
+                    ) : null}
+                  </div>
                   <DetailLine label="Record source" value={product.recordSource} />
                   <DetailLine label="Catalog quality" value={product.dataQualityStatus} />
                   <DetailLine
@@ -3439,6 +3588,7 @@ function ProductDetailsDialog({
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs leading-5 text-emerald-800">
                   Stock quantities and movement history are available in Inventory.
                 </div>
+                <ThesisDemoExpiryNotice />
               </div>
             )}
           </div>
@@ -3456,7 +3606,9 @@ function ProductDetailsDialog({
                 {discardingImageDrafts ? "Discarding image..." : "Cancel"}
               </Button>
               <Button
-                disabled={saving || !product || !form.name || !form.categoryId}
+                disabled={
+                  saving || !product || !form.name.trim() || !form.sku.trim() || !form.categoryId
+                }
                 key="product-edit-save"
                 form="product-edit-form"
                 type="submit"

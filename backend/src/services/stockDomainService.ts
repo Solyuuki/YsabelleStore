@@ -11,6 +11,7 @@ import { prisma } from "../database/prismaClient.js";
 import { HttpError } from "../utils/httpError.js";
 import { serializeInventory, type InventorySummaryRow } from "./catalogSerializers.js";
 import { calculateStockTruth, getDaysUntilExpiry, isBatchSellable } from "./stockTruth.js";
+import { getThesisDemoExpiryForNewBatch } from "../utils/thesisDemoExpiry.js";
 import {
   activeReservationsByProduct,
   availableToPromise,
@@ -330,7 +331,7 @@ export async function createOpeningStockBatch(
   const batch = await tx.inventoryBatch.create({
     data: {
       batchCode,
-      expiresAt: null,
+      expiresAt: getThesisDemoExpiryForNewBatch(input.productId, batchCode),
       productId: input.productId,
       quantityReceived: input.quantity,
       quantityRemaining: input.quantity,
@@ -494,7 +495,7 @@ export async function applyStockAdjustment(
     const batch = await tx.inventoryBatch.create({
       data: {
         batchCode,
-        expiresAt: null,
+        expiresAt: getThesisDemoExpiryForNewBatch(product.id, batchCode),
         productId: product.id,
         quantityReceived: input.quantity,
         quantityRemaining: input.quantity,
@@ -813,7 +814,7 @@ export async function reconcileLegacyStockMismatch(
     batch = await tx.inventoryBatch.create({
       data: {
         batchCode: identifiers.batchCode,
-        expiresAt: null,
+        expiresAt: getThesisDemoExpiryForNewBatch(input.productId, identifiers.batchCode),
         productId: input.productId,
         quantityReceived: input.quantity,
         quantityRemaining: input.quantity,

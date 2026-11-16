@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import { getAuthenticatedUser } from "../middleware/authMiddleware.js";
 import { generateForecastBatch } from "../modules/forecasting/forecast.service.js";

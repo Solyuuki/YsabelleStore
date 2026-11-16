@@ -9,7 +9,7 @@ import type { Prisma } from "@prisma/client";
 import { UNRESOLVED_CATALOG_IMAGE_CLEANUP_IDENTITIES } from "../modules/catalog/catalog-unresolved-image-cleanup-authorization.js";
 import {
   RESTRICTED_ALCOHOL_SOURCE_PRODUCT_IDS,
-  STOREFRONT_CATEGORY_NAMES
+  STOREFRONT_CATEGORY_APPROVED_NAMES
 } from "../modules/catalog/storefront-category-taxonomy.js";
 import { HttpError } from "../utils/httpError.js";
 
@@ -36,7 +36,7 @@ const storefrontCatalogExclusionWhere = {
 } satisfies Prisma.ProductWhereInput;
 
 const canonicalStorefrontCategoryWhere = {
-  name: { in: [...STOREFRONT_CATEGORY_NAMES] }
+  name: { in: [...STOREFRONT_CATEGORY_APPROVED_NAMES] }
 } satisfies Prisma.CategoryWhereInput;
 
 /**

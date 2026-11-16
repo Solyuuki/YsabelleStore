@@ -228,6 +228,7 @@ function SidebarSection({
               badgeCount={badgeCount}
               badgeTone={item.path === "/inventory" ? "warning" : "brand"}
               collapsed={collapsed}
+              description={item.description}
               icon={item.icon}
               key={item.path}
               onClick={() => onNavigate(item.path)}

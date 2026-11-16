@@ -139,6 +139,10 @@ export function CustomerFooter({
             Privacy &amp; cookies
           </CustomerLink>
           <span aria-hidden="true">·</span>
+          <CustomerLink href="/terms" navigate={navigate}>
+            Terms of Service
+          </CustomerLink>
+          <span aria-hidden="true">·</span>
           <CustomerLink href="/support" navigate={navigate}>
             Privacy requests
           </CustomerLink>

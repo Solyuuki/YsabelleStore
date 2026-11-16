@@ -325,9 +325,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
         <div className="customer-page-heading">
           <p className="customer-kicker">Delivery checkout</p>
           <h1>Checkout</h1>
-          <p>
-            Confirm your delivery details, then choose secure online payment or Cash on Delivery.
-          </p>
+          <p>Check your name, mobile number, and delivery address. Then choose how to pay.</p>
         </div>
 
         <form className="customer-checkout-layout" noValidate onSubmit={submit}>
@@ -337,7 +335,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                 <span>1</span>
                 <div>
                   <h2>Your details</h2>
-                  <p>We prefilled your account details. You can edit them for this order.</p>
+                  <p>Saved details appear automatically. Only change anything that is incorrect.</p>
                 </div>
               </div>
 
@@ -534,7 +532,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                   ) : null}
                   <div className="customer-form-grid customer-address-form-grid">
                     <label className="customer-form-grid__full">
-                      <span>Address line 1</span>
+                      <span>House / unit number and street</span>
                       <input
                         autoComplete="address-line1"
                         maxLength={180}
@@ -552,7 +550,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                     </label>
                     <label className="customer-form-grid__full">
                       <span>
-                        Address line 2 <small>(optional)</small>
+                        Building, subdivision or landmark <small>(optional)</small>
                       </span>
                       <input
                         autoComplete="address-line2"
@@ -579,7 +577,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                       />
                     </label>
                     <label>
-                      <span>City / Municipality</span>
+                      <span>City or municipality</span>
                       <input
                         autoComplete="address-level2"
                         maxLength={120}
@@ -595,7 +593,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                       />
                     </label>
                     <label>
-                      <span>Province / Region</span>
+                      <span>Province or region</span>
                       <input
                         autoComplete="address-level1"
                         maxLength={120}
@@ -627,10 +625,9 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                         value={address.postalCode}
                       />
                     </label>
-                    <label className="customer-form-grid__full">
-                      <span>Country</span>
-                      <input readOnly value="Philippines" />
-                    </label>
+                    <p className="customer-checkout-country-note customer-form-grid__full">
+                      Delivery country: Philippines
+                    </p>
                   </div>
                 </div>
               )}
@@ -729,20 +726,13 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
               ) : null}
             </section>
 
-            <section>
-              <div className="customer-checkout-section-title">
-                <span>4</span>
-                <div>
-                  <h2>Order notes</h2>
-                  <p>
-                    Add delivery instructions or a short note for store staff. This is optional.
-                  </p>
-                </div>
-              </div>
+            <details className="customer-checkout-optional-notes">
+              <summary>
+                <strong>Order notes (optional)</strong>
+                <span>Add instructions only if needed.</span>
+              </summary>
               <label className="customer-notes-field customer-notes-field--standalone">
-                <span>
-                  Notes <small>(optional)</small>
-                </span>
+                <span>Delivery instructions</span>
                 <textarea
                   maxLength={255}
                   name="notes"
@@ -750,7 +740,7 @@ export function CheckoutPage({ navigate }: { navigate: (path: string) => void })
                   rows={3}
                 />
               </label>
-            </section>
+            </details>
           </div>
 
           <aside className="customer-order-summary customer-checkout-summary">

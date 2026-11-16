@@ -50,70 +50,70 @@ export const appRoutes: readonly AppRoute[] = [
   {
     path: "/dashboard",
     label: "Dashboard",
-    description: "Retail overview and system status",
+    description: "Today's sales, stock, and store activity",
     icon: LayoutDashboard,
     allowedRoles: ["OWNER", "STAFF"]
   },
   {
     path: "/pos",
     label: "POS",
-    description: "Barcode-first selling workspace",
+    description: "Scan items and complete counter sales",
     icon: ScanBarcode,
     allowedRoles: ["OWNER", "STAFF"]
   },
   {
     path: "/products",
     label: "Products",
-    description: "Product catalog, import, and inventory workspace",
+    description: "Add products, import items, and update their details",
     icon: Package,
     allowedRoles: ["OWNER"]
   },
   {
     path: "/categories",
     label: "Categories",
-    description: "Catalog taxonomy and storefront presentation",
+    description: "Organize products into shopping categories",
     icon: Tags,
     allowedRoles: ["OWNER"]
   },
   {
     path: "/inventory",
     label: "Inventory",
-    description: "Stock monitoring and movement workspace",
+    description: "View stock levels and inventory changes",
     icon: Boxes,
     allowedRoles: ["OWNER", "STAFF"]
   },
   {
     path: "/receiving",
     label: "Receiving",
-    description: "Approved restock tickets, physical delivery checks, and returns",
+    description: "Check incoming stock, restocks, and returns",
     icon: Truck,
     allowedRoles: ["OWNER"]
   },
   {
     path: "/sales",
     label: "Sales",
-    description: "Sales history module shell",
+    description: "Review completed sales",
     icon: ReceiptText,
     allowedRoles: ["OWNER", "STAFF"]
   },
   {
     path: "/deliveries",
     label: "Deliveries",
-    description: "Customer delivery tickets, courier handoff, and COD settlement",
+    description: "Track deliveries and record payments",
     icon: PackageCheck,
     allowedRoles: ["OWNER", "STAFF"]
   },
   {
     path: "/customer-support",
     label: "Support",
-    description: "Customer support inbox and conversation workspace",
+    description: "Read and respond to customer questions",
     icon: Headphones,
     allowedRoles: ["OWNER", "STAFF"]
   },
   {
     path: "/forecast",
     label: "Forecast",
-    description: "Demand forecast module shell",
+    description: "See estimated demand for future restocking",
     icon: LineChart,
     allowedRoles: ["OWNER"],
     protected: true
@@ -129,7 +129,7 @@ export const appRoutes: readonly AppRoute[] = [
   {
     path: "/reports",
     label: "Reports",
-    description: "Live sales, inventory, and expiry reporting",
+    description: "Download sales, stock, and expiry reports",
     icon: FileBarChart,
     allowedRoles: ["OWNER"],
     protected: true
@@ -144,7 +144,7 @@ export const appRoutes: readonly AppRoute[] = [
   {
     path: "/settings",
     label: "Settings",
-    description: "Owner workstation preferences and system readiness",
+    description: "Adjust store settings and check system status",
     icon: Settings,
     allowedRoles: ["OWNER"],
     protected: true

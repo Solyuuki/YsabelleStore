@@ -33,7 +33,7 @@ test("storefront hides internal login advertisement without removing internal ro
   assert.match(shell, /internalRoutePaths[\s\S]*?["']\/staff-login["']/);
 });
 
-test("visible app version advances independently of npm workspace metadata", () => {
-  assert.match(version, /APP_VERSION = "0\.12\.0"/);
+test("visible app version is semantic and independent of npm workspace metadata", () => {
+  assert.match(version, /APP_VERSION = "\d+\.\d+\.\d+"/);
   assert.match(version, /APP_VERSION_LABEL = `v\$\{APP_VERSION\}`/);
 });

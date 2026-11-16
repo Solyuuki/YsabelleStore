@@ -24,6 +24,7 @@ import { listRecentSales } from "@/services/posService";
 import { requestReceiptPrint } from "@/services/receiptPrint";
 import type { PosSale } from "@/types/pos";
 import { buildRetailReceiptDataFromSale } from "@/utils/receipt";
+import { getSaleAttribution } from "@/utils/saleAttribution";
 import { waitForMinimumDuration } from "@/utils/timing";
 import "@/styles/retail-sales-mobile-v2.css";
 
@@ -105,6 +106,7 @@ export function SalesPage() {
     () => sales.find((sale) => sale.id === selectedSaleId) ?? sales[0] ?? null,
     [sales, selectedSaleId]
   );
+  const selectedAttribution = selectedSale ? getSaleAttribution(selectedSale) : null;
 
   const totalSalesPages = Math.max(1, Math.ceil(sales.length / salesPageSize));
   const currentSalesPage = Math.min(salesPage, totalSalesPages);
@@ -221,6 +223,7 @@ export function SalesPage() {
                     <tbody>
                       {paginatedSales.map((sale) => {
                         const isSelected = sale.id === selectedSale?.id;
+                        const attribution = getSaleAttribution(sale);
 
                         return (
                           <tr
@@ -243,7 +246,7 @@ export function SalesPage() {
                             <td data-label="Receipt" className="ys-sales-transaction-id px-4 py-3">
                               <p className="font-medium text-slate-950">{sale.saleNumber}</p>
                               <p className="text-xs text-slate-500">
-                                {sale.cashierName ?? "Unassigned cashier"}
+                                {attribution.label}: {attribution.name}
                               </p>
                             </td>
                             <td
@@ -325,10 +328,8 @@ export function SalesPage() {
                     }).format(new Date(selectedSale.saleDate))}
                   </p>
                   <p className="mt-2 text-sm text-slate-600">
-                    Cashier:{" "}
-                    <span className="font-medium text-slate-950">
-                      {selectedSale.cashierName ?? "Unknown"}
-                    </span>
+                    {selectedAttribution?.label}:{" "}
+                    <span className="font-medium text-slate-950">{selectedAttribution?.name}</span>
                   </p>
                 </div>
 
@@ -368,12 +369,24 @@ export function SalesPage() {
                       {currencyFormatter.format(Number(selectedSale.subtotalAmount))}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Discount</span>
-                    <span className="font-medium text-slate-950">
-                      {currencyFormatter.format(Number(selectedSale.discountAmount))}
-                    </span>
-                  </div>
+                  {Number(selectedSale.discountAmount) > 0 ? (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">Historical adjustment</span>
+                      <span className="font-medium text-slate-950">
+                        {currencyFormatter.format(Number(selectedSale.discountAmount))}
+                      </span>
+                    </div>
+                  ) : null}
+                  {typeof selectedSale.vatAmount === "string" ? (
+                    <div className="flex justify-between text-sm">
+                      <span>VAT (12%, included)</span>
+                      <span>{currencyFormatter.format(Number(selectedSale.vatAmount))}</span>
+                    </div>
+                  ) : (
+                    <p className="text-xs font-medium text-amber-800">
+                      VAT was not recorded for this transaction.
+                    </p>
+                  )}
                   <div className="flex justify-between border-t border-slate-200 pt-3 text-base font-semibold">
                     <span>Total</span>
                     <span>{currencyFormatter.format(Number(selectedSale.totalAmount))}</span>

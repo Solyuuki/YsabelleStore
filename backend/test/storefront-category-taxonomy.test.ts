@@ -10,23 +10,24 @@ import {
   storefrontCategoryForSource
 } from "../src/modules/catalog/storefront-category-taxonomy.js";
 
-test("storefront taxonomy exposes fourteen clean public categories in UX order", () => {
-  assert.equal(STOREFRONT_CATEGORY_TAXONOMY.length, 14);
+test("storefront taxonomy exposes fifteen clear public categories in UX order", () => {
+  assert.equal(STOREFRONT_CATEGORY_TAXONOMY.length, 15);
   assert.deepEqual(STOREFRONT_CATEGORY_NAMES, [
     "Coffee & Milk",
-    "Juice, Tea, Soda & Water",
+    "Drinks & Beverages",
+    "Dairy & Eggs",
     "Bread & Bakery",
-    "Baking & Dessert",
+    "Baking Essentials",
     "Canned Goods",
-    "Condiments & Cooking",
+    "Cooking Essentials",
     "Noodles & Pasta",
     "Rice & Staples",
-    "Snacks & Confectionery",
-    "Frozen & Chilled",
+    "Snacks & Sweets",
+    "Frozen Foods",
     "Household Supplies",
     "Laundry Supplies",
-    "Personal Care & Hygiene",
-    "Tissue & Cotton"
+    "Personal Care Essentials",
+    "Tissue & Paper"
   ]);
   assert.equal(
     STOREFRONT_CATEGORY_NAMES.some((name) => name.includes("/")),
@@ -38,24 +39,29 @@ test("canonical source categories map to clean public labels", () => {
   assert.equal(storefrontCategoryForSource("Beverages / Coffee & Milk")?.name, "Coffee & Milk");
   assert.equal(
     storefrontCategoryForSource("Beverages / Juice, Tea, Soda & Water")?.name,
-    "Juice, Tea, Soda & Water"
+    "Drinks & Beverages"
   );
   assert.equal(
     storefrontCategoryForSource("Baking / Spreads & Dessert Ingredients")?.name,
-    "Baking & Dessert"
+    "Baking Essentials"
   );
   assert.equal(
     storefrontCategoryForSource("Condiments & Cooking Ingredients")?.name,
-    "Condiments & Cooking"
+    "Cooking Essentials"
   );
   assert.equal(
     storefrontCategoryForSource("Snacks / Biscuits & Confectionery")?.name,
-    "Snacks & Confectionery"
+    "Snacks & Sweets"
   );
   assert.equal(
     storefrontCategoryForSource("Personal Care / Hygiene")?.name,
-    "Personal Care & Hygiene"
+    "Personal Care Essentials"
   );
+});
+
+test("D01 dairy category is distinct from cheese-flavored snacks", () => {
+  assert.ok(STOREFRONT_CATEGORY_NAMES.includes("Dairy & Eggs"));
+  assert.ok(STOREFRONT_CATEGORY_NAMES.includes("Snacks & Sweets"));
 });
 
 test("restricted alcohol is intentionally outside the public taxonomy", () => {
@@ -70,7 +76,7 @@ test("restricted alcohol is intentionally outside the public taxonomy", () => {
 
 test("category comparator preserves logical merchandising order", () => {
   const shuffled = [
-    "Tissue & Cotton",
+    "Tissue & Paper",
     "Canned Goods",
     "Coffee & Milk",
     "Bread & Bakery",
@@ -81,6 +87,6 @@ test("category comparator preserves logical merchandising order", () => {
     "Bread & Bakery",
     "Canned Goods",
     "Laundry Supplies",
-    "Tissue & Cotton"
+    "Tissue & Paper"
   ]);
 });

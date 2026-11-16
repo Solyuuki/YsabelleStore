@@ -37,7 +37,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    base: "./",
+    base: process.env.YSABELLE_WEB_DEPLOY === "1" ? "/" : "./",
     envDir: envDirectory,
     plugins: [react()],
     resolve: {

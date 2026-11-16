@@ -23,6 +23,50 @@ type CameraCapabilities = MediaTrackCapabilities & {
   focusMode?: string[];
 };
 
+const CAMERA_PERMISSION_TIMEOUT_MS = 20_000;
+const CAMERA_SCANNER_TIMEOUT_MS = 10_000;
+
+function stopCameraStream(stream: MediaStream) {
+  stream.getTracks().forEach((track) => track.stop());
+}
+
+// A permission prompt or video initialization may stay pending indefinitely on
+// some mobile browsers. Late results are explicitly stopped to avoid leaving
+// the phone camera active after timeout or modal dismissal.
+function withCameraStartupTimeout<T>(
+  operation: Promise<T>,
+  timeoutMs: number,
+  onLateResult: (result: T) => void
+): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    let settled = false;
+    const timer = window.setTimeout(() => {
+      settled = true;
+      const error = new Error("Camera initialization timed out.");
+      error.name = "TimeoutError";
+      reject(error);
+    }, timeoutMs);
+
+    void operation.then(
+      (result) => {
+        if (settled) {
+          onLateResult(result);
+          return;
+        }
+        settled = true;
+        window.clearTimeout(timer);
+        resolve(result);
+      },
+      (error: unknown) => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
+}
+
 const HINTS = new Map<DecodeHintType, unknown>([
   [
     DecodeHintType.POSSIBLE_FORMATS,
@@ -42,7 +86,10 @@ const HINTS = new Map<DecodeHintType, unknown>([
 
 function cameraErrorMessage(error: unknown) {
   const name = error instanceof Error ? error.name : "";
-  if (name === "NotAllowedError" || name === "PermissionDeniedError") {
+  if (name === "TimeoutError") {
+    return "Camera startup timed out. Check the browser camera permission or close other camera apps, then tap Retry camera.";
+  }
+  if (name === "NotAllowedError" || name === "PermissionDeniedError" || name === "SecurityError") {
     return "Camera permission was denied. Enable camera access in browser settings, then try again. Manual barcode search still works.";
   }
   if (name === "NotFoundError" || name === "OverconstrainedError") {
@@ -55,7 +102,9 @@ function cameraErrorMessage(error: unknown) {
 }
 
 export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraScannerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
+  // Radix DialogContent renders in a portal. Its video ref can be unavailable
+  // when the scanner's open effect first runs. Re-run startup when mounted.
+  const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
   const controlsRef = useRef<IScannerControls | null>(null);
   const trackRef = useRef<MediaStreamTrack | null>(null);
   const detectedRef = useRef(false);
@@ -69,18 +118,22 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
     null
   );
   const [zoom, setZoom] = useState(1);
+  const [retryAttempt, setRetryAttempt] = useState(0);
+  const [startupMessage, setStartupMessage] = useState("Requesting camera access…");
   callbackRef.current = onDetected;
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !videoElement) return;
     let cancelled = false;
     let localControls: IScannerControls | null = null;
+    let localStream: MediaStream | null = null;
     detectedRef.current = false;
     recentReadRef.current = null;
 
     const start = async () => {
       setStatus("starting");
       setError(null);
+      setStartupMessage("Requesting camera access…");
       setTorchAvailable(false);
       setTorchOn(false);
       setZoomRange(null);
@@ -92,8 +145,7 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
         );
         return;
       }
-      const video = videoRef.current;
-      if (!video) return;
+      const video = videoElement;
 
       try {
         // ZXing decodes EAN, UPC, Code 128, and other retail 1D barcodes on
@@ -112,22 +164,40 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
           }
         };
 
-        const controls = await reader.decodeFromConstraints(constraints, video, (result) => {
-          if (!result || cancelled || detectedRef.current) return;
-          const barcode = result.getText().trim();
-          if (!barcode || barcode.length > 128) return;
-          // Require the same decode twice in a short interval. This prevents a
-          // single blurry/partial frame from adding the wrong catalog item.
-          const now = window.performance.now();
-          const previous = recentReadRef.current;
-          recentReadRef.current = { code: barcode, at: now };
-          if (!previous || previous.code !== barcode || now - previous.at > 1500) return;
-          detectedRef.current = true;
-          controlsRef.current?.stop();
-          localControls?.stop();
-          if ("vibrate" in navigator) navigator.vibrate?.(45);
-          callbackRef.current(barcode);
-        });
+        // Request camera permission explicitly first. Reusing the obtained stream
+        // avoids the browser/ZXing attempting a second media-device acquisition.
+        const stream = await withCameraStartupTimeout(
+          navigator.mediaDevices.getUserMedia(constraints),
+          CAMERA_PERMISSION_TIMEOUT_MS,
+          stopCameraStream
+        );
+        localStream = stream;
+        if (cancelled) {
+          stopCameraStream(stream);
+          return;
+        }
+
+        setStartupMessage("Connecting camera scanner…");
+        const controls = await withCameraStartupTimeout(
+          reader.decodeFromStream(stream, video, (result) => {
+            if (!result || cancelled || detectedRef.current) return;
+            const barcode = result.getText().trim();
+            if (!barcode || barcode.length > 128) return;
+            // Require the same decode twice in a short interval. This prevents a
+            // single blurry/partial frame from adding the wrong catalog item.
+            const now = window.performance.now();
+            const previous = recentReadRef.current;
+            recentReadRef.current = { code: barcode, at: now };
+            if (!previous || previous.code !== barcode || now - previous.at > 1500) return;
+            detectedRef.current = true;
+            controlsRef.current?.stop();
+            localControls?.stop();
+            if ("vibrate" in navigator) navigator.vibrate?.(45);
+            callbackRef.current(barcode);
+          }),
+          CAMERA_SCANNER_TIMEOUT_MS,
+          (lateControls) => lateControls.stop()
+        );
 
         localControls = controls;
         if (cancelled || detectedRef.current) {
@@ -135,7 +205,7 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
           return;
         }
         controlsRef.current = controls;
-        const track = (video.srcObject as MediaStream | null)?.getVideoTracks()[0];
+        const track = stream.getVideoTracks()[0];
         if (track) {
           trackRef.current = track;
           const capabilities = track.getCapabilities?.() as CameraCapabilities | undefined;
@@ -161,6 +231,11 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
         }
         setStatus("scanning");
       } catch (reason) {
+        localControls?.stop();
+        if (localStream) stopCameraStream(localStream);
+        if (video.srcObject === localStream) video.srcObject = null;
+        controlsRef.current = null;
+        trackRef.current = null;
         if (cancelled) return;
         setError(cameraErrorMessage(reason));
         setStatus("error");
@@ -175,15 +250,15 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
       localControls?.stop();
       controlsRef.current?.stop();
       controlsRef.current = null;
+      if (localStream) stopCameraStream(localStream);
       trackRef.current?.stop();
       trackRef.current = null;
-      const video = videoRef.current;
-      if (video?.srcObject instanceof MediaStream) {
-        video.srcObject.getTracks().forEach((track) => track.stop());
-        video.srcObject = null;
+      if (videoElement.srcObject instanceof MediaStream) {
+        videoElement.srcObject.getTracks().forEach((track) => track.stop());
+        videoElement.srcObject = null;
       }
     };
-  }, [open]);
+  }, [open, retryAttempt, videoElement]);
 
   async function changeTorch() {
     const track = trackRef.current;
@@ -245,7 +320,7 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
             className="pos-camera-scanner__video"
             muted
             playsInline
-            ref={videoRef}
+            ref={setVideoElement}
           />
           <div aria-hidden="true" className="pos-camera-scanner__aim">
             <span className="pos-camera-scanner__aim-line" />
@@ -268,10 +343,20 @@ export function PosCameraScanner({ onDetected, onOpenChange, open }: PosCameraSc
           {error ??
             (status === "scanning"
               ? "Scanning EAN, UPC, Code 128 and retail barcodes automatically."
-              : "Requesting camera access…")}
+              : startupMessage)}
         </div>
 
         <div className="pos-camera-scanner__controls">
+          {status === "error" ? (
+            <button
+              className="pos-camera-scanner__control"
+              onClick={() => setRetryAttempt((attempt) => attempt + 1)}
+              type="button"
+            >
+              <Camera aria-hidden="true" size={17} />
+              Retry camera
+            </button>
+          ) : null}
           {torchAvailable ? (
             <button
               aria-pressed={torchOn}
