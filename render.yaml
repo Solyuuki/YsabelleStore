@@ -1,0 +1,35 @@
+# Render Blueprint for the Deployment branch only.
+# Database and uploaded catalog images need durable providers outside Render Free.
+services:
+  - type: web
+    name: ysabellestore-api
+    runtime: docker
+    plan: free
+    branch: Deployment
+    dockerContext: .
+    dockerfilePath: ./deployment/render/backend.Dockerfile
+    healthCheckPath: /api/health/live
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PYTHON_EXECUTABLE
+        value: /opt/ysabelle-python/bin/python
+      - key: CATALOG_IMAGE_STORAGE_ROOT
+        value: /tmp/ysabelle-catalog-images
+      - key: FORECAST_WORKERS
+        value: "1"
+      - key: PORT
+        value: "10000"
+      - key: DATABASE_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CUSTOMER_OAUTH_PUBLIC_BACKEND_URL
+        sync: false
+      - key: CUSTOMER_OAUTH_TRANSACTION_KEY
+        generateValue: true

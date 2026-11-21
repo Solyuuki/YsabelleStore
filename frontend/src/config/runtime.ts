@@ -6,11 +6,12 @@ apiBaseUrl.hash = "";
 apiBaseUrl.search = "";
 apiBaseUrl.pathname = apiBaseUrl.pathname.replace(/\/+$/, "") || "/";
 
-// Browser storefront production and LAN mobile preview must send auth cookies to
-// their own origin, not to a cross-site backend domain.
+// Browser storefront deployments and LAN mobile preview must send auth cookies to
+// their own origin, not directly to a cross-site backend domain.
 const useFirstPartyApi =
   typeof window !== "undefined" &&
-  (import.meta.env?.VITE_RAILWAY_FIRST_PARTY_API === "1" ||
+  (import.meta.env?.VITE_FIRST_PARTY_API === "1" ||
+    import.meta.env?.VITE_RAILWAY_FIRST_PARTY_API === "1" ||
     (import.meta.env?.DEV && import.meta.env?.VITE_MOBILE_PREVIEW === "1"));
 
 export const frontendRuntimeConfig = Object.freeze({

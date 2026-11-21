@@ -138,17 +138,19 @@ export const completeCustomerSocialAuth: RequestHandler = async (request, respon
   const state = readQueryString(request, "state");
   const code = readQueryString(request, "code");
   const providerError = readQueryString(request, "error");
-  // Google redirects to the already registered backend callback. On Railway the
-  // browser should complete WEB OAuth via the frontend's first-party /api proxy
-  // so both OAuth binding and session cookies remain on the storefront host.
+  // Providers redirect to the public Render backend callback. If the browser
+  // started authentication through the Vercel first-party /api rewrite, relay
+  // only valid pending WEB states back to that first-party origin. The marker
+  // prevents a second redirect on the same callback and is not an auth token.
   // Never relay Electron flows or an unknown/consumed state.
   const requiresFirstPartyRelay =
     env.NODE_ENV === "production" &&
     new URL(env.FRONTEND_URL).origin !== new URL(publicBackendUrl()).origin &&
-    request.get("x-ysabelle-first-party-proxy") !== "1";
+    request.get("x-ysabelle-first-party-proxy") !== "1" &&
+    request.query._ysabelle_first_party !== "1";
 
   if (requiresFirstPartyRelay && (await isPendingCustomerWebOAuthState(provider, state))) {
-    const parameters = new URLSearchParams({ state });
+    const parameters = new URLSearchParams({ state, _ysabelle_first_party: "1" });
     if (code) parameters.set("code", code);
     if (providerError) parameters.set("error", providerError);
     response.setHeader("Referrer-Policy", "no-referrer");
