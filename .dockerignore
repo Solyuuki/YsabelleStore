@@ -14,6 +14,8 @@
 **/.vite
 coverage
 *.sql
+# Keep controlled Prisma Generation 2 migrations available for explicit deploy checks.
+!database/prisma/migrations/**/migration.sql
 *.sql.gz
 *.dump
 *.bak

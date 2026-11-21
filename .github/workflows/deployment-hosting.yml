@@ -1,0 +1,39 @@
+name: Deployment branch hosting checks
+
+on:
+  push:
+    branches:
+      - Deployment
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deployment-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify Vercel/Render deployment contracts
+        run: node --test scripts/test/deployment-hosting.test.mjs
+
+  deployment-builds:
+    needs: deployment-contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+      - name: Build Render backend
+        run: npm run build --workspace=@ysabellestore/backend
+      - name: Build Vercel frontend in first-party mode
+        run: VITE_FIRST_PARTY_API=1 npm run build --workspace=@ysabellestore/frontend
