@@ -17,7 +17,7 @@ Render (Docker, Node.js 22 + Express + Prisma + Python forecasting)
 External persistent MySQL 8 database
 ```
 
-**Status:** repository configuration only. A working public deployment and feature parity have **not** been verified until accounts, database, storage and end-to-end tests are complete. No hosting or database credentials are committed.
+**Status:** Render Free backend service and Vercel project resources have been created; live working deployment and feature parity still require the Vercel GitHub integration, a compatible persistent database, storage and end-to-end tests. No hosting or database credentials are committed.
 
 ## 1. Database prerequisites (before enabling transactional features)
 
@@ -45,8 +45,7 @@ External persistent MySQL 8 database
 ## 3. Vercel frontend
 
 1. Connect the same repo to Vercel; select **production branch `Deployment`** and **Root Directory `.`** (repo root, not `frontend/`).
-2. Vercel reads `vercel.mjs`, which declares `npm ci --ignore-scripts`, `VITE_FIRST_PARTY_API=1 npm run build --workspace=@ysabellestore/frontend`, and output `frontend/dist`.
-3. Before deploying, set Vercel environment variable `RENDER_API_ORIGIN=https://<service>.onrender.com` (Render origin only; no `/api`, query, credentials or non-HTTPS). The build fails clearly when missing.
+2. Vercel reads `vercel.json`, which declares `npm ci --ignore-scripts`, `VITE_FIRST_PARTY_API=1 npm run build --workspace=@ysabellestore/frontend`, output `frontend/dist`, and HTTPS first-party API rewrites.\n3. The committed Render destination is `https://ysabellestore-api.onrender.com`, confirmed from the Free service created for this branch. If the Render hostname changes, update the rewrite destinations in `vercel.json` and re-run deployment tests.
 4. Vercel routes browser `/api/*` calls to Render using a **same-origin rewrite**, preserving the frontend's existing cookie-based auth model. SPA fallback to `index.html` supports deep links.
 5. Confirm Vercel's final production URL and set the exact URL as Render's `FRONTEND_URL` and `CORS_ORIGINS`. Recheck `/api/health/ready` via the **Vercel site**, not only directly on Render.
 

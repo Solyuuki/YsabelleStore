@@ -1,0 +1,21 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "npm ci --ignore-scripts",
+  "buildCommand": "VITE_FIRST_PARTY_API=1 npm run build --workspace=@ysabellestore/frontend",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    {
+      "source": "/api",
+      "destination": "https://ysabellestore-api.onrender.com/api"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://ysabellestore-api.onrender.com/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
